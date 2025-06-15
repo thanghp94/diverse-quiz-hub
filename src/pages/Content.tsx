@@ -1,9 +1,9 @@
-
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Play, BookOpen, Image as ImageIcon } from "lucide-react";
+import ContentSidebar from "@/components/ContentSidebar";
 
 // This would typically come from an API or database
 const contentData: Record<string, any> = {
@@ -150,7 +150,7 @@ const Content = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <Link to="/topics">
             <Button 
@@ -163,55 +163,65 @@ const Content = () => {
           </Link>
         </div>
 
-        <Card className="bg-white/10 backdrop-blur-lg border-white/20 overflow-hidden">
-          <div className="relative">
-            <img 
-              src={`https://images.unsplash.com/${content.image}?w=800&h=400&fit=crop`}
-              alt={content.title}
-              className="w-full h-64 object-cover"
-            />
-            <div className="absolute top-4 right-4">
-              <Badge className={`${getContentTypeColor(content.type)}`}>
-                {getContentIcon(content.type)}
-                <span className="ml-2 capitalize">{content.type}</span>
-              </Badge>
-            </div>
+        <div className="flex gap-6">
+          {/* Sidebar */}
+          <div className="w-80 flex-shrink-0 hidden lg:block">
+            <ContentSidebar />
           </div>
 
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-white text-3xl">{content.title}</CardTitle>
-              {content.duration && (
-                <Badge variant="outline" className="border-white/30 text-white/70">
-                  {content.duration}
-                </Badge>
-              )}
-            </div>
-            <p className="text-white/80 text-lg">{content.description}</p>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {content.type === 'video' && content.videoUrl && (
-              <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                <iframe
-                  src={content.videoUrl}
-                  title={content.title}
-                  className="w-full h-full"
-                  allowFullScreen
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            <Card className="bg-white/10 backdrop-blur-lg border-white/20 overflow-hidden">
+              <div className="relative">
+                <img 
+                  src={`https://images.unsplash.com/${content.image}?w=800&h=400&fit=crop`}
+                  alt={content.title}
+                  className="w-full h-64 object-cover"
                 />
+                <div className="absolute top-4 right-4">
+                  <Badge className={`${getContentTypeColor(content.type)}`}>
+                    {getContentIcon(content.type)}
+                    <span className="ml-2 capitalize">{content.type}</span>
+                  </Badge>
+                </div>
               </div>
-            )}
 
-            <div 
-              className="prose prose-invert max-w-none text-white/90"
-              dangerouslySetInnerHTML={{ __html: content.content }}
-              style={{
-                fontSize: '16px',
-                lineHeight: '1.6'
-              }}
-            />
-          </CardContent>
-        </Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-white text-3xl">{content.title}</CardTitle>
+                  {content.duration && (
+                    <Badge variant="outline" className="border-white/30 text-white/70">
+                      {content.duration}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-white/80 text-lg">{content.description}</p>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                {content.type === 'video' && content.videoUrl && (
+                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <iframe
+                      src={content.videoUrl}
+                      title={content.title}
+                      className="w-full h-full"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
+                <div 
+                  className="prose prose-invert max-w-none text-white/90"
+                  dangerouslySetInnerHTML={{ __html: content.content }}
+                  style={{
+                    fontSize: '16px',
+                    lineHeight: '1.6'
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );
