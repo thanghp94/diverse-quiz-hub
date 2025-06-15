@@ -2,6 +2,7 @@
 import Header from "./Header";
 import ContentSection from "./ContentSection";
 import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import { 
   Book, 
   Trophy, 
@@ -18,21 +19,6 @@ import {
 } from "lucide-react";
 
 const HomePage = () => {
-  const blankItems = [
-    {
-      id: "class",
-      title: "Class",
-      icon: <Users className="h-4 w-4 text-gray-600" />,
-      color: "bg-gray-100"
-    },
-    {
-      id: "topic",
-      title: "Topic", 
-      icon: <BookOpen className="h-4 w-4 text-gray-600" />,
-      color: "bg-gray-100"
-    }
-  ];
-
   const advanceItems = [
     {
       id: "subject",
@@ -140,7 +126,8 @@ const HomePage = () => {
       id: "leaderboard",
       title: "Leaderboard",
       icon: <Award className="h-4 w-4 text-pink-600" />,
-      color: "bg-pink-100"
+      color: "bg-pink-100",
+      link: "/leaderboard"
     },
     {
       id: "personal",
@@ -150,6 +137,33 @@ const HomePage = () => {
     }
   ];
 
+  const renderDashboardItems = (items: any[]) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {items.map((item) => {
+        const CardWrapper = item.link ? Link : 'div';
+        const cardProps = item.link ? { to: item.link } : {};
+        
+        return (
+          <CardWrapper key={item.id} {...cardProps}>
+            <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {item.starred && (
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  )}
+                  <div className={`p-1 rounded ${item.color}`}>
+                    {item.icon}
+                  </div>
+                </div>
+              </div>
+              <h3 className="font-medium text-gray-800 text-sm">{item.title}</h3>
+            </Card>
+          </CardWrapper>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -158,22 +172,6 @@ const HomePage = () => {
         <nav className="mb-6">
           <span className="text-sm text-gray-600">Home</span>
         </nav>
-
-        <div className="mb-6">
-          <p className="text-gray-500 italic">blank</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-            {blankItems.map((item) => (
-              <Card key={item.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-center gap-2">
-                  <div className={`p-1 rounded ${item.color}`}>
-                    {item.icon}
-                  </div>
-                  <h3 className="font-medium text-gray-800 text-sm">{item.title}</h3>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
 
         <ContentSection
           title="Advance"
@@ -203,12 +201,15 @@ const HomePage = () => {
           color="bg-green-100"
         />
 
-        <ContentSection
-          title="Your dashboard"
-          icon={<BarChart3 className="h-4 w-4 text-pink-600" />}
-          items={dashboardItems}
-          color="bg-pink-100"
-        />
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1 rounded bg-pink-100">
+              <BarChart3 className="h-4 w-4 text-pink-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">Your dashboard</h2>
+          </div>
+          {renderDashboardItems(dashboardItems)}
+        </div>
       </div>
     </div>
   );
