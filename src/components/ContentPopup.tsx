@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { ContentPopupView } from "./content-popup/ContentPopupView";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
-import { useContentImage } from "@/hooks/useContentImage";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -16,6 +15,8 @@ interface ContentPopupProps {
   contentList: Content[];
   onContentChange: (newContent: Content) => void;
   startQuizDirectly?: boolean;
+  imageUrl: string | null | undefined;
+  isImageLoading: boolean;
 }
 
 const ContentPopup = ({
@@ -25,6 +26,8 @@ const ContentPopup = ({
   contentList,
   onContentChange,
   startQuizDirectly = false,
+  imageUrl,
+  isImageLoading,
 }: ContentPopupProps) => {
   const {
     quizMode,
@@ -42,9 +45,6 @@ const ContentPopup = ({
     videoEmbedUrl,
     video2EmbedUrl,
   } = useContentMedia(content);
-
-  // Only fetch the image if content is present
-  const { data: imageUrl, isLoading: isImageLoading } = useContentImage(content?.imageid, content?.imagelink);
 
   useEffect(() => {
     if (isOpen && startQuizDirectly && !quizMode) {

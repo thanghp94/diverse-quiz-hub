@@ -85,7 +85,8 @@ const Topics = () => {
   } = useContent();
 
   const {
-    data: allImages
+    data: allImages,
+    isLoading: isImagesLoading
   } = useQuery({
     queryKey: ['images'],
     queryFn: async () => {
@@ -103,6 +104,16 @@ const Topics = () => {
     }
   });
 
+  const findImageUrl = (content: Content): string | null => {
+    if (content.imageid && allImages) {
+      const image = allImages.find(img => img.id === content.imageid);
+      if (image && image.imagelink) {
+        return image.imagelink;
+      }
+    }
+    return content.imagelink || null;
+  }
+
   const handleToggleTopic = (topicId: string) => {
     setExpandedTopicId(currentId => (currentId === topicId ? null : topicId));
   };
@@ -118,6 +129,7 @@ const Topics = () => {
       setSelectedContentInfo({
         content: firstContent,
         contextList: topicContent,
+        imageUrl: findImageUrl(firstContent),
       });
     } else {
       console.warn(`Content for topic ID ${topicId} not found`);
@@ -127,14 +139,14 @@ const Topics = () => {
     setSelectedContentInfo({
       content: info.content,
       contextList: info.contextList,
+      imageUrl: findImageUrl(info.content),
     });
   };
   const handleStartQuiz = (content: Content, contextList: Content[]) => {
-    const imageUrl = allImages?.find(img => img.id === content.imageid)?.imagelink || content.imagelink || null;
     setSelectedContentInfo({
       content,
       contextList,
-      imageUrl,
+      imageUrl: findImageUrl(content),
     });
     setQuizContentId(content.id);
   };
@@ -221,10 +233,16 @@ const Topics = () => {
         contentList={selectedContentInfo?.contextList ?? []}
         onContentChange={newContent => {
           if (selectedContentInfo) {
-            setSelectedContentInfo({ ...selectedContentInfo, content: newContent });
+            setSelectedContentInfo({ 
+              ...selectedContentInfo, 
+              content: newContent,
+              imageUrl: findImageUrl(newContent),
+            });
           }
         }}
         startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
+        imageUrl={selectedContentInfo?.imageUrl ?? null}
+        isImageLoading={isImagesLoading}
       />
     </div>
   );
