@@ -127,6 +127,7 @@ const Topics = () => {
   };
   const handleContentClick = (info: { content: Content; contextList: Content[] }) => {
     const imageUrl = allImages?.find(img => img.id === info.content.imageid)?.imagelink || info.content.imagelink || null;
+    console.log('Topics handleContentClick - found imageUrl:', imageUrl, 'for content:', info.content.title);
     setSelectedContentInfo({
         content: info.content,
         contextList: info.contextList,
@@ -228,6 +229,7 @@ const Topics = () => {
         onContentChange={newContent => {
           if (selectedContentInfo) {
             const newImageUrl = allImages?.find(img => img.id === newContent.imageid)?.imagelink || newContent.imagelink || null;
+            console.log('Topics onContentChange - found newImageUrl:', newImageUrl, 'for content:', newContent.title);
             setSelectedContentInfo({ ...selectedContentInfo, content: newContent, imageUrl: newImageUrl });
           }
         }}

@@ -51,7 +51,7 @@ export const ContentPopupView = ({
         setImageLoadError(false);
     }, [imageUrl]);
 
-    console.log('ContentPopupView props -> imageUrl:', imageUrl, 'isImageLoading:', isImageLoading);
+    console.log('ContentPopupView debug - content.imageid:', content.imageid, 'content.imagelink:', content.imagelink, 'final imageUrl:', imageUrl, 'isImageLoading:', isImageLoading);
 
     return (
         <div className="py-4 space-y-6">
@@ -89,12 +89,29 @@ export const ContentPopupView = ({
                     <div className="text-red-500 flex flex-col items-center">
                         <ImageOff className="h-12 w-12 mb-2" />
                         <span className="text-lg font-semibold">Error loading image</span>
+                        <span className="text-sm mt-1">URL: {imageUrl}</span>
                     </div>
                 ) : imageUrl ? (
-                    <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" onError={() => setImageLoadError(true)} />
+                    <img 
+                        src={imageUrl} 
+                        alt={content.title} 
+                        className="w-full h-full object-cover" 
+                        onError={() => {
+                            console.error('Image failed to load:', imageUrl);
+                            setImageLoadError(true);
+                        }}
+                        onLoad={() => {
+                            console.log('Image loaded successfully:', imageUrl);
+                        }}
+                    />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center text-center p-4">
-                        <span className="text-white text-xl font-semibold">{content.title}</span>
+                        <div>
+                            <span className="text-white text-xl font-semibold">{content.title}</span>
+                            <div className="text-white/70 text-sm mt-2">
+                                No image available (imageid: {content.imageid || 'none'})
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

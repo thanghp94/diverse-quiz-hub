@@ -14,7 +14,7 @@ const Content = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   
   const { data: content, isLoading, error } = useContentById(id || "");
-  const { data: imageUrl, isLoading: isImageLoading } = useContentImage(content?.imageid);
+  const { data: imageUrl, isLoading: isImageLoading } = useContentImage(content?.imageid, content?.imagelink);
 
   if (isLoading) {
     return (
