@@ -1,8 +1,9 @@
+
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Play, BookOpen, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Play, BookOpen, Image as ImageIcon, Trophy } from "lucide-react";
 import ContentSidebar from "@/components/ContentSidebar";
 
 // This would typically come from an API or database
@@ -120,7 +121,7 @@ const Content = () => {
         </Card>
       </div>
     );
-  }
+  };
 
   const getContentIcon = (type: string) => {
     switch (type) {
@@ -189,11 +190,14 @@ const Content = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white text-3xl">{content.title}</CardTitle>
-                  {content.duration && (
-                    <Badge variant="outline" className="border-white/30 text-white/70">
-                      {content.duration}
-                    </Badge>
-                  )}
+                  <div className="flex gap-3">
+                    <Link to="/quiz">
+                      <Button className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white">
+                        <Trophy className="mr-2 h-4 w-4" />
+                        Quiz
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
                 <p className="text-white/80 text-lg">{content.description}</p>
               </CardHeader>

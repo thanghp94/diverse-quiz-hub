@@ -81,8 +81,8 @@ const ContentSidebar = () => {
               <h4 className="text-white text-sm font-medium mt-2 line-clamp-2">
                 {content.title}
               </h4>
-              {content.duration && (
-                <p className="text-white/60 text-xs mt-1">{content.duration}</p>
+              {(content as any).duration && (
+                <p className="text-white/60 text-xs mt-1">{(content as any).duration}</p>
               )}
             </Link>
           ))}
