@@ -90,7 +90,6 @@ const ContentPopup = ({
                 startQuiz={startQuiz}
                 imageUrl={imageUrl}
                 isImageLoading={false}
-                isImageError={!imageUrl && !!content?.imageid}
                 videoEmbedUrl={videoEmbedUrl}
                 video2EmbedUrl={video2EmbedUrl}
                 videoData={videoData}

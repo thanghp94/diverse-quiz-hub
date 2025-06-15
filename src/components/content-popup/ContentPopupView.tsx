@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
@@ -16,7 +16,6 @@ interface ContentPopupViewProps {
     startQuiz: () => void;
     imageUrl: string | null | undefined;
     isImageLoading: boolean;
-    isImageError: boolean;
     videoEmbedUrl: string | null;
     video2EmbedUrl: string | null;
     videoData: { video_name?: string | null } | null;
@@ -40,14 +39,19 @@ export const ContentPopupView = ({
     startQuiz,
     imageUrl,
     isImageLoading,
-    isImageError,
     videoEmbedUrl,
     video2EmbedUrl,
     videoData,
     video2Data,
 }: ContentPopupViewProps) => {
     const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
-    console.log('ContentPopupView props -> imageUrl:', imageUrl, 'isImageLoading:', isImageLoading, 'isImageError:', isImageError);
+    const [imageLoadError, setImageLoadError] = useState(false);
+
+    useEffect(() => {
+        setImageLoadError(false);
+    }, [imageUrl]);
+
+    console.log('ContentPopupView props -> imageUrl:', imageUrl, 'isImageLoading:', isImageLoading);
 
     return (
         <div className="py-4 space-y-6">
@@ -81,13 +85,13 @@ export const ContentPopupView = ({
             <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
                 {isImageLoading ? (
                     <Skeleton className="w-full h-full" />
-                ) : isImageError ? (
+                ) : imageLoadError ? (
                     <div className="text-red-500 flex flex-col items-center">
                         <ImageOff className="h-12 w-12 mb-2" />
                         <span className="text-lg font-semibold">Error loading image</span>
                     </div>
                 ) : imageUrl ? (
-                    <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" />
+                    <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" onError={() => setImageLoadError(true)} />
                 ) : (
                     <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center text-center p-4">
                         <span className="text-white text-xl font-semibold">{content.title}</span>
