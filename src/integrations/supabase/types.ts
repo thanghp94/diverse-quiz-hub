@@ -24,7 +24,7 @@ export type Database = {
           information: string | null
           mindmap: string | null
           mindmapurl: string | null
-          order: number | null
+          order: string | null
           parentid: string | null
           prompt: string | null
           second_short_blurb: string | null
@@ -35,7 +35,7 @@ export type Database = {
           showtranslation: string | null
           studentseen: string | null
           title: string
-          topicid: number | null
+          topicid: string | null
           translation: string | null
           typeoftaking: string | null
           update: string | null
@@ -58,7 +58,7 @@ export type Database = {
           information?: string | null
           mindmap?: string | null
           mindmapurl?: string | null
-          order?: number | null
+          order?: string | null
           parentid?: string | null
           prompt?: string | null
           second_short_blurb?: string | null
@@ -69,7 +69,7 @@ export type Database = {
           showtranslation?: string | null
           studentseen?: string | null
           title: string
-          topicid?: number | null
+          topicid?: string | null
           translation?: string | null
           typeoftaking?: string | null
           update?: string | null
@@ -92,7 +92,7 @@ export type Database = {
           information?: string | null
           mindmap?: string | null
           mindmapurl?: string | null
-          order?: number | null
+          order?: string | null
           parentid?: string | null
           prompt?: string | null
           second_short_blurb?: string | null
@@ -103,7 +103,7 @@ export type Database = {
           showtranslation?: string | null
           studentseen?: string | null
           title?: string
-          topicid?: number | null
+          topicid?: string | null
           translation?: string | null
           typeoftaking?: string | null
           update?: string | null
@@ -112,15 +112,7 @@ export type Database = {
           videoid2?: string | null
           vocabulary?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "topic_details_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       image: {
         Row: {
@@ -159,22 +151,7 @@ export type Database = {
           showimage?: string | null
           topicid?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "image_contentid_fkey"
-            columns: ["contentid"]
-            isOneToOne: false
-            referencedRelation: "content"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "image_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       question: {
         Row: {
@@ -192,10 +169,11 @@ export type Database = {
           picture: string | null
           question_type: string | null
           questionlevel: string | null
-          questionorder: number | null
-          randomorder: number | null
+          questionorder: string | null
+          randomorder: string | null
           tg_tao: string | null
-          topicid: number | null
+          time: string | null
+          topicid: string | null
           translation: string | null
           update: string | null
           video: string | null
@@ -216,10 +194,11 @@ export type Database = {
           picture?: string | null
           question_type?: string | null
           questionlevel?: string | null
-          questionorder?: number | null
-          randomorder?: number | null
+          questionorder?: string | null
+          randomorder?: string | null
           tg_tao?: string | null
-          topicid?: number | null
+          time?: string | null
+          topicid?: string | null
           translation?: string | null
           update?: string | null
           video?: string | null
@@ -240,31 +219,17 @@ export type Database = {
           picture?: string | null
           question_type?: string | null
           questionlevel?: string | null
-          questionorder?: number | null
-          randomorder?: number | null
+          questionorder?: string | null
+          randomorder?: string | null
           tg_tao?: string | null
-          topicid?: number | null
+          time?: string | null
+          topicid?: string | null
           translation?: string | null
           update?: string | null
           video?: string | null
           writing_choice?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "question_contentid_fkey"
-            columns: ["contentid"]
-            isOneToOne: false
-            referencedRelation: "content"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       student_try: {
         Row: {
@@ -315,15 +280,7 @@ export type Database = {
           update?: string | null
           writing_answer?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "student_try_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "question"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       student_try_content: {
         Row: {
@@ -364,11 +321,11 @@ export type Database = {
       topic: {
         Row: {
           challengesubject: string | null
-          id: number
+          id: string
           image: string | null
           mon: string | null
           noi_dung: string | null
-          Order: number | null
+          order: number | null
           parentid: string | null
           short_summary: string | null
           showstudent: boolean | null
@@ -376,11 +333,11 @@ export type Database = {
         }
         Insert: {
           challengesubject?: string | null
-          id: number
+          id: string
           image?: string | null
           mon?: string | null
           noi_dung?: string | null
-          Order?: number | null
+          order?: number | null
           parentid?: string | null
           short_summary?: string | null
           showstudent?: boolean | null
@@ -388,11 +345,11 @@ export type Database = {
         }
         Update: {
           challengesubject?: string | null
-          id?: number
+          id?: string
           image?: string | null
           mon?: string | null
           noi_dung?: string | null
-          Order?: number | null
+          order?: number | null
           parentid?: string | null
           short_summary?: string | null
           showstudent?: boolean | null
@@ -497,15 +454,7 @@ export type Database = {
           videolink?: string | null
           videoupload?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "video_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ interface Topic {
 const Topics = () => {
   const [openTopics, setOpenTopics] = useState<number[]>([]);
 
-  // Fetch topics with specific IDs (14-23 and 90-92)
+  // Fetch topics where parentid is blank and topic is not blank
   const {
     data: topics,
     isLoading,
@@ -32,18 +31,14 @@ const Topics = () => {
     queryKey: ['bowl-challenge-topics'],
     queryFn: async () => {
       console.log('Fetching Bowl & Challenge topics from Supabase...');
-      const targetIds = [...Array.from({
-        length: 10
-      }, (_, i) => i + 14),
-      // 14-23
-      90, 91, 92 // 90-92
-      ];
-      const {
-        data,
-        error
-      } = await supabase.from('topic').select('*').in('id', targetIds).order('id', {
-        ascending: true
-      });
+      const { data, error } = await supabase
+        .from('topic')
+        .select('*')
+        .is('parentid', null)
+        .not('topic', 'is', null)
+        .neq('topic', '')
+        .order('id', { ascending: true });
+      
       if (error) {
         console.error('Error fetching topics:', error);
         throw error;
@@ -142,7 +137,7 @@ const Topics = () => {
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
           <p className="text-lg text-white/80">
-            Specialized topics for Bowl & Challenge competitions ({topics?.length || 0} topics)
+            Topics with no parent topic ({topics?.length || 0} topics)
           </p>
         </div>
 
