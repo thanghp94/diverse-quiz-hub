@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Check, X } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface QuizQuestion {
     id: string;
@@ -37,6 +38,8 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
+    const [correctAnswersCount, setCorrectAnswersCount] = useState(0);
+    const [incorrectAnswersCount, setIncorrectAnswersCount] = useState(0);
     const [timeStart, setTimeStart] = useState<string | null>(null);
     const [showContent, setShowContent] = useState(false);
     const [didShowContent, setDidShowContent] = useState(false);
@@ -48,6 +51,8 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
     useEffect(() => {
         if (currentQuestionIndex === 0) {
             sessionStorage.removeItem('quizResults');
+            setCorrectAnswersCount(0);
+            setIncorrectAnswersCount(0);
         }
 
         const fetchQuestion = async () => {
@@ -98,6 +103,11 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
         
         const correct = choiceLetter === currentQuestion.correct_choice;
         setIsCorrect(correct);
+        if (correct) {
+            setCorrectAnswersCount(prev => prev + 1);
+        } else {
+            setIncorrectAnswersCount(prev => prev + 1);
+        }
         setShowFeedback(true);
     };
 
@@ -196,7 +206,17 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
         <div className="p-4">
             <Card className="border-gray-200 shadow-lg">
                 <CardHeader>
-                    <CardTitle>Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
+                    <div className="flex justify-between items-center">
+                        <CardTitle>Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
+                        <div className="flex gap-2">
+                            <Badge className="bg-green-100 text-green-800 border-green-500">
+                                <Check className="h-4 w-4 mr-1" /> Correct: {correctAnswersCount}
+                            </Badge>
+                            <Badge className="bg-red-100 text-red-800 border-red-500">
+                                <X className="h-4 w-4 mr-1" /> Incorrect: {incorrectAnswersCount}
+                            </Badge>
+                        </div>
+                    </div>
                     <CardDescription className="text-lg pt-2">{currentQuestion.noi_dung}</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -269,3 +289,4 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
 };
 
 export default QuizView;
+
