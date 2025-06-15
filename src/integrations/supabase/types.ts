@@ -216,7 +216,7 @@ export type Database = {
       image: {
         Row: {
           contentid: string | null
-          Default: string | null
+          default: string | null
           description: string | null
           id: string
           imagefile: string | null
@@ -224,11 +224,11 @@ export type Database = {
           name: string | null
           questionid: string | null
           showimage: string | null
-          topicid: number | null
+          topicid: string | null
         }
         Insert: {
           contentid?: string | null
-          Default?: string | null
+          default?: string | null
           description?: string | null
           id: string
           imagefile?: string | null
@@ -236,11 +236,11 @@ export type Database = {
           name?: string | null
           questionid?: string | null
           showimage?: string | null
-          topicid?: number | null
+          topicid?: string | null
         }
         Update: {
           contentid?: string | null
-          Default?: string | null
+          default?: string | null
           description?: string | null
           id?: string
           imagefile?: string | null
@@ -248,7 +248,7 @@ export type Database = {
           name?: string | null
           questionid?: string | null
           showimage?: string | null
-          topicid?: number | null
+          topicid?: string | null
         }
         Relationships: []
       }

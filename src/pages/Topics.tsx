@@ -19,6 +19,13 @@ interface Topic {
   parentid?: string;
   showstudent?: boolean;
 }
+interface Image {
+  id: string;
+  imagelink: string | null;
+  contentid: string | null;
+  default: string | null;
+}
+
 const Topics = () => {
   const [openContent, setOpenContent] = useState<string[]>([]);
   const [selectedContentInfo, setSelectedContentInfo] = useState<{
@@ -78,6 +85,25 @@ const Topics = () => {
   const {
     data: allContent
   } = useContent();
+
+  const {
+    data: allImages
+  } = useQuery({
+    queryKey: ['images'],
+    queryFn: async () => {
+      console.log('Fetching all images from Supabase...');
+      const {
+        data,
+        error
+      } = await supabase.from('image').select('*');
+      if (error) {
+        console.error('Error fetching images:', error);
+        throw error;
+      }
+      console.log('All images fetched:', data);
+      return data as Image[];
+    }
+  });
 
   const handleToggleTopic = (topicId: string) => {
     setExpandedTopicId(currentId => (currentId === topicId ? null : topicId));
@@ -182,6 +208,19 @@ const Topics = () => {
             const topicContent = getTopicContent(topic.id);
             const isExpanded = expandedTopicId === topic.id;
 
+            let topicImageUrl: string | undefined | null = null;
+            if (allImages && topicContent.length > 0) {
+              for (const content of topicContent) {
+                if (content.imageid) {
+                  const image = allImages.find(img => img.id === content.imageid && img.default === 'Yes');
+                  if (image && image.imagelink) {
+                    topicImageUrl = image.imagelink;
+                    break;
+                  }
+                }
+              }
+            }
+
             return (
               <div
                 key={topic.id}
@@ -192,25 +231,30 @@ const Topics = () => {
               >
                 <div
                   className={cn(
-                    "flex items-start justify-between p-3 text-white w-full text-left cursor-pointer transition-colors hover:bg-white/5",
+                    "flex items-start p-3 text-white w-full text-left cursor-pointer transition-colors hover:bg-white/5",
                     isExpanded && "bg-white/5"
                   )}
                   onClick={() => handleToggleTopic(topic.id)}
                 >
-                  <div className="w-full">
-                    <div className="flex items-center gap-2 mb-1">
-                      <CardTitle className="text-white text-lg">{topic.topic}</CardTitle>
-                      {topic.challengesubject && (
-                        <Badge variant="outline" className="border-white/30 text-white/70 text-xs">
-                          {topic.challengesubject}
-                        </Badge>
+                  {topicImageUrl && (
+                    <img src={topicImageUrl} alt={topic.topic} className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0" />
+                  )}
+                  <div className="flex-grow flex items-start justify-between">
+                    <div className="w-full">
+                      <div className="flex items-center gap-2 mb-1">
+                        <CardTitle className="text-white text-lg">{topic.topic}</CardTitle>
+                        {topic.challengesubject && (
+                          <Badge variant="outline" className="border-white/30 text-white/70 text-xs">
+                            {topic.challengesubject}
+                          </Badge>
+                        )}
+                      </div>
+                      {topic.short_summary && (
+                        <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
                       )}
                     </div>
-                    {topic.short_summary && (
-                      <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
-                    )}
+                    <ChevronDown className={cn("h-5 w-5 text-white/80 shrink-0 ml-4 mt-1 transition-transform duration-200", isExpanded && "rotate-180")} />
                   </div>
-                  <ChevronDown className={cn("h-5 w-5 text-white/80 shrink-0 ml-4 mt-1 transition-transform duration-200", isExpanded && "rotate-180")} />
                 </div>
                 
                 {isExpanded && (
