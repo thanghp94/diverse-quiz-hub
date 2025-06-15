@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Topic {
   id: string;
@@ -20,7 +21,6 @@ interface Topic {
 }
 
 const Topics = () => {
-  const [openTopics, setOpenTopics] = useState<string[]>([]);
   const [openContent, setOpenContent] = useState<string[]>([]);
   const [selectedContentInfo, setSelectedContentInfo] = useState<{ content: Content; contextList: Content[] } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
@@ -76,10 +76,6 @@ const Topics = () => {
   // Fetch all content to show related content for each topic
   const { data: allContent } = useContent();
   
-  const toggleTopic = (topicId: string) => {
-    setOpenTopics(prev => prev.includes(topicId) ? prev.filter(id => id !== topicId) : [...prev, topicId]);
-  };
-
   const toggleContent = (contentKey: string) => {
     setOpenContent(prev => prev.includes(contentKey) ? prev.filter(key => key !== contentKey) : [...prev, contentKey]);
   };
@@ -183,166 +179,157 @@ const Topics = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-4">
+        <Accordion type="single" collapsible className="w-full space-y-4">
           {topics?.map(topic => {
             const subtopics = getSubtopics(topic.id);
             const topicContent = getTopicContent(topic.id);
             
-            return <Card key={topic.id} className="bg-white/10 backdrop-blur-lg border-white/20">
-                <Collapsible open={openTopics.includes(topic.id)} onOpenChange={() => toggleTopic(topic.id)}>
-                  <CollapsibleTrigger asChild>
-                    <CardHeader className="cursor-pointer hover:bg-white/5 transition-colors py-3">
-                      <div className="flex items-center justify-between">
-                        <div className="text-left">
-                          <div className="flex items-center gap-2 mb-1">
-                            <CardTitle className="text-white text-lg">{topic.topic}</CardTitle>
-                            {topic.challengesubject && <Badge variant="outline" className="border-white/30 text-white/70 text-xs">
-                                {topic.challengesubject}
-                              </Badge>}
-                          </div>
-                          {topic.short_summary && <p className="text-white/80 text-sm">{formatDescription(topic.short_summary)}</p>}
-                        </div>
-                        <ChevronDown className={`h-5 w-5 text-white transition-transform duration-200 ${openTopics.includes(topic.id) ? 'rotate-180' : ''}`} />
-                      </div>
-                    </CardHeader>
-                  </CollapsibleTrigger>
-                  
-                  <CollapsibleContent>
-                    <CardContent className="pt-0 pb-3">
-                      <div className="space-y-2">
-                        {/* Show main topic content in dropdown */}
-                        {topicContent.length > 0 && (
-                          <div className="mb-3">
-                            <Collapsible open={openContent.includes(`topic-${topic.id}`)} onOpenChange={() => toggleContent(`topic-${topic.id}`)}>
-                              <CollapsibleTrigger asChild>
-                                <Button variant="ghost" className="w-full justify-between text-white/90 hover:bg-white/5 p-2">
-                                  <span className="text-sm font-medium">Content ({topicContent.length})</span>
-                                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${openContent.includes(`topic-${topic.id}`) ? 'rotate-180' : ''}`} />
-                                </Button>
-                              </CollapsibleTrigger>
-                              <CollapsibleContent>
-                                <div className="space-y-1 mt-2">
-                                  {topicContent.map(content => (
-                                    <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                      <div className="flex items-center justify-between gap-2">
-                                        <div 
-                                          onClick={() => setSelectedContentInfo({ content, contextList: topicContent })} 
-                                          className="flex-grow cursor-pointer"
-                                        >
-                                          <div className="flex items-center gap-2">
-                                            <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                              {getContentIcon(content)}
-                                            </Badge>
-                                            <span className="text-white/90 text-sm">{content.title}</span>
-                                          </div>
-                                          {content.short_description && (
-                                            <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>
-                                          )}
-                                        </div>
-                                        <Button 
-                                          variant="ghost" 
-                                          size="icon"
-                                          className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0"
-                                          onClick={() => handleStartQuiz(content, topicContent)}
-                                        >
-                                          <HelpCircle className="h-4 w-4" />
-                                          <span className="sr-only">Start Quiz for {content.title}</span>
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </CollapsibleContent>
-                            </Collapsible>
-                          </div>
-                        )}
-                        
-                        {/* Show subtopics */}
-                        {subtopics.length > 0 && (
-                          <div className="mt-3">
-                            <h4 className="text-white/90 text-sm font-medium mb-2">Subtopics</h4>
-                            <div className="space-y-2">
-                              {subtopics.map((subtopic, index) => {
-                                const subtopicContent = getTopicContent(subtopic.id);
-                                return (
-                                  <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
-                                    <div onClick={() => handleTopicClick(subtopic.id)} className="block cursor-pointer">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <Badge className="bg-green-500/20 text-green-200 text-xs">
-                                          <BookOpen className="h-3 w-3" />
+            return <AccordionItem value={topic.id} key={topic.id} className="bg-white/10 backdrop-blur-lg border-white/20 rounded-lg overflow-hidden border-b-0">
+                <AccordionTrigger className="hover:bg-white/5 data-[state=open]:bg-white/5 transition-colors p-3 text-white hover:no-underline w-full text-left">
+                  <div className="w-full">
+                    <div className="flex items-center gap-2 mb-1">
+                      <CardTitle className="text-white text-lg">{topic.topic}</CardTitle>
+                      {topic.challengesubject && <Badge variant="outline" className="border-white/30 text-white/70 text-xs">
+                          {topic.challengesubject}
+                        </Badge>}
+                    </div>
+                    {topic.short_summary && <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>}
+                  </div>
+                </AccordionTrigger>
+                
+                <AccordionContent className="px-3 pb-3 pt-0">
+                  <div className="space-y-2">
+                    {/* Show main topic content in dropdown */}
+                    {topicContent.length > 0 && (
+                      <div className="mb-3">
+                        <Collapsible open={openContent.includes(`topic-${topic.id}`)} onOpenChange={() => toggleContent(`topic-${topic.id}`)}>
+                          <CollapsibleTrigger asChild>
+                            <Button variant="ghost" className="w-full justify-between text-white/90 hover:bg-white/5 p-2">
+                              <span className="text-sm font-medium">Content ({topicContent.length})</span>
+                              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${openContent.includes(`topic-${topic.id}`) ? 'rotate-180' : ''}`} />
+                            </Button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="space-y-1 mt-2">
+                              {topicContent.map(content => (
+                                <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div 
+                                      onClick={() => setSelectedContentInfo({ content, contextList: topicContent })} 
+                                      className="flex-grow cursor-pointer"
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                          {getContentIcon(content)}
                                         </Badge>
-                                        <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                                        <span className="text-white/90 text-sm">{content.title}</span>
                                       </div>
-                                      {subtopic.short_summary && (
-                                        <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>
+                                      {content.short_description && (
+                                        <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>
                                       )}
                                     </div>
-                                    
-                                    {/* Show content for this subtopic in dropdown */}
-                                    {subtopicContent.length > 0 && (
-                                      <div className="mt-2 ml-6">
-                                        <Collapsible open={openContent.includes(`subtopic-${subtopic.id}`)} onOpenChange={() => toggleContent(`subtopic-${subtopic.id}`)}>
-                                          <CollapsibleTrigger asChild>
-                                            <Button variant="ghost" className="w-full justify-between text-white/70 hover:bg-white/5 p-1 h-auto">
-                                              <span className="text-xs">Content ({subtopicContent.length})</span>
-                                              <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${openContent.includes(`subtopic-${subtopic.id}`) ? 'rotate-180' : ''}`} />
-                                            </Button>
-                                          </CollapsibleTrigger>
-                                          <CollapsibleContent>
-                                            <div className="space-y-1 mt-1">
-                                              {subtopicContent.map(content => (
-                                                <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <div 
-                                                            onClick={() => setSelectedContentInfo({ content, contextList: subtopicContent })} 
-                                                            className="flex-grow cursor-pointer"
-                                                        >
-                                                            <div className="flex items-center gap-2">
-                                                                <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                                                    {getContentIcon(content)}
-                                                                </Badge>
-                                                                <span className="text-white/90 text-xs">{content.title}</span>
-                                                            </div>
-                                                            {content.short_description && (
-                                                                <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>
-                                                            )}
-                                                        </div>
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon"
-                                                            className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0"
-                                                            onClick={() => handleStartQuiz(content, subtopicContent)}
-                                                        >
-                                                            <HelpCircle className="h-4 w-4" />
-                                                            <span className="sr-only">Start Quiz for {content.title}</span>
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </CollapsibleContent>
-                                        </Collapsible>
-                                      </div>
-                                    )}
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon"
+                                      className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0"
+                                      onClick={() => handleStartQuiz(content, topicContent)}
+                                    >
+                                      <HelpCircle className="h-4 w-4" />
+                                      <span className="sr-only">Start Quiz for {content.title}</span>
+                                    </Button>
                                   </div>
-                                );
-                              })}
+                                </div>
+                              ))}
                             </div>
-                          </div>
-                        )}
-                        
-                        {topicContent.length === 0 && subtopics.length === 0 && (
-                          <div className="text-center py-4">
-                            <p className="text-white/60 text-sm">No content available for this topic</p>
-                          </div>
-                        )}
+                          </CollapsibleContent>
+                        </Collapsible>
                       </div>
-                    </CardContent>
-                  </CollapsibleContent>
-                </Collapsible>
-              </Card>;
+                    )}
+                    
+                    {/* Show subtopics */}
+                    {subtopics.length > 0 && (
+                      <div className="mt-3">
+                        <h4 className="text-white/90 text-sm font-medium mb-2">Subtopics</h4>
+                        <div className="space-y-2">
+                          {subtopics.map((subtopic, index) => {
+                            const subtopicContent = getTopicContent(subtopic.id);
+                            return (
+                              <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
+                                <div onClick={() => handleTopicClick(subtopic.id)} className="block cursor-pointer">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Badge className="bg-green-500/20 text-green-200 text-xs">
+                                      <BookOpen className="h-3 w-3" />
+                                    </Badge>
+                                    <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                                  </div>
+                                  {subtopic.short_summary && (
+                                    <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>
+                                  )}
+                                </div>
+                                
+                                {/* Show content for this subtopic in dropdown */}
+                                {subtopicContent.length > 0 && (
+                                  <div className="mt-2 ml-6">
+                                    <Collapsible open={openContent.includes(`subtopic-${subtopic.id}`)} onOpenChange={() => toggleContent(`subtopic-${subtopic.id}`)}>
+                                      <CollapsibleTrigger asChild>
+                                        <Button variant="ghost" className="w-full justify-between text-white/70 hover:bg-white/5 p-1 h-auto">
+                                          <span className="text-xs">Content ({subtopicContent.length})</span>
+                                          <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${openContent.includes(`subtopic-${subtopic.id}`) ? 'rotate-180' : ''}`} />
+                                        </Button>
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent>
+                                        <div className="space-y-1 mt-1">
+                                          {subtopicContent.map(content => (
+                                            <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div 
+                                                        onClick={() => setSelectedContentInfo({ content, contextList: subtopicContent })} 
+                                                        className="flex-grow cursor-pointer"
+                                                    >
+                                                        <div className="flex items-center gap-2">
+                                                            <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                                                {getContentIcon(content)}
+                                                            </Badge>
+                                                            <span className="text-white/90 text-xs">{content.title}</span>
+                                                        </div>
+                                                        {content.short_description && (
+                                                            <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>
+                                                        )}
+                                                    </div>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon"
+                                                        className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0"
+                                                        onClick={() => handleStartQuiz(content, subtopicContent)}
+                                                    >
+                                                        <HelpCircle className="h-4 w-4" />
+                                                        <span className="sr-only">Start Quiz for {content.title}</span>
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </CollapsibleContent>
+                                    </Collapsible>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {topicContent.length === 0 && subtopics.length === 0 && (
+                      <div className="text-center py-4">
+                        <p className="text-white/60 text-sm">No content available for this topic</p>
+                      </div>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>;
         })}
-        </div>
+        </Accordion>
       </div>
       <ContentPopup
         isOpen={!!selectedContentInfo}
