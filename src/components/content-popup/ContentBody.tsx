@@ -10,14 +10,6 @@ interface ContentBodyProps {
   content: Content;
 }
 
-const formatText = (text: string | null | undefined) => {
-    if (!text) return '';
-    return text.split('\n').map((line, index) => <span key={index}>
-          {line}
-          {index < text.split('\n').length - 1 && <br />}
-        </span>);
-  };
-
 export const ContentBody = ({ content }: ContentBodyProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
 
@@ -55,7 +47,9 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
               <h3 className="font-semibold text-lg">Description</h3>
           </CardHeader>
           <CardContent>
-              <p className="text-sm">{formatText(content.short_description)}</p>
+              <MarkdownRenderer className="text-sm">
+                  {content.short_description}
+              </MarkdownRenderer>
           </CardContent>
       </Card>}
 
@@ -66,12 +60,16 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
           <CardContent>
               {content.translation && <div className="mb-3">
                   <h4 className="font-medium text-sm text-gray-600 mb-1">Translation:</h4>
-                  <p className="text-sm">{formatText(content.translation)}</p>
+                  <MarkdownRenderer className="text-sm">
+                      {content.translation}
+                  </MarkdownRenderer>
               </div>}
               
               {content.vocabulary && <div>
                   <h4 className="font-medium text-sm text-gray-600 mb-1">Vocabulary:</h4>
-                  <p className="text-sm">{formatText(content.vocabulary)}</p>
+                  <MarkdownRenderer className="text-sm">
+                      {content.vocabulary}
+                  </MarkdownRenderer>
               </div>}
           </CardContent>
       </Card>}
