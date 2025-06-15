@@ -12,22 +12,31 @@ export type Database = {
       content: {
         Row: {
           challengesubject: string[] | null
+          classdone: string | null
           contentgroup: string | null
           dk_loc: string | null
           dk_loc_2: string | null
           hanh_dong: string | null
+          header: string | null
           id: string
           imageid: string | null
           information: string | null
-          Order: number | null
+          mindmap: string | null
+          mindmapurl: string | null
+          order: number | null
           parentid: string | null
           prompt: string | null
           second_short_blurb: string | null
           short_blurb: string | null
           short_description: string | null
+          show: string | null
+          showstudent: string | null
+          showtranslation: string | null
+          studentseen: string | null
           title: string
           topicid: number | null
-          Translation: string | null
+          translation: string | null
+          typeoftaking: string | null
           update: string | null
           url: string | null
           videoid: string | null
@@ -36,22 +45,31 @@ export type Database = {
         }
         Insert: {
           challengesubject?: string[] | null
+          classdone?: string | null
           contentgroup?: string | null
           dk_loc?: string | null
           dk_loc_2?: string | null
           hanh_dong?: string | null
+          header?: string | null
           id: string
           imageid?: string | null
           information?: string | null
-          Order?: number | null
+          mindmap?: string | null
+          mindmapurl?: string | null
+          order?: number | null
           parentid?: string | null
           prompt?: string | null
           second_short_blurb?: string | null
           short_blurb?: string | null
           short_description?: string | null
+          show?: string | null
+          showstudent?: string | null
+          showtranslation?: string | null
+          studentseen?: string | null
           title: string
           topicid?: number | null
-          Translation?: string | null
+          translation?: string | null
+          typeoftaking?: string | null
           update?: string | null
           url?: string | null
           videoid?: string | null
@@ -60,22 +78,31 @@ export type Database = {
         }
         Update: {
           challengesubject?: string[] | null
+          classdone?: string | null
           contentgroup?: string | null
           dk_loc?: string | null
           dk_loc_2?: string | null
           hanh_dong?: string | null
+          header?: string | null
           id?: string
           imageid?: string | null
           information?: string | null
-          Order?: number | null
+          mindmap?: string | null
+          mindmapurl?: string | null
+          order?: number | null
           parentid?: string | null
           prompt?: string | null
           second_short_blurb?: string | null
           short_blurb?: string | null
           short_description?: string | null
+          show?: string | null
+          showstudent?: string | null
+          showtranslation?: string | null
+          studentseen?: string | null
           title?: string
           topicid?: number | null
-          Translation?: string | null
+          translation?: string | null
+          typeoftaking?: string | null
           update?: string | null
           url?: string | null
           videoid?: string | null

@@ -2,33 +2,17 @@
 import { Link, useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, BookOpen, Image as ImageIcon } from "lucide-react";
+import { Play, BookOpen, Image as ImageIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-// This would typically come from an API or database
-const contentData = {
-  "1": {
-    id: 1,
-    title: "Variables and Data Types",
-    type: "video",
-    duration: "15 min",
-  },
-  "2": {
-    id: 2,
-    title: "Functions and Scope",
-    type: "video",
-    duration: "20 min",
-  },
-  "3": {
-    id: 3,
-    title: "DOM Manipulation",
-    type: "article",
-  }
-};
+import { useContent } from "@/hooks/useContent";
 
 const ContentSidebar = () => {
   const { id } = useParams<{ id: string }>();
   const currentId = id || "";
+  
+  // Get the topic ID from current content to show related content
+  const topicId = currentId ? parseInt(currentId) : undefined;
+  const { data: contentItems, isLoading, error } = useContent(topicId);
 
   const getContentIcon = (type: string) => {
     switch (type) {
@@ -56,36 +40,78 @@ const ContentSidebar = () => {
     }
   };
 
+  const getContentType = (content: any) => {
+    if (content.videoid || content.videoid2) return 'video';
+    if (content.url) return 'article';
+    return 'content';
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="bg-white/10 backdrop-blur-lg border-white/20 h-fit">
+        <div className="p-4">
+          <h3 className="text-white font-semibold mb-4">Content Directory</h3>
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin text-white" />
+            <span className="ml-2 text-white/80">Loading content...</span>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-white/10 backdrop-blur-lg border-white/20 h-fit">
+        <div className="p-4">
+          <h3 className="text-white font-semibold mb-4">Content Directory</h3>
+          <div className="text-center py-4">
+            <p className="text-white/80">Error loading content</p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="bg-white/10 backdrop-blur-lg border-white/20 h-fit">
       <div className="p-4">
         <h3 className="text-white font-semibold mb-4">Content Directory</h3>
         <div className="space-y-2">
-          {Object.values(contentData).map((content) => (
-            <Link
-              key={content.id}
-              to={`/content/${content.id}`}
-              className={cn(
-                "block p-3 rounded-lg border transition-all hover:bg-white/5",
-                currentId === content.id.toString() 
-                  ? "bg-white/10 border-white/30" 
-                  : "border-white/10"
-              )}
-            >
-              <div className="flex items-start gap-3">
-                <Badge className={`${getContentTypeColor(content.type)} flex items-center gap-1 text-xs`}>
-                  {getContentIcon(content.type)}
-                  <span className="capitalize">{content.type}</span>
-                </Badge>
-              </div>
-              <h4 className="text-white text-sm font-medium mt-2 line-clamp-2">
-                {content.title}
-              </h4>
-              {(content as any).duration && (
-                <p className="text-white/60 text-xs mt-1">{(content as any).duration}</p>
-              )}
-            </Link>
-          ))}
+          {contentItems?.map((content) => {
+            const contentType = getContentType(content);
+            return (
+              <Link
+                key={content.id}
+                to={`/content/${content.id}`}
+                className={cn(
+                  "block p-3 rounded-lg border transition-all hover:bg-white/5",
+                  currentId === content.id.toString() 
+                    ? "bg-white/10 border-white/30" 
+                    : "border-white/10"
+                )}
+              >
+                <div className="flex items-start gap-3">
+                  <Badge className={`${getContentTypeColor(contentType)} flex items-center gap-1 text-xs`}>
+                    {getContentIcon(contentType)}
+                    <span className="capitalize">{contentType}</span>
+                  </Badge>
+                </div>
+                <h4 className="text-white text-sm font-medium mt-2 line-clamp-2">
+                  {content.title}
+                </h4>
+                {content.short_description && (
+                  <p className="text-white/60 text-xs mt-1 line-clamp-2">{content.short_description}</p>
+                )}
+              </Link>
+            );
+          })}
+          
+          {(!contentItems || contentItems.length === 0) && (
+            <div className="text-center py-4">
+              <p className="text-white/60 text-sm">No content available</p>
+            </div>
+          )}
         </div>
       </div>
     </Card>
