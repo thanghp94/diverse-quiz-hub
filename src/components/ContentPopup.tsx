@@ -1,17 +1,13 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ArrowLeft, ArrowRight, HelpCircle, Languages, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Content } from "@/hooks/useContent";
 import { useState, useEffect, useCallback } from "react";
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import QuizView from "./QuizView";
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { ContentPopupView } from "./content-popup/ContentPopupView";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -29,7 +25,6 @@ const ContentPopup = ({
   onContentChange,
   startQuizDirectly = false,
 }: ContentPopupProps) => {
-  const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
   const [quizMode, setQuizMode] = useState(false);
   const [assignmentTry, setAssignmentTry] = useState<Tables<'assignment_student_try'> | null>(null);
   const [questionIds, setQuestionIds] = useState<string[]>([]);
@@ -188,13 +183,7 @@ const ContentPopup = ({
   };
   const videoEmbedUrl = videoData?.videolink ? getYouTubeEmbedUrl(videoData.videolink) : null;
   const video2EmbedUrl = video2Data?.videolink ? getYouTubeEmbedUrl(video2Data.videolink) : null;
-  const formatText = (text: string) => {
-    if (!text) return '';
-    return text.split('\n').map((line, index) => <span key={index}>
-        {line}
-        {index < text.split('\n').length - 1 && <br />}
-      </span>);
-  };
+
   return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { setQuizMode(false); setAssignmentTry(null); } onClose(); }}>
       <DialogContent className={cn("max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-6xl")}>
         {quizMode && questionIds.length > 0 && assignmentTry ? (
@@ -214,122 +203,19 @@ const ContentPopup = ({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="py-4 space-y-6">
-              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg border">
-                <div className="flex items-center gap-2">
-                  <Button onClick={handlePrevious} disabled={currentIndex <= 0} size="sm">
-                    <ArrowLeft className="h-4 w-4" />
-                    Previous
-                  </Button>
-                  <Button onClick={handleNext} disabled={contentList.length === 0 || currentIndex >= contentList.length - 1} size="sm">
-                    Next
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                   {contentList.length > 0 && <div className="text-sm text-gray-500">
-                    {currentIndex + 1} / {contentList.length}
-                  </div>}
-                </div>
-               
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={startQuiz}>
-                    <HelpCircle className="h-4 w-4" />
-                    Quiz
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Languages className="h-4 w-4" />
-                    Translation
-                  </Button>
-                </div>
-              </div>
-
-              <div className="relative w-full h-64 bg-gradient-to-r from-blue-500 via-orange-500 to-red-500 rounded-lg overflow-hidden">
-            {imageUrl ? <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center">
-                <span className="text-white text-xl font-semibold">{content.title}</span>
-              </div>}
-          </div>
-
-          {content.short_blurb && <Card>
-              <CardHeader>
-                <h3 className="font-semibold text-lg">Short Blurb</h3>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">{formatText(content.short_blurb)}</p>
-              </CardContent>
-            </Card>}
-
-          {content.second_short_blurb && <Card>
-                <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
-                  <CollapsibleTrigger className="flex w-full items-center justify-between p-6 text-left rounded-lg hover:bg-muted/50">
-                    <h3 className="font-semibold text-lg">Second Short Blurb</h3>
-                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isSecondBlurbOpen ? "rotate-180" : ""}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <CardContent className="pt-0 pb-6 px-6">
-                      <p className="text-sm">{formatText(content.second_short_blurb)}</p>
-                    </CardContent>
-                  </CollapsibleContent>
-                </Collapsible>
-              </Card>}
-          
-          {content.short_description && <Card>
-              <CardHeader>
-                <h3 className="font-semibold text-lg">Description</h3>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">{formatText(content.short_description)}</p>
-              </CardContent>
-            </Card>}
-
-          {(videoEmbedUrl || video2EmbedUrl) && <Card>
-              <CardHeader>
-                <h3 className="font-semibold text-lg">Videos</h3>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {videoEmbedUrl && <div>
-                      {videoData?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{videoData.video_name}</h4>}
-                      <div className="aspect-video">
-                        <iframe className="w-full h-full rounded-lg" src={videoEmbedUrl} title={videoData?.video_name || 'YouTube video player'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                      </div>
-                    </div>}
-                  {video2EmbedUrl && <div>
-                      {video2Data?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{video2Data.video_name}</h4>}
-                      <div className="aspect-video">
-                        <iframe className="w-full h-full rounded-lg" src={video2EmbedUrl} title={video2Data?.video_name || 'YouTube video player 2'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                      </div>
-                    </div>}
-                </div>
-              </CardContent>
-            </Card>}
-
-          {(content.translation || content.vocabulary) && <Card>
-              <CardHeader>
-                <h3 className="font-semibold text-lg">Language Support</h3>
-              </CardHeader>
-              <CardContent>
-                {content.translation && <div className="mb-3">
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">Translation:</h4>
-                    <p className="text-sm">{formatText(content.translation)}</p>
-                  </div>}
-                
-                {content.vocabulary && <div>
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">Vocabulary:</h4>
-                    <p className="text-sm">{formatText(content.vocabulary)}</p>
-                  </div>}
-              </CardContent>
-            </Card>}
-
-          {content.url && <Card>
-              <CardHeader>
-                <h3 className="font-semibold text-lg">External Link</h3>
-              </CardHeader>
-              <CardContent>
-                <a href={content.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline break-all">
-                  {content.url}
-                </a>
-              </CardContent>
-            </Card>}
-            </div>
+            <ContentPopupView
+                content={content}
+                contentListLength={contentList.length}
+                currentIndex={currentIndex}
+                handlePrevious={handlePrevious}
+                handleNext={handleNext}
+                startQuiz={startQuiz}
+                imageUrl={imageUrl}
+                videoEmbedUrl={videoEmbedUrl}
+                video2EmbedUrl={video2EmbedUrl}
+                videoData={videoData}
+                video2Data={video2Data}
+            />
           </>
         )}
       </DialogContent>

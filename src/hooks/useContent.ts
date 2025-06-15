@@ -31,6 +31,7 @@ export interface Content {
   url?: string;
   header?: string;
   update?: string;
+  imagelink?: string;
 }
 
 export const useContent = (topicId?: string) => {
