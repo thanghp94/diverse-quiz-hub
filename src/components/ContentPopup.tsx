@@ -166,6 +166,9 @@ const ContentPopup = ({
     enabled: !!content?.videoid2
   });
   if (!content) return null;
+
+  const imageUrl = content.imagelink || imageData?.imagelink;
+
   const currentIndex = contentList.findIndex(item => item.id === content.id);
   const handlePrevious = () => {
     if (currentIndex > 0) {
@@ -240,7 +243,7 @@ const ContentPopup = ({
               </div>
 
               <div className="relative w-full h-64 bg-gradient-to-r from-blue-500 via-orange-500 to-red-500 rounded-lg overflow-hidden">
-            {imageData?.imagelink ? <img src={imageData.imagelink} alt={content.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center">
+            {imageUrl ? <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center">
                 <span className="text-white text-xl font-semibold">{content.title}</span>
               </div>}
           </div>

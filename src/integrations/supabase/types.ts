@@ -463,22 +463,7 @@ export type Database = {
           student_id?: string | null
           update?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "student_try_content_contentid_fkey"
-            columns: ["contentid"]
-            isOneToOne: false
-            referencedRelation: "content"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_try_content_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       topic: {
         Row: {
