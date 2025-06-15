@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -176,11 +175,6 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
                     description: "There was an issue saving your answer. Please try again.",
                     variant: "destructive",
                 });
-            } else {
-                 toast({
-                    title: "Answer Saved",
-                    description: "Your progress has been saved.",
-                });
             }
         } catch (err) {
             console.error("Unexpected error saving student try:", err);
@@ -289,4 +283,3 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
 };
 
 export default QuizView;
-
