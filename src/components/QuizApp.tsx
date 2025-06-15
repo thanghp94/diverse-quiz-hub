@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import Matching from "./quiz/Matching";
 import FillInBlank from "./quiz/FillInBlank";
 import Categorize from "./quiz/Categorize";
 import QuizResults from "./quiz/QuizResults";
-import { Play, Trophy, Star } from "lucide-react";
+import { Play, Trophy, Star, BookOpen } from "lucide-react";
 
 export interface Question {
   id: number;
@@ -198,6 +198,17 @@ const QuizApp = () => {
           <p className="text-xl text-white/80 mb-8">
             Challenge yourself with different types of questions and test your knowledge!
           </p>
+          <div className="flex gap-4 justify-center mb-8">
+            <Link to="/topics">
+              <Button 
+                variant="outline"
+                className="border-white/30 text-white hover:bg-white/10"
+              >
+                <BookOpen className="mr-2" size={16} />
+                Browse Learning Topics
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
