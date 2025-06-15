@@ -50,21 +50,27 @@ export const ContentPopupView = ({
         translation={content.translation}
       />
 
-      <MediaDisplay
-        imageUrl={imageUrl}
-        isImageLoading={isImageLoading}
-        title={content.title}
-        imageid={content.imageid}
-      />
-      
-      <VideoPlayer 
-        videoEmbedUrl={videoEmbedUrl}
-        video2EmbedUrl={video2EmbedUrl}
-        videoData={videoData}
-        video2Data={video2Data}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+        <div className="space-y-6">
+          <MediaDisplay
+            imageUrl={imageUrl}
+            isImageLoading={isImageLoading}
+            title={content.title}
+            imageid={content.imageid}
+          />
+          
+          <VideoPlayer 
+            videoEmbedUrl={videoEmbedUrl}
+            video2EmbedUrl={video2EmbedUrl}
+            videoData={videoData}
+            video2Data={video2Data}
+          />
+        </div>
 
-      <ContentBody content={content} />
+        <div className="space-y-4 max-h-[calc(90vh-200px)] overflow-y-auto pr-4">
+          <ContentBody content={content} />
+        </div>
+      </div>
     </div>
   );
 };

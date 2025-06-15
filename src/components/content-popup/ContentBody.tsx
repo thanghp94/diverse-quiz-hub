@@ -13,15 +13,20 @@ interface ContentBodyProps {
 export const ContentBody = ({ content }: ContentBodyProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
 
+  const fullDescription = [
+    content.short_blurb,
+    content.short_description
+  ].filter(Boolean).join('\n\n');
+
   return (
     <>
-      {content.short_blurb && <Card>
+      {fullDescription && <Card>
         <CardHeader>
-            <h3 className="font-semibold text-lg">Short Blurb</h3>
+            <h3 className="font-semibold text-lg">Description</h3>
         </CardHeader>
         <CardContent>
             <MarkdownRenderer className="text-sm">
-                {content.short_blurb}
+                {fullDescription}
             </MarkdownRenderer>
         </CardContent>
       </Card>}
@@ -29,7 +34,7 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
       {content.second_short_blurb && <Card>
         <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
             <CollapsibleTrigger className="flex w-full items-center justify-between p-6 text-left rounded-lg hover:bg-muted/50">
-                <h3 className="font-semibold text-lg">Second Short Blurb</h3>
+                <h3 className="font-semibold text-lg">Additional Details</h3>
                 <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isSecondBlurbOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -40,17 +45,6 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
                 </CardContent>
             </CollapsibleContent>
         </Collapsible>
-      </Card>}
-
-      {content.short_description && <Card>
-          <CardHeader>
-              <h3 className="font-semibold text-lg">Description</h3>
-          </CardHeader>
-          <CardContent>
-              <MarkdownRenderer className="text-sm">
-                  {content.short_description}
-              </MarkdownRenderer>
-          </CardContent>
       </Card>}
 
       {(content.translation || content.vocabulary) && <Card>
