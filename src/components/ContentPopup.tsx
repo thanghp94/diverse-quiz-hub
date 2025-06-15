@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Content } from "@/hooks/useContent";
 import { useEffect } from "react";
@@ -15,6 +14,7 @@ interface ContentPopupProps {
   contentList: Content[];
   onContentChange: (newContent: Content) => void;
   startQuizDirectly?: boolean;
+  imageUrl: string | null;
 }
 const ContentPopup = ({
   isOpen,
@@ -23,6 +23,7 @@ const ContentPopup = ({
   contentList,
   onContentChange,
   startQuizDirectly = false,
+  imageUrl,
 }: ContentPopupProps) => {
   const {
     quizMode,
@@ -37,11 +38,8 @@ const ContentPopup = ({
   const {
     videoData,
     video2Data,
-    imageUrl,
     videoEmbedUrl,
     video2EmbedUrl,
-    isImageLoading,
-    isImageError,
   } = useContentMedia(content);
 
   useEffect(() => {
@@ -91,8 +89,8 @@ const ContentPopup = ({
                 handleNext={handleNext}
                 startQuiz={startQuiz}
                 imageUrl={imageUrl}
-                isImageLoading={isImageLoading}
-                isImageError={isImageError}
+                isImageLoading={false}
+                isImageError={!imageUrl && !!content?.imageid}
                 videoEmbedUrl={videoEmbedUrl}
                 video2EmbedUrl={video2EmbedUrl}
                 videoData={videoData}

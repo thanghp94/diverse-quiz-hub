@@ -13,28 +13,6 @@ const getYouTubeEmbedUrl = (url: string | null | undefined): string | null => {
 export const useContentMedia = (content: Content | null) => {
     console.log('useContentMedia hook triggered. Content:', content);
     
-    // Fetch related image data
-    const { data: imageData, isLoading: isImageLoading, isError: isImageError } = useQuery({
-        queryKey: ['image', content?.imageid],
-        queryFn: async () => {
-            if (!content?.imageid) {
-                console.log('No imageid on content object. Skipping image fetch.');
-                return null;
-            }
-            console.log(`Fetching image with ID: ${content.imageid}`);
-            const { data, error } = await supabase.from('image').select('*').eq('id', content.imageid).maybeSingle();
-            
-            if (error) {
-                console.error('Error fetching image from Supabase:', error);
-                throw error;
-            }
-
-            console.log('Successfully fetched image data:', data);
-            return data;
-        },
-        enabled: !!content?.imageid
-    });
-
     // Fetch related video data
     const { data: videoData } = useQuery({
         queryKey: ['video', content?.videoid],
@@ -59,11 +37,8 @@ export const useContentMedia = (content: Content | null) => {
         enabled: !!content?.videoid2
     });
 
-    const imageUrl = content?.imagelink || imageData?.imagelink;
-    console.log(`Determined imageUrl: ${imageUrl} (from content.imagelink: ${content?.imagelink}, or imageData.imagelink: ${imageData?.imagelink})`);
-
     const videoEmbedUrl = getYouTubeEmbedUrl(videoData?.videolink);
     const video2EmbedUrl = getYouTubeEmbedUrl(video2Data?.videolink);
 
-    return { videoData, video2Data, imageUrl, videoEmbedUrl, video2EmbedUrl, isImageLoading, isImageError };
+    return { videoData, video2Data, videoEmbedUrl, video2EmbedUrl };
 };

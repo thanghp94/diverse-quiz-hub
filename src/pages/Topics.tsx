@@ -28,6 +28,7 @@ const Topics = () => {
   const [selectedContentInfo, setSelectedContentInfo] = useState<{
     content: Content;
     contextList: Content[];
+    imageUrl: string | null;
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
@@ -109,23 +110,35 @@ const Topics = () => {
   const toggleContent = (contentKey: string) => {
     setOpenContent(prev => prev.includes(contentKey) ? prev.filter(key => key !== contentKey) : [...prev, contentKey]);
   };
-  const handleTopicClick = (topicId: string) => {
+  const handleSubtopicClick = (topicId: string) => {
     if (!allContent) return;
-    const contentItem = allContent.find(c => c.id === topicId);
-    if (contentItem) {
-      const subtopicContentList = getTopicContent(topicId);
+    const topicContent = getTopicContent(topicId);
+    const firstContent = topicContent[0];
+    if (firstContent) {
+      const imageUrl = allImages?.find(img => img.id === firstContent.imageid)?.imagelink || firstContent.imagelink || null;
       setSelectedContentInfo({
-        content: contentItem,
-        contextList: subtopicContentList
+        content: firstContent,
+        contextList: topicContent,
+        imageUrl,
       });
     } else {
       console.warn(`Content for topic ID ${topicId} not found`);
     }
   };
+  const handleContentClick = (info: { content: Content; contextList: Content[] }) => {
+    const imageUrl = allImages?.find(img => img.id === info.content.imageid)?.imagelink || info.content.imagelink || null;
+    setSelectedContentInfo({
+        content: info.content,
+        contextList: info.contextList,
+        imageUrl,
+    });
+  };
   const handleStartQuiz = (content: Content, contextList: Content[]) => {
+    const imageUrl = allImages?.find(img => img.id === content.imageid)?.imagelink || content.imagelink || null;
     setSelectedContentInfo({
       content,
-      contextList
+      contextList,
+      imageUrl,
     });
     setQuizContentId(content.id);
   };
@@ -197,8 +210,8 @@ const Topics = () => {
                 openContent={openContent}
                 onToggleTopic={handleToggleTopic}
                 onToggleContent={toggleContent}
-                onContentClick={setSelectedContentInfo}
-                onSubtopicClick={handleTopicClick}
+                onContentClick={handleContentClick}
+                onSubtopicClick={handleSubtopicClick}
                 onStartQuiz={handleStartQuiz}
                 getTopicContent={getTopicContent}
               />
@@ -211,9 +224,11 @@ const Topics = () => {
         onClose={closePopup}
         content={selectedContentInfo?.content ?? null}
         contentList={selectedContentInfo?.contextList ?? []}
+        imageUrl={selectedContentInfo?.imageUrl ?? null}
         onContentChange={newContent => {
           if (selectedContentInfo) {
-            setSelectedContentInfo({ ...selectedContentInfo, content: newContent });
+            const newImageUrl = allImages?.find(img => img.id === newContent.imageid)?.imagelink || newContent.imagelink || null;
+            setSelectedContentInfo({ ...selectedContentInfo, content: newContent, imageUrl: newImageUrl });
           }
         }}
         startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
