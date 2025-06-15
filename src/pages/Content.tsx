@@ -1,4 +1,3 @@
-
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { ArrowLeft, Play, BookOpen, Image as ImageIcon, Trophy } from "lucide-re
 import ContentSidebar from "@/components/ContentSidebar";
 import ContentPopup from "@/components/ContentPopup";
 import { useContentById } from "@/hooks/useContent";
+import { useContentImage } from "@/hooks/useContentImage";
 import { useState } from "react";
 
 const Content = () => {
@@ -14,6 +14,7 @@ const Content = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   
   const { data: content, isLoading, error } = useContentById(id || "");
+  const { data: imageUrl, isLoading: isImageLoading } = useContentImage(content?.imageid);
 
   if (isLoading) {
     return (
@@ -177,6 +178,7 @@ const Content = () => {
         content={content}
         contentList={content ? [content] : []}
         onContentChange={() => {}}
+        imageUrl={imageUrl}
       />
     </div>
   );
