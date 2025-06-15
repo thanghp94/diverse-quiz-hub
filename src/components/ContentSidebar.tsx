@@ -1,17 +1,20 @@
+
 import { Link, useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Play, BookOpen, Image as ImageIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useContent } from "@/hooks/useContent";
+import { useContent, useContentById } from "@/hooks/useContent";
 
 const ContentSidebar = () => {
   const { id } = useParams<{ id: string }>();
-  const currentId = id || "";
+  const currentContentId = id || "";
   
-  // Get the topic ID from current content to show related content
-  const topicId = currentId ? currentId : undefined;
-  const { data: contentItems, isLoading, error } = useContent(topicId);
+  // First get the current content to find its topic ID
+  const { data: currentContent } = useContentById(currentContentId);
+  
+  // Then get all content for that topic
+  const { data: contentItems, isLoading, error } = useContent(currentContent?.topicid);
 
   const getContentIcon = (type: string) => {
     switch (type) {
@@ -45,7 +48,7 @@ const ContentSidebar = () => {
     return 'content';
   };
 
-  if (isLoading) {
+  if (isLoading || !currentContent) {
     return (
       <Card className="bg-white/10 backdrop-blur-lg border-white/20 h-fit">
         <div className="p-4">
@@ -77,7 +80,7 @@ const ContentSidebar = () => {
       <div className="p-4">
         <h3 className="text-white font-semibold mb-4">Content Directory</h3>
         <div className="space-y-2">
-          {contentItems?.map((content) => {
+          {contentItems && contentItems.length > 0 ? contentItems.map((content) => {
             const contentType = getContentType(content);
             return (
               <Link
@@ -85,7 +88,7 @@ const ContentSidebar = () => {
                 to={`/content/${content.id}`}
                 className={cn(
                   "block p-3 rounded-lg border transition-all hover:bg-white/5",
-                  currentId === content.id.toString() 
+                  currentContentId === content.id.toString() 
                     ? "bg-white/10 border-white/30" 
                     : "border-white/10"
                 )}
@@ -104,11 +107,9 @@ const ContentSidebar = () => {
                 )}
               </Link>
             );
-          })}
-          
-          {(!contentItems || contentItems.length === 0) && (
+          }) : (
             <div className="text-center py-4">
-              <p className="text-white/60 text-sm">No content available</p>
+              <p className="text-white/60 text-sm">No related content available</p>
             </div>
           )}
         </div>
