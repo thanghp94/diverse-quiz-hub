@@ -76,7 +76,6 @@ export type Database = {
         Row: {
           assignmentid: string | null
           contentID: string | null
-          created_at: string
           end_time: string | null
           hocsinh_id: string | null
           id: number
@@ -88,7 +87,6 @@ export type Database = {
         Insert: {
           assignmentid?: string | null
           contentID?: string | null
-          created_at?: string
           end_time?: string | null
           hocsinh_id?: string | null
           id?: number
@@ -100,7 +98,6 @@ export type Database = {
         Update: {
           assignmentid?: string | null
           contentID?: string | null
-          created_at?: string
           end_time?: string | null
           hocsinh_id?: string | null
           id?: number

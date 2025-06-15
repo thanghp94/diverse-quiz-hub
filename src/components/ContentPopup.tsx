@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import QuizView from "./QuizView";
 import { Tables } from "@/integrations/supabase/types";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const ContentPopup = ({
   const [quizMode, setQuizMode] = useState(false);
   const [assignmentTry, setAssignmentTry] = useState<Tables<'assignment_student_try'> | null>(null);
   const [questionIds, setQuestionIds] = useState<string[]>([]);
+  const { toast } = useToast();
 
   const startQuiz = async () => {
     if (!content) return;
@@ -41,13 +43,20 @@ const ContentPopup = ({
 
     if (questionsError) {
         console.error("Error fetching questions:", questionsError.message);
-        // TODO: Add a toast notification for the user
+        toast({
+            title: "Error Fetching Quiz",
+            description: "Could not fetch questions for the quiz. Please try again.",
+            variant: "destructive",
+        });
         return;
     }
 
     if (!questions || questions.length === 0) {
         console.log("No questions available for this content.");
-        // TODO: Add a toast notification for the user
+        toast({
+            title: "No Quiz Available",
+            description: "There are no questions for this content yet. Check back later!",
+        });
         return;
     }
 
@@ -75,7 +84,11 @@ const ContentPopup = ({
 
     if (insertError) {
         console.error("Error starting quiz:", insertError.message);
-        // TODO: Add a toast notification for the user
+        toast({
+            title: "Error Starting Quiz",
+            description: "Could not start the quiz due to a server error. Please try again.",
+            variant: "destructive",
+        });
         return;
     }
 

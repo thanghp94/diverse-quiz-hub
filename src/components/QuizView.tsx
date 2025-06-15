@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Check, X } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface QuizQuestion {
     id: string;
@@ -29,6 +30,7 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
         const fetchQuestion = async () => {
@@ -50,6 +52,11 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
 
             if (error) {
                 console.error("Error fetching question", error);
+                toast({
+                    title: "Error",
+                    description: "Failed to load the next question.",
+                    variant: "destructive"
+                });
                 setCurrentQuestion(null);
             } else {
                 setCurrentQuestion(data as QuizQuestion);
@@ -58,7 +65,7 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
         };
 
         fetchQuestion();
-    }, [currentQuestionIndex, questionIds, onQuizFinish]);
+    }, [currentQuestionIndex, questionIds, onQuizFinish, toast]);
     
     const handleAnswerSelect = (choiceIndex: number) => {
         if (showFeedback || !currentQuestion) return;
@@ -121,12 +128,12 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
 
                     {showFeedback && (
                          <Alert className={`mt-6 ${isCorrect ? 'border-green-500 text-green-800' : 'border-red-500 text-red-800'}`}>
-                            {isCorrect ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
+                            {isCorrect ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
                              <AlertTitle className="font-bold">
-                                {selectedAnswer} {isCorrect ? '✅' : '❌'}
+                                {isCorrect ? 'Correct!' : 'Incorrect'}
                              </AlertTitle>
                              <AlertDescription className="pt-2">
-                                 {currentQuestion.explanation}
+                                 {currentQuestion.explanation || (isCorrect ? 'Excellent!' : "That's not quite right, but don't give up!")}
                              </AlertDescription>
                          </Alert>
                     )}
