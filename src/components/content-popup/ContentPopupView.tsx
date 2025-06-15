@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -7,13 +8,15 @@ import { Content } from "@/hooks/useContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
 interface ContentPopupViewProps {
   content: Content;
   contentListLength: number;
   currentIndex: number;
   handlePrevious: () => void;
   handleNext: () => void;
-  startQuiz: () => void;
+  startQuiz: (level?: 'Easy' | 'Hard') => void;
   imageUrl: string | null | undefined;
   isImageLoading: boolean;
   videoEmbedUrl: string | null;
@@ -70,10 +73,20 @@ export const ContentPopupView = ({
                 </div>
             
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={startQuiz}>
-                        <HelpCircle className="h-4 w-4" />
-                        Quiz
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <HelpCircle className="h-4 w-4" />
+                                Quiz
+                                <ChevronDown className="h-4 w-4 ml-1" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => startQuiz()}>All Questions</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => startQuiz('Easy')}>Easy Quiz</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => startQuiz('Hard')}>Hard Quiz</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                     {/* Translation Button as a Popover */}
                     <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
                         <PopoverTrigger asChild>

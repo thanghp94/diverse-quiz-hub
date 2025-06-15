@@ -17,14 +17,20 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
   const [questionIds, setQuestionIds] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const startQuiz = useCallback(async () => {
+  const startQuiz = useCallback(async (level?: 'Easy' | 'Hard') => {
     if (!content) return;
 
     // Fetch questions for this content
-    const { data: questions, error: questionsError } = await supabase
+    let query = supabase
         .from('question')
         .select('id')
         .eq('contentid', content.id);
+
+    if (level) {
+        query = query.eq('questionlevel', level);
+    }
+
+    const { data: questions, error: questionsError } = await query;
 
     if (questionsError) {
         console.error("Error fetching questions:", questionsError.message);
@@ -38,10 +44,10 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
     }
 
     if (!questions || questions.length === 0) {
-        console.log("No questions available for this content.");
+        console.log("No questions available for this content.", level ? `Level: ${level}` : '');
         toast({
             title: "No Quiz Available",
-            description: "There are no questions for this content yet. Check back later!",
+            description: `There are no ${level ? level.toLowerCase() + ' ' : ''}questions for this content yet. Check back later!`,
         });
         if (startQuizDirectly) onClose();
         return;
