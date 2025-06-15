@@ -11,6 +11,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import QuizView from "./QuizView";
 import { Tables } from "@/integrations/supabase/types";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -191,12 +192,13 @@ const ContentPopup = ({
         {index < text.split('\n').length - 1 && <br />}
       </span>);
   };
-  return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { setQuizMode(false); } onClose(); }}>
-      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto">
-        {quizMode && questionIds.length > 0 ? (
+  return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { setQuizMode(false); setAssignmentTry(null); } onClose(); }}>
+      <DialogContent className={cn("max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-6xl")}>
+        {quizMode && questionIds.length > 0 && assignmentTry ? (
           <QuizView 
             questionIds={questionIds} 
             onQuizFinish={handleQuizFinish}
+            assignmentStudentTryId={assignmentTry.id.toString()}
           />
         ) : (
           <>

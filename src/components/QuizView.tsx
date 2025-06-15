@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -15,20 +16,33 @@ interface QuizQuestion {
     cau_tra_loi_4: string | null;
     correct_choice: string;
     explanation: string;
+    contentid: string | null;
+}
+
+interface LinkedContent {
+    title: string;
+    short_description: string | null;
 }
 
 interface QuizViewProps {
     questionIds: string[];
     onQuizFinish: () => void;
+    assignmentStudentTryId: string;
 }
 
-const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
+const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizViewProps) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [showFeedback, setShowFeedback] = useState(false);
+    const [timeStart, setTimeStart] = useState<string | null>(null);
+    const [showContent, setShowContent] = useState(false);
+    const [didShowContent, setDidShowContent] = useState(false);
+    const [linkedContent, setLinkedContent] = useState<LinkedContent | null>(null);
+    const [isContentLoading, setIsContentLoading] = useState(false);
+    const [isContentLoaded, setIsContentLoaded] = useState(false);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -45,6 +59,11 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
             setShowFeedback(false);
             setSelectedAnswer(null);
             setIsCorrect(null);
+            setTimeStart(null);
+            setShowContent(false);
+            setDidShowContent(false);
+            setLinkedContent(null);
+            setIsContentLoaded(false);
             
             const questionId = questionIds[currentQuestionIndex];
             const { data, error } = await supabase
@@ -63,6 +82,7 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
                 setCurrentQuestion(null);
             } else {
                 setCurrentQuestion(data as QuizQuestion);
+                setTimeStart(new Date().toTimeString().slice(0, 8));
             }
             setIsLoading(false);
         };
@@ -81,8 +101,49 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
         setShowFeedback(true);
     };
 
+    const handleShowContent = async () => {
+        if (showContent) {
+            setShowContent(false);
+            return;
+        }
+
+        if (isContentLoaded) {
+            setShowContent(true);
+            return;
+        }
+
+        if (!currentQuestion?.contentid) {
+            toast({ title: "No content linked", description: "This question does not have associated content to show." });
+            return;
+        }
+
+        setIsContentLoading(true);
+        const { data, error } = await supabase
+            .from('content')
+            .select('title, short_description')
+            .eq('id', currentQuestion.contentid)
+            .single();
+        
+        setIsContentLoading(false);
+
+        if (error) {
+            console.error("Error fetching content:", error);
+            toast({
+                title: "Error",
+                description: "Could not load content for this question.",
+                variant: "destructive",
+            });
+        } else if (data) {
+            setLinkedContent(data as LinkedContent);
+            setIsContentLoaded(true);
+            setShowContent(true);
+            setDidShowContent(true);
+        }
+    };
+
     const handleNext = async () => {
         if (!currentQuestion || selectedAnswer === null) return;
+        const timeEnd = new Date().toTimeString().slice(0, 8);
 
         try {
             const { error } = await supabase.from('student_try').insert({
@@ -90,7 +151,12 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
                 question_id: currentQuestion.id,
                 answer_choice: selectedAnswer,
                 correct_answer: currentQuestion.correct_choice,
-                quiz_result: isCorrect ? 'correct' : 'incorrect',
+                quiz_result: isCorrect ? '✅' : '❌',
+                assignment_student_try_id: assignmentStudentTryId,
+                time_start: timeStart,
+                time_end: timeEnd,
+                currentindex: currentQuestionIndex,
+                showcontent: didShowContent,
             });
 
             if (error) {
@@ -160,9 +226,26 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
                         })}
                     </div>
 
+                    <div className="mt-6 flex justify-start">
+                        <Button variant="outline" onClick={handleShowContent} disabled={isContentLoading || showFeedback}>
+                            {isContentLoading ? 'Loading Content...' : (showContent ? 'Hide Content' : 'Show Content')}
+                        </Button>
+                    </div>
+
+                    {showContent && linkedContent && (
+                        <Card className="mt-4 bg-gray-50 border-gray-200">
+                            <CardHeader>
+                                <CardTitle className="text-xl">{linkedContent.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="text-gray-700">{linkedContent.short_description || "No description available."}</p>
+                            </CardContent>
+                        </Card>
+                    )}
+
                     {showFeedback && (
                          <Alert className={`mt-6 ${isCorrect ? 'border-green-500 text-green-800' : 'border-red-500 text-red-800'}`}>
-                            {isCorrect ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
+                            {isCorrect ? <Check className="h-5 w-5 text-green-600" /> : <X className="h-5 w-5 text-red-600" />}
                              <AlertTitle className="font-bold">
                                 {isCorrect ? 'Correct!' : 'Incorrect'}
                              </AlertTitle>
