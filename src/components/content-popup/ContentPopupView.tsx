@@ -7,56 +7,53 @@ import { Content } from "@/hooks/useContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-
 interface ContentPopupViewProps {
-    content: Content;
-    contentListLength: number;
-    currentIndex: number;
-    handlePrevious: () => void;
-    handleNext: () => void;
-    startQuiz: () => void;
-    imageUrl: string | null | undefined;
-    isImageLoading: boolean;
-    videoEmbedUrl: string | null;
-    video2EmbedUrl: string | null;
-    videoData: { video_name?: string | null } | null;
-    video2Data: { video_name?: string | null } | null;
+  content: Content;
+  contentListLength: number;
+  currentIndex: number;
+  handlePrevious: () => void;
+  handleNext: () => void;
+  startQuiz: () => void;
+  imageUrl: string | null | undefined;
+  isImageLoading: boolean;
+  videoEmbedUrl: string | null;
+  video2EmbedUrl: string | null;
+  videoData: {
+    video_name?: string | null;
+  } | null;
+  video2Data: {
+    video_name?: string | null;
+  } | null;
 }
-
 const formatText = (text: string | null | undefined) => {
-    if (!text) return '';
-    return text.split('\n').map((line, index) => <span key={index}>
+  if (!text) return '';
+  return text.split('\n').map((line, index) => <span key={index}>
         {line}
         {index < text.split('\n').length - 1 && <br />}
       </span>);
 };
-
 export const ContentPopupView = ({
-    content,
-    contentListLength,
-    currentIndex,
-    handlePrevious,
-    handleNext,
-    startQuiz,
-    imageUrl,
-    isImageLoading,
-    videoEmbedUrl,
-    video2EmbedUrl,
-    videoData,
-    video2Data,
+  content,
+  contentListLength,
+  currentIndex,
+  handlePrevious,
+  handleNext,
+  startQuiz,
+  imageUrl,
+  isImageLoading,
+  videoEmbedUrl,
+  video2EmbedUrl,
+  videoData,
+  video2Data
 }: ContentPopupViewProps) => {
-    const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
-    const [imageLoadError, setImageLoadError] = useState(false);
-    const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
-
-    useEffect(() => {
-        setImageLoadError(false);
-    }, [imageUrl]);
-
-    console.log('ContentPopupView debug - content.imageid:', content.imageid, 'content.imagelink:', content.imagelink, 'final imageUrl:', imageUrl, 'isImageLoading:', isImageLoading);
-
-    return (
-        <div className="py-4 space-y-6">
+  const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
+  useEffect(() => {
+    setImageLoadError(false);
+  }, [imageUrl]);
+  console.log('ContentPopupView debug - content.imageid:', content.imageid, 'content.imagelink:', content.imagelink, 'final imageUrl:', imageUrl, 'isImageLoading:', isImageLoading);
+  return <div className="py-4 space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg border">
                 <div className="flex items-center gap-2">
                     <Button onClick={handlePrevious} disabled={currentIndex <= 0} size="sm">
@@ -91,13 +88,9 @@ export const ContentPopupView = ({
                                     <h3 className="font-semibold text-lg">Translation</h3>
                                 </CardHeader>
                                 <CardContent className="pt-0">
-                                    {content.translation ? (
-                                        <MarkdownRenderer className="text-sm">
+                                    {content.translation ? <MarkdownRenderer className="text-sm">
                                             {content.translation}
-                                        </MarkdownRenderer>
-                                    ) : (
-                                        <div className="text-gray-500 text-sm">No translation available for this content.</div>
-                                    )}
+                                        </MarkdownRenderer> : <div className="text-gray-500 text-sm">No translation available for this content.</div>}
                                 </CardContent>
                             </Card>
                         </PopoverContent>
@@ -106,47 +99,31 @@ export const ContentPopupView = ({
             </div>
 
             <div className="relative w-full h-64 bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center">
-                {isImageLoading ? (
-                    <Skeleton className="w-full h-full" />
-                ) : imageLoadError ? (
-                    <div className="text-red-500 flex flex-col items-center">
+                {isImageLoading ? <Skeleton className="w-full h-full" /> : imageLoadError ? <div className="text-red-500 flex flex-col items-center">
                         <ImageOff className="h-12 w-12 mb-2" />
                         <span className="text-lg font-semibold">Error loading image</span>
                         <span className="text-sm mt-1">URL: {imageUrl}</span>
-                    </div>
-                ) : imageUrl ? (
-                    <img 
-                        src={imageUrl} 
-                        alt={content.title} 
-                        className="w-full h-full object-cover" 
-                        onError={() => {
-                            console.error('Image failed to load:', imageUrl);
-                            setImageLoadError(true);
-                        }}
-                        onLoad={() => {
-                            console.log('Image loaded successfully:', imageUrl);
-                        }}
-                    />
-                ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center text-center p-4">
+                    </div> : imageUrl ? <img src={imageUrl} alt={content.title} className="w-full h-full object-cover" onError={() => {
+        console.error('Image failed to load:', imageUrl);
+        setImageLoadError(true);
+      }} onLoad={() => {
+        console.log('Image loaded successfully:', imageUrl);
+      }} /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center text-center p-4">
                         <div>
                             <span className="text-white text-xl font-semibold">{content.title}</span>
                             <div className="text-white/70 text-sm mt-2">
                                 No image available (imageid: {content.imageid || 'none'})
                             </div>
                         </div>
-                    </div>
-                )}
+                    </div>}
             </div>
 
             {(videoEmbedUrl || video2EmbedUrl) && <Card>
-                <CardHeader>
-                    <h3 className="font-semibold text-lg">Videos</h3>
-                </CardHeader>
+                
                 <CardContent>
                     <div className="space-y-4">
                         {videoEmbedUrl && <div>
-                            {videoData?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{videoData.video_name}</h4>}
+                            {videoData?.video_name}
                             <div className="aspect-video">
                                 <iframe className="w-full h-full rounded-lg" src={videoEmbedUrl} title={videoData?.video_name || 'YouTube video player'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
                             </div>
@@ -162,8 +139,7 @@ export const ContentPopupView = ({
             </Card>}
 
             {/* Short Blurb using MarkdownRenderer */}
-            {content.short_blurb && (
-                <Card>
+            {content.short_blurb && <Card>
                     <CardHeader>
                         <h3 className="font-semibold text-lg">Short Blurb</h3>
                     </CardHeader>
@@ -172,12 +148,10 @@ export const ContentPopupView = ({
                             {content.short_blurb}
                         </MarkdownRenderer>
                     </CardContent>
-                </Card>
-            )}
+                </Card>}
 
             {/* Second Short Blurb using MarkdownRenderer */}
-            {content.second_short_blurb && (
-                <Card>
+            {content.second_short_blurb && <Card>
                     <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
                         <CollapsibleTrigger className="flex w-full items-center justify-between p-6 text-left rounded-lg hover:bg-muted/50">
                             <h3 className="font-semibold text-lg">Second Short Blurb</h3>
@@ -191,8 +165,7 @@ export const ContentPopupView = ({
                             </CardContent>
                         </CollapsibleContent>
                     </Collapsible>
-                </Card>
-            )}
+                </Card>}
 
             {content.short_description && <Card>
                 <CardHeader>
@@ -230,6 +203,5 @@ export const ContentPopupView = ({
                     </a>
                 </CardContent>
             </Card>}
-        </div>
-    )
-}
+        </div>;
+};
