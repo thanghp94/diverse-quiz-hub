@@ -9,6 +9,8 @@ import Topics from "./pages/Topics";
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
+import MatchingListPage from "./pages/MatchingList";
+import MatchingActivityPage from "./pages/MatchingActivity";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +25,8 @@ const App = () => (
           <Route path="/topics" element={<Topics />} />
           <Route path="/content/:id" element={<Content />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/matching" element={<MatchingListPage />} />
+          <Route path="/matching/:id" element={<MatchingActivityPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

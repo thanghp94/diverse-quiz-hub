@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Question } from "../QuizApp";
+import { Question } from "@/types/quiz";
 
 interface MatchingProps {
   question: Question;
