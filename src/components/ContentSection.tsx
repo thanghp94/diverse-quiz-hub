@@ -1,6 +1,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import { 
   Book, 
   Trophy, 
@@ -21,6 +22,7 @@ interface ContentItem {
   color: string;
   starred?: boolean;
   difficulty?: 'easy' | 'medium' | 'hard';
+  link?: string;
 }
 
 interface ContentSectionProps {
@@ -59,22 +61,45 @@ const ContentSection = ({ title, icon, items, color }: ContentSectionProps) => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {items.map((item) => (
-          <Card key={item.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex items-center gap-2">
-                {item.starred && (
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                )}
-                <div className={`p-1 rounded ${item.color}`}>
-                  {item.icon}
+        {items.map((item) => {
+          if (item.link) {
+            return (
+              <Link key={item.id} to={item.link}>
+                <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {item.starred && (
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      )}
+                      <div className={`p-1 rounded ${item.color}`}>
+                        {item.icon}
+                      </div>
+                    </div>
+                    {item.difficulty && getDifficultyStars(item.difficulty)}
+                  </div>
+                  <h3 className="font-medium text-gray-800 text-sm">{item.title}</h3>
+                </Card>
+              </Link>
+            );
+          }
+
+          return (
+            <Card key={item.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {item.starred && (
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  )}
+                  <div className={`p-1 rounded ${item.color}`}>
+                    {item.icon}
+                  </div>
                 </div>
+                {item.difficulty && getDifficultyStars(item.difficulty)}
               </div>
-              {item.difficulty && getDifficultyStars(item.difficulty)}
-            </div>
-            <h3 className="font-medium text-gray-800 text-sm">{item.title}</h3>
-          </Card>
-        ))}
+              <h3 className="font-medium text-gray-800 text-sm">{item.title}</h3>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

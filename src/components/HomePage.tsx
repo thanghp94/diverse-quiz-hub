@@ -51,7 +51,8 @@ const HomePage = () => {
       title: "Bowl & Challenge content",
       icon: <Target className="h-4 w-4 text-blue-600" />,
       color: "bg-blue-100",
-      starred: true
+      starred: true,
+      link: "/topics"
     },
     {
       id: "bowl-challenge-homework", 
@@ -140,11 +141,28 @@ const HomePage = () => {
   const renderDashboardItems = (items: any[]) => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {items.map((item) => {
-        const CardWrapper = item.link ? Link : 'div';
-        const cardProps = item.link ? { to: item.link } : {};
+        if (item.link) {
+          return (
+            <Link key={item.id} to={item.link}>
+              <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    {item.starred && (
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    )}
+                    <div className={`p-1 rounded ${item.color}`}>
+                      {item.icon}
+                    </div>
+                  </div>
+                </div>
+                <h3 className="font-medium text-gray-800 text-sm">{item.title}</h3>
+              </Card>
+            </Link>
+          );
+        }
         
         return (
-          <CardWrapper key={item.id} {...cardProps}>
+          <div key={item.id}>
             <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -158,7 +176,7 @@ const HomePage = () => {
               </div>
               <h3 className="font-medium text-gray-800 text-sm">{item.title}</h3>
             </Card>
-          </CardWrapper>
+          </div>
         );
       })}
     </div>
