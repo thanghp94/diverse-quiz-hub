@@ -1,12 +1,8 @@
 
-import QuizApp from "@/components/QuizApp";
+import HomePage from "@/components/HomePage";
 
 const Index = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
-      <QuizApp />
-    </div>
-  );
+  return <HomePage />;
 };
 
 export default Index;
