@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,12 +47,37 @@ const Topics = () => {
     },
   });
 
+  // Fetch all subtopics for the dropdown
+  const { data: allTopics } = useQuery({
+    queryKey: ['all-topics'],
+    queryFn: async () => {
+      console.log('Fetching all topics for subtopics...');
+      const { data, error } = await supabase
+        .from('topic')
+        .select('*')
+        .order('id', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching all topics:', error);
+        throw error;
+      }
+      
+      console.log('All topics fetched:', data);
+      return data as Topic[];
+    },
+  });
+
   const toggleTopic = (topicId: number) => {
     setOpenTopics(prev => 
       prev.includes(topicId) 
         ? prev.filter(id => id !== topicId)
         : [...prev, topicId]
     );
+  };
+
+  const getSubtopics = (parentId: number) => {
+    if (!allTopics) return [];
+    return allTopics.filter(topic => topic.parentid === parentId.toString());
   };
 
   const getContentIcon = (type: string) => {
@@ -130,65 +154,93 @@ const Topics = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-4">
-          {topics?.map((topic) => (
-            <Card key={topic.id} className="bg-white/10 backdrop-blur-lg border-white/20">
-              <Collapsible 
-                open={openTopics.includes(topic.id)} 
-                onOpenChange={() => toggleTopic(topic.id)}
-              >
-                <CollapsibleTrigger asChild>
-                  <CardHeader className="cursor-pointer hover:bg-white/5 transition-colors py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="text-left">
-                        <div className="flex items-center gap-2 mb-1">
-                          <CardTitle className="text-white text-lg">{topic.topic}</CardTitle>
-                          {topic.challengesubject && (
-                            <Badge variant="outline" className="border-white/30 text-white/70 text-xs">
-                              {topic.challengesubject}
-                            </Badge>
+          {topics?.map((topic) => {
+            const subtopics = getSubtopics(topic.id);
+            
+            return (
+              <Card key={topic.id} className="bg-white/10 backdrop-blur-lg border-white/20">
+                <Collapsible 
+                  open={openTopics.includes(topic.id)} 
+                  onOpenChange={() => toggleTopic(topic.id)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <CardHeader className="cursor-pointer hover:bg-white/5 transition-colors py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="text-left">
+                          <div className="flex items-center gap-2 mb-1">
+                            <CardTitle className="text-white text-lg">{topic.topic}</CardTitle>
+                            {topic.challengesubject && (
+                              <Badge variant="outline" className="border-white/30 text-white/70 text-xs">
+                                {topic.challengesubject}
+                              </Badge>
+                            )}
+                          </div>
+                          {topic.short_summary && (
+                            <p className="text-white/80 text-sm">{topic.short_summary}</p>
                           )}
                         </div>
-                        {topic.short_summary && (
-                          <p className="text-white/80 text-sm">{topic.short_summary}</p>
-                        )}
-                        <Badge variant="secondary" className="bg-blue-500/20 text-blue-200 mt-1 text-xs">
-                          Topic ID: {topic.id}
-                        </Badge>
+                        <ChevronDown 
+                          className={`h-5 w-5 text-white transition-transform duration-200 ${
+                            openTopics.includes(topic.id) ? 'rotate-180' : ''
+                          }`} 
+                        />
                       </div>
-                      <ChevronDown 
-                        className={`h-5 w-5 text-white transition-transform duration-200 ${
-                          openTopics.includes(topic.id) ? 'rotate-180' : ''
-                        }`} 
-                      />
-                    </div>
-                  </CardHeader>
-                </CollapsibleTrigger>
-                
-                <CollapsibleContent>
-                  <CardContent className="pt-0 pb-3">
-                    <div className="space-y-2">
-                      <Link 
-                        to={`/content/${topic.id}`}
-                        className="block"
-                      >
-                        <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 hover:scale-[1.02] rounded-lg p-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Badge className="bg-blue-500/20 text-blue-200 text-xs">
-                                <BookOpen className="h-3 w-3" />
-                                <span className="ml-1">Content</span>
-                              </Badge>
-                              <span className="text-white font-medium text-sm">View Topic Content</span>
+                    </CardHeader>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent>
+                    <CardContent className="pt-0 pb-3">
+                      <div className="space-y-2">
+                        <Link 
+                          to={`/content/${topic.id}`}
+                          className="block"
+                        >
+                          <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 hover:scale-[1.02] rounded-lg p-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Badge className="bg-blue-500/20 text-blue-200 text-xs">
+                                  <BookOpen className="h-3 w-3" />
+                                  <span className="ml-1">Content</span>
+                                </Badge>
+                                <span className="text-white font-medium text-sm">View Topic Content</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </CollapsibleContent>
-              </Collapsible>
-            </Card>
-          ))}
+                        </Link>
+                        
+                        {subtopics.length > 0 && (
+                          <div className="mt-3">
+                            <h4 className="text-white/80 text-sm font-medium mb-2">Subtopics:</h4>
+                            <div className="space-y-1">
+                              {subtopics.map((subtopic) => (
+                                <Link 
+                                  key={subtopic.id}
+                                  to={`/content/${subtopic.id}`}
+                                  className="block"
+                                >
+                                  <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                    <div className="flex items-center gap-2">
+                                      <Badge className="bg-green-500/20 text-green-200 text-xs">
+                                        <BookOpen className="h-3 w-3" />
+                                      </Badge>
+                                      <span className="text-white/90 text-sm">{subtopic.topic}</span>
+                                    </div>
+                                    {subtopic.short_summary && (
+                                      <p className="text-white/60 text-xs mt-1 ml-6">{subtopic.short_summary}</p>
+                                    )}
+                                  </div>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Collapsible>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </div>
