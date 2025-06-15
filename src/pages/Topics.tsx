@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,8 @@ import { ChevronDown, BookOpen, Play, Image, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useContent } from "@/hooks/useContent";
+import { useContent, Content } from "@/hooks/useContent";
+import ContentPopup from "@/components/ContentPopup";
 
 interface Topic {
   id: string;
@@ -23,6 +23,7 @@ interface Topic {
 const Topics = () => {
   const [openTopics, setOpenTopics] = useState<string[]>([]);
   const [openContent, setOpenContent] = useState<string[]>([]);
+  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
 
   // Fetch topics where parentid is blank and topic is not blank, ordered alphabetically
   const {
@@ -81,6 +82,16 @@ const Topics = () => {
 
   const toggleContent = (contentKey: string) => {
     setOpenContent(prev => prev.includes(contentKey) ? prev.filter(key => key !== contentKey) : [...prev, contentKey]);
+  };
+
+  const handleTopicClick = (topicId: string) => {
+    if (!allContent) return;
+    const contentItem = allContent.find(c => c.id === topicId);
+    if (contentItem) {
+      setSelectedContent(contentItem);
+    } else {
+      console.warn(`Content for topic ID ${topicId} not found`);
+    }
   };
   
   const getSubtopics = (parentId: string) => {
@@ -201,7 +212,7 @@ const Topics = () => {
                               <CollapsibleContent>
                                 <div className="space-y-1 mt-2">
                                   {topicContent.map(content => (
-                                    <Link key={content.id} to={`/content/${content.id}`} className="block">
+                                    <div key={content.id} onClick={() => setSelectedContent(content)} className="block cursor-pointer">
                                       <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
                                         <div className="flex items-center gap-2">
                                           <Badge className={`${getContentTypeColor(content)} text-xs`}>
@@ -213,7 +224,7 @@ const Topics = () => {
                                           <p className="text-white/60 text-xs mt-1 ml-6">{formatDescription(content.short_description)}</p>
                                         )}
                                       </div>
-                                    </Link>
+                                    </div>
                                   ))}
                                 </div>
                               </CollapsibleContent>
@@ -230,7 +241,7 @@ const Topics = () => {
                                 const subtopicContent = getTopicContent(subtopic.id);
                                 return (
                                   <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
-                                    <Link to={`/content/${subtopic.id}`} className="block">
+                                    <div onClick={() => handleTopicClick(subtopic.id)} className="block cursor-pointer">
                                       <div className="flex items-center gap-2 mb-2">
                                         <Badge className="bg-green-500/20 text-green-200 text-xs">
                                           <BookOpen className="h-3 w-3" />
@@ -240,7 +251,7 @@ const Topics = () => {
                                       {subtopic.short_summary && (
                                         <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>
                                       )}
-                                    </Link>
+                                    </div>
                                     
                                     {/* Show content for this subtopic in dropdown */}
                                     {subtopicContent.length > 0 && (
@@ -255,7 +266,7 @@ const Topics = () => {
                                           <CollapsibleContent>
                                             <div className="space-y-1 mt-1">
                                               {subtopicContent.map(content => (
-                                                <Link key={content.id} to={`/content/${content.id}`} className="block">
+                                                <div key={content.id} onClick={() => setSelectedContent(content)} className="block cursor-pointer">
                                                   <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
                                                     <div className="flex items-center gap-2">
                                                       <Badge className={`${getContentTypeColor(content)} text-xs`}>
@@ -267,7 +278,7 @@ const Topics = () => {
                                                       <p className="text-white/60 text-xs mt-1 ml-6">{formatDescription(content.short_description)}</p>
                                                     )}
                                                   </div>
-                                                </Link>
+                                                </div>
                                               ))}
                                             </div>
                                           </CollapsibleContent>
@@ -294,6 +305,11 @@ const Topics = () => {
         })}
         </div>
       </div>
+      <ContentPopup
+        isOpen={!!selectedContent}
+        onClose={() => setSelectedContent(null)}
+        content={selectedContent}
+      />
     </div>;
 };
 

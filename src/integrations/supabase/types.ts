@@ -9,6 +9,69 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      assignment: {
+        Row: {
+          Assignmentname: string | null
+          category: string | null
+          contentid: string | null
+          created_at: string
+          description: string | null
+          expiring_date: string | null
+          id: string
+          imagelink: string | null
+          noofquestion: number | null
+          Question_id: string | null
+          status: string | null
+          subject: string | null
+          testtype: string | null
+          tg_tao: string | null
+          topicid: string | null
+          type: string | null
+          typeofquestion: string | null
+          update: string | null
+        }
+        Insert: {
+          Assignmentname?: string | null
+          category?: string | null
+          contentid?: string | null
+          created_at?: string
+          description?: string | null
+          expiring_date?: string | null
+          id: string
+          imagelink?: string | null
+          noofquestion?: number | null
+          Question_id?: string | null
+          status?: string | null
+          subject?: string | null
+          testtype?: string | null
+          tg_tao?: string | null
+          topicid?: string | null
+          type?: string | null
+          typeofquestion?: string | null
+          update?: string | null
+        }
+        Update: {
+          Assignmentname?: string | null
+          category?: string | null
+          contentid?: string | null
+          created_at?: string
+          description?: string | null
+          expiring_date?: string | null
+          id?: string
+          imagelink?: string | null
+          noofquestion?: number | null
+          Question_id?: string | null
+          status?: string | null
+          subject?: string | null
+          testtype?: string | null
+          tg_tao?: string | null
+          topicid?: string | null
+          type?: string | null
+          typeofquestion?: string | null
+          update?: string | null
+        }
+        Relationships: []
+      }
       content: {
         Row: {
           challengesubject: string[] | null
