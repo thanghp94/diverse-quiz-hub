@@ -81,7 +81,35 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
         setShowFeedback(true);
     };
 
-    const handleNext = () => {
+    const handleNext = async () => {
+        if (!currentQuestion || selectedAnswer === null) return;
+
+        try {
+            const { error } = await supabase.from('student_try').insert({
+                id: crypto.randomUUID(),
+                question_id: currentQuestion.id,
+                answer_choice: selectedAnswer,
+                correct_answer: currentQuestion.correct_choice,
+                quiz_result: isCorrect ? 'correct' : 'incorrect',
+            });
+
+            if (error) {
+                console.error("Error saving student try:", error);
+                toast({
+                    title: "Error",
+                    description: "There was an issue saving your answer. Please try again.",
+                    variant: "destructive",
+                });
+            } else {
+                 toast({
+                    title: "Answer Saved",
+                    description: "Your progress has been saved.",
+                });
+            }
+        } catch (err) {
+            console.error("Unexpected error saving student try:", err);
+        }
+
         const existingResults = JSON.parse(sessionStorage.getItem('quizResults') || '[]');
         existingResults.push(isCorrect);
         sessionStorage.setItem('quizResults', JSON.stringify(existingResults));
