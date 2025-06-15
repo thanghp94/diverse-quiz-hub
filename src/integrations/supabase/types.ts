@@ -72,6 +72,45 @@ export type Database = {
         }
         Relationships: []
       }
+      assignment_student_try: {
+        Row: {
+          assignmentid: string | null
+          contentID: string | null
+          created_at: string
+          end_time: string | null
+          hocsinh_id: string | null
+          id: number
+          start_time: string | null
+          topicid: string | null
+          typeoftaking: string | null
+          update: string | null
+        }
+        Insert: {
+          assignmentid?: string | null
+          contentID?: string | null
+          created_at?: string
+          end_time?: string | null
+          hocsinh_id?: string | null
+          id?: number
+          start_time?: string | null
+          topicid?: string | null
+          typeoftaking?: string | null
+          update?: string | null
+        }
+        Update: {
+          assignmentid?: string | null
+          contentID?: string | null
+          created_at?: string
+          end_time?: string | null
+          hocsinh_id?: string | null
+          id?: number
+          start_time?: string | null
+          topicid?: string | null
+          typeoftaking?: string | null
+          update?: string | null
+        }
+        Relationships: []
+      }
       content: {
         Row: {
           challengesubject: string[] | null

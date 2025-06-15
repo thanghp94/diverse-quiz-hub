@@ -1,10 +1,10 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, BookOpen, Play, Image, Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { ChevronDown, BookOpen, Play, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useContent, Content } from "@/hooks/useContent";
@@ -23,7 +23,7 @@ interface Topic {
 const Topics = () => {
   const [openTopics, setOpenTopics] = useState<string[]>([]);
   const [openContent, setOpenContent] = useState<string[]>([]);
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [selectedContentInfo, setSelectedContentInfo] = useState<{ content: Content; contextList: Content[] } | null>(null);
 
   // Fetch topics where parentid is blank and topic is not blank, ordered alphabetically
   const {
@@ -88,7 +88,8 @@ const Topics = () => {
     if (!allContent) return;
     const contentItem = allContent.find(c => c.id === topicId);
     if (contentItem) {
-      setSelectedContent(contentItem);
+      const subtopicContentList = getTopicContent(topicId);
+      setSelectedContentInfo({ content: contentItem, contextList: subtopicContentList });
     } else {
       console.warn(`Content for topic ID ${topicId} not found`);
     }
@@ -212,7 +213,7 @@ const Topics = () => {
                               <CollapsibleContent>
                                 <div className="space-y-1 mt-2">
                                   {topicContent.map(content => (
-                                    <div key={content.id} onClick={() => setSelectedContent(content)} className="block cursor-pointer">
+                                    <div key={content.id} onClick={() => setSelectedContentInfo({ content, contextList: topicContent })} className="block cursor-pointer">
                                       <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
                                         <div className="flex items-center gap-2">
                                           <Badge className={`${getContentTypeColor(content)} text-xs`}>
@@ -266,7 +267,7 @@ const Topics = () => {
                                           <CollapsibleContent>
                                             <div className="space-y-1 mt-1">
                                               {subtopicContent.map(content => (
-                                                <div key={content.id} onClick={() => setSelectedContent(content)} className="block cursor-pointer">
+                                                <div key={content.id} onClick={() => setSelectedContentInfo({ content, contextList: subtopicContent })} className="block cursor-pointer">
                                                   <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
                                                     <div className="flex items-center gap-2">
                                                       <Badge className={`${getContentTypeColor(content)} text-xs`}>
@@ -306,9 +307,15 @@ const Topics = () => {
         </div>
       </div>
       <ContentPopup
-        isOpen={!!selectedContent}
-        onClose={() => setSelectedContent(null)}
-        content={selectedContent}
+        isOpen={!!selectedContentInfo}
+        onClose={() => setSelectedContentInfo(null)}
+        content={selectedContentInfo?.content ?? null}
+        contentList={selectedContentInfo?.contextList ?? []}
+        onContentChange={(newContent) => {
+          if (selectedContentInfo) {
+            setSelectedContentInfo({ ...selectedContentInfo, content: newContent });
+          }
+        }}
       />
     </div>;
 };
