@@ -1,11 +1,14 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, HelpCircle, Languages } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ArrowLeft, ArrowRight, HelpCircle, Languages, ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Content } from "@/hooks/useContent";
+import { useState } from "react";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+
 interface ContentPopupProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +23,7 @@ const ContentPopup = ({
   contentList,
   onContentChange
 }: ContentPopupProps) => {
+  const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
   // Fetch related image data
   const {
     data: imageData
@@ -98,127 +102,128 @@ const ContentPopup = ({
       </span>);
   };
   return <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-blue-600">
             {content.title}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-4">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="relative w-full h-64 bg-gradient-to-r from-blue-500 via-orange-500 to-red-500 rounded-lg overflow-hidden">
-              {imageData?.imagelink ? <img src={imageData.imagelink} alt={content.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center">
-                  <span className="text-white text-xl font-semibold">{content.title}</span>
-                </div>}
+        <div className="py-4 space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg border">
+            <div className="flex items-center gap-2">
+              <Button onClick={handlePrevious} disabled={currentIndex <= 0} size="sm">
+                <ArrowLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <Button onClick={handleNext} disabled={contentList.length === 0 || currentIndex >= contentList.length - 1} size="sm">
+                Next
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+               {contentList.length > 0 && <div className="text-sm text-gray-500">
+                {currentIndex + 1} / {contentList.length}
+              </div>}
             </div>
-
-            {(videoEmbedUrl || video2EmbedUrl) && <Card>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-3">Videos</h3>
-                  <div className="space-y-4">
-                    {videoEmbedUrl && <div>
-                        {videoData?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{videoData.video_name}</h4>}
-                        <div className="aspect-video">
-                          <iframe className="w-full h-full rounded-lg" src={videoEmbedUrl} title={videoData?.video_name || 'YouTube video player'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                        </div>
-                      </div>}
-                    {video2EmbedUrl && <div>
-                        {video2Data?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{video2Data.video_name}</h4>}
-                        <div className="aspect-video">
-                          <iframe className="w-full h-full rounded-lg" src={video2EmbedUrl} title={video2Data?.video_name || 'YouTube video player 2'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                        </div>
-                      </div>}
-                  </div>
-                </CardContent>
-              </Card>}
-
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-3">Content Information</h3>
-                
-                {content.short_description && <div className="mb-3">
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">Description:</h4>
-                    <p className="text-sm">{formatText(content.short_description)}</p>
-                  </div>}
-                
-                {content.short_blurb && <div className="mb-3">
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">Short Blurb:</h4>
-                    <p className="text-sm">{formatText(content.short_blurb)}</p>
-                  </div>}
-                
-                {content.second_short_blurb && <div className="mb-3">
-                    <h4 className="font-medium text-sm text-gray-600 mb-1">Second Short Blurb:</h4>
-                    <p className="text-sm">{formatText(content.second_short_blurb)}</p>
-                  </div>}
-              </CardContent>
-            </Card>
-
-            {content.url && <Card>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-3">External Link</h3>
-                  <a href={content.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline break-all">
-                    {content.url}
-                  </a>
-                </CardContent>
-              </Card>}
+           
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm">
+                <HelpCircle className="h-4 w-4" />
+                Quiz
+              </Button>
+              <Button variant="outline" size="sm">
+                <Languages className="h-4 w-4" />
+                Translation
+              </Button>
+            </div>
           </div>
 
-          <div className="space-y-4">
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold text-lg mb-3">Navigation</h3>
-                <div className="flex justify-between gap-2">
-                  <Button onClick={handlePrevious} disabled={currentIndex <= 0} className="flex-1">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Previous
-                  </Button>
-                  <Button onClick={handleNext} disabled={contentList.length === 0 || currentIndex >= contentList.length - 1} className="flex-1">
-                    Next
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
+          <div className="relative w-full h-64 bg-gradient-to-r from-blue-500 via-orange-500 to-red-500 rounded-lg overflow-hidden">
+            {imageData?.imagelink ? <img src={imageData.imagelink} alt={content.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center">
+                <span className="text-white text-xl font-semibold">{content.title}</span>
+              </div>}
+          </div>
+
+          {content.short_blurb && <Card>
+              <CardHeader>
+                <h3 className="font-semibold text-lg">Short Blurb</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{formatText(content.short_blurb)}</p>
+              </CardContent>
+            </Card>}
+
+          {content.second_short_blurb && <Card>
+                <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
+                  <CollapsibleTrigger className="flex w-full items-center justify-between p-6 text-left rounded-lg hover:bg-muted/50">
+                    <h3 className="font-semibold text-lg">Second Short Blurb</h3>
+                    <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isSecondBlurbOpen ? "rotate-180" : ""}`} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <CardContent className="pt-0 pb-6 px-6">
+                      <p className="text-sm">{formatText(content.second_short_blurb)}</p>
+                    </CardContent>
+                  </CollapsibleContent>
+                </Collapsible>
+              </Card>}
+          
+          {content.short_description && <Card>
+              <CardHeader>
+                <h3 className="font-semibold text-lg">Description</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{formatText(content.short_description)}</p>
+              </CardContent>
+            </Card>}
+
+          {(videoEmbedUrl || video2EmbedUrl) && <Card>
+              <CardHeader>
+                <h3 className="font-semibold text-lg">Videos</h3>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {videoEmbedUrl && <div>
+                      {videoData?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{videoData.video_name}</h4>}
+                      <div className="aspect-video">
+                        <iframe className="w-full h-full rounded-lg" src={videoEmbedUrl} title={videoData?.video_name || 'YouTube video player'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                      </div>
+                    </div>}
+                  {video2EmbedUrl && <div>
+                      {video2Data?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{video2Data.video_name}</h4>}
+                      <div className="aspect-video">
+                        <iframe className="w-full h-full rounded-lg" src={video2EmbedUrl} title={video2Data?.video_name || 'YouTube video player 2'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                      </div>
+                    </div>}
                 </div>
-                {contentList.length > 0 && <div className="text-center text-sm text-gray-500 mt-2">
-                    {currentIndex + 1} / {contentList.length}
+              </CardContent>
+            </Card>}
+
+          {(content.translation || content.vocabulary) && <Card>
+              <CardHeader>
+                <h3 className="font-semibold text-lg">Language Support</h3>
+              </CardHeader>
+              <CardContent>
+                {content.translation && <div className="mb-3">
+                    <h4 className="font-medium text-sm text-gray-600 mb-1">Translation:</h4>
+                    <p className="text-sm">{formatText(content.translation)}</p>
+                  </div>}
+                
+                {content.vocabulary && <div>
+                    <h4 className="font-medium text-sm text-gray-600 mb-1">Vocabulary:</h4>
+                    <p className="text-sm">{formatText(content.vocabulary)}</p>
                   </div>}
               </CardContent>
-            </Card>
+            </Card>}
 
-            <Card>
-              <CardContent className="p-4">
-                <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" size="sm" className="flex items-center gap-1 justify-center">
-                    <HelpCircle className="h-4 w-4" />
-                    <span>Quiz</span>
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex items-center gap-1 justify-center">
-                    <Languages className="h-4 w-4" />
-                    <span>Translation</span>
-                  </Button>
-                </div>
+          {content.url && <Card>
+              <CardHeader>
+                <h3 className="font-semibold text-lg">External Link</h3>
+              </CardHeader>
+              <CardContent>
+                <a href={content.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline break-all">
+                  {content.url}
+                </a>
               </CardContent>
-            </Card>
-            
-            <Card>
-              
-            </Card>
-
-            {(content.translation || content.vocabulary) && <Card>
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-lg mb-3">Language Support</h3>
-                  
-                  {content.translation && <div className="mb-3">
-                      <h4 className="font-medium text-sm text-gray-600 mb-1">Translation:</h4>
-                      <p className="text-sm">{formatText(content.translation)}</p>
-                    </div>}
-                  
-                  {content.vocabulary && <div>
-                      <h4 className="font-medium text-sm text-gray-600 mb-1">Vocabulary:</h4>
-                      <p className="text-sm">{formatText(content.vocabulary)}</p>
-                    </div>}
-                </CardContent>
-              </Card>}
-          </div>
+            </Card>}
         </div>
       </DialogContent>
     </Dialog>;

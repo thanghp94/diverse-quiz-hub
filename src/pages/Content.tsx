@@ -175,6 +175,8 @@ const Content = () => {
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
         content={content}
+        contentList={content ? [content] : []}
+        onContentChange={() => {}}
       />
     </div>
   );
