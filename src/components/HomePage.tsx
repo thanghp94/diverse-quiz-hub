@@ -1,8 +1,10 @@
 
 import Header from "./Header";
 import ContentSection from "./ContentSection";
+import TopicCard from "./TopicCard";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
+import { useTopics } from "@/hooks/useTopics";
 import { 
   Book, 
   Trophy, 
@@ -15,10 +17,13 @@ import {
   Clock,
   Zap,
   BookOpen,
-  Target
+  Target,
+  Loader2
 } from "lucide-react";
 
 const HomePage = () => {
+  const { data: topics, isLoading, error } = useTopics();
+
   const advanceItems = [
     {
       id: "subject",
@@ -204,6 +209,33 @@ const HomePage = () => {
           items={bowlChallengeItems}
           color="bg-blue-100"
         />
+
+        {/* Main Topics Section from Database */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1 rounded bg-green-100">
+              <BookOpen className="h-4 w-4 text-green-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">Main Topics</h2>
+          </div>
+          
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+              <span className="ml-2 text-gray-600">Loading topics...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-600">Error loading topics. Please try again later.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {topics?.map((topic) => (
+                <TopicCard key={topic.id} topic={topic} />
+              ))}
+            </div>
+          )}
+        </div>
 
         <ContentSection
           title="Debate"
