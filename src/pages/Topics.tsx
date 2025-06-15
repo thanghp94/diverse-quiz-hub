@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -201,22 +202,48 @@ const Topics = () => {
                         {subtopics.length > 0 && (
                           <div className="mt-3">
                             <h4 className="text-white/90 text-sm font-medium mb-2">Subtopics</h4>
-                            <div className="space-y-1">
-                              {subtopics.map((subtopic, index) => (
-                                <Link key={subtopic.id} to={`/content/${subtopic.id}`} className="block">
-                                  <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                    <div className="flex items-center gap-2">
-                                      <Badge className="bg-green-500/20 text-green-200 text-xs">
-                                        <BookOpen className="h-3 w-3" />
-                                      </Badge>
-                                      <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
-                                    </div>
-                                    {subtopic.short_summary && (
-                                      <p className="text-white/60 text-xs mt-1 ml-6">{subtopic.short_summary}</p>
+                            <div className="space-y-2">
+                              {subtopics.map((subtopic, index) => {
+                                const subtopicContent = getTopicContent(subtopic.id);
+                                return (
+                                  <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
+                                    <Link to={`/content/${subtopic.id}`} className="block">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Badge className="bg-green-500/20 text-green-200 text-xs">
+                                          <BookOpen className="h-3 w-3" />
+                                        </Badge>
+                                        <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                                      </div>
+                                      {subtopic.short_summary && (
+                                        <p className="text-white/60 text-xs ml-6">{subtopic.short_summary}</p>
+                                      )}
+                                    </Link>
+                                    
+                                    {/* Show content for this subtopic */}
+                                    {subtopicContent.length > 0 && (
+                                      <div className="mt-2 ml-6">
+                                        <div className="space-y-1">
+                                          {subtopicContent.map(content => (
+                                            <Link key={content.id} to={`/content/${content.id}`} className="block">
+                                              <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                                <div className="flex items-center gap-2">
+                                                  <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                                    {getContentIcon(content)}
+                                                  </Badge>
+                                                  <span className="text-white/90 text-xs">{content.title}</span>
+                                                </div>
+                                                {content.short_description && (
+                                                  <p className="text-white/60 text-xs mt-1 ml-6">{content.short_description}</p>
+                                                )}
+                                              </div>
+                                            </Link>
+                                          ))}
+                                        </div>
+                                      </div>
                                     )}
                                   </div>
-                                </Link>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         )}

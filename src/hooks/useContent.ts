@@ -24,7 +24,7 @@ export interface Content {
   show?: string;
   showtranslation?: string;
   showstudent?: string;
-  order?: number;
+  order?: string; // Changed from number to string to match database
   contentgroup?: string;
   typeoftaking?: string;
   short_description?: string;
