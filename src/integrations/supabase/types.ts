@@ -80,8 +80,8 @@ export type Database = {
           end_time: string | null
           hocsinh_id: string | null
           id: number
+          questionIDs: string | null
           start_time: string | null
-          topicid: string | null
           typeoftaking: string | null
           update: string | null
         }
@@ -92,8 +92,8 @@ export type Database = {
           end_time?: string | null
           hocsinh_id?: string | null
           id?: number
+          questionIDs?: string | null
           start_time?: string | null
-          topicid?: string | null
           typeoftaking?: string | null
           update?: string | null
         }
@@ -104,8 +104,8 @@ export type Database = {
           end_time?: string | null
           hocsinh_id?: string | null
           id?: number
+          questionIDs?: string | null
           start_time?: string | null
-          topicid?: string | null
           typeoftaking?: string | null
           update?: string | null
         }
@@ -252,6 +252,69 @@ export type Database = {
           questionid?: string | null
           showimage?: string | null
           topicid?: number | null
+        }
+        Relationships: []
+      }
+      matching: {
+        Row: {
+          choice1: string | null
+          choice2: string | null
+          choice3: string | null
+          choice4: string | null
+          choice5: string | null
+          choice6: string | null
+          created_at: string
+          description: string | null
+          id: string
+          prompt1: string | null
+          prompt2: string | null
+          prompt3: string | null
+          prompt4: string | null
+          prompt5: string | null
+          prompt6: string | null
+          subject: string | null
+          topic: string | null
+          type: string | null
+        }
+        Insert: {
+          choice1?: string | null
+          choice2?: string | null
+          choice3?: string | null
+          choice4?: string | null
+          choice5?: string | null
+          choice6?: string | null
+          created_at?: string
+          description?: string | null
+          id: string
+          prompt1?: string | null
+          prompt2?: string | null
+          prompt3?: string | null
+          prompt4?: string | null
+          prompt5?: string | null
+          prompt6?: string | null
+          subject?: string | null
+          topic?: string | null
+          type?: string | null
+        }
+        Update: {
+          choice1?: string | null
+          choice2?: string | null
+          choice3?: string | null
+          choice4?: string | null
+          choice5?: string | null
+          choice6?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          prompt1?: string | null
+          prompt2?: string | null
+          prompt3?: string | null
+          prompt4?: string | null
+          prompt5?: string | null
+          prompt6?: string | null
+          subject?: string | null
+          topic?: string | null
+          type?: string | null
         }
         Relationships: []
       }

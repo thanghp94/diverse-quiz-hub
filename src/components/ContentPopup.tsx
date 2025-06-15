@@ -1,5 +1,4 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowLeft, ArrowRight, HelpCircle, Languages, ChevronDown } from "lucide-react";
@@ -8,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Content } from "@/hooks/useContent";
 import { useState } from "react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import QuizView from "./QuizView";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -24,6 +24,71 @@ const ContentPopup = ({
   onContentChange
 }: ContentPopupProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
+  const [quizMode, setQuizMode] = useState(false);
+  const [assignmentTry, setAssignmentTry] = useState<AssignmentStudentTry | null>(null);
+  const [questionIds, setQuestionIds] = useState<string[]>([]);
+
+  const startQuiz = async () => {
+    if (!content) return;
+
+    // Fetch questions for this content
+    const { data: questions, error: questionsError } = await supabase
+        .from('question')
+        .select('id')
+        .eq('contentid', content.id);
+
+    if (questionsError) {
+        console.error("Error fetching questions:", questionsError.message);
+        // TODO: Add a toast notification for the user
+        return;
+    }
+
+    if (!questions || questions.length === 0) {
+        console.log("No questions available for this content.");
+        // TODO: Add a toast notification for the user
+        return;
+    }
+
+    const randomizedQuestionIds = questions.map(q => q.id).sort(() => Math.random() - 0.5);
+    
+    // This is a placeholder. In a real app, you'd get the current user's ID
+    // from your authentication system (e.g., supabase.auth.getUser()).
+    const hocsinh_id = 'user-123-placeholder';
+    
+    // The `assignment_student_try` table has a `bigint` for ID without auto-increment.
+    // Using Date.now() as a temporary unique ID.
+    // A robust solution would be a database sequence or UUID.
+    const newAssignmentTry = {
+        id: Date.now(),
+        hocsinh_id,
+        contentID: content.id,
+        questionIDs: JSON.stringify(randomizedQuestionIds),
+        start_time: new Date().toISOString(),
+    };
+
+    const { data: insertedData, error: insertError } = await supabase
+        .from('assignment_student_try')
+        .insert(newAssignmentTry)
+        .select()
+        .single();
+
+    if (insertError) {
+        console.error("Error starting quiz:", insertError.message);
+        // TODO: Add a toast notification for the user
+        return;
+    }
+
+    setAssignmentTry(insertedData as AssignmentStudentTry);
+    setQuestionIds(randomizedQuestionIds);
+    setQuizMode(true);
+  };
+
+  const handleQuizFinish = () => {
+      setQuizMode(false);
+      setAssignmentTry(null);
+      setQuestionIds([]);
+  };
+
   // Fetch related image data
   const {
     data: imageData
@@ -101,43 +166,53 @@ const ContentPopup = ({
         {index < text.split('\n').length - 1 && <br />}
       </span>);
   };
-  return <Dialog open={isOpen} onOpenChange={onClose}>
+  return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { setQuizMode(false); } onClose(); }}>
       <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-blue-600">
-            {content.title}
-          </DialogTitle>
-        </DialogHeader>
+        {quizMode && questionIds.length > 0 ? (
+          <QuizView 
+            questionIds={questionIds} 
+            onQuizFinish={handleQuizFinish}
+          />
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-blue-600">
+                {content.title}
+              </DialogTitle>
+              <DialogDescription>
+                {content.short_description || "Detailed content view."}
+              </DialogDescription>
+            </DialogHeader>
 
-        <div className="py-4 space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg border">
-            <div className="flex items-center gap-2">
-              <Button onClick={handlePrevious} disabled={currentIndex <= 0} size="sm">
-                <ArrowLeft className="h-4 w-4" />
-                Previous
-              </Button>
-              <Button onClick={handleNext} disabled={contentList.length === 0 || currentIndex >= contentList.length - 1} size="sm">
-                Next
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-               {contentList.length > 0 && <div className="text-sm text-gray-500">
-                {currentIndex + 1} / {contentList.length}
-              </div>}
-            </div>
-           
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <HelpCircle className="h-4 w-4" />
-                Quiz
-              </Button>
-              <Button variant="outline" size="sm">
-                <Languages className="h-4 w-4" />
-                Translation
-              </Button>
-            </div>
-          </div>
+            <div className="py-4 space-y-6">
+              <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg border">
+                <div className="flex items-center gap-2">
+                  <Button onClick={handlePrevious} disabled={currentIndex <= 0} size="sm">
+                    <ArrowLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <Button onClick={handleNext} disabled={contentList.length === 0 || currentIndex >= contentList.length - 1} size="sm">
+                    Next
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                   {contentList.length > 0 && <div className="text-sm text-gray-500">
+                    {currentIndex + 1} / {contentList.length}
+                  </div>}
+                </div>
+               
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={startQuiz}>
+                    <HelpCircle className="h-4 w-4" />
+                    Quiz
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Languages className="h-4 w-4" />
+                    Translation
+                  </Button>
+                </div>
+              </div>
 
-          <div className="relative w-full h-64 bg-gradient-to-r from-blue-500 via-orange-500 to-red-500 rounded-lg overflow-hidden">
+              <div className="relative w-full h-64 bg-gradient-to-r from-blue-500 via-orange-500 to-red-500 rounded-lg overflow-hidden">
             {imageData?.imagelink ? <img src={imageData.imagelink} alt={content.title} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center">
                 <span className="text-white text-xl font-semibold">{content.title}</span>
               </div>}
@@ -224,7 +299,9 @@ const ContentPopup = ({
                 </a>
               </CardContent>
             </Card>}
-        </div>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>;
 };
