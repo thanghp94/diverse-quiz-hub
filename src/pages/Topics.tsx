@@ -22,6 +22,7 @@ interface Topic {
 
 const Topics = () => {
   const [openTopics, setOpenTopics] = useState<string[]>([]);
+  const [openContent, setOpenContent] = useState<string[]>([]);
 
   // Fetch topics where parentid is blank and topic is not blank, ordered alphabetically
   const {
@@ -77,6 +78,10 @@ const Topics = () => {
   const toggleTopic = (topicId: string) => {
     setOpenTopics(prev => prev.includes(topicId) ? prev.filter(id => id !== topicId) : [...prev, topicId]);
   };
+
+  const toggleContent = (contentKey: string) => {
+    setOpenContent(prev => prev.includes(contentKey) ? prev.filter(key => key !== contentKey) : [...prev, contentKey]);
+  };
   
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
@@ -103,6 +108,15 @@ const Topics = () => {
   const getSubtopicLabel = (parentTopic: string, index: number) => {
     const letter = parentTopic.charAt(0).toUpperCase();
     return `${letter}.${index + 1}`;
+  };
+
+  const formatDescription = (description: string) => {
+    return description.split('\n').map((line, index) => (
+      <span key={index}>
+        {line}
+        {index < description.split('\n').length - 1 && <br />}
+      </span>
+    ));
   };
 
   if (isLoading) {
@@ -164,7 +178,7 @@ const Topics = () => {
                                 {topic.challengesubject}
                               </Badge>}
                           </div>
-                          {topic.short_summary && <p className="text-white/80 text-sm">{topic.short_summary}</p>}
+                          {topic.short_summary && <p className="text-white/80 text-sm">{formatDescription(topic.short_summary)}</p>}
                         </div>
                         <ChevronDown className={`h-5 w-5 text-white transition-transform duration-200 ${openTopics.includes(topic.id) ? 'rotate-180' : ''}`} />
                       </div>
@@ -174,27 +188,36 @@ const Topics = () => {
                   <CollapsibleContent>
                     <CardContent className="pt-0 pb-3">
                       <div className="space-y-2">
-                        {/* Show main topic content */}
+                        {/* Show main topic content in dropdown */}
                         {topicContent.length > 0 && (
                           <div className="mb-3">
-                            <h4 className="text-white/90 text-sm font-medium mb-2">Content</h4>
-                            <div className="space-y-1">
-                              {topicContent.map(content => (
-                                <Link key={content.id} to={`/content/${content.id}`} className="block">
-                                  <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                    <div className="flex items-center gap-2">
-                                      <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                        {getContentIcon(content)}
-                                      </Badge>
-                                      <span className="text-white/90 text-sm">{content.title}</span>
-                                    </div>
-                                    {content.short_description && (
-                                      <p className="text-white/60 text-xs mt-1 ml-6">{content.short_description}</p>
-                                    )}
-                                  </div>
-                                </Link>
-                              ))}
-                            </div>
+                            <Collapsible open={openContent.includes(`topic-${topic.id}`)} onOpenChange={() => toggleContent(`topic-${topic.id}`)}>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="ghost" className="w-full justify-between text-white/90 hover:bg-white/5 p-2">
+                                  <span className="text-sm font-medium">Content ({topicContent.length})</span>
+                                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${openContent.includes(`topic-${topic.id}`) ? 'rotate-180' : ''}`} />
+                                </Button>
+                              </CollapsibleTrigger>
+                              <CollapsibleContent>
+                                <div className="space-y-1 mt-2">
+                                  {topicContent.map(content => (
+                                    <Link key={content.id} to={`/content/${content.id}`} className="block">
+                                      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                        <div className="flex items-center gap-2">
+                                          <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                            {getContentIcon(content)}
+                                          </Badge>
+                                          <span className="text-white/90 text-sm">{content.title}</span>
+                                        </div>
+                                        {content.short_description && (
+                                          <p className="text-white/60 text-xs mt-1 ml-6">{formatDescription(content.short_description)}</p>
+                                        )}
+                                      </div>
+                                    </Link>
+                                  ))}
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
                           </div>
                         )}
                         
@@ -215,30 +238,40 @@ const Topics = () => {
                                         <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
                                       </div>
                                       {subtopic.short_summary && (
-                                        <p className="text-white/60 text-xs ml-6">{subtopic.short_summary}</p>
+                                        <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>
                                       )}
                                     </Link>
                                     
-                                    {/* Show content for this subtopic */}
+                                    {/* Show content for this subtopic in dropdown */}
                                     {subtopicContent.length > 0 && (
                                       <div className="mt-2 ml-6">
-                                        <div className="space-y-1">
-                                          {subtopicContent.map(content => (
-                                            <Link key={content.id} to={`/content/${content.id}`} className="block">
-                                              <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                                <div className="flex items-center gap-2">
-                                                  <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                                    {getContentIcon(content)}
-                                                  </Badge>
-                                                  <span className="text-white/90 text-xs">{content.title}</span>
-                                                </div>
-                                                {content.short_description && (
-                                                  <p className="text-white/60 text-xs mt-1 ml-6">{content.short_description}</p>
-                                                )}
-                                              </div>
-                                            </Link>
-                                          ))}
-                                        </div>
+                                        <Collapsible open={openContent.includes(`subtopic-${subtopic.id}`)} onOpenChange={() => toggleContent(`subtopic-${subtopic.id}`)}>
+                                          <CollapsibleTrigger asChild>
+                                            <Button variant="ghost" className="w-full justify-between text-white/70 hover:bg-white/5 p-1 h-auto">
+                                              <span className="text-xs">Content ({subtopicContent.length})</span>
+                                              <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${openContent.includes(`subtopic-${subtopic.id}`) ? 'rotate-180' : ''}`} />
+                                            </Button>
+                                          </CollapsibleTrigger>
+                                          <CollapsibleContent>
+                                            <div className="space-y-1 mt-1">
+                                              {subtopicContent.map(content => (
+                                                <Link key={content.id} to={`/content/${content.id}`} className="block">
+                                                  <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                                    <div className="flex items-center gap-2">
+                                                      <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                                        {getContentIcon(content)}
+                                                      </Badge>
+                                                      <span className="text-white/90 text-xs">{content.title}</span>
+                                                    </div>
+                                                    {content.short_description && (
+                                                      <p className="text-white/60 text-xs mt-1 ml-6">{formatDescription(content.short_description)}</p>
+                                                    )}
+                                                  </div>
+                                                </Link>
+                                              ))}
+                                            </div>
+                                          </CollapsibleContent>
+                                        </Collapsible>
                                       </div>
                                     )}
                                   </div>
