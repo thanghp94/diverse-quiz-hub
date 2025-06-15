@@ -20,6 +20,7 @@ export type Database = {
           header: string | null
           id: string
           imageid: string | null
+          imagelink: string | null
           information: string | null
           mindmap: string | null
           mindmapurl: string | null
@@ -53,6 +54,7 @@ export type Database = {
           header?: string | null
           id: string
           imageid?: string | null
+          imagelink?: string | null
           information?: string | null
           mindmap?: string | null
           mindmapurl?: string | null
@@ -86,6 +88,7 @@ export type Database = {
           header?: string | null
           id?: string
           imageid?: string | null
+          imagelink?: string | null
           information?: string | null
           mindmap?: string | null
           mindmapurl?: string | null
@@ -115,13 +118,6 @@ export type Database = {
             columns: ["topicid"]
             isOneToOne: false
             referencedRelation: "topic"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "topic_details_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic_with_parent"
             referencedColumns: ["id"]
           },
         ]
@@ -176,13 +172,6 @@ export type Database = {
             columns: ["topicid"]
             isOneToOne: false
             referencedRelation: "topic"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "image_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic_with_parent"
             referencedColumns: ["id"]
           },
         ]
@@ -273,13 +262,6 @@ export type Database = {
             columns: ["topicid"]
             isOneToOne: false
             referencedRelation: "topic"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic_with_parent"
             referencedColumns: ["id"]
           },
         ]
@@ -523,25 +505,11 @@ export type Database = {
             referencedRelation: "topic"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "video_topicid_fkey"
-            columns: ["topicid"]
-            isOneToOne: false
-            referencedRelation: "topic_with_parent"
-            referencedColumns: ["id"]
-          },
         ]
       }
     }
     Views: {
-      topic_with_parent: {
-        Row: {
-          id: number | null
-          parent_topic_name: string | null
-          subtopic_name: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never

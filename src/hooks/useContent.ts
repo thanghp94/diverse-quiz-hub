@@ -47,7 +47,7 @@ export const useContent = (topicId?: number) => {
         query = query.eq('topicid', topicId);
       }
       
-      const { data, error } = await query.order('order', { ascending: true, nullsLast: true });
+      const { data, error } = await query.order('order', { ascending: true, nullsFirst: false });
       
       if (error) {
         console.error('Error fetching content:', error);
