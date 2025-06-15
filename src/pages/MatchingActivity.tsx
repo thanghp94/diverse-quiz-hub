@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Matching from '@/components/quiz/Matching';
-import { Question } from '@/types/quiz';
+import { Question } from '@/features/quiz/types';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -31,7 +31,7 @@ const transformToQuestion = (activity: MatchingActivityData): Question => {
   return {
     id: activity.id,
     question: activity.description || 'Match the corresponding items.',
-    type: 'matching',
+    type: 'matching' as const,
     pairs: pairs,
   };
 };
