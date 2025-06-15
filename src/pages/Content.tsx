@@ -6,15 +6,13 @@ import { ArrowLeft, Play, BookOpen, Image as ImageIcon, Trophy } from "lucide-re
 import ContentSidebar from "@/components/ContentSidebar";
 import ContentPopup from "@/components/ContentPopup";
 import { useContentById } from "@/hooks/useContent";
-import { useContentImage } from "@/hooks/useContentImage";
 import { useState } from "react";
 
 const Content = () => {
   const { id } = useParams<{ id: string }>();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  
+
   const { data: content, isLoading, error } = useContentById(id || "");
-  const { data: imageUrl, isLoading: isImageLoading } = useContentImage(content?.imageid, content?.imagelink);
 
   if (isLoading) {
     return (
@@ -131,7 +129,7 @@ const Content = () => {
                       <p className="text-white/80 text-sm">{content.short_blurb}</p>
                     </div>
                   )}
-                  
+
                   {(content.imageid || content.videoid || content.videoid2) && (
                     <div className="bg-white/5 rounded-lg p-4">
                       <h4 className="text-white font-medium mb-2">Media References</h4>
@@ -178,7 +176,6 @@ const Content = () => {
         content={content}
         contentList={content ? [content] : []}
         onContentChange={() => {}}
-        imageUrl={imageUrl}
       />
     </div>
   );

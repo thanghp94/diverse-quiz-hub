@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Content } from "@/hooks/useContent";
 import { useEffect } from "react";
@@ -6,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { ContentPopupView } from "./content-popup/ContentPopupView";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
+import { useContentImage } from "@/hooks/useContentImage";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -14,8 +16,8 @@ interface ContentPopupProps {
   contentList: Content[];
   onContentChange: (newContent: Content) => void;
   startQuizDirectly?: boolean;
-  imageUrl: string | null;
 }
+
 const ContentPopup = ({
   isOpen,
   onClose,
@@ -23,7 +25,6 @@ const ContentPopup = ({
   contentList,
   onContentChange,
   startQuizDirectly = false,
-  imageUrl,
 }: ContentPopupProps) => {
   const {
     quizMode,
@@ -41,6 +42,9 @@ const ContentPopup = ({
     videoEmbedUrl,
     video2EmbedUrl,
   } = useContentMedia(content);
+
+  // Only fetch the image if content is present
+  const { data: imageUrl, isLoading: isImageLoading } = useContentImage(content?.imageid, content?.imagelink);
 
   useEffect(() => {
     if (isOpen && startQuizDirectly && !quizMode) {
@@ -89,7 +93,7 @@ const ContentPopup = ({
                 handleNext={handleNext}
                 startQuiz={startQuiz}
                 imageUrl={imageUrl}
-                isImageLoading={false}
+                isImageLoading={isImageLoading}
                 videoEmbedUrl={videoEmbedUrl}
                 video2EmbedUrl={video2EmbedUrl}
                 videoData={videoData}

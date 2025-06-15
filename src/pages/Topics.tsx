@@ -115,23 +115,18 @@ const Topics = () => {
     const topicContent = getTopicContent(topicId);
     const firstContent = topicContent[0];
     if (firstContent) {
-      const imageUrl = allImages?.find(img => img.id === firstContent.imageid)?.imagelink || firstContent.imagelink || null;
       setSelectedContentInfo({
         content: firstContent,
         contextList: topicContent,
-        imageUrl,
       });
     } else {
       console.warn(`Content for topic ID ${topicId} not found`);
     }
   };
   const handleContentClick = (info: { content: Content; contextList: Content[] }) => {
-    const imageUrl = allImages?.find(img => img.id === info.content.imageid)?.imagelink || info.content.imagelink || null;
-    console.log('Topics handleContentClick - found imageUrl:', imageUrl, 'for content:', info.content.title);
     setSelectedContentInfo({
-        content: info.content,
-        contextList: info.contextList,
-        imageUrl,
+      content: info.content,
+      contextList: info.contextList,
     });
   };
   const handleStartQuiz = (content: Content, contextList: Content[]) => {
@@ -193,7 +188,6 @@ const Topics = () => {
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
           {topics?.map(topic => {
             const subtopics = getSubtopics(topic.id);
@@ -225,12 +219,9 @@ const Topics = () => {
         onClose={closePopup}
         content={selectedContentInfo?.content ?? null}
         contentList={selectedContentInfo?.contextList ?? []}
-        imageUrl={selectedContentInfo?.imageUrl ?? null}
         onContentChange={newContent => {
           if (selectedContentInfo) {
-            const newImageUrl = allImages?.find(img => img.id === newContent.imageid)?.imagelink || newContent.imagelink || null;
-            console.log('Topics onContentChange - found newImageUrl:', newImageUrl, 'for content:', newContent.title);
-            setSelectedContentInfo({ ...selectedContentInfo, content: newContent, imageUrl: newImageUrl });
+            setSelectedContentInfo({ ...selectedContentInfo, content: newContent });
           }
         }}
         startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
