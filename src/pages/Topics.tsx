@@ -7,6 +7,7 @@ import ContentPopup from "@/components/ContentPopup";
 import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
 import SharedNav from "@/components/SharedNav";
+import TopicQuizRunner from "@/components/TopicQuizRunner";
 
 interface Topic {
   id: string;
@@ -33,6 +34,11 @@ const Topics = () => {
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
+  const [topicQuizInfo, setTopicQuizInfo] = useState<{
+    topicId: string;
+    level: 'Overview' | 'Easy' | 'Hard';
+    topicName: string;
+  } | null>(null);
 
   // Fetch topics where parentid is blank and topic is not blank, ordered alphabetically
   const {
@@ -155,6 +161,13 @@ const Topics = () => {
     setSelectedContentInfo(null);
     setQuizContentId(null);
   }, []);
+  const handleStartTopicQuiz = (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => {
+    setTopicQuizInfo({ topicId, level, topicName });
+  };
+  const closeTopicQuiz = useCallback(() => {
+    setTopicQuizInfo(null);
+  }, []);
+
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
     return allTopics.filter(topic => topic.parentid === parentId).sort((a, b) => a.topic.localeCompare(b.topic));
@@ -225,6 +238,7 @@ const Topics = () => {
                 onSubtopicClick={handleSubtopicClick}
                 onStartQuiz={handleStartQuiz}
                 getTopicContent={getTopicContent}
+                onStartTopicQuiz={handleStartTopicQuiz}
               />
             );
           })}
@@ -248,6 +262,14 @@ const Topics = () => {
         imageUrl={selectedContentInfo?.imageUrl ?? null}
         isImageLoading={isImagesLoading}
       />
+      {topicQuizInfo && (
+        <TopicQuizRunner
+          topicId={topicQuizInfo.topicId}
+          level={topicQuizInfo.level}
+          topicName={topicQuizInfo.topicName}
+          onClose={closeTopicQuiz}
+        />
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown, BookOpen, Play, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface Topic {
   id: string;
@@ -38,6 +38,7 @@ interface TopicListItemProps {
     onSubtopicClick: (topicId: string) => void;
     onStartQuiz: (content: Content, contextList: Content[]) => void;
     getTopicContent: (topicId: string) => Content[];
+    onStartTopicQuiz: (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => void;
 }
 
 const getContentIcon = (content: any) => {
@@ -76,7 +77,8 @@ export const TopicListItem = ({
     onContentClick,
     onSubtopicClick,
     onStartQuiz,
-    getTopicContent
+    getTopicContent,
+    onStartTopicQuiz
 }: TopicListItemProps) => {
     let topicImageUrl: string | undefined | null = null;
     if (allImages && topicContent.length > 0) {
@@ -179,14 +181,29 @@ export const TopicListItem = ({
                         const subtopicContent = getTopicContent(subtopic.id);
                         return (
                           <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
-                            <div onClick={() => onSubtopicClick(subtopic.id)} className="block cursor-pointer">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Badge className="bg-green-500/20 text-green-200 text-xs">
-                                  <BookOpen className="h-3 w-3" />
-                                </Badge>
-                                <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                            <div className="flex items-start justify-between gap-2">
+                              <div onClick={() => onSubtopicClick(subtopic.id)} className="block cursor-pointer flex-grow">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge className="bg-green-500/20 text-green-200 text-xs">
+                                    <BookOpen className="h-3 w-3" />
+                                  </Badge>
+                                  <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                                </div>
+                                {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                               </div>
-                              {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                        <HelpCircle className="h-4 w-4" />
+                                        <span className="sr-only">Start Quiz for {subtopic.topic}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Overview', subtopic.topic)}>Overview Quiz</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Easy', subtopic.topic)}>Easy Quiz</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           
                             {subtopicContent.length > 0 && (
