@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Content } from "@/hooks/useContent";
 import { useState } from "react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import QuizView from "./QuizView";
+import { Tables } from "@/integrations/supabase/types";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -25,7 +27,7 @@ const ContentPopup = ({
 }: ContentPopupProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
   const [quizMode, setQuizMode] = useState(false);
-  const [assignmentTry, setAssignmentTry] = useState<AssignmentStudentTry | null>(null);
+  const [assignmentTry, setAssignmentTry] = useState<Tables<'assignment_student_try'> | null>(null);
   const [questionIds, setQuestionIds] = useState<string[]>([]);
 
   const startQuiz = async () => {
@@ -63,7 +65,6 @@ const ContentPopup = ({
         hocsinh_id,
         contentID: content.id,
         questionIDs: JSON.stringify(randomizedQuestionIds),
-        start_time: new Date().toISOString(),
     };
 
     const { data: insertedData, error: insertError } = await supabase
@@ -78,7 +79,7 @@ const ContentPopup = ({
         return;
     }
 
-    setAssignmentTry(insertedData as AssignmentStudentTry);
+    setAssignmentTry(insertedData as Tables<'assignment_student_try'>);
     setQuestionIds(randomizedQuestionIds);
     setQuizMode(true);
   };
