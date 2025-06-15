@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -9,8 +10,6 @@ import { useState } from "react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import QuizView from "./QuizView";
 import { Tables } from "@/integrations/supabase/types";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -19,24 +18,6 @@ interface ContentPopupProps {
   contentList: Content[];
   onContentChange: (newContent: Content) => void;
 }
-
-const MarkdownRenderer = ({ content }: { content: string | null | undefined }) => {
-  if (!content) return null;
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      components={{
-        p: ({node, ...props}) => <p className="mb-2 last:mb-0" {...props} />,
-        strong: ({node, ...props}) => <strong className="font-semibold" {...props} />,
-        ul: ({node, ...props}) => <ul className="list-disc list-inside space-y-1" {...props} />,
-        ol: ({node, ...props}) => <ol className="list-decimal list-inside space-y-1" {...props} />,
-      }}
-    >
-      {content}
-    </ReactMarkdown>
-  );
-};
-
 const ContentPopup = ({
   isOpen,
   onClose,
@@ -243,9 +224,7 @@ const ContentPopup = ({
                 <h3 className="font-semibold text-lg">Short Blurb</h3>
               </CardHeader>
               <CardContent>
-                <div className="text-sm">
-                  <MarkdownRenderer content={content.short_blurb} />
-                </div>
+                <p className="text-sm">{formatText(content.short_blurb)}</p>
               </CardContent>
             </Card>}
 
@@ -257,14 +236,21 @@ const ContentPopup = ({
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <CardContent className="pt-0 pb-6 px-6">
-                      <div className="text-sm">
-                        <MarkdownRenderer content={content.second_short_blurb} />
-                      </div>
+                      <p className="text-sm">{formatText(content.second_short_blurb)}</p>
                     </CardContent>
                   </CollapsibleContent>
                 </Collapsible>
               </Card>}
           
+          {content.short_description && <Card>
+              <CardHeader>
+                <h3 className="font-semibold text-lg">Description</h3>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{formatText(content.short_description)}</p>
+              </CardContent>
+            </Card>}
+
           {(videoEmbedUrl || video2EmbedUrl) && <Card>
               <CardHeader>
                 <h3 className="font-semibold text-lg">Videos</h3>
@@ -294,16 +280,12 @@ const ContentPopup = ({
               <CardContent>
                 {content.translation && <div className="mb-3">
                     <h4 className="font-medium text-sm text-gray-600 mb-1">Translation:</h4>
-                    <div className="text-sm">
-                      <MarkdownRenderer content={content.translation} />
-                    </div>
+                    <p className="text-sm">{formatText(content.translation)}</p>
                   </div>}
                 
                 {content.vocabulary && <div>
                     <h4 className="font-medium text-sm text-gray-600 mb-1">Vocabulary:</h4>
-                    <div className="text-sm">
-                      <MarkdownRenderer content={content.vocabulary} />
-                    </div>
+                    <p className="text-sm">{formatText(content.vocabulary)}</p>
                   </div>}
               </CardContent>
             </Card>}
