@@ -40,6 +40,8 @@ const ContentPopup = ({
     imageUrl,
     videoEmbedUrl,
     video2EmbedUrl,
+    isImageLoading,
+    isImageError,
   } = useContentMedia(content);
 
   useEffect(() => {
@@ -89,6 +91,8 @@ const ContentPopup = ({
                 handleNext={handleNext}
                 startQuiz={startQuiz}
                 imageUrl={imageUrl}
+                isImageLoading={isImageLoading}
+                isImageError={isImageError}
                 videoEmbedUrl={videoEmbedUrl}
                 video2EmbedUrl={video2EmbedUrl}
                 videoData={videoData}
