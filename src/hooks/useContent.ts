@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface Content {
   id: string;
-  topicid?: number;
+  topicid?: string;
   imageid?: string;
   videoid?: string;
   videoid2?: string;
@@ -33,7 +33,7 @@ export interface Content {
   update?: string;
 }
 
-export const useContent = (topicId?: number) => {
+export const useContent = (topicId?: string) => {
   return useQuery({
     queryKey: ['content', topicId],
     queryFn: async () => {

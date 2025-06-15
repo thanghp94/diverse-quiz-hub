@@ -1,4 +1,3 @@
-
 import { Link, useParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +10,7 @@ const ContentSidebar = () => {
   const currentId = id || "";
   
   // Get the topic ID from current content to show related content
-  const topicId = currentId ? parseInt(currentId) : undefined;
+  const topicId = currentId ? currentId : undefined;
   const { data: contentItems, isLoading, error } = useContent(topicId);
 
   const getContentIcon = (type: string) => {

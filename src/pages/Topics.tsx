@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useContent } from "@/hooks/useContent";
 
 interface Topic {
-  id: number;
+  id: string;
   topic: string;
   short_summary?: string;
   challengesubject?: string;
@@ -20,9 +20,9 @@ interface Topic {
 }
 
 const Topics = () => {
-  const [openTopics, setOpenTopics] = useState<number[]>([]);
+  const [openTopics, setOpenTopics] = useState<string[]>([]);
 
-  // Fetch topics where parentid is blank and topic is not blank
+  // Fetch topics where parentid is blank and topic is not blank, ordered alphabetically
   const {
     data: topics,
     isLoading,
@@ -37,7 +37,7 @@ const Topics = () => {
         .is('parentid', null)
         .not('topic', 'is', null)
         .neq('topic', '')
-        .order('id', { ascending: true });
+        .order('topic', { ascending: true });
       
       if (error) {
         console.error('Error fetching topics:', error);
@@ -58,7 +58,7 @@ const Topics = () => {
       const {
         data,
         error
-      } = await supabase.from('topic').select('*').order('id', {
+      } = await supabase.from('topic').select('*').order('topic', {
         ascending: true
       });
       if (error) {
@@ -73,16 +73,16 @@ const Topics = () => {
   // Fetch all content to show related content for each topic
   const { data: allContent } = useContent();
   
-  const toggleTopic = (topicId: number) => {
+  const toggleTopic = (topicId: string) => {
     setOpenTopics(prev => prev.includes(topicId) ? prev.filter(id => id !== topicId) : [...prev, topicId]);
   };
   
-  const getSubtopics = (parentId: number) => {
+  const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
-    return allTopics.filter(topic => topic.parentid === parentId.toString());
+    return allTopics.filter(topic => topic.parentid === parentId).sort((a, b) => a.topic.localeCompare(b.topic));
   };
 
-  const getTopicContent = (topicId: number) => {
+  const getTopicContent = (topicId: string) => {
     if (!allContent) return [];
     return allContent.filter(content => content.topicid === topicId);
   };
@@ -97,6 +97,11 @@ const Topics = () => {
     if (content.videoid || content.videoid2) return 'bg-red-500/20 text-red-200';
     if (content.url) return 'bg-blue-500/20 text-blue-200';
     return 'bg-green-500/20 text-green-200';
+  };
+
+  const getSubtopicLabel = (parentTopic: string, index: number) => {
+    const letter = parentTopic.charAt(0).toUpperCase();
+    return `${letter}.${index + 1}`;
   };
 
   if (isLoading) {
@@ -197,14 +202,14 @@ const Topics = () => {
                           <div className="mt-3">
                             <h4 className="text-white/90 text-sm font-medium mb-2">Subtopics</h4>
                             <div className="space-y-1">
-                              {subtopics.map(subtopic => (
+                              {subtopics.map((subtopic, index) => (
                                 <Link key={subtopic.id} to={`/content/${subtopic.id}`} className="block">
                                   <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
                                     <div className="flex items-center gap-2">
                                       <Badge className="bg-green-500/20 text-green-200 text-xs">
                                         <BookOpen className="h-3 w-3" />
                                       </Badge>
-                                      <span className="text-white/90 text-sm">{subtopic.topic}</span>
+                                      <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
                                     </div>
                                     {subtopic.short_summary && (
                                       <p className="text-white/60 text-xs mt-1 ml-6">{subtopic.short_summary}</p>
