@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -140,6 +139,28 @@ export const ContentPopupView = ({
                 )}
             </div>
 
+            {(videoEmbedUrl || video2EmbedUrl) && <Card>
+                <CardHeader>
+                    <h3 className="font-semibold text-lg">Videos</h3>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {videoEmbedUrl && <div>
+                            {videoData?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{videoData.video_name}</h4>}
+                            <div className="aspect-video">
+                                <iframe className="w-full h-full rounded-lg" src={videoEmbedUrl} title={videoData?.video_name || 'YouTube video player'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                            </div>
+                        </div>}
+                        {video2EmbedUrl && <div>
+                            {video2Data?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{video2Data.video_name}</h4>}
+                            <div className="aspect-video">
+                                <iframe className="w-full h-full rounded-lg" src={video2EmbedUrl} title={video2Data?.video_name || 'YouTube video player 2'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                            </div>
+                        </div>}
+                    </div>
+                </CardContent>
+            </Card>}
+
             {/* Short Blurb using MarkdownRenderer */}
             {content.short_blurb && (
                 <Card>
@@ -179,28 +200,6 @@ export const ContentPopupView = ({
                 </CardHeader>
                 <CardContent>
                     <p className="text-sm">{formatText(content.short_description)}</p>
-                </CardContent>
-            </Card>}
-
-            {(videoEmbedUrl || video2EmbedUrl) && <Card>
-                <CardHeader>
-                    <h3 className="font-semibold text-lg">Videos</h3>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                        {videoEmbedUrl && <div>
-                            {videoData?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{videoData.video_name}</h4>}
-                            <div className="aspect-video">
-                                <iframe className="w-full h-full rounded-lg" src={videoEmbedUrl} title={videoData?.video_name || 'YouTube video player'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                            </div>
-                        </div>}
-                        {video2EmbedUrl && <div>
-                            {video2Data?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{video2Data.video_name}</h4>}
-                            <div className="aspect-video">
-                                <iframe className="w-full h-full rounded-lg" src={video2EmbedUrl} title={video2Data?.video_name || 'YouTube video player 2'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
-                            </div>
-                        </div>}
-                    </div>
                 </CardContent>
             </Card>}
 
