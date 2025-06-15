@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,10 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
     const { toast } = useToast();
 
     useEffect(() => {
+        if (currentQuestionIndex === 0) {
+            sessionStorage.removeItem('quizResults');
+        }
+
         const fetchQuestion = async () => {
             if (currentQuestionIndex >= questionIds.length) {
                 onQuizFinish();
@@ -79,6 +82,9 @@ const QuizView = ({ questionIds, onQuizFinish }: QuizViewProps) => {
     };
 
     const handleNext = () => {
+        const existingResults = JSON.parse(sessionStorage.getItem('quizResults') || '[]');
+        existingResults.push(isCorrect);
+        sessionStorage.setItem('quizResults', JSON.stringify(existingResults));
         setCurrentQuestionIndex(prev => prev + 1);
     };
 

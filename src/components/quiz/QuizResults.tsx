@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Star, RotateCcw, Home } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface QuizResultsProps {
   score: number;
@@ -11,7 +12,27 @@ interface QuizResultsProps {
 }
 
 const QuizResults = ({ score, total, onRestart, quizTitle }: QuizResultsProps) => {
-  const percentage = Math.round((score / total) * 100);
+  const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+  const [answerResults, setAnswerResults] = useState<boolean[]>([]);
+
+  useEffect(() => {
+    const storedResults = sessionStorage.getItem('quizResults');
+    if (storedResults) {
+        try {
+            const parsedResults = JSON.parse(storedResults);
+            if (Array.isArray(parsedResults)) {
+                setAnswerResults(parsedResults);
+            }
+        } catch (e) {
+            console.error("Failed to parse quiz results from session storage", e);
+        }
+    }
+  }, []);
+
+  const handleRestart = () => {
+    sessionStorage.removeItem('quizResults');
+    onRestart();
+  };
   
   const getScoreMessage = () => {
     if (percentage >= 90) return "Outstanding! 🎉";
@@ -64,16 +85,32 @@ const QuizResults = ({ score, total, onRestart, quizTitle }: QuizResultsProps) =
             ))}
           </div>
 
+          {answerResults.length > 0 && (
+            <div className="flex justify-center flex-wrap gap-2 pt-2">
+              {answerResults.map((result, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center justify-center w-8 h-8 rounded-md font-bold text-white text-sm ${
+                    result ? 'bg-green-500' : 'bg-red-500'
+                  }`}
+                  title={`Question ${index + 1}: ${result ? 'Correct' : 'Incorrect'}`}
+                >
+                  {index + 1}
+                </div>
+              ))}
+            </div>
+          )}
+
           <div className="space-y-3">
             <Button 
-              onClick={onRestart}
+              onClick={handleRestart}
               className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-3 text-lg"
             >
               <RotateCcw className="mr-2" size={20} />
               Try Another Quiz
             </Button>
             <Button 
-              onClick={onRestart}
+              onClick={handleRestart}
               variant="outline"
               className="w-full border-white/30 text-white hover:bg-white/10 py-3 text-lg"
             >
