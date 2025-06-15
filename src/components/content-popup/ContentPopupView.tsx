@@ -130,20 +130,25 @@ export const ContentPopupView = ({
                 </Card>
             )}
 
-            {content.second_short_blurb && <Card>
-                <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
-                    <CollapsibleTrigger className="flex w-full items-center justify-between p-6 text-left rounded-lg hover:bg-muted/50">
-                        <h3 className="font-semibold text-lg">Second Short Blurb</h3>
-                        <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isSecondBlurbOpen ? "rotate-180" : ""}`} />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                        <CardContent className="pt-0 pb-6 px-6">
-                            <p className="text-sm">{formatText(content.second_short_blurb)}</p>
-                        </CardContent>
-                    </CollapsibleContent>
-                </Collapsible>
-            </Card>}
-        
+            {/* Second Short Blurb using MarkdownRenderer */}
+            {content.second_short_blurb && (
+                <Card>
+                    <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
+                        <CollapsibleTrigger className="flex w-full items-center justify-between p-6 text-left rounded-lg hover:bg-muted/50">
+                            <h3 className="font-semibold text-lg">Second Short Blurb</h3>
+                            <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isSecondBlurbOpen ? "rotate-180" : ""}`} />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                            <CardContent className="pt-0 pb-6 px-6">
+                                <MarkdownRenderer className="text-sm">
+                                    {content.second_short_blurb}
+                                </MarkdownRenderer>
+                            </CardContent>
+                        </CollapsibleContent>
+                    </Collapsible>
+                </Card>
+            )}
+
             {content.short_description && <Card>
                 <CardHeader>
                     <h3 className="font-semibold text-lg">Description</h3>
