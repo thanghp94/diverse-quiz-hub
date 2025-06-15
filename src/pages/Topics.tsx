@@ -6,6 +6,7 @@ import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
 import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
+import SharedNav from "@/components/SharedNav";
 
 interface Topic {
   id: string;
@@ -166,6 +167,7 @@ const Topics = () => {
   if (isLoading) {
     return <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
         <div className="max-w-7xl mx-auto">
+          <SharedNav />
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
             <p className="text-lg text-white/80">
@@ -182,6 +184,7 @@ const Topics = () => {
   if (error) {
     return <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
         <div className="max-w-7xl mx-auto">
+          <SharedNav />
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
             <p className="text-lg text-white/80">
@@ -197,6 +200,7 @@ const Topics = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
       <div className="max-w-7xl mx-auto">
+        <SharedNav />
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
         </div>

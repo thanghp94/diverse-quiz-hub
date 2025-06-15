@@ -1,9 +1,9 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Loader2, Target } from 'lucide-react';
+import SharedNav from '@/components/SharedNav';
 
 type MatchingActivity = {
   id: string;
@@ -30,7 +30,7 @@ const MatchingListPage = () => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -38,15 +38,16 @@ const MatchingListPage = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-900 text-white">
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
         <p className="text-red-500">Error fetching matching activities: {error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
         <div className="container mx-auto p-4 md:p-8">
+            <SharedNav />
             <h1 className="text-4xl font-bold mb-8 text-center">Matching Activities</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activities?.map((activity) => (
