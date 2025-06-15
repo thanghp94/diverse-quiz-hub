@@ -1,10 +1,9 @@
-
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, BookOpen, Play, Loader2 } from "lucide-react";
+import { ChevronDown, BookOpen, Play, Loader2, HelpCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useContent, Content } from "@/hooks/useContent";
@@ -24,6 +23,7 @@ const Topics = () => {
   const [openTopics, setOpenTopics] = useState<string[]>([]);
   const [openContent, setOpenContent] = useState<string[]>([]);
   const [selectedContentInfo, setSelectedContentInfo] = useState<{ content: Content; contextList: Content[] } | null>(null);
+  const [quizContentId, setQuizContentId] = useState<string | null>(null);
 
   // Fetch topics where parentid is blank and topic is not blank, ordered alphabetically
   const {
@@ -94,6 +94,16 @@ const Topics = () => {
       console.warn(`Content for topic ID ${topicId} not found`);
     }
   };
+  
+  const handleStartQuiz = (content: Content, contextList: Content[]) => {
+    setSelectedContentInfo({ content, contextList });
+    setQuizContentId(content.id);
+  };
+  
+  const closePopup = useCallback(() => {
+    setSelectedContentInfo(null);
+    setQuizContentId(null);
+  }, []);
   
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
@@ -213,17 +223,31 @@ const Topics = () => {
                               <CollapsibleContent>
                                 <div className="space-y-1 mt-2">
                                   {topicContent.map(content => (
-                                    <div key={content.id} onClick={() => setSelectedContentInfo({ content, contextList: topicContent })} className="block cursor-pointer">
-                                      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                        <div className="flex items-center gap-2">
-                                          <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                            {getContentIcon(content)}
-                                          </Badge>
-                                          <span className="text-white/90 text-sm">{content.title}</span>
+                                    <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div 
+                                          onClick={() => setSelectedContentInfo({ content, contextList: topicContent })} 
+                                          className="flex-grow cursor-pointer"
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                              {getContentIcon(content)}
+                                            </Badge>
+                                            <span className="text-white/90 text-sm">{content.title}</span>
+                                          </div>
+                                          {content.short_description && (
+                                            <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>
+                                          )}
                                         </div>
-                                        {content.short_description && (
-                                          <p className="text-white/60 text-xs mt-1 ml-6">{formatDescription(content.short_description)}</p>
-                                        )}
+                                        <Button 
+                                          variant="ghost" 
+                                          size="icon"
+                                          className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0"
+                                          onClick={() => handleStartQuiz(content, topicContent)}
+                                        >
+                                          <HelpCircle className="h-4 w-4" />
+                                          <span className="sr-only">Start Quiz for {content.title}</span>
+                                        </Button>
                                       </div>
                                     </div>
                                   ))}
@@ -267,18 +291,32 @@ const Topics = () => {
                                           <CollapsibleContent>
                                             <div className="space-y-1 mt-1">
                                               {subtopicContent.map(content => (
-                                                <div key={content.id} onClick={() => setSelectedContentInfo({ content, contextList: subtopicContent })} className="block cursor-pointer">
-                                                  <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                                    <div className="flex items-center gap-2">
-                                                      <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                                        {getContentIcon(content)}
-                                                      </Badge>
-                                                      <span className="text-white/90 text-xs">{content.title}</span>
+                                                <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div 
+                                                            onClick={() => setSelectedContentInfo({ content, contextList: subtopicContent })} 
+                                                            className="flex-grow cursor-pointer"
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                                                    {getContentIcon(content)}
+                                                                </Badge>
+                                                                <span className="text-white/90 text-xs">{content.title}</span>
+                                                            </div>
+                                                            {content.short_description && (
+                                                                <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>
+                                                            )}
+                                                        </div>
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon"
+                                                            className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0"
+                                                            onClick={() => handleStartQuiz(content, subtopicContent)}
+                                                        >
+                                                            <HelpCircle className="h-4 w-4" />
+                                                            <span className="sr-only">Start Quiz for {content.title}</span>
+                                                        </Button>
                                                     </div>
-                                                    {content.short_description && (
-                                                      <p className="text-white/60 text-xs mt-1 ml-6">{formatDescription(content.short_description)}</p>
-                                                    )}
-                                                  </div>
                                                 </div>
                                               ))}
                                             </div>
@@ -308,7 +346,7 @@ const Topics = () => {
       </div>
       <ContentPopup
         isOpen={!!selectedContentInfo}
-        onClose={() => setSelectedContentInfo(null)}
+        onClose={closePopup}
         content={selectedContentInfo?.content ?? null}
         contentList={selectedContentInfo?.contextList ?? []}
         onContentChange={(newContent) => {
@@ -316,6 +354,7 @@ const Topics = () => {
             setSelectedContentInfo({ ...selectedContentInfo, content: newContent });
           }
         }}
+        startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
       />
     </div>;
 };

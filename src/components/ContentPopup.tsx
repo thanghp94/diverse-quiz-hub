@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, HelpCircle, Languages, ChevronDown } from "lucid
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Content } from "@/hooks/useContent";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import QuizView from "./QuizView";
 import { Tables } from "@/integrations/supabase/types";
@@ -18,13 +18,15 @@ interface ContentPopupProps {
   content: Content | null;
   contentList: Content[];
   onContentChange: (newContent: Content) => void;
+  startQuizDirectly?: boolean;
 }
 const ContentPopup = ({
   isOpen,
   onClose,
   content,
   contentList,
-  onContentChange
+  onContentChange,
+  startQuizDirectly = false,
 }: ContentPopupProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
   const [quizMode, setQuizMode] = useState(false);
@@ -32,7 +34,7 @@ const ContentPopup = ({
   const [questionIds, setQuestionIds] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const startQuiz = async () => {
+  const startQuiz = useCallback(async () => {
     if (!content) return;
 
     // Fetch questions for this content
@@ -48,6 +50,7 @@ const ContentPopup = ({
             description: "Could not fetch questions for the quiz. Please try again.",
             variant: "destructive",
         });
+        if (startQuizDirectly) onClose();
         return;
     }
 
@@ -57,6 +60,7 @@ const ContentPopup = ({
             title: "No Quiz Available",
             description: "There are no questions for this content yet. Check back later!",
         });
+        if (startQuizDirectly) onClose();
         return;
     }
 
@@ -89,13 +93,20 @@ const ContentPopup = ({
             description: "Could not start the quiz due to a server error. Please try again.",
             variant: "destructive",
         });
+        if (startQuizDirectly) onClose();
         return;
     }
 
     setAssignmentTry(insertedData as Tables<'assignment_student_try'>);
     setQuestionIds(randomizedQuestionIds);
     setQuizMode(true);
-  };
+  }, [content, toast, startQuizDirectly, onClose]);
+
+  useEffect(() => {
+    if (isOpen && startQuizDirectly && !quizMode) {
+      startQuiz();
+    }
+  }, [isOpen, startQuizDirectly, quizMode, startQuiz]);
 
   const handleQuizFinish = () => {
       setQuizMode(false);
