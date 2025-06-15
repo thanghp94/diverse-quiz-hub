@@ -62,7 +62,7 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
       {(content.translation || content.vocabulary) && <Card>
           <CardHeader>
               <h3 className="font-semibold text-lg">Language Support</h3>
-          </Header>
+          </CardHeader>
           <CardContent>
               {content.translation && <div className="mb-3">
                   <h4 className="font-medium text-sm text-gray-600 mb-1">Translation:</h4>
