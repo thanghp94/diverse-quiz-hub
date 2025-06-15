@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/component
 import { ArrowLeft, ArrowRight, HelpCircle, Languages, ChevronDown, ImageOff } from "lucide-react";
 import { Content } from "@/hooks/useContent";
 import { Skeleton } from "@/components/ui/skeleton";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 interface ContentPopupViewProps {
     content: Content;
@@ -116,14 +116,19 @@ export const ContentPopupView = ({
                 )}
             </div>
 
-            {content.short_blurb && <Card>
-                <CardHeader>
-                    <h3 className="font-semibold text-lg">Short Blurb</h3>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-sm">{formatText(content.short_blurb)}</p>
-                </CardContent>
-            </Card>}
+            {/* Short Blurb using MarkdownRenderer */}
+            {content.short_blurb && (
+                <Card>
+                    <CardHeader>
+                        <h3 className="font-semibold text-lg">Short Blurb</h3>
+                    </CardHeader>
+                    <CardContent>
+                        <MarkdownRenderer className="text-sm">
+                            {content.short_blurb}
+                        </MarkdownRenderer>
+                    </CardContent>
+                </Card>
+            )}
 
             {content.second_short_blurb && <Card>
                 <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
