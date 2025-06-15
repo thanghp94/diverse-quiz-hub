@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { ArrowLeft, ArrowRight, HelpCircle, Languages, ChevronDown, ImageOff } f
 import { Content } from "@/hooks/useContent";
 import { Skeleton } from "@/components/ui/skeleton";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 interface ContentPopupViewProps {
     content: Content;
@@ -46,6 +48,7 @@ export const ContentPopupView = ({
 }: ContentPopupViewProps) => {
     const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
     const [imageLoadError, setImageLoadError] = useState(false);
+    const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
 
     useEffect(() => {
         setImageLoadError(false);
@@ -75,10 +78,31 @@ export const ContentPopupView = ({
                         <HelpCircle className="h-4 w-4" />
                         Quiz
                     </Button>
-                    <Button variant="outline" size="sm">
-                        <Languages className="h-4 w-4" />
-                        Translation
-                    </Button>
+                    {/* Translation Button as a Popover */}
+                    <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" size="sm">
+                                <Languages className="h-4 w-4" />
+                                Translation
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0 w-80 max-w-xs">
+                            <Card className="border-0 shadow-none">
+                                <CardHeader>
+                                    <h3 className="font-semibold text-lg">Translation</h3>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                    {content.translation ? (
+                                        <MarkdownRenderer className="text-sm">
+                                            {content.translation}
+                                        </MarkdownRenderer>
+                                    ) : (
+                                        <div className="text-gray-500 text-sm">No translation available for this content.</div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 
