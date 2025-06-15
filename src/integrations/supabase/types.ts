@@ -151,7 +151,7 @@ export type Database = {
           dk_loc_2?: string | null
           hanh_dong?: string | null
           header?: string | null
-          id?: string
+          id: string
           imageid?: string | null
           imagelink?: string | null
           information?: string | null
