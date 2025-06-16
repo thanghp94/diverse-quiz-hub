@@ -13,6 +13,12 @@ export const useContentImage = (imageid: string | null | undefined, fallbackImag
             }
             
             if (imageid) {
+                // Check if imageid is already a direct URL
+                if (imageid.startsWith('http://') || imageid.startsWith('https://')) {
+                    console.log('imageid is a direct URL, using it directly:', imageid);
+                    return imageid;
+                }
+                
                 console.log('Looking for image record with id:', imageid);
                 
                 try {
