@@ -28,7 +28,7 @@ export const VideoPlayer = ({
                   </div>
               </div>}
               {video2EmbedUrl && <div>
-                  {video2Data?.video_name}
+                  {video2Data?.video_name && <h4 className="font-medium text-sm text-gray-600 mb-2">{video2Data.video_name}</h4>}
                   <div className="aspect-video">
                       <iframe className="w-full h-full rounded-lg" src={video2EmbedUrl} title={video2Data?.video_name || 'YouTube video player 2'} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
                   </div>

@@ -82,6 +82,12 @@ const Header = () => {
             Assignments
           </button>
           <button 
+            onClick={() => setLocation('/content-groups')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Content Groups
+          </button>
+          <button 
             onClick={() => setLocation('/leaderboard')}
             className="text-white hover:text-white/80 transition-colors"
           >
