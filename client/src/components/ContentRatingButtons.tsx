@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -69,11 +68,11 @@ export const ContentRatingButtons = ({
 
   const handleRating = async (rating: string) => {
     if (isSubmitting) return;
-    
+
     setIsSubmitting(true);
     try {
       console.log('Submitting rating:', { effectiveStudentId, contentId, rating });
-      
+
       await apiRequest(`/content-ratings/${effectiveStudentId}/${contentId}`, {
         method: 'PUT',
         body: JSON.stringify({ rating }),
@@ -81,12 +80,12 @@ export const ContentRatingButtons = ({
           'Content-Type': 'application/json'
         }
       });
-      
+
       // Immediately refetch the rating to ensure consistency
       await refetch();
-      
+
       onRatingChange?.(rating);
-      
+
       // Invalidate related queries to refresh the cache
       await queryClient.invalidateQueries({ 
         queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`] 
@@ -94,10 +93,10 @@ export const ContentRatingButtons = ({
       await queryClient.invalidateQueries({ 
         queryKey: [`/api/content-ratings/stats/${contentId}`] 
       });
-      
+
       const ratingText = rating === 'really_bad' ? 'Really Hard' : 
                         rating === 'normal' ? 'Normal' : 'Easy';
-      
+
       toast({
         title: "Rating Saved",
         description: `Content marked as ${ratingText}`,
@@ -140,7 +139,7 @@ export const ContentRatingButtons = ({
         >
           <ThumbsDown className="w-3 h-3" />
         </Button>
-        
+
         <Button
           variant={currentRating === 'ok' ? 'default' : 'outline'}
           size="sm"

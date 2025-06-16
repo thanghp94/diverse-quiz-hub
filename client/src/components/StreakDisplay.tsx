@@ -8,7 +8,14 @@ interface StreakDisplayProps {
 
 export const StreakDisplay = ({ studentId, className = "" }: StreakDisplayProps) => {
   const { data: streak } = useQuery({
-    queryKey: ['/api/streaks', studentId],
+    queryKey: ['streaks', studentId],
+    queryFn: async () => {
+      const response = await fetch(`/api/streaks/${studentId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch streak');
+      }
+      return response.json();
+    },
     enabled: !!studentId,
   });
 

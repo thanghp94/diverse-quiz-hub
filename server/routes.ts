@@ -332,6 +332,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/content-ratings/:studentId/:contentId", async (req, res) => {
     try {
       const rating = await storage.updateContentRating(req.params.studentId, req.params.contentId, req.body.rating);
+      
+      // Record daily activity and update streak
+      try {
+        await storage.recordDailyActivity(req.params.studentId, 10);
+        await storage.updateStudentStreak(req.params.studentId);
+      } catch (activityError) {
+        console.log('Failed to record activity/streak:', activityError);
+      }
+      
       res.json(rating);
     } catch (error) {
       console.error('Error updating content rating:', error);
@@ -362,6 +371,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/streaks/:studentId", async (req, res) => {
     try {
+      // First record some activity for today if not already recorded
+      await storage.recordDailyActivity(req.params.studentId, 10);
+      
+      // Then update the streak
       const streak = await storage.updateStudentStreak(req.params.studentId);
       res.json(streak);
     } catch (error) {
