@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { ThumbsUp, Minus, ThumbsDown } from "lucide-react";
+import { ContentRatingButtons } from "./ContentRatingButtons";
 
 interface ContentDifficultyIndicatorProps {
   contentId: string;

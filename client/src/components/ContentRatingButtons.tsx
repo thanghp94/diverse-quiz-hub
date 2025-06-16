@@ -6,27 +6,34 @@ import { ThumbsDown, Minus, ThumbsUp } from 'lucide-react';
 
 interface ContentRatingButtonsProps {
   contentId: string;
-  studentId: string;
+  studentId?: string;
   initialRating?: string;
   onRatingChange?: (rating: string) => void;
+  compact?: boolean;
 }
 
 export const ContentRatingButtons = ({ 
   contentId, 
   studentId, 
   initialRating, 
-  onRatingChange 
+  onRatingChange,
+  compact = false 
 }: ContentRatingButtonsProps) => {
   const [currentRating, setCurrentRating] = useState(initialRating);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  // Get studentId from localStorage if not provided
+  const effectiveStudentId = studentId || (typeof window !== 'undefined' && localStorage.getItem('currentUser') 
+    ? JSON.parse(localStorage.getItem('currentUser')!).id 
+    : 'GV0002'); // Default demo student
 
   const handleRating = async (rating: string) => {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
     try {
-      await apiRequest(`/content-ratings/${studentId}/${contentId}`, {
+      await apiRequest(`/content-ratings/${effectiveStudentId}/${contentId}`, {
         method: 'PUT',
         body: JSON.stringify({ rating }),
         headers: {
@@ -55,6 +62,57 @@ export const ContentRatingButtons = ({
       setIsSubmitting(false);
     }
   };
+
+  if (compact) {
+    return (
+      <div className="flex gap-1 items-center">
+        <Button
+          variant={currentRating === 'really_bad' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => handleRating('really_bad')}
+          disabled={isSubmitting}
+          className={`flex items-center gap-1 text-xs px-2 py-1 h-6 ${
+            currentRating === 'really_bad' 
+              ? 'bg-red-500 hover:bg-red-600 text-white' 
+              : 'hover:bg-red-50 hover:border-red-300'
+          }`}
+        >
+          <ThumbsDown className="w-2 h-2" />
+          Hard
+        </Button>
+        
+        <Button
+          variant={currentRating === 'normal' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => handleRating('normal')}
+          disabled={isSubmitting}
+          className={`flex items-center gap-1 text-xs px-2 py-1 h-6 ${
+            currentRating === 'normal' 
+              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
+              : 'hover:bg-orange-50 hover:border-orange-300'
+          }`}
+        >
+          <Minus className="w-2 h-2" />
+          Normal
+        </Button>
+        
+        <Button
+          variant={currentRating === 'ok' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => handleRating('ok')}
+          disabled={isSubmitting}
+          className={`flex items-center gap-1 text-xs px-2 py-1 h-6 ${
+            currentRating === 'ok' 
+              ? 'bg-green-500 hover:bg-green-600 text-white' 
+              : 'hover:bg-green-50 hover:border-green-300'
+          }`}
+        >
+          <ThumbsUp className="w-2 h-2" />
+          Easy
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex gap-2 items-center">
