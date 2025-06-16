@@ -149,7 +149,7 @@ const AssignmentPage: React.FC = () => {
   // Filter assignments by type
   const homeworkAssignments = assignments.filter((a: Assignment) => a.type === 'homework');
   const mockTestAssignments = assignments.filter((a: Assignment) => a.type === 'mock test');
-  
+
   // Filter live classes to show only those within 4 hours
   const now = new Date();
   const fourHoursFromNow = new Date(now.getTime() + 4 * 60 * 60 * 1000);
@@ -180,7 +180,7 @@ const AssignmentPage: React.FC = () => {
     // Get content IDs for this assignment
     const assignmentContent = content.filter((c: any) => c.topicid === assignment.topicid);
     const contentIds = assignmentContent.map((c: any) => c.id);
-    
+
     // Get questions for this assignment
     const assignmentQuestions = questions.filter((q: Question) => 
       contentIds.includes(q.contentid) || q.topicid === assignment.topicid
@@ -194,16 +194,16 @@ const AssignmentPage: React.FC = () => {
       });
       return;
     }
-    
+
     // Randomize question order
     const shuffledQuestions = [...assignmentQuestions].sort(() => Math.random() - 0.5);
     const selectedQuestions = shuffledQuestions.slice(0, assignment.noofquestion || 15);
     const selectedQuestionIds = selectedQuestions.map((q: Question) => q.id);
-    
+
     // Set up quiz data first
     setSelectedAssignment(assignment);
     setQuestionIds(selectedQuestionIds);
-    
+
     // Create assignment student try
     const studentTryData = {
       assignmentid: assignment.id,
@@ -304,7 +304,7 @@ const AssignmentPage: React.FC = () => {
             </TableBody>
           </Table>
         )}
-        
+
         {/* Student Progress for Live Classes */}
         {selectedLiveClass && (
           <div className="mt-4 p-4 bg-gray-50 rounded">
@@ -352,7 +352,7 @@ const AssignmentPage: React.FC = () => {
       <Header />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Assignment Management</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-6">
             <CompactAssignmentTable 
@@ -362,7 +362,7 @@ const AssignmentPage: React.FC = () => {
               isLiveClass={false}
             />
           </div>
-          
+
           <div className="lg:col-span-3">
             <CompactAssignmentTable 
               assignments={liveClassAssignments} 
@@ -371,7 +371,7 @@ const AssignmentPage: React.FC = () => {
               isLiveClass={true}
             />
           </div>
-          
+
           <div className="lg:col-span-3">
             <CompactAssignmentTable 
               assignments={mockTestAssignments} 
