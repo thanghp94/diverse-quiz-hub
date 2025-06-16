@@ -1,8 +1,6 @@
 
 import { useState, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Tables } from "@/integrations/supabase/types";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Content } from "@/hooks/useContent";
 
 interface UseQuizProps {

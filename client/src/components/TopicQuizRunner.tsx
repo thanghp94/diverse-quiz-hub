@@ -1,9 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import QuizApp from "@/components/QuizApp";
-import { Tables } from "@/integrations/supabase/types";
 import { Loader2 } from "lucide-react";
 import {
   Dialog,

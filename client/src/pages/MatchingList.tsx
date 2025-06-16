@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'wouter';
 import { Loader2, Target } from 'lucide-react';
@@ -14,12 +13,11 @@ type MatchingActivity = {
 };
 
 const fetchMatchingActivities = async () => {
-  const { data, error } = await supabase.from('matching').select('*');
-
-  if (error) {
-    throw new Error(error.message);
+  const response = await fetch('/api/matching');
+  if (!response.ok) {
+    throw new Error('Failed to fetch matching activities');
   }
-  return data as MatchingActivity[];
+  return response.json() as Promise<MatchingActivity[]>;
 };
 
 const MatchingListPage = () => {
