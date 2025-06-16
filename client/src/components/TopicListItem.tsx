@@ -182,25 +182,31 @@ export const TopicListItem = ({
                         <span className="sr-only">Start Matching for {topic.topic}</span>
                       </Button>
                     )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
-                          <HelpCircle className="h-5 w-5" />
-                          <span className="sr-only">Start Quiz for {topic.topic}</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
-                          Overview Quiz
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
-                          Easy Quiz
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
-                          Hard Quiz
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex flex-col items-center gap-1">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
+                            <HelpCircle className="h-5 w-5" />
+                            <span className="sr-only">Start Quiz for {topic.topic}</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
+                            Overview Quiz
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
+                            Easy Quiz
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
+                            Hard Quiz
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <ContentRatingButtons 
+                        contentId={topic.id}
+                        compact={true}
+                      />
+                    </div>
                     <ChevronDown className={cn("h-6 w-6 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
                   </div>
                 </div>
@@ -242,28 +248,22 @@ export const TopicListItem = ({
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white">
-                                  <HelpCircle className="h-5 w-5" />
-                                  <span className="sr-only">Start Quiz for {content.title}</span>
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Easy')}>
-                                  Easy Quiz
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Hard')}>
-                                  Hard Quiz
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                            <ContentRatingButtons 
-                              contentId={content.id}
-                              compact={true}
-                            />
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1">
+                                <HelpCircle className="h-5 w-5" />
+                                <span className="sr-only">Start Quiz for {content.title}</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Easy')}>
+                                Easy Quiz
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Hard')}>
+                                Hard Quiz
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     ))}
