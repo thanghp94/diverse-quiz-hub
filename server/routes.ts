@@ -1,8 +1,49 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { wakeUpDatabase } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      const isDbHealthy = await wakeUpDatabase();
+      res.json({ 
+        status: isDbHealthy ? 'healthy' : 'unhealthy',
+        database: isDbHealthy ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Health check failed:', error);
+      res.status(503).json({ 
+        status: 'unhealthy',
+        database: 'disconnected',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
+  // Wake up database endpoint
+  app.post("/api/wake-db", async (req, res) => {
+    try {
+      console.log('Attempting to wake up database...');
+      const success = await wakeUpDatabase();
+      res.json({ 
+        success,
+        message: success ? 'Database is awake' : 'Failed to wake database',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Wake up failed:', error);
+      res.status(500).json({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Topics API
   app.get("/api/topics", async (req, res) => {
     try {

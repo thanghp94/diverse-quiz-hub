@@ -87,9 +87,36 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  private async executeWithRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        return await operation();
+      } catch (error: any) {
+        console.error(`Database operation failed (attempt ${attempt}/${retries}):`, error?.message || error);
+        
+        if (attempt === retries) {
+          throw error;
+        }
+        
+        // If it's a connection issue, wait and retry
+        if (error?.message?.includes('endpoint is disabled') || 
+            error?.message?.includes('connection') ||
+            error?.code === 'XX000') {
+          console.log(`Retrying database operation in ${attempt * 1000}ms...`);
+          await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+        } else {
+          throw error;
+        }
+      }
+    }
+    throw new Error('Max retries exceeded');
+  }
+
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).where(eq(users.id, id));
+      return result[0];
+    });
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
@@ -106,18 +133,22 @@ export class DatabaseStorage implements IStorage {
 
   // Topics
   async getTopics(): Promise<Topic[]> {
-    return await db.select().from(topics).orderBy(asc(topics.topic));
+    return this.executeWithRetry(async () => {
+      return await db.select().from(topics).orderBy(asc(topics.topic));
+    });
   }
 
   async getBowlChallengeTopics(): Promise<Topic[]> {
-    return await db.select().from(topics)
-      .where(
-        sql`${topics.parentid} IS NULL 
-        AND ${topics.topic} IS NOT NULL 
-        AND ${topics.topic} != ''
-        AND ${topics.topic} NOT IN ('Art', 'Bowl', 'Challenge', 'Debate', 'History', 'Literature', 'Media', 'Music', 'Science and Technology', 'Social Studies', 'Special areas', 'Teaching lesson', 'Writing')`
-      )
-      .orderBy(asc(topics.topic));
+    return this.executeWithRetry(async () => {
+      return await db.select().from(topics)
+        .where(
+          sql`${topics.parentid} IS NULL 
+          AND ${topics.topic} IS NOT NULL 
+          AND ${topics.topic} != ''
+          AND ${topics.topic} NOT IN ('Art', 'Bowl', 'Challenge', 'Debate', 'History', 'Literature', 'Media', 'Music', 'Science and Technology', 'Social Studies', 'Special areas', 'Teaching lesson', 'Writing')`
+        )
+        .orderBy(asc(topics.topic));
+    });
   }
 
   async getTopicById(id: string): Promise<Topic | undefined> {
@@ -127,10 +158,12 @@ export class DatabaseStorage implements IStorage {
 
   // Content
   async getContent(topicId?: string): Promise<Content[]> {
-    if (topicId) {
-      return await db.select().from(content).where(eq(content.topicid, topicId));
-    }
-    return await db.select().from(content);
+    return this.executeWithRetry(async () => {
+      if (topicId) {
+        return await db.select().from(content).where(eq(content.topicid, topicId));
+      }
+      return await db.select().from(content);
+    });
   }
 
   async getContentById(id: string): Promise<Content | undefined> {
@@ -140,7 +173,9 @@ export class DatabaseStorage implements IStorage {
 
   // Images
   async getImages(): Promise<Image[]> {
-    return await db.select().from(images);
+    return this.executeWithRetry(async () => {
+      return await db.select().from(images);
+    });
   }
 
   async getImageById(id: string): Promise<Image | undefined> {
