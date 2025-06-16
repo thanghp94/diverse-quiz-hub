@@ -45,7 +45,7 @@ async function importUsers() {
         const userData = {
           id: parseInt(student.id.replace(/\D/g, '') || '0') || Math.floor(Math.random() * 1000000),
           username: student.email || student.username || student.id,
-          password_hash: student.password_hash || 'temp_password_hash'
+          password: student.password_hash || '$2a$10$defaulthashedpassword'
         };
         
         await destDb.insert(schema.users).values(userData).onConflictDoNothing();
@@ -71,7 +71,7 @@ async function importUsers() {
         const userData = {
           id: parseInt(staffMember.id.replace(/\D/g, '') || '0') + 10000 || Math.floor(Math.random() * 1000000),
           username: staffMember.email || staffMember.username || staffMember.id,
-          password_hash: 'temp_password_hash'
+          password: '$2a$10$defaulthashedpassword'
         };
         
         await destDb.insert(schema.users).values(userData).onConflictDoNothing();
@@ -99,7 +99,7 @@ async function importUsers() {
           const userData = {
             id: parseInt(user.id.replace(/\D/g, '') || '0') + 20000 || Math.floor(Math.random() * 1000000),
             username: user.email || user.meraki_email || user.username || user.id,
-            password_hash: 'temp_password_hash'
+            password: '$2a$10$defaulthashedpassword'
           };
           
           await destDb.insert(schema.users).values(userData).onConflictDoNothing();
