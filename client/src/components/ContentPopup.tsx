@@ -86,19 +86,10 @@ const ContentPopup = ({
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col space-y-6">
-              {/* Image displayed at top on desktop, below description on mobile */}
-              <div className="order-2 md:order-1">
-                <MediaDisplay
-                  imageUrl={imageUrl}
-                  isImageLoading={isImageLoading}
-                  title={content.title}
-                  imageid={content.imageid}
-                  isFullWidth={true}
-                />
-              </div>
-
-              <div className="order-1 md:order-2">
+            {/* Two-column layout for desktop, stacked for mobile */}
+            <div className="flex flex-col lg:flex-row lg:gap-6 space-y-6 lg:space-y-0">
+              {/* Content side */}
+              <div className="flex-1 lg:w-1/2">
                 <ContentPopupView
                     content={content}
                     contentListLength={contentList.length}
@@ -113,6 +104,17 @@ const ContentPopup = ({
                     videoData={videoData}
                     video2Data={video2Data}
                     hideMediaDisplay={true}
+                />
+              </div>
+
+              {/* Image side */}
+              <div className="flex-1 lg:w-1/2">
+                <MediaDisplay
+                  imageUrl={imageUrl}
+                  isImageLoading={isImageLoading}
+                  title={content.title}
+                  imageid={content.imageid}
+                  isFullWidth={true}
                 />
               </div>
             </div>

@@ -20,7 +20,7 @@ export const MediaDisplay = ({ imageUrl, isImageLoading, title, imageid, isFullW
   }, [imageUrl]);
   
   return (
-    <div className={`relative w-full ${isFullWidth ? 'h-80' : 'h-64'} bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center`}>
+    <div className={`relative w-full ${isFullWidth ? 'h-96 lg:h-full lg:min-h-96' : 'h-64'} bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center`}>
         {isImageLoading ? <Skeleton className="w-full h-full" /> : imageLoadError ? <div className="text-red-500 flex flex-col items-center">
                 <ImageOff className="h-12 w-12 mb-2" />
                 <span className="text-lg font-semibold">Error loading image</span>
