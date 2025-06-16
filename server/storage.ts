@@ -540,34 +540,38 @@ export class DatabaseStorage implements IStorage {
     return result[0] || null;
   }
 
-  // Student Tries
-  async createStudentTry(studentTry: any): Promise<any> {
-    // Create assignment_student_try record
-    const assignmentStudentTryData = {
-      assignmentid: studentTry.assignment_id,
-      hocsinh_id: studentTry.student_id,
-      questionids: JSON.stringify(studentTry.question_ids || []),
-      start_time: new Date().toISOString(),
-      typeoftaking: studentTry.level || 'Overview'
+  // Assignment Student Tries
+  async createAssignmentStudentTry(assignmentStudentTryData: any): Promise<any> {
+    const data = {
+      assignmentid: assignmentStudentTryData.assignmentid || null,
+      contentid: assignmentStudentTryData.contentid || assignmentStudentTryData.contentID || null,
+      hocsinh_id: assignmentStudentTryData.hocsinh_id,
+      questionids: assignmentStudentTryData.questionids || assignmentStudentTryData.questionIDs || JSON.stringify([]),
+      start_time: assignmentStudentTryData.start_time || new Date().toISOString(),
+      typeoftaking: assignmentStudentTryData.typeoftaking || 'Overview'
     };
     
-    const assignmentStudentTryResult = await db.insert(assignment_student_try)
-      .values(assignmentStudentTryData)
-      .returning();
-    
+    const result = await db.insert(assignment_student_try).values(data).returning();
+    return result[0];
+  }
+
+  async getAssignmentStudentTryById(id: string): Promise<any> {
+    const result = await db.select().from(assignment_student_try).where(eq(assignment_student_try.id, parseInt(id)));
+    return result[0] || null;
+  }
+
+  // Student Tries
+  async createStudentTry(studentTry: any): Promise<any> {
     // Create student_try record
     const studentTryData = {
       id: `try_${Date.now()}`,
-      assignment_student_try_id: assignmentStudentTryResult[0].id.toString(),
-      hocsinh_id: studentTry.student_id
+      assignment_student_try_id: studentTry.assignment_student_try_id,
+      hocsinh_id: studentTry.hocsinh_id
     };
     
     const studentTryResult = await db.insert(student_try).values(studentTryData).returning();
     
-    return {
-      ...studentTryResult[0],
-      assignment_student_try_id: assignmentStudentTryResult[0].id
-    };
+    return studentTryResult[0];
   }
 
   async getStudentTryById(id: string): Promise<any> {

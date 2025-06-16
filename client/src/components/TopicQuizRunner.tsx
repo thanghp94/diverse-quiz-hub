@@ -64,44 +64,42 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
                 return;
             }
 
-            // Create assignment and assignment_student_try in database
-            const assignmentResponse = await fetch('/api/assignments', {
+            // Create assignment_student_try directly
+            const assignmentTryResponse = await fetch('/api/assignment-student-tries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    topic_id: topicId,
-                    level: level,
-                    question_ids: randomizedQuestionIds
+                    hocsinh_id: studentId,
+                    questionids: JSON.stringify(randomizedQuestionIds),
+                    start_time: new Date().toISOString(),
+                    typeoftaking: level
                 })
             });
 
-            if (!assignmentResponse.ok) {
-                throw new Error('Failed to create assignment');
+            if (!assignmentTryResponse.ok) {
+                throw new Error('Failed to create assignment student try');
             }
 
-            const assignment = await assignmentResponse.json();
+            const assignmentStudentTry = await assignmentTryResponse.json();
 
             // Create student try
-            const tryResponse = await fetch('/api/student-tries', {
+            const studentTryResponse = await fetch('/api/student-tries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    assignment_id: assignment.id,
-                    student_id: studentId,
-                    level: level,
-                    question_ids: randomizedQuestionIds
+                    assignment_student_try_id: assignmentStudentTry.id,
+                    hocsinh_id: studentId
                 })
             });
 
-            if (!tryResponse.ok) {
+            if (!studentTryResponse.ok) {
                 throw new Error('Failed to create student try');
             }
 
-            const studentTry = await tryResponse.json();
+            const studentTry = await studentTryResponse.json();
             
             const newAssignmentTry = {
-                id: studentTry.id,
-                assignment_id: assignment.id,
+                id: assignmentStudentTry.id,
                 student_id: studentId,
                 topicID: topicId,
                 questionIDs: JSON.stringify(randomizedQuestionIds),

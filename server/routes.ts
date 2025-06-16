@@ -443,6 +443,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Assignment Student Try API
+  app.post("/api/assignment-student-tries", async (req, res) => {
+    try {
+      const assignmentStudentTry = await storage.createAssignmentStudentTry(req.body);
+      res.json(assignmentStudentTry);
+    } catch (error) {
+      console.error('Error creating assignment student try:', error);
+      res.status(500).json({ error: 'Failed to create assignment student try' });
+    }
+  });
+
+  app.get("/api/assignment-student-tries/:id", async (req, res) => {
+    try {
+      const assignmentStudentTry = await storage.getAssignmentStudentTryById(req.params.id);
+      if (!assignmentStudentTry) {
+        return res.status(404).json({ error: 'Assignment student try not found' });
+      }
+      res.json(assignmentStudentTry);
+    } catch (error) {
+      console.error('Error fetching assignment student try:', error);
+      res.status(500).json({ error: 'Failed to fetch assignment student try' });
+    }
+  });
+
   // Student Try API
   app.get("/api/student-tries", async (req, res) => {
     try {
