@@ -37,10 +37,21 @@ export const ContentRatingButtons = ({
 
   // Update current rating when existing rating is fetched
   useEffect(() => {
-    if (existingRating?.rating && !currentRating) {
+    if (existingRating?.rating) {
+      console.log('Setting current rating from API:', existingRating.rating);
       setCurrentRating(existingRating.rating);
     }
-  }, [existingRating?.rating, currentRating]);
+  }, [existingRating?.rating]);
+
+  // Debug log current state
+  useEffect(() => {
+    console.log('ContentRatingButtons state:', {
+      contentId,
+      effectiveStudentId,
+      currentRating,
+      existingRating: existingRating?.rating
+    });
+  }, [contentId, effectiveStudentId, currentRating, existingRating?.rating]);
 
   const handleRating = async (rating: string) => {
     if (isSubmitting) return;
