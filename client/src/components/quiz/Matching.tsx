@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +29,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
   const rightItems = question.pairs?.map(pair => pair.right) || [];
   // Keep right items in consistent order instead of shuffling
   const fixedRightItems = [...rightItems];
-  
+
   // Check if any items are images
   const isImageItem = (item: string) => {
     return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
@@ -58,17 +57,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
   const handleDrop = (e: React.DragEvent, rightItem: string) => {
     e.preventDefault();
     dragCounter.current = 0;
-    
+
     if (draggedItem) {
       const newMatches = { ...matches };
-      
+
       // Remove any existing match for this right item
       Object.keys(newMatches).forEach(key => {
         if (newMatches[key] === rightItem) {
           delete newMatches[key];
         }
       });
-      
+
       newMatches[draggedItem] = rightItem;
       setMatches(newMatches);
     }
@@ -79,7 +78,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
     try {
       const endTime = new Date();
       const durationSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
-      
+
       // Create correct matches object for reference
       const correctMatches: {[key: string]: string} = {};
       question.pairs?.forEach(pair => {
@@ -87,7 +86,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
       });
 
       const studentId = 'user-123-placeholder'; // Replace with actual auth.uid() when authentication is implemented
-      
+
       // Note: Student attempt tracking will be implemented when authentication is added
       console.log('Student attempt completed:', {
         score,
@@ -101,13 +100,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
-    
+
     setIsSubmitting(true);
-    
+
     let correctCount = 0;
     const correctPairs = question.pairs || [];
     const newCorrectMatches: {[key: string]: boolean} = {};
-    
+
     correctPairs.forEach(pair => {
       const isMatchCorrect = matches[pair.left] === pair.right;
       newCorrectMatches[pair.left] = isMatchCorrect;
@@ -115,21 +114,21 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
         correctCount++;
       }
     });
-    
+
     const totalPairs = correctPairs.length;
     const score = Math.round((correctCount / totalPairs) * 100);
     const isCorrect = correctCount === totalPairs;
-    
+
     // Set correctness state for visual feedback
     setCorrectMatches(newCorrectMatches);
     setIsSubmitted(true);
-    
+
     // Save attempt to database
     await saveStudentAttempt(matches, score, isCorrect);
-    
+
     // Call the original onAnswer callback
     onAnswer(matches, isCorrect);
-    
+
     setIsSubmitting(false);
   };
 
@@ -177,7 +176,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                 const isUsed = Object.keys(matches).includes(item);
                 const isCorrect = isSubmitted && correctMatches[item];
                 const isIncorrect = isSubmitted && correctMatches[item] === false;
-                
+
                 return (
                   <div
                     key={item}
@@ -219,7 +218,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                           }}
                         />
                       </DialogTrigger>
-                      <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] flex items-center justify-center">
+                      <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
                         <img 
                           src={item} 
                           alt="Full size matching item" 
@@ -235,7 +234,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                 const isUsed = Object.keys(matches).includes(item);
                 const isCorrect = isSubmitted && correctMatches[item];
                 const isIncorrect = isSubmitted && correctMatches[item] === false;
-                
+
                 return (
                   <div
                     key={item}
@@ -272,7 +271,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
               })}
             </div>
           </div>
-          
+
           {/* Bottom Row - Descriptions/Drop Zones */}
           <div className="flex-1">
             <div 
@@ -290,7 +289,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                 const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
                 const isCorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft];
                 const isIncorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft] === false;
-                
+
                 return (
                   <div
                     key={item}
@@ -320,7 +319,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                             }}
                           />
                         </DialogTrigger>
-                        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] flex items-center justify-center">
+                        <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
                           <img 
                             src={item} 
                             alt="Full size matching target" 
@@ -353,7 +352,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                                   }}
                                 />
                               </DialogTrigger>
-                              <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] flex items-center justify-center">
+                              <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
                                 <img 
                                   src={matchedLeft} 
                                   alt="Full size matched item" 
@@ -381,7 +380,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
             </div>
           </div>
         </div>
-        
+
         {!isSubmitted ? (
           <div className="mt-4 space-y-2">
             <Button 
