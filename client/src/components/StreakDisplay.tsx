@@ -21,7 +21,7 @@ export const StreakDisplay = ({ studentId, className = "" }: StreakDisplayProps)
     );
   }
 
-  const currentStreak = streak.current_streak || 0;
+  const currentStreak = (streak as any)?.current_streak || 0;
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>

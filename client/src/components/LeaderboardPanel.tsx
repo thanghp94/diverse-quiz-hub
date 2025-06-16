@@ -102,7 +102,7 @@ export const LeaderboardPanel = () => {
           
           <TabsContent value="points" className="mt-4">
             <LeaderboardList
-              data={leaderboards?.totalPoints || []}
+              data={(leaderboards as any)?.totalPoints || []}
               title="Total Points"
               icon={<Trophy className="w-4 h-4 text-yellow-500" />}
               valueKey="total_points"
@@ -112,7 +112,7 @@ export const LeaderboardPanel = () => {
           
           <TabsContent value="streak" className="mt-4">
             <LeaderboardList
-              data={leaderboards?.bestStreak || []}
+              data={(leaderboards as any)?.bestStreak || []}
               title="Best Streak"
               icon={<Flame className="w-4 h-4 text-orange-500" />}
               valueKey="longest_streak"
@@ -122,7 +122,7 @@ export const LeaderboardPanel = () => {
           
           <TabsContent value="today" className="mt-4">
             <LeaderboardList
-              data={leaderboards?.todayQuizzes || []}
+              data={(leaderboards as any)?.todayQuizzes || []}
               title="Most Active Today"
               icon={<Target className="w-4 h-4 text-blue-500" />}
               valueKey="today_count"
@@ -132,7 +132,7 @@ export const LeaderboardPanel = () => {
           
           <TabsContent value="weekly" className="mt-4">
             <LeaderboardList
-              data={leaderboards?.weeklyQuizzes || []}
+              data={(leaderboards as any)?.weeklyQuizzes || []}
               title="Most Active This Week"
               icon={<Calendar className="w-4 h-4 text-green-500" />}
               valueKey="weekly_count"
