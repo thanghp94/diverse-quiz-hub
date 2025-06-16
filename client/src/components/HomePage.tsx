@@ -3,6 +3,7 @@ import Header from "./Header";
 import ContentSection from "./ContentSection";
 import TopicCard from "./TopicCard";
 import MatchingActivityButton from "./MatchingActivityButton";
+import { StreakDisplay } from "./StreakDisplay";
 import { Card } from "@/components/ui/card";
 import { Link } from "wouter";
 import { useTopics } from "@/hooks/useTopics";
@@ -19,7 +20,8 @@ import {
   Zap,
   BookOpen,
   Target,
-  Loader2
+  Loader2,
+  Flame
 } from "lucide-react";
 
 const HomePage = () => {
@@ -210,6 +212,53 @@ const HomePage = () => {
           items={bowlChallengeItems}
           color="bg-blue-100"
         />
+
+        {/* User Dashboard Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1 rounded bg-pink-100">
+              <User className="h-4 w-4 text-pink-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">Dashboard</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            {/* Streak Card */}
+            <Card className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-800 text-sm mb-2">Daily Streak</h3>
+                  <StreakDisplay studentId="user-123-placeholder" className="text-lg" />
+                </div>
+                <Flame className="w-8 h-8 text-orange-500" />
+              </div>
+            </Card>
+
+            {/* Leaderboard Link */}
+            <Link to="/leaderboard">
+              <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-800 text-sm mb-2">Leaderboard</h3>
+                    <p className="text-xs text-gray-600">See your ranking</p>
+                  </div>
+                  <Award className="w-8 h-8 text-purple-500" />
+                </div>
+              </Card>
+            </Link>
+
+            {/* Personal Stats */}
+            <Card className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-800 text-sm mb-2">Personal Stats</h3>
+                  <p className="text-xs text-gray-600">Track progress</p>
+                </div>
+                <BarChart3 className="w-8 h-8 text-green-500" />
+              </div>
+            </Card>
+          </div>
+        </div>
 
         {/* Main Topics Section from Database */}
         <div className="mb-8">
