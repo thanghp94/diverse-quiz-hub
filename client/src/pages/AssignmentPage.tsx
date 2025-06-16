@@ -269,10 +269,11 @@ const AssignmentPage: React.FC = () => {
     }
   };
 
-  const CompactAssignmentTable = ({ assignments, title, showActions = false }: { 
+  const CompactAssignmentTable = ({ assignments, title, showActions = false, isLiveClass = false }: { 
     assignments: Assignment[], 
     title: string, 
-    showActions?: boolean 
+    showActions?: boolean,
+    isLiveClass?: boolean
   }) => (
     <Card className="mb-6">
       <CardHeader className="pb-3">
@@ -286,19 +287,23 @@ const AssignmentPage: React.FC = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Subject</TableHead>
+                {!isLiveClass && <TableHead>Subject</TableHead>}
                 <TableHead>Questions</TableHead>
-                <TableHead>Status</TableHead>
+                {!isLiveClass && <TableHead>Status</TableHead>}
                 {showActions && <TableHead>Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {assignments.map((assignment) => (
-                <TableRow key={assignment.id}>
+                <TableRow 
+                  key={assignment.id}
+                  className={assignment.type === 'homework' ? 'cursor-pointer hover:bg-gray-50' : ''}
+                  onClick={assignment.type === 'homework' ? () => handleJoinLiveClass(assignment) : undefined}
+                >
                   <TableCell className="font-medium">{assignment.assignmentname}</TableCell>
-                  <TableCell>{assignment.subject}</TableCell>
+                  {!isLiveClass && <TableCell>{assignment.subject}</TableCell>}
                   <TableCell>{assignment.noofquestion}</TableCell>
-                  <TableCell>{assignment.status}</TableCell>
+                  {!isLiveClass && <TableCell>{assignment.status}</TableCell>}
                   {showActions && (
                     <TableCell>
                       <div className="flex gap-1">
@@ -306,7 +311,10 @@ const AssignmentPage: React.FC = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleDuplicateAssignment(assignment.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicateAssignment(assignment.id);
+                            }}
                             disabled={duplicateAssignmentMutation.isPending}
                           >
                             <Copy className="w-3 h-3" />
@@ -389,28 +397,31 @@ const AssignmentPage: React.FC = () => {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Assignment Management</h1>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-6">
             <CompactAssignmentTable 
               assignments={homeworkAssignments} 
               title="Homework" 
               showActions={true}
+              isLiveClass={false}
             />
           </div>
           
-          <div>
+          <div className="lg:col-span-3">
             <CompactAssignmentTable 
               assignments={liveClassAssignments} 
               title="Live Class" 
               showActions={true}
+              isLiveClass={true}
             />
           </div>
           
-          <div>
+          <div className="lg:col-span-3">
             <CompactAssignmentTable 
               assignments={mockTestAssignments} 
               title="Mock Test" 
               showActions={true}
+              isLiveClass={false}
             />
           </div>
         </div>
