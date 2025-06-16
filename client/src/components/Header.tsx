@@ -91,19 +91,25 @@ const Header = () => {
                 <div className="w-48 p-2">
                   <NavigationMenuLink 
                     className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?subject=challenge&tab=overview-quiz')}
+                    onClick={() => setLocation('/challenge-subject')}
+                  >
+                    Challenge Subjects
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/challenge-subject?tab=overview-quiz')}
                   >
                     Overview Quiz
                   </NavigationMenuLink>
                   <NavigationMenuLink 
                     className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?subject=challenge&tab=easy-quiz')}
+                    onClick={() => setLocation('/challenge-subject?tab=easy-quiz')}
                   >
                     Easy Quiz
                   </NavigationMenuLink>
                   <NavigationMenuLink 
                     className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?subject=challenge&tab=hard-quiz')}
+                    onClick={() => setLocation('/challenge-subject?tab=hard-quiz')}
                   >
                     Hard Quiz
                   </NavigationMenuLink>

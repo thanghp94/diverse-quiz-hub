@@ -13,6 +13,7 @@ import MatchingListPage from "./pages/MatchingList";
 import MatchingActivityPage from "./pages/MatchingActivity";
 import DebatePage from "./pages/Debate";
 import WritingPage from "./pages/Writing";
+import ChallengeSubject from "./pages/ChallengeSubject";
 import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/login" component={Login} />
           <Route path="/" component={Topics} />
           <Route path="/topics" component={Topics} />
+          <Route path="/challenge-subject" component={ChallengeSubject} />
           <Route path="/content/:id" component={Content} />
           <Route path="/leaderboard" component={Leaderboard} />
           <Route path="/matching" component={MatchingListPage} />
