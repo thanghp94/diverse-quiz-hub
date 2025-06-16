@@ -9,6 +9,7 @@ import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useContentImage } from "@/hooks/useContentImage";
 import { useTopicMatching } from "@/hooks/useTopicMatching";
+import { SubtopicMatchingButton } from "@/components/SubtopicMatchingButton";
 
 interface Topic {
   id: string;
@@ -75,6 +76,8 @@ const getContentTypeColor = (content: any) => {
     if (content.url) return 'bg-blue-500/20 text-blue-200';
     return 'bg-green-500/20 text-green-200';
 };
+
+
 
 
 
@@ -256,23 +259,11 @@ export const TopicListItem = ({
                                 {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0">
-                                {(() => {
-                                  const { hasMatchingActivities } = useTopicMatching(subtopic.id);
-                                  return hasMatchingActivities ? (
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onStartTopicMatching(subtopic.id, subtopic.topic);
-                                      }}
-                                    >
-                                      <Shuffle className="h-4 w-4" />
-                                      <span className="sr-only">Start Matching for {subtopic.topic}</span>
-                                    </Button>
-                                  ) : null;
-                                })()}
+                                <SubtopicMatchingButton 
+                                  topicId={subtopic.id} 
+                                  topicName={subtopic.topic}
+                                  onStartTopicMatching={onStartTopicMatching}
+                                />
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                       <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
