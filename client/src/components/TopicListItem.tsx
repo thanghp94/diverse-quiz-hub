@@ -232,13 +232,9 @@ export const TopicListItem = ({
                                 <div className="flex items-center justify-between gap-2 mb-2">
                                   <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
                                   <div className="flex items-center gap-2">
-                                    <ContentRatingButtons 
-                                      contentId={content.id}
-                                      compact={true}
-                                    />
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm" className="text-white/70 hover:bg-white/20 hover:text-white text-xs px-2 py-1 h-6">
+                                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
                                           Quiz
                                         </Button>
                                       </DropdownMenuTrigger>
