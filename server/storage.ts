@@ -79,6 +79,8 @@ export interface IStorage {
   // Assignments
   createAssignment(assignment: any): Promise<any>;
   getAssignmentById(id: string): Promise<any>;
+  getAllAssignments(): Promise<any[]>;
+  duplicateAssignment(id: string, newType: string): Promise<any>;
 
   // Assignment Student Tries
   createAssignmentStudentTry(assignmentStudentTryData: any): Promise<any>;
@@ -660,6 +662,39 @@ export class DatabaseStorage implements IStorage {
   async getAssignmentById(id: string): Promise<any> {
     const result = await db.select().from(assignment).where(eq(assignment.id, id));
     return result[0] || null;
+  }
+
+  async getAllAssignments(): Promise<any[]> {
+    return await this.executeWithRetry(async () => {
+      const result = await db.select().from(assignment);
+      return result;
+    });
+  }
+
+  async duplicateAssignment(id: string, newType: string): Promise<any> {
+    return await this.executeWithRetry(async () => {
+      // First get the original assignment
+      const originalAssignment = await db.select().from(assignment).where(eq(assignment.id, id));
+      if (!originalAssignment[0]) {
+        throw new Error('Assignment not found');
+      }
+
+      const original = originalAssignment[0];
+      const newId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Create a duplicate with new type and id
+      const newAssignment = {
+        ...original,
+        id: newId,
+        type: newType,
+        assignmentname: `${original.assignmentname} (${newType})`,
+        created_at: new Date(),
+        update: new Date().toISOString()
+      };
+
+      const result = await db.insert(assignment).values(newAssignment).returning();
+      return result[0];
+    });
   }
 
   // Assignment Student Tries

@@ -468,6 +468,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Assignment API
+  app.get("/api/assignments", async (req, res) => {
+    try {
+      const assignments = await storage.getAllAssignments();
+      res.json(assignments);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      res.status(500).json({ error: 'Failed to fetch assignments' });
+    }
+  });
+
   app.post("/api/assignments", async (req, res) => {
     try {
       const assignment = await storage.createAssignment(req.body);
@@ -491,7 +501,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/assignments/:id/duplicate", async (req, res) => {
+    try {
+      const { type } = req.body;
+      const assignment = await storage.duplicateAssignment(req.params.id, type);
+      res.json(assignment);
+    } catch (error) {
+      console.error('Error duplicating assignment:', error);
+      res.status(500).json({ error: 'Failed to duplicate assignment' });
+    }
+  });
+
   // Assignment Student Try API
+  app.get("/api/assignment-student-tries", async (req, res) => {
+    try {
+      const assignmentStudentTries = await storage.getAllAssignmentStudentTries();
+      res.json(assignmentStudentTries);
+    } catch (error) {
+      console.error('Error fetching assignment student tries:', error);
+      res.status(500).json({ error: 'Failed to fetch assignment student tries' });
+    }
+  });
+
   app.post("/api/assignment-student-tries", async (req, res) => {
     try {
       const assignmentStudentTry = await storage.createAssignmentStudentTry(req.body);

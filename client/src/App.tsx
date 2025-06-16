@@ -17,6 +17,7 @@ import ChallengeSubject from "./pages/ChallengeSubject";
 import Login from "./pages/Login";
 import { DemoPage } from "./pages/DemoPage";
 import LearningJourneyPage from "./pages/LearningJourneyPage";
+import AssignmentPage from "./pages/AssignmentPage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/debate" component={DebatePage} />
           <Route path="/writing" component={WritingPage} />
           <Route path="/learning-journey" component={LearningJourneyPage} />
+          <Route path="/assignments" component={AssignmentPage} />
           <Route path="/demo" component={DemoPage} />
           <Route component={NotFound} />
         </Switch>
