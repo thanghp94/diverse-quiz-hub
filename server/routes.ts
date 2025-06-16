@@ -444,9 +444,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Student Try API
+  app.get("/api/student-tries", async (req, res) => {
+    try {
+      // For testing - return all student tries
+      const tries = await storage.getAllStudentTries();
+      res.json(tries);
+    } catch (error) {
+      console.error('Error fetching student tries:', error);
+      res.status(500).json({ error: 'Failed to fetch student tries' });
+    }
+  });
+
   app.post("/api/student-tries", async (req, res) => {
     try {
+      console.log('Creating student try with data:', req.body);
       const studentTry = await storage.createStudentTry(req.body);
+      console.log('Student try created:', studentTry);
       res.json(studentTry);
     } catch (error) {
       console.error('Error creating student try:', error);

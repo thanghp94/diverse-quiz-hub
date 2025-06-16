@@ -27,6 +27,7 @@ interface QuizViewProps {
     questionIds: string[];
     onQuizFinish: () => void;
     assignmentStudentTryId: string;
+    studentTryId?: string;
 }
 
 const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizViewProps) => {

@@ -82,6 +82,7 @@ export interface IStorage {
   // Student Tries
   createStudentTry(studentTry: any): Promise<any>;
   getStudentTryById(id: string): Promise<any>;
+  getAllStudentTries(): Promise<any[]>;
   updateStudentTry(id: string, updates: any): Promise<any>;
 }
 
@@ -575,6 +576,11 @@ export class DatabaseStorage implements IStorage {
   async getStudentTryById(id: string): Promise<any> {
     const result = await db.select().from(student_try).where(eq(student_try.id, id));
     return result[0] || null;
+  }
+
+  async getAllStudentTries(): Promise<any[]> {
+    const result = await db.select().from(student_try);
+    return result;
   }
 
   async updateStudentTry(id: string, updates: any): Promise<any> {
