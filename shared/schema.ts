@@ -3,9 +3,33 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  id: text("id").primaryKey(),
+  first_name: text("first_name"),
+  last_name: text("last_name"),
+  full_name: text("full_name"),
+  assignment_student_try_id: text("assignment_student_try_id"),
+  assignment_id: text("assignment_id"),
+  email: text("email"),
+  topic_id: text("topic_id"),
+  content_id: text("content_id"),
+  typeoftaking: text("typeoftaking"),
+  question_id: text("question_id"),
+  meraki_email: text("meraki_email"),
+  answer_choice: text("answer_choice"),
+  quiz_result: text("quiz_result"),
+  show: text("show"),
+  category: text("category"),
+  session_shown_ids: text("session_shown_ids"),
+  content_viewed: integer("content_viewed"),
+  total_score: integer("total_score"),
+  question_viewed: integer("question_viewed"),
+  time_start: text("time_start"),
+  time_end: text("time_end"),
+  correct_answer: text("correct_answer"),
+  show_content: boolean("show_content"),
+  current_index: integer("current_index"),
+  writing_answer: text("writing_answer"),
+  created_at: timestamp("created_at").defaultNow(),
 });
 
 export const topics = pgTable("topic", {
@@ -184,10 +208,7 @@ export const student_try_content = pgTable("student_try_content", {
   update: text("update"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
+export const insertUserSchema = createInsertSchema(users);
 
 export const insertTopicSchema = createInsertSchema(topics);
 export const insertContentSchema = createInsertSchema(content);
