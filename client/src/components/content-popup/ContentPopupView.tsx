@@ -5,6 +5,7 @@ import { MediaDisplay } from "./MediaDisplay";
 import { VideoPlayer } from "./VideoPlayer";
 import { ContentBody } from "./ContentBody";
 import { ContentRatingButtons } from "../ContentRatingButtons";
+import { ContentEditor } from "../ContentEditor";
 
 interface ContentPopupViewProps {
   content: Content;
@@ -24,6 +25,7 @@ interface ContentPopupViewProps {
     video_name?: string | null;
   } | null;
   hideMediaDisplay?: boolean;
+  onContentUpdate?: (updatedContent: Content) => void;
 }
 
 export const ContentPopupView = ({
@@ -39,7 +41,8 @@ export const ContentPopupView = ({
   video2EmbedUrl,
   videoData,
   video2Data,
-  hideMediaDisplay = false
+  hideMediaDisplay = false,
+  onContentUpdate
 }: ContentPopupViewProps) => {
 
   return (
