@@ -246,18 +246,30 @@ const TopicContentWithMatching = ({
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                      {(hasVideo1 || hasVideo2) && (
+                      {hasVideo1 && (
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-1 py-1 h-6 min-w-[24px]"
                           onClick={(e) => {
                             e.stopPropagation();
                             setVideoPopupOpen(true);
                           }}
                         >
-                          <Play className="h-3 w-3 mr-1" />
-                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                          V
+                        </Button>
+                      )}
+                      {hasVideo2 && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-1 py-1 h-6 min-w-[28px]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVideoPopupOpen(true);
+                          }}
+                        >
+                          V2
                         </Button>
                       )}
                     </div>
@@ -646,18 +658,30 @@ export const TopicListItem = ({
                                                           compact={true}
                                                           studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
                                                         />
-                                                        {(hasVideo1 || hasVideo2) && (
+                                                        {hasVideo1 && (
                                                           <Button 
                                                             variant="outline" 
                                                             size="sm" 
-                                                            className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                            className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-1 py-1 h-6 min-w-[24px]"
                                                             onClick={(e) => {
                                                               e.stopPropagation();
                                                               setVideoPopupOpen(true);
                                                             }}
                                                           >
-                                                            <Play className="h-3 w-3 mr-1" />
-                                                            Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                            V
+                                                          </Button>
+                                                        )}
+                                                        {hasVideo2 && (
+                                                          <Button 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-1 py-1 h-6 min-w-[28px]"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              setVideoPopupOpen(true);
+                                                            }}
+                                                          >
+                                                            V2
                                                           </Button>
                                                         )}
                                                         <DropdownMenu>
