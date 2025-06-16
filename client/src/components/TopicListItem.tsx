@@ -58,7 +58,7 @@ const ContentThumbnail = ({ content }: { content: any }) => {
   }
   
   return (
-    <div className="w-12 h-8 rounded-md overflow-hidden flex-shrink-0">
+    <div className="w-18 h-12 rounded-md overflow-hidden flex-shrink-0">
       <img 
         src={imageUrl} 
         alt={content.title} 
