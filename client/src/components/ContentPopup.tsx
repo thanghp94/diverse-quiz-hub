@@ -32,13 +32,12 @@ const ContentPopup = ({
 }: ContentPopupProps) => {
   const {
     quizMode,
-    setQuizMode,
     assignmentTry,
-    setAssignmentTry,
     studentTry,
     questionIds,
     startQuiz,
-    handleQuizFinish,
+    closeQuiz,
+    setStudentTry,
   } = useQuiz({ content, onClose, startQuizDirectly });
 
   const {
@@ -68,12 +67,12 @@ const ContentPopup = ({
     }
   };
 
-  return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { setQuizMode(false); setAssignmentTry(null); } onClose(); }}>
+  return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { closeQuiz(); } onClose(); }}>
       <DialogContent className={cn("max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-6xl")}>
         {quizMode && questionIds.length > 0 && assignmentTry ? (
           <QuizView 
             questionIds={questionIds} 
-            onQuizFinish={handleQuizFinish}
+            onQuizFinish={closeQuiz}
             assignmentStudentTryId={assignmentTry.id.toString()}
             studentTryId={studentTry?.id}
           />
