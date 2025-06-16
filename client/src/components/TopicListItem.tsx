@@ -14,6 +14,7 @@ import { SubtopicMatchingButton } from "@/components/SubtopicMatchingButton";
 import { ParentTopicMatchingButton } from "@/components/ParentTopicMatchingButton";
 import { CompactContentDifficultyIndicator } from "@/components/ContentDifficultyIndicator";
 import { ContentRatingButtons } from "@/components/ContentRatingButtons";
+import { useQuery } from "@tanstack/react-query";
 
 interface Topic {
   id: string;
@@ -110,6 +111,161 @@ const formatDescription = (description: string) => {
         {line}
         {index < description.split('\n').length - 1 && <br />}
       </span>);
+};
+
+// Component to organize content by matching activities
+const TopicContentWithMatching = ({ 
+  topicId, 
+  topicContent, 
+  onContentClick, 
+  onStartQuiz 
+}: {
+  topicId: string;
+  topicContent: Content[];
+  onContentClick: (info: { content: Content; contextList: Content[] }) => void;
+  onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
+}) => {
+  // Fetch matching activities for this topic
+  const { data: matchingActivities } = useQuery({
+    queryKey: ['matchingByTopic', topicId],
+    queryFn: async () => {
+      const response = await fetch(`/api/matching/topic/${topicId}`);
+      if (!response.ok) throw new Error('Failed to fetch matching activities');
+      return response.json();
+    },
+  });
+
+  // Parse prompt field to get content IDs for each matching activity
+  const getContentIdsFromPrompt = (prompt: string) => {
+    if (!prompt) return [];
+    // Try to extract content IDs from the prompt string
+    // This assumes content IDs are in some format within the prompt
+    const contentIdPattern = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[a-f0-9]{8}/g;
+    const matches = prompt.match(contentIdPattern) || [];
+    return matches;
+  };
+
+  // Group content by matching activities
+  const organizedContent = React.useMemo(() => {
+    if (!matchingActivities?.length) {
+      return {
+        ungrouped: topicContent,
+        grouped: []
+      };
+    }
+
+    const grouped: Array<{
+      matching: any;
+      content: Content[];
+    }> = [];
+    
+    const usedContentIds = new Set<string>();
+
+    // For each matching activity, find associated content
+    matchingActivities.forEach((matching: any) => {
+      const contentIds = getContentIdsFromPrompt(matching.prompt || '');
+      const associatedContent = topicContent.filter(content => 
+        contentIds.includes(content.id)
+      );
+      
+      if (associatedContent.length > 0) {
+        grouped.push({
+          matching,
+          content: associatedContent
+        });
+        
+        associatedContent.forEach(content => usedContentIds.add(content.id));
+      }
+    });
+
+    // Remaining content that wasn't grouped
+    const ungrouped = topicContent.filter(content => !usedContentIds.has(content.id));
+
+    return { ungrouped, grouped };
+  }, [matchingActivities, topicContent]);
+
+  const ContentCard = ({ content }: { content: Content }) => (
+    <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div
+          onClick={() => onContentClick({
+            content,
+            contextList: topicContent
+          })}
+          className="flex-grow cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <ContentThumbnail content={content} />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h4 className="text-white/90 text-base font-medium leading-tight text-center">{content.title}</h4>
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                        Quiz
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Easy Quiz clicked for content:', content.id, content.title);
+                        onStartQuiz(content, topicContent, 'Easy');
+                      }}>
+                        Easy Quiz
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={(e) => {
+                        e.stopPropagation();
+                        console.log('Hard Quiz clicked for content:', content.id, content.title);
+                        onStartQuiz(content, topicContent, 'Hard');
+                      }}>
+                        Hard Quiz
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+              {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+              <CompactContentDifficultyIndicator contentId={content.id} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* Ungrouped content at the top */}
+      {organizedContent.ungrouped.length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {organizedContent.ungrouped.map(content => (
+            <ContentCard key={content.id} content={content} />
+          ))}
+        </div>
+      )}
+      
+      {/* Grouped content by matching activities */}
+      {organizedContent.grouped.map(({ matching, content }) => (
+        <div key={matching.id} className="space-y-2">
+          <div className="flex items-center gap-2 mt-4">
+            <Shuffle className="h-4 w-4 text-blue-300" />
+            <h5 className="text-white/90 font-medium">
+              {matching.topic || matching.description || 'Matching Activity'}
+            </h5>
+            <Badge variant="outline" className="border-blue-300/30 text-blue-200 text-xs">
+              Matching
+            </Badge>
+          </div>
+          <div className="grid grid-cols-2 gap-3 ml-6">
+            {content.map(contentItem => (
+              <ContentCard key={contentItem.id} content={contentItem} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 export const TopicListItem = ({
@@ -229,57 +385,12 @@ export const TopicListItem = ({
             <div className="px-3 pb-3 pt-1">
               <div className="space-y-1">
                 {topicContent.length > 0 && (
-                  <div className="grid grid-cols-2 gap-3">
-                    {topicContent.map(content => (
-                      <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
-                        <div className="flex items-start justify-between gap-2">
-                          <div
-                            onClick={() => onContentClick({
-                              content,
-                              contextList: topicContent
-                            })}
-                            className="flex-grow cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2">
-                              <ContentThumbnail content={content} />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-center gap-2 mb-2">
-                                  <h4 className="text-white/90 text-base font-medium leading-tight text-center">{content.title}</h4>
-                                  <div className="flex items-center gap-2">
-                                    <DropdownMenu>
-                                      <DropdownMenuTrigger asChild>
-                                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
-                                          Quiz
-                                        </Button>
-                                      </DropdownMenuTrigger>
-                                      <DropdownMenuContent>
-                                        <DropdownMenuItem onClick={(e) => {
-                                          e.stopPropagation();
-                                          console.log('Easy Quiz clicked for content:', content.id, content.title);
-                                          onStartQuiz(content, topicContent, 'Easy');
-                                        }}>
-                                          Easy Quiz
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={(e) => {
-                                          e.stopPropagation();
-                                          console.log('Hard Quiz clicked for content:', content.id, content.title);
-                                          onStartQuiz(content, topicContent, 'Hard');
-                                        }}>
-                                          Hard Quiz
-                                        </DropdownMenuItem>
-                                      </DropdownMenuContent>
-                                    </DropdownMenu>
-                                  </div>
-                                </div>
-                                {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
-                                <CompactContentDifficultyIndicator contentId={content.id} />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <TopicContentWithMatching 
+                    topicId={topic.id}
+                    topicContent={topicContent}
+                    onContentClick={onContentClick}
+                    onStartQuiz={onStartQuiz}
+                  />
                 )}
 
                 {subtopics.length > 0 && (
