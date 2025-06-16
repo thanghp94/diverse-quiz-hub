@@ -64,37 +64,7 @@ export const ContentRatingButtons = ({
   };
 
   if (compact) {
-    return (
-      <>
-        <Button
-          variant={currentRating === 'really_bad' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => handleRating('really_bad')}
-          disabled={isSubmitting}
-          className={`flex items-center justify-center w-6 h-6 p-0 ${
-            currentRating === 'really_bad' 
-              ? 'bg-red-500 hover:bg-red-600 text-white' 
-              : 'hover:bg-red-50 hover:border-red-300'
-          }`}
-        >
-          <ThumbsDown className="w-3 h-3" />
-        </Button>
-        
-        <Button
-          variant={currentRating === 'ok' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => handleRating('ok')}
-          disabled={isSubmitting}
-          className={`flex items-center justify-center w-6 h-6 p-0 ${
-            currentRating === 'ok' 
-              ? 'bg-green-500 hover:bg-green-600 text-white' 
-              : 'hover:bg-green-50 hover:border-green-300'
-          }`}
-        >
-          <ThumbsUp className="w-3 h-3" />
-        </Button>
-      </>
-    );
+    return null;
   }
 
   return null;
