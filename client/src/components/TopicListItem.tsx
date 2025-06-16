@@ -265,12 +265,14 @@ const TopicContentWithMatching = ({
                   {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                   <div className="flex items-center gap-2 mt-2">
                     <CompactContentDifficultyIndicator contentId={content.id} />
-                    <ContentRatingButtons 
-                      key={`${content.id}-rating`}
-                      contentId={content.id}
-                      compact={true}
-                      studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
-                    />
+                    <div className="flex items-center gap-1">
+                      <ContentRatingButtons 
+                        key={`${content.id}-rating`}
+                        contentId={content.id}
+                        compact={true}
+                        studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
