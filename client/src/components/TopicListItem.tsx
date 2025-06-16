@@ -224,7 +224,7 @@ export const TopicListItem = ({
                               className="flex items-start justify-between cursor-pointer"
                               onClick={() => onToggleContent(`subtopic-${subtopic.id}`)}
                             >
-                              <div className="flex-grow" onClick={() => onSubtopicClick(subtopic.id)}>
+                              <div className="flex-grow">
                                 <div className="flex items-center gap-3 mb-2">
                                   <Badge className="bg-green-500/20 text-green-200 text-xs">
                                     <BookOpen className="h-3 w-3" />
