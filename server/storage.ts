@@ -74,6 +74,15 @@ export interface IStorage {
   getWritingSubmission(id: string): Promise<WritingSubmission | undefined>;
   getStudentWritingSubmissions(studentId: string): Promise<WritingSubmission[]>;
   updateWritingSubmission(id: string, updates: Partial<WritingSubmission>): Promise<WritingSubmission>;
+
+  // Assignments
+  createAssignment(assignment: any): Promise<any>;
+  getAssignmentById(id: string): Promise<any>;
+
+  // Student Tries
+  createStudentTry(studentTry: any): Promise<any>;
+  getStudentTryById(id: string): Promise<any>;
+  updateStudentTry(id: string, updates: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -497,6 +506,69 @@ export class DatabaseStorage implements IStorage {
       .where(eq(writing_submissions.id, id))
       .returning();
     return result[0];
+  }
+
+  // Assignments
+  async createAssignment(assignment: any): Promise<any> {
+    const assignmentData = {
+      id: `assignment_${Date.now()}`,
+      topic_id: assignment.topic_id,
+      level: assignment.level,
+      question_ids: JSON.stringify(assignment.question_ids),
+      created_at: new Date()
+    };
+    // For now, return the assignment data without database insertion
+    // This will be properly implemented when assignment table structure is finalized
+    return assignmentData;
+  }
+
+  async getAssignmentById(id: string): Promise<any> {
+    // Placeholder implementation - will be replaced with actual database query
+    return {
+      id,
+      topic_id: null,
+      level: null,
+      question_ids: null,
+      created_at: new Date()
+    };
+  }
+
+  // Student Tries
+  async createStudentTry(studentTry: any): Promise<any> {
+    const tryData = {
+      id: `try_${Date.now()}`,
+      assignment_id: studentTry.assignment_id,
+      student_id: studentTry.student_id,
+      level: studentTry.level,
+      started_at: new Date(),
+      completed_at: null,
+      score: null
+    };
+    // For now, return the try data without database insertion
+    // This will be properly implemented when student_try table structure is finalized
+    return tryData;
+  }
+
+  async getStudentTryById(id: string): Promise<any> {
+    // Placeholder implementation - will be replaced with actual database query
+    return {
+      id,
+      assignment_id: null,
+      student_id: null,
+      level: null,
+      started_at: new Date(),
+      completed_at: null,
+      score: null
+    };
+  }
+
+  async updateStudentTry(id: string, updates: any): Promise<any> {
+    // Placeholder implementation - will be replaced with actual database query
+    return {
+      id,
+      ...updates,
+      updated_at: new Date()
+    };
   }
 }
 
