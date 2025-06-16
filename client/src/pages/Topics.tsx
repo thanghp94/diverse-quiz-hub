@@ -153,7 +153,8 @@ const Topics = () => {
       imageUrl: findImageUrl(info.content),
     });
   };
-  const handleStartQuiz = (content: Content, contextList: Content[]) => {
+  const handleStartQuiz = (content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => {
+    console.log('Starting content quiz for:', content.title, 'Level:', level);
     setSelectedContentInfo({
       content,
       contextList,
