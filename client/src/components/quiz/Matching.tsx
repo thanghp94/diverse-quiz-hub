@@ -213,7 +213,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                           <img 
                             src={item} 
                             alt="Matching item" 
-                            className="max-w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                            className="max-w-full max-h-36 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
                             onError={(e) => {
                               // Hide broken image and show fallback text
                               e.currentTarget.style.display = 'none';
@@ -321,7 +321,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                             <img 
                               src={item} 
                               alt="Matching target" 
-                              className="w-full max-h-20 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                              className="w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
                               onError={(e) => {
                                 // Hide broken image and show fallback text
                                 e.currentTarget.style.display = 'none';
