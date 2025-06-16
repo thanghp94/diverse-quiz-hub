@@ -51,7 +51,7 @@ export interface IStorage {
 
   // Content Ratings
   createContentRating(rating: InsertContentRating): Promise<ContentRating>;
-  getContentRating(studentId: string, contentId: string): Promise<ContentRating | undefined>;
+  getContentRating(studentId: string, contentId: string): Promise<ContentRating | null>;
   updateContentRating(studentId: string, contentId: string, rating: string): Promise<ContentRating>;
   getContentRatingStats(contentId: string): Promise<{ easy: number; normal: number; hard: number }>;
 
@@ -369,17 +369,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getContentRating(studentId: string, contentId: string): Promise<ContentRating | null> {
-    try {
+    return this.executeWithRetry(async () => {
       const result = await db.select().from(content_ratings)
         .where(and(
           eq(content_ratings.student_id, studentId),
           eq(content_ratings.content_id, contentId)
         ));
       return result[0] || null;
-    } catch (error) {
-      console.error('Error fetching content rating:', error);
-      return null;
-    }
+    });
   }
 
   async updateContentRating(studentId: string, contentId: string, rating: string): Promise<ContentRating> {
