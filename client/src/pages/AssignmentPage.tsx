@@ -6,7 +6,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Copy, Users, Play, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
+import QuizView from '@/components/QuizView';
 
 interface Assignment {
   id: string;
@@ -38,9 +40,8 @@ interface Question {
 const AssignmentPage: React.FC = () => {
   const [selectedLiveClass, setSelectedLiveClass] = useState<string | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [quizQuestions, setQuizQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  const [questionIds, setQuestionIds] = useState<string[]>([]);
   const [assignmentStudentTryId, setAssignmentStudentTryId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -187,24 +188,22 @@ const AssignmentPage: React.FC = () => {
     // Randomize question order
     const shuffledQuestions = [...assignmentQuestions].sort(() => Math.random() - 0.5);
     const selectedQuestions = shuffledQuestions.slice(0, assignment.noofquestion || 15);
-    const questionIds = selectedQuestions.map((q: Question) => q.id);
-    
-    // Set quiz questions for the popup
-    setQuizQuestions(selectedQuestions);
-    setCurrentQuestion(0);
-    setAnswers({});
+    const selectedQuestionIds = selectedQuestions.map((q: Question) => q.id);
     
     // Create assignment student try
     const studentTryData = {
       assignmentid: assignment.id,
       hocsinh_id: currentUser.id,
       contentid: contentIds.join(','),
-      questionids: JSON.stringify(questionIds),
+      questionids: JSON.stringify(selectedQuestionIds),
       start_time: new Date().toISOString(),
-      typeoftaking: 'live_class',
-      number_of_question: assignment.noofquestion || questionIds.length
+      typeoftaking: assignment.type === 'homework' ? 'homework' : 'live_class',
+      number_of_question: assignment.noofquestion || selectedQuestionIds.length
     };
 
+    // Set up quiz data for the proper QuizView component
+    setSelectedAssignment(assignment);
+    setQuestionIds(selectedQuestionIds);
     createStudentTryMutation.mutate(studentTryData);
     setShowQuiz(true);
   };
@@ -427,61 +426,20 @@ const AssignmentPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Quiz Dialog */}
-      <Dialog open={showQuiz} onOpenChange={setShowQuiz}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex justify-between items-center">
-              Question {currentQuestion + 1} of {quizQuestions.length}
-              <Button variant="ghost" size="sm" onClick={() => setShowQuiz(false)}>
-                <X className="w-4 h-4" />
-              </Button>
-            </DialogTitle>
-          </DialogHeader>
-          
-          {quizQuestions[currentQuestion] && (
-            <div className="space-y-4">
-              <div className="text-lg font-medium">
-                {quizQuestions[currentQuestion].question}
-              </div>
-              
-              <div className="space-y-2">
-                {['choice_a', 'choice_b', 'choice_c', 'choice_d'].map((choice, index) => {
-                  const choiceValue = quizQuestions[currentQuestion][choice as keyof Question] as string;
-                  const choiceLetter = String.fromCharCode(65 + index); // A, B, C, D
-                  
-                  return (
-                    <button
-                      key={choice}
-                      className={`w-full text-left p-3 rounded border ${
-                        answers[currentQuestion] === choiceLetter
-                          ? 'bg-blue-100 border-blue-500'
-                          : 'bg-white border-gray-200 hover:bg-gray-50'
-                      }`}
-                      onClick={() => handleAnswerSelect(choiceLetter)}
-                    >
-                      <span className="font-medium">{choiceLetter}.</span> {choiceValue}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              <div className="flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={handlePreviousQuestion}
-                  disabled={currentQuestion === 0}
-                >
-                  Previous
-                </Button>
-                
-                <Button
-                  onClick={handleNextQuestion}
-                  disabled={!answers[currentQuestion]}
-                >
-                  {currentQuestion === quizQuestions.length - 1 ? 'Submit' : 'Next'}
-                </Button>
-              </div>
+      {/* Assignment Quiz Dialog */}
+      <Dialog open={showQuiz} onOpenChange={(open) => { if(!open) setShowQuiz(false); }}>
+        <DialogContent className={cn("max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto", "max-w-6xl")}>
+          {questionIds.length > 0 && assignmentStudentTryId && selectedAssignment ? (
+            <QuizView 
+              questionIds={questionIds} 
+              onQuizFinish={() => setShowQuiz(false)}
+              assignmentStudentTryId={assignmentStudentTryId}
+              contentId={selectedAssignment.contentid}
+            />
+          ) : (
+            <div className="p-8 text-center">
+              <h3 className="text-lg font-medium mb-2">Loading Quiz...</h3>
+              <p className="text-gray-600">Preparing your assignment questions.</p>
             </div>
           )}
         </DialogContent>
