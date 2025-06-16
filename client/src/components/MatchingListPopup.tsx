@@ -208,9 +208,7 @@ export const MatchingListPopup = ({
                           <span className="font-medium">Description:</span> {activity.description}
                         </div>
                       )}
-                      <div className="text-xs text-gray-500 mt-3">
-                        Activity ID: {activity.id}
-                      </div>
+                      
                     </div>
                   </CardContent>
                 </Card>

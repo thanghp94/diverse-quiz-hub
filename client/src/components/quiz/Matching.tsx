@@ -121,102 +121,105 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
   const isComplete = Object.keys(matches).length === leftItems.length;
 
   return (
-    <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/90 backdrop-blur-lg border-gray-600/50 animate-fade-in shadow-2xl">
-      <CardHeader>
-        <CardTitle className="text-white text-2xl font-bold">{question.question}</CardTitle>
+    <Card className="bg-white border-gray-300 shadow-lg h-full flex flex-col">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-black text-xl font-bold">{question.question}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-8 p-8">
-        <div className="grid md:grid-cols-2 gap-12">
-          <div className="space-y-3">
-            <h3 className="text-white font-semibold text-lg">Drag from here:</h3>
-            {leftItems.map(item => {
-              const isUsed = Object.keys(matches).includes(item);
-              return (
-              <div
-                key={item}
-                draggable={!isUsed}
-                onDragStart={(e) => handleDragStart(e, item)}
-                className={`relative p-4 rounded-xl text-white transition-all duration-300 border-2 flex items-center justify-center min-h-[120px] shadow-lg ${
-                  isUsed 
-                    ? 'bg-gray-600/40 border-gray-500/60 opacity-50 cursor-not-allowed transform scale-95' 
-                    : 'bg-blue-600/40 border-blue-400/60 cursor-move hover:bg-blue-500/50 hover:border-blue-300/80 hover:shadow-xl hover:scale-105'
-                }`}
-              >
-                {isUsed && (
-                  <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-10 shadow-lg">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
+      <CardContent className="flex-1 overflow-hidden p-4">
+        <div className="grid grid-cols-5 gap-4 h-full">
+          {/* Left Column - Narrower with larger text */}
+          <div className="col-span-2 flex flex-col">
+            <h3 className="text-black font-semibold text-base mb-2">Drag from here:</h3>
+            <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+              {leftItems.map(item => {
+                const isUsed = Object.keys(matches).includes(item);
+                return (
+                  <div
+                    key={item}
+                    draggable={!isUsed}
+                    onDragStart={(e) => handleDragStart(e, item)}
+                    className={`relative p-3 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center min-h-[70px] shadow-sm ${
+                      isUsed 
+                        ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' 
+                        : 'bg-blue-50 border-blue-300 cursor-move hover:bg-blue-100 hover:border-blue-400'
+                    }`}
+                  >
+                    {isUsed && (
+                      <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-1 z-10">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    )}
+                    {isImageItem(item) ? (
+                      <img 
+                        src={item} 
+                        alt="Matching item" 
+                        className="max-w-full max-h-16 object-contain rounded"
+                        onError={() => {
+                          // Image failed to load - fallback text will show instead
+                        }}
+                      />
+                    ) : (
+                      <span className="text-center text-lg font-medium leading-tight">{item}</span>
+                    )}
                   </div>
-                )}
-                {isImageItem(item) ? (
-                  <img 
-                    src={item} 
-                    alt="Matching item" 
-                    className="max-w-full max-h-24 object-contain rounded"
-                    onError={() => {
-                      // Image failed to load - fallback text will show instead
-                    }}
-                  />
-                ) : (
-                  <span className="text-center">{item}</span>
-                )}
-                {isImageItem(item) && (
-                  <span className="text-center text-sm hidden">Image failed to load</span>
-                )}
-              </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
           
-          <div className="space-y-3">
-            <h3 className="text-white font-semibold text-lg">Drop here:</h3>
-            {fixedRightItems.map((item: string) => {
-              const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
-              return (
-                <div
-                  key={item}
-                  onDragOver={handleDragOver}
-                  onDragEnter={handleDragEnter}
-                  onDragLeave={handleDragLeave}
-                  onDrop={(e) => handleDrop(e, item)}
-                  className={`p-4 rounded-xl text-white min-h-[120px] border-2 border-dashed transition-all duration-300 ${
-                    matchedLeft 
-                      ? 'bg-green-600/40 border-green-400/60 shadow-lg' 
-                      : 'bg-purple-600/30 border-purple-400/50 hover:border-purple-300/70 hover:bg-purple-500/40'
-                  }`}
-                >
-                  <div className="font-semibold mb-2">{item}</div>
-                  {matchedLeft && (
-                    <div className="flex items-center gap-3 text-sm text-green-200 mt-2 p-3 bg-green-500/30 rounded-lg border border-green-400/50 shadow-sm">
-                      <span>Matched with:</span>
-                      {isImageItem(matchedLeft) ? (
-                        <div className="flex items-center gap-2">
-                          <img 
-                            src={matchedLeft} 
-                            alt="Matched item" 
-                            className="w-12 h-12 object-contain rounded border border-blue-300"
-                            onError={() => {
-                              // Image failed to load - fallback will show
-                            }}
-                          />
-                          <span className="text-xs text-gray-300">Image</span>
-                        </div>
-                      ) : (
-                        <span className="font-medium">{matchedLeft}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          {/* Right Column - Wider with smaller text */}
+          <div className="col-span-3 flex flex-col">
+            <h3 className="text-black font-semibold text-base mb-2">Drop here:</h3>
+            <div className="flex-1 overflow-y-auto space-y-2 pl-2">
+              {fixedRightItems.map((item: string) => {
+                const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
+                return (
+                  <div
+                    key={item}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, item)}
+                    className={`p-3 rounded-lg text-black min-h-[70px] border-2 border-dashed transition-all duration-300 ${
+                      matchedLeft 
+                        ? 'bg-green-100 border-green-400 shadow-lg' 
+                        : 'bg-purple-50 border-purple-300 hover:border-purple-400 hover:bg-purple-100'
+                    }`}
+                  >
+                    <div className="font-medium mb-2 text-sm leading-tight">{item}</div>
+                    {matchedLeft && (
+                      <div className="flex items-center gap-2 text-xs text-green-700 mt-2 p-2 bg-green-200 rounded border border-green-300">
+                        <span>Matched with:</span>
+                        {isImageItem(matchedLeft) ? (
+                          <div className="flex items-center gap-1">
+                            <img 
+                              src={matchedLeft} 
+                              alt="Matched item" 
+                              className="w-8 h-8 object-contain rounded border border-blue-300"
+                              onError={() => {
+                                // Image failed to load - fallback will show
+                              }}
+                            />
+                            <span className="text-xs text-gray-600">Image</span>
+                          </div>
+                        ) : (
+                          <span className="font-medium text-xs">{matchedLeft}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
         
         <Button 
           onClick={handleSubmit}
           disabled={!isComplete || isSubmitting}
-          className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50"
+          className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50 mt-4"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Matches'}
         </Button>
