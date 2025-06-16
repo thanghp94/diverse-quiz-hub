@@ -15,7 +15,7 @@ interface RatingStats {
 
 export const ContentDifficultyIndicator = ({ contentId, className = "" }: ContentDifficultyIndicatorProps) => {
   const { data: stats } = useQuery<RatingStats>({
-    queryKey: [`/api/content/${contentId}/rating-stats`],
+    queryKey: [`/api/content-ratings/stats/${contentId}`],
     enabled: !!contentId,
   });
 
@@ -78,7 +78,7 @@ export const ContentDifficultyIndicator = ({ contentId, className = "" }: Conten
 // Compact version for smaller spaces
 export const CompactContentDifficultyIndicator = ({ contentId, className = "" }: ContentDifficultyIndicatorProps) => {
   const { data: stats } = useQuery<RatingStats>({
-    queryKey: [`/api/content/${contentId}/rating-stats`],
+    queryKey: [`/api/content-ratings/stats/${contentId}`],
     enabled: !!contentId,
   });
 

@@ -309,7 +309,7 @@ export const TopicListItem = ({
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2">
                                               <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
-                                              <ContentDifficultyIndicatorDark contentId={content.id} />
+                                              <CompactContentDifficultyIndicator contentId={content.id} />
                                             </div>
                                             {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                           </div>
