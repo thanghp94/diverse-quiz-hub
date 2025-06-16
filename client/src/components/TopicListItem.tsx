@@ -11,6 +11,7 @@ import { useContentImage } from "@/hooks/useContentImage";
 import { useTopicMatching } from "@/hooks/useTopicMatching";
 import { SubtopicMatchingButton } from "@/components/SubtopicMatchingButton";
 import { ParentTopicMatchingButton } from "@/components/ParentTopicMatchingButton";
+import { ContentDifficultyIndicatorDark } from "@/components/ContentDifficultyIndicator";
 
 interface Topic {
   id: string;
@@ -306,7 +307,10 @@ export const TopicListItem = ({
                                         <div className="flex items-center gap-2">
                                           <ContentThumbnail content={content} />
                                           <div className="flex-1 min-w-0">
-                                            <h4 className="text-white/90 text-base font-medium leading-tight mb-2">{content.title}</h4>
+                                            <div className="flex items-center gap-2 mb-2">
+                                              <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
+                                              <ContentDifficultyIndicatorDark contentId={content.id} />
+                                            </div>
                                             {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                           </div>
                                         </div>

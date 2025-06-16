@@ -13,14 +13,14 @@ export const ContentDifficultyIndicator = ({ contentId, className = "" }: Conten
     enabled: !!contentId,
   });
 
-  if (!stats || (stats.easy === 0 && stats.normal === 0 && stats.hard === 0)) {
+  if (!stats || (stats?.easy === 0 && stats?.normal === 0 && stats?.hard === 0)) {
     return null;
   }
 
-  const total = stats.easy + stats.normal + stats.hard;
+  const total = (stats?.easy || 0) + (stats?.normal || 0) + (stats?.hard || 0);
   const predominantDifficulty = 
-    stats.hard > stats.normal && stats.hard > stats.easy ? 'hard' :
-    stats.easy > stats.normal && stats.easy > stats.hard ? 'easy' : 'normal';
+    (stats?.hard || 0) > (stats?.normal || 0) && (stats?.hard || 0) > (stats?.easy || 0) ? 'hard' :
+    (stats?.easy || 0) > (stats?.normal || 0) && (stats?.easy || 0) > (stats?.hard || 0) ? 'easy' : 'normal';
 
   const getDifficultyConfig = (difficulty: string) => {
     switch (difficulty) {
@@ -72,14 +72,14 @@ export const ContentDifficultyIndicatorDark = ({ contentId, className = "" }: Co
     enabled: !!contentId,
   });
 
-  if (!stats || (stats.easy === 0 && stats.normal === 0 && stats.hard === 0)) {
+  if (!stats || (stats?.easy === 0 && stats?.normal === 0 && stats?.hard === 0)) {
     return null;
   }
 
-  const total = stats.easy + stats.normal + stats.hard;
+  const total = (stats?.easy || 0) + (stats?.normal || 0) + (stats?.hard || 0);
   const predominantDifficulty = 
-    stats.hard > stats.normal && stats.hard > stats.easy ? 'hard' :
-    stats.easy > stats.normal && stats.easy > stats.hard ? 'easy' : 'normal';
+    (stats?.hard || 0) > (stats?.normal || 0) && (stats?.hard || 0) > (stats?.easy || 0) ? 'hard' :
+    (stats?.easy || 0) > (stats?.normal || 0) && (stats?.easy || 0) > (stats?.hard || 0) ? 'easy' : 'normal';
 
   const getDifficultyConfig = (difficulty: string) => {
     switch (difficulty) {
