@@ -53,6 +53,7 @@ const ChallengeSubject = () => {
     level: 'Overview' | 'Easy' | 'Hard';
     topicName: string;
   } | null>(null);
+  const [quizLevel, setQuizLevel] = useState<'Easy' | 'Hard' | 'Overview' | null>(null);
 
   // Parse URL parameters
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
@@ -120,10 +121,25 @@ const ChallengeSubject = () => {
     setQuizContentId(null);
   }, []);
 
-  const handleStartQuiz = useCallback((content: Content, contextList: Content[]) => {
-    const imageUrl = findImageUrl(content);
-    setQuizContentId(content.id);
-    setSelectedContentInfo({ content, contextList, imageUrl });
+  const handleStartQuiz = useCallback((content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => {
+    if (level) {
+      // Start quiz directly without opening content popup
+      setSelectedContentInfo({
+        content,
+        contextList,
+        imageUrl: findImageUrl(content),
+      });
+      setQuizContentId(content.id);
+      setQuizLevel(level);
+    } else {
+      // Original behavior - open content popup
+      setSelectedContentInfo({
+        content,
+        contextList,
+        imageUrl: findImageUrl(content),
+      });
+      setQuizContentId(content.id);
+    }
   }, [findImageUrl]);
 
   const handleStartTopicQuiz = useCallback((topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => {
@@ -270,6 +286,7 @@ const ChallengeSubject = () => {
         startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
         imageUrl={selectedContentInfo?.imageUrl ?? null}
         isImageLoading={isImagesLoading}
+        quizLevel={quizLevel}
       />
 
       {topicQuizInfo && (
@@ -285,3 +302,4 @@ const ChallengeSubject = () => {
 };
 
 export default ChallengeSubject;
+`
