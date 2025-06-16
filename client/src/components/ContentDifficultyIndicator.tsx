@@ -123,7 +123,7 @@ export const CompactContentDifficultyIndicator = ({ contentId, className = "" }:
   };
 
   if (total === 0) {
-    return <ContentRatingButtons contentId={contentId} compact={true} />;
+    return null;
   }
 
   const config = getDifficultyConfig(predominantDifficulty);
@@ -134,7 +134,6 @@ export const CompactContentDifficultyIndicator = ({ contentId, className = "" }:
         {config.icon}
         <span className="font-medium">{config.label}</span>
       </div>
-      <ContentRatingButtons contentId={contentId} compact={true} />
     </div>
   );
 };
