@@ -215,49 +215,46 @@ const Topics = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
       <Header />
       <div className="p-4">
-        <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
-        </div>
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-white mb-3">
-              {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
-            </h1>
-            {activeTab && (
-              <p className="text-lg text-white/80">
-                Select a topic below to start your {activeTab.replace('-', ' ')} quiz
-              </p>
-            )}
-          </div>
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-bold text-white mb-3">
+                {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
+              </h1>
+              {activeTab && (
+                <p className="text-lg text-white/80">
+                  Select a topic below to start your {activeTab.replace('-', ' ')} quiz
+                </p>
+              )}
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-            {topics?.map(topic => {
-              const subtopics = getSubtopics(topic.id);
-              const topicContent = getTopicContent(topic.id);
-              const isExpanded = expandedTopicId === topic.id;
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              {topics?.map(topic => {
+                const subtopics = getSubtopics(topic.id);
+                const topicContent = getTopicContent(topic.id);
+                const isExpanded = expandedTopicId === topic.id;
 
-              return (
-                <TopicListItem
-                  key={topic.id}
-                  topic={topic}
-                  subtopics={subtopics}
-                  topicContent={topicContent}
-                  allImages={allImages}
-                  isExpanded={isExpanded}
-                  openContent={openContent}
-                  onToggleTopic={handleToggleTopic}
-                  onToggleContent={toggleContent}
-                  onContentClick={handleContentClick}
-                  onSubtopicClick={handleSubtopicClick}
-                  onStartQuiz={handleStartQuiz}
-                  getTopicContent={getTopicContent}
-                  onStartTopicQuiz={handleStartTopicQuiz}
-                />
-              );
-            })}
+                return (
+                  <TopicListItem
+                    key={topic.id}
+                    topic={topic}
+                    subtopics={subtopics}
+                    topicContent={topicContent}
+                    allImages={allImages}
+                    isExpanded={isExpanded}
+                    openContent={openContent}
+                    onToggleTopic={handleToggleTopic}
+                    onToggleContent={toggleContent}
+                    onContentClick={handleContentClick}
+                    onSubtopicClick={handleSubtopicClick}
+                    onStartQuiz={handleStartQuiz}
+                    getTopicContent={getTopicContent}
+                    onStartTopicQuiz={handleStartTopicQuiz}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
 
       <ContentPopup
         isOpen={!!selectedContentInfo}
