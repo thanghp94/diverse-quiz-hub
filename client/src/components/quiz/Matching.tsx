@@ -2,16 +2,20 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Question } from "@/features/quiz/types";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 
 interface MatchingProps {
   question: Question;
   onAnswer: (answer: any, isCorrect: boolean) => void;
   studentTryId?: string;
+  onNextActivity?: () => void;
+  onGoBack?: () => void;
 }
 
-const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
+const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }: MatchingProps) => {
   const [matches, setMatches] = useState<{[key: string]: string}>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -20,6 +24,7 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
   const [startTime] = useState(new Date());
   const dragCounter = useRef(0);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const leftItems = question.pairs?.map(pair => pair.left) || [];
   const rightItems = question.pairs?.map(pair => pair.right) || [];
@@ -134,10 +139,20 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
     <Card className="bg-white border-gray-300 shadow-lg h-full flex flex-col">
       <CardHeader className="pb-2 pt-3">
         <div className="flex justify-between items-center mb-2">
-          <Button variant="outline" size="sm" className="text-xs">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs"
+            onClick={onGoBack || (() => setLocation('/topics'))}
+          >
             ← Go Back
           </Button>
-          <Button variant="outline" size="sm" className="text-xs">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs"
+            onClick={onNextActivity || (() => setLocation('/matching'))}
+          >
             Next Activity →
           </Button>
         </div>
@@ -185,14 +200,25 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
                       </div>
                     )}
                     {isImageItem(item) ? (
-                      <img 
-                        src={item} 
-                        alt="Matching item" 
-                        className="max-w-full max-h-16 object-contain rounded"
-                        onError={() => {
-                          // Image failed to load - fallback text will show instead
-                        }}
-                      />
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <img 
+                            src={item} 
+                            alt="Matching item" 
+                            className="max-w-full max-h-16 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                            onError={() => {
+                              // Image failed to load - fallback text will show instead
+                            }}
+                          />
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh]">
+                          <img 
+                            src={item} 
+                            alt="Full size matching item" 
+                            className="w-full h-auto object-contain"
+                          />
+                        </DialogContent>
+                      </Dialog>
                     ) : (
                       <span className="text-center text-lg font-medium leading-tight whitespace-pre-line">{item}</span>
                     )}
@@ -228,7 +254,29 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
                         : 'bg-purple-50 border-purple-300 hover:border-purple-400 hover:bg-purple-100'
                     }`}
                   >
-                    <div className="font-medium mb-2 text-sm leading-tight whitespace-pre-line">{item}</div>
+                    {isImageItem(item) ? (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <img 
+                            src={item} 
+                            alt="Matching target" 
+                            className="w-full max-h-16 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                            onError={() => {
+                              // Image failed to load - fallback text will show instead
+                            }}
+                          />
+                        </DialogTrigger>
+                        <DialogContent className="max-w-4xl max-h-[90vh]">
+                          <img 
+                            src={item} 
+                            alt="Full size matching target" 
+                            className="w-full h-auto object-contain"
+                          />
+                        </DialogContent>
+                      </Dialog>
+                    ) : (
+                      <div className="font-medium mb-2 text-sm leading-tight whitespace-pre-line">{item}</div>
+                    )}
                     {matchedLeft && (
                       <div className={`flex items-center gap-2 text-xs mt-2 p-2 rounded border ${
                         isCorrect 
@@ -240,14 +288,25 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
                         <span>Matched with:</span>
                         {isImageItem(matchedLeft) ? (
                           <div className="flex items-center gap-1">
-                            <img 
-                              src={matchedLeft} 
-                              alt="Matched item" 
-                              className="w-8 h-8 object-contain rounded border border-blue-300"
-                              onError={() => {
-                                // Image failed to load - fallback will show
-                              }}
-                            />
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <img 
+                                  src={matchedLeft} 
+                                  alt="Matched item" 
+                                  className="w-8 h-8 object-contain rounded border border-blue-300 cursor-pointer hover:opacity-80 transition-opacity"
+                                  onError={() => {
+                                    // Image failed to load - fallback will show
+                                  }}
+                                />
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[90vh]">
+                                <img 
+                                  src={matchedLeft} 
+                                  alt="Full size matched item" 
+                                  className="w-full h-auto object-contain"
+                                />
+                              </DialogContent>
+                            </Dialog>
                             <span className="text-xs text-gray-600">Image</span>
                           </div>
                         ) : (
@@ -310,10 +369,7 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
               </Button>
               <Button 
                 className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
-                onClick={() => {
-                  // This could trigger navigation to next activity
-                  console.log('Move to next activity');
-                }}
+                onClick={onNextActivity || (() => setLocation('/matching'))}
               >
                 Next Activity
               </Button>

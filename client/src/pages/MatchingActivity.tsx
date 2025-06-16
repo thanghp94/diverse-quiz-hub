@@ -238,6 +238,16 @@ const MatchingActivityPage = () => {
     console.log('Attempt completed with score:', score);
   };
 
+  const handleNextActivity = () => {
+    // Navigate to matching list or topics page
+    window.location.href = '/matching';
+  };
+
+  const handleGoBack = () => {
+    // Navigate back to topics page
+    window.location.href = '/topics';
+  };
+
   if (isLoading || isLoadingQuestions) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
@@ -292,7 +302,12 @@ const MatchingActivityPage = () => {
                   </div>
                 </div>
               )}
-              <Matching question={currentQuestion} onAnswer={handleAnswer} />
+              <Matching 
+                question={currentQuestion} 
+                onAnswer={handleAnswer}
+                onNextActivity={handleNextActivity}
+                onGoBack={handleGoBack}
+              />
             </div>
           </div>
           
