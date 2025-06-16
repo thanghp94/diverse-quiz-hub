@@ -221,9 +221,9 @@ export const TopicListItem = ({
                         const subtopicContent = getTopicContent(subtopic.id);
                         return (
                           <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
-                            <div className="flex items-start justify-between gap-2">
-                              <div onClick={() => onSubtopicClick(subtopic.id)} className="block cursor-pointer flex-grow">
-                                <div className="flex items-center gap-3 mb-2">
+                            <div onClick={() => onSubtopicClick(subtopic.id)} className="block cursor-pointer">
+                              <div className="flex items-center justify-between gap-3 mb-2">
+                                <div className="flex items-center gap-3">
                                   <Badge className="bg-green-500/20 text-green-200 text-xs">
                                     <BookOpen className="h-3 w-3" />
                                   </Badge>
@@ -232,21 +232,21 @@ export const TopicListItem = ({
                                     <span className="text-yellow-300 text-lg font-bold">Content ({subtopicContent.length})</span>
                                   )}
                                 </div>
-                                {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                          <HelpCircle className="h-4 w-4" />
+                                          <span className="sr-only">Start Quiz for {subtopic.topic}</span>
+                                      </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                                      <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Overview', subtopic.topic)}>Overview Quiz</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Easy', subtopic.topic)}>Easy Quiz</DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-                                        <HelpCircle className="h-4 w-4" />
-                                        <span className="sr-only">Start Quiz for {subtopic.topic}</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Overview', subtopic.topic)}>Overview Quiz</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Easy', subtopic.topic)}>Easy Quiz</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                             </div>
                           
                             {subtopicContent.length > 0 && (
