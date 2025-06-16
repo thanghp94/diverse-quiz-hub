@@ -140,6 +140,28 @@ export const TopicListItem = ({
                       {topic.challengesubject}
                     </Badge>
                   )}
+                  {topicContent.length > 0 && (
+                    <span className="text-white/70 text-sm">• Content ({topicContent.length})</span>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-6 w-6">
+                        <HelpCircle className="h-4 w-4" />
+                        <span className="sr-only">Start Quiz for {topic.topic}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
+                        Overview Quiz
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
+                        Easy Quiz
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
+                        Hard Quiz
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
                 {topic.short_summary && (
                   <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
@@ -153,44 +175,37 @@ export const TopicListItem = ({
             <div className="px-3 pb-3 pt-1">
               <div className="space-y-1">
                 {topicContent.length > 0 && (
-                  <div className="mb-1">
-                    <Collapsible open={openContent.includes(`topic-${topic.id}`)} onOpenChange={() => onToggleContent(`topic-${topic.id}`)}>
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" className="w-full justify-between text-white/90 hover:bg-white/5 p-2">
-                          <span className="text-sm font-medium">Content ({topicContent.length})</span>
-                          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${openContent.includes(`topic-${topic.id}`) ? 'rotate-180' : ''}`} />
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="space-y-1 mt-2">
-                          {topicContent.map(content => (
-                            <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                              <div className="flex items-center justify-between gap-2">
-                                <div
-                                  onClick={() => onContentClick({
-                                    content,
-                                    contextList: topicContent
-                                  })}
-                                  className="flex-grow cursor-pointer"
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                      {getContentIcon(content)}
-                                    </Badge>
-                                    <span className="text-white/90 text-sm">{content.title}</span>
-                                  </div>
-                                  {content.short_description && <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>}
+                  <div className="space-y-1">
+                    {topicContent.map(content => (
+                      <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <div
+                            onClick={() => onContentClick({
+                              content,
+                              contextList: topicContent
+                            })}
+                            className="flex-grow cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2">
+                              <ContentThumbnail content={content} />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                    {getContentIcon(content)}
+                                  </Badge>
+                                  <span className="text-white/90 text-sm">{content.title}</span>
                                 </div>
-                                <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={() => onStartQuiz(content, topicContent)}>
-                                  <HelpCircle className="h-4 w-4" />
-                                  <span className="sr-only">Start Quiz for {content.title}</span>
-                                </Button>
+                                {content.short_description && <p className="text-white/60 text-xs mt-1">{formatDescription(content.short_description)}</p>}
                               </div>
                             </div>
-                          ))}
+                          </div>
+                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={() => onStartQuiz(content, topicContent)}>
+                            <HelpCircle className="h-4 w-4" />
+                            <span className="sr-only">Start Quiz for {content.title}</span>
+                          </Button>
                         </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                      </div>
+                    ))}
                   </div>
                 )}
               
