@@ -127,19 +127,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Questions API
+  // Questions
   app.get("/api/questions", async (req, res) => {
     try {
-      const { contentId, topicId, level } = req.query as { 
-        contentId?: string; 
-        topicId?: string; 
-        level?: string; 
-      };
-      const questions = await storage.getQuestions(contentId, topicId, level);
+      const { contentId, topicId, level } = req.query;
+      console.log(`API: Fetching questions with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
+
+      // Ensure level parameter is properly passed and not undefined
+      const levelParam = level && level !== 'undefined' ? level as string : undefined;
+
+      const questions = await storage.getQuestions(
+        contentId as string, 
+        topicId as string, 
+        levelParam
+      );
+
+      console.log(`API: Returning ${questions.length} questions for level: ${levelParam || 'all'}`);
       res.json(questions);
     } catch (error) {
-      console.error('Error fetching questions:', error);
-      res.status(500).json({ error: 'Failed to fetch questions' });
+      console.error("Error fetching questions:", error);
+      res.status(500).json({ error: "Failed to fetch questions" });
     }
   });
 

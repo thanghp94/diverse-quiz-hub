@@ -191,22 +191,27 @@ export class DatabaseStorage implements IStorage {
   // Questions
   async getQuestions(contentId?: string, topicId?: string, level?: string) {
     try {
+      console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
+      
       let query = db.select().from(schema.questions);
 
       const conditions = [];
 
       if (contentId) {
         conditions.push(eq(schema.questions.contentid, contentId));
+        console.log(`Added contentId condition: ${contentId}`);
       }
 
       if (topicId) {
         conditions.push(eq(schema.questions.topicid, topicId));
+        console.log(`Added topicId condition: ${topicId}`);
       }
 
       if (level && level !== 'Overview') {
-        // For level filtering, use case-insensitive comparison and handle both exact match and partial match
+        // For level filtering, use case-insensitive comparison
         const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
         conditions.push(levelCondition);
+        console.log(`Added level condition for: ${level.toLowerCase()}`);
       }
 
       if (conditions.length > 0) {
@@ -215,17 +220,25 @@ export class DatabaseStorage implements IStorage {
 
       const questions = await query;
 
-      console.log(`Found ${questions.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level} (db level: ${level || 'all'})`);
+      console.log(`Found ${questions.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
 
       // If we're filtering by level and got no results, let's check what levels are available
       if (level && level !== 'Overview' && questions.length === 0 && (contentId || topicId)) {
+        console.log(`No questions found for level "${level}". Checking available levels...`);
+        
         const debugQuery = contentId 
           ? db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId))
           : db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.topicid, topicId!));
 
         const availableLevels = await debugQuery;
         const uniqueLevels = [...new Set(availableLevels.map(q => q.level).filter(Boolean))];
-        console.log(`No questions found for level "${level}". Available levels:`, uniqueLevels);
+        console.log(`Available levels for this content/topic:`, uniqueLevels);
+        
+        // Try to match with available levels case-insensitively
+        const matchingLevel = uniqueLevels.find(l => l && l.toLowerCase() === level.toLowerCase());
+        if (matchingLevel) {
+          console.log(`Found matching level with different case: "${matchingLevel}"`);
+        }
       }
 
       return questions;
