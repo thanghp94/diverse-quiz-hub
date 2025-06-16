@@ -1,7 +1,6 @@
-
 import { useParams } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Matching from '@/components/quiz/Matching';
 import { Question } from '@/features/quiz/types';
 import { MatchingActivityTracker, type MatchingActivityTrackerRef } from '@/components/MatchingActivityTracker';
@@ -10,9 +9,23 @@ import { useToast } from "@/hooks/use-toast";
 
 type MatchingActivityData = {
     id: string;
+    type: string | null;
     description: string | null;
     [key: string]: any;
 };
+
+interface ContentData {
+  id: string;
+  title: string;
+  short_description: string | null;
+  imageid: string | null;
+}
+
+interface ImageData {
+  id: string;
+  imagelink: string | null;
+  contentid: string | null;
+}
 
 const fetchMatchingActivity = async (id: string): Promise<MatchingActivityData> => {
   const response = await fetch(`/api/matching/${id}`);
@@ -22,25 +35,119 @@ const fetchMatchingActivity = async (id: string): Promise<MatchingActivityData> 
   return response.json();
 };
 
-const transformToQuestion = (activity: MatchingActivityData): Question => {
-  const pairs = [];
-  for (let i = 1; i <= 6; i++) {
-    if (activity[`prompt${i}`] && activity[`choice${i}`]) {
-      pairs.push({ left: activity[`prompt${i}`], right: activity[`choice${i}`] });
+const fetchContent = async (): Promise<ContentData[]> => {
+  const response = await fetch('/api/content');
+  if (!response.ok) {
+    throw new Error('Failed to fetch content');
+  }
+  return response.json();
+};
+
+const fetchImages = async (): Promise<ImageData[]> => {
+  const response = await fetch('/api/images');
+  if (!response.ok) {
+    throw new Error('Failed to fetch images');
+  }
+  return response.json();
+};
+
+const transformToQuestions = async (activity: MatchingActivityData): Promise<Question[]> => {
+  const questions: Question[] = [];
+  const types = activity.type?.split(', ') || [];
+  
+  if (types.length === 0) {
+    // Fallback to original behavior if no type specified
+    const pairs = [];
+    for (let i = 1; i <= 6; i++) {
+      if (activity[`prompt${i}`] && activity[`choice${i}`]) {
+        pairs.push({ left: activity[`prompt${i}`], right: activity[`choice${i}`] });
+      }
+    }
+    return [{
+      id: activity.id,
+      question: activity.description || 'Match the corresponding items.',
+      type: 'matching' as const,
+      pairs: pairs,
+    }];
+  }
+
+  const [content, images] = await Promise.all([fetchContent(), fetchImages()]);
+  
+  for (const type of types) {
+    if (type === 'picture-title') {
+      const pairs = [];
+      
+      // Get content IDs from prompt1-6 fields
+      for (let i = 1; i <= 6; i++) {
+        const contentId = activity[`prompt${i}`];
+        if (contentId) {
+          const contentItem = content.find(c => c.id === contentId);
+          if (contentItem) {
+            // Find image for this content
+            const image = images.find(img => 
+              img.contentid === contentId || 
+              img.id === contentItem.imageid
+            );
+            
+            if (image && image.imagelink && contentItem.title) {
+              pairs.push({ 
+                left: image.imagelink, 
+                right: contentItem.title,
+                leftType: 'image'
+              });
+            }
+          }
+        }
+      }
+      
+      if (pairs.length > 0) {
+        questions.push({
+          id: `${activity.id}-picture-title`,
+          question: 'Match the images with their corresponding titles.',
+          type: 'matching' as const,
+          pairs: pairs,
+        });
+      }
+    }
+    
+    if (type === 'title-description') {
+      const pairs = [];
+      
+      // Get content IDs from prompt1-6 fields
+      for (let i = 1; i <= 6; i++) {
+        const contentId = activity[`prompt${i}`];
+        if (contentId) {
+          const contentItem = content.find(c => c.id === contentId);
+          if (contentItem && contentItem.title && contentItem.short_description) {
+            pairs.push({ 
+              left: contentItem.title, 
+              right: contentItem.short_description 
+            });
+          }
+        }
+      }
+      
+      if (pairs.length > 0) {
+        questions.push({
+          id: `${activity.id}-title-description`,
+          question: 'Match the titles with their descriptions.',
+          type: 'matching' as const,
+          pairs: pairs,
+        });
+      }
     }
   }
-  return {
-    id: activity.id,
-    question: activity.description || 'Match the corresponding items.',
-    type: 'matching' as const,
-    pairs: pairs,
-  };
+  
+  return questions;
 };
 
 const MatchingActivityPage = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
   const trackerRef = useRef<MatchingActivityTrackerRef>(null);
 
   // Get current user from localStorage (assuming student is logged in)
@@ -53,6 +160,29 @@ const MatchingActivityPage = () => {
     enabled: !!id,
   });
 
+  // Transform activity to questions when activity data changes
+  useEffect(() => {
+    if (activity) {
+      setIsLoadingQuestions(true);
+      transformToQuestions(activity)
+        .then(generatedQuestions => {
+          setQuestions(generatedQuestions);
+          setCurrentQuestionIndex(0);
+        })
+        .catch(error => {
+          console.error('Error generating questions:', error);
+          toast({
+            title: 'Error',
+            description: 'Failed to load matching questions',
+            variant: 'destructive',
+          });
+        })
+        .finally(() => {
+          setIsLoadingQuestions(false);
+        });
+    }
+  }, [activity, toast]);
+
   const handleAttemptStart = (attemptId: string) => {
     setCurrentAttemptId(attemptId);
     console.log('Attempt started:', attemptId);
@@ -62,12 +192,12 @@ const MatchingActivityPage = () => {
     console.log('Answer submitted', { answer, isCorrect });
     
     // Calculate score details for display
-    const totalPairs = Object.keys(answer).length;
+    const currentQuestion = questions[currentQuestionIndex];
+    const totalPairs = currentQuestion?.pairs?.length || Object.keys(answer).length;
     let correctCount = 0;
     
-    if (activity) {
-      const question = transformToQuestion(activity);
-      question.pairs?.forEach(pair => {
+    if (currentQuestion?.pairs) {
+      currentQuestion.pairs.forEach((pair: any) => {
         if (answer[pair.left] === pair.right) {
           correctCount++;
         }
@@ -76,18 +206,30 @@ const MatchingActivityPage = () => {
     
     const score = totalPairs > 0 ? Math.round((correctCount / totalPairs) * 100) : 0;
     
-    // Save the attempt with scoring details
-    if (trackerRef.current && currentAttemptId) {
-      trackerRef.current.completeAttempt(answer, score, 100);
-    }
+    // Check if there are more questions to complete
+    const isLastQuestion = currentQuestionIndex >= questions.length - 1;
     
-    toast({
-      title: isCorrect ? 'Perfect Match!' : 'Good Effort!',
-      description: isCorrect 
-        ? 'You matched all items correctly! Great job!' 
-        : `You got ${correctCount} out of ${totalPairs} matches correct (${score}%). Keep practicing!`,
-      variant: isCorrect ? 'default' : 'destructive',
-    });
+    if (isLastQuestion) {
+      // Save the attempt with final scoring details
+      if (trackerRef.current && currentAttemptId) {
+        trackerRef.current.completeAttempt(answer, score, 100);
+      }
+      
+      toast({
+        title: isCorrect ? 'Perfect Match!' : 'Activity Complete!',
+        description: isCorrect 
+          ? 'You matched all items correctly! Great job!' 
+          : `You got ${correctCount} out of ${totalPairs} matches correct (${score}%). Keep practicing!`,
+        variant: isCorrect ? 'default' : 'destructive',
+      });
+    } else {
+      // Move to next question
+      setCurrentQuestionIndex(prev => prev + 1);
+      toast({
+        title: 'Question Complete!',
+        description: `You got ${correctCount} out of ${totalPairs} matches correct. Moving to the next question.`,
+      });
+    }
   };
 
   const handleAttemptComplete = (score: number, isCorrect: boolean) => {
@@ -95,7 +237,7 @@ const MatchingActivityPage = () => {
     console.log('Attempt completed with score:', score);
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingQuestions) {
     return <div className="flex justify-center items-center h-screen bg-gray-900"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>;
   }
 
@@ -103,7 +245,12 @@ const MatchingActivityPage = () => {
     return <div className="flex justify-center items-center h-screen bg-gray-900"><p className="text-red-500">Error loading activity.</p></div>;
   }
 
-  const question = transformToQuestion(activity);
+  if (questions.length === 0) {
+    return <div className="flex justify-center items-center h-screen bg-gray-900"><p className="text-yellow-500">No matching questions found for this activity.</p></div>;
+  }
+
+  const currentQuestion = questions[currentQuestionIndex];
+  const isMultiQuestion = questions.length > 1;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
@@ -111,7 +258,17 @@ const MatchingActivityPage = () => {
         {/* Main Activity Area */}
         <div className="lg:col-span-2">
           <div className="bg-gray-900 text-white rounded-lg p-6">
-            <Matching question={question} onAnswer={handleAnswer} />
+            {isMultiQuestion && (
+              <div className="mb-4 text-center">
+                <div className="text-sm text-gray-400">
+                  Question {currentQuestionIndex + 1} of {questions.length}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {activity.type}
+                </div>
+              </div>
+            )}
+            <Matching question={currentQuestion} onAnswer={handleAnswer} />
           </div>
         </div>
         
