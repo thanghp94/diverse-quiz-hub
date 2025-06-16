@@ -57,7 +57,7 @@ const getContentIcon = (content: any) => {
 };
 
 // Component for content item thumbnail
-const ContentThumbnail = ({ content, onClick }: { content: any, onClick?: () => void }) => {
+const ContentThumbnail = ({ content }: { content: any }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
 
   // Only show thumbnail if there's an imageid
@@ -66,14 +66,26 @@ const ContentThumbnail = ({ content, onClick }: { content: any, onClick?: () => 
   }
 
   return (
-
-        <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
           <img 
             src={imageUrl} 
             alt={content.title} 
             className="w-full h-full object-cover"
           />
         </div>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0">
+        <div className="relative w-full">
+          <img 
+            src={imageUrl} 
+            alt={content.title}
+            className="w-full h-auto max-h-[85vh] object-contain"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -538,13 +550,7 @@ export const TopicListItem = ({
                                         className="flex-grow cursor-pointer"
                                       >
                                         <div className="flex items-center gap-2">
-                                          <ContentThumbnail 
-                                            content={content} 
-                                            onClick={() => onContentClick({
-                                              content,
-                                              contextList: subtopicContent
-                                            })}
-                                          />
+                                          <ContentThumbnail content={content} />
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center justify-between gap-2 mb-2">
                                               <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
