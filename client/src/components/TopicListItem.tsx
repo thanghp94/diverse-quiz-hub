@@ -242,7 +242,7 @@ export const TopicListItem = ({
                               </div>
                             </div>
                           </div>
-                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <div className="flex flex-col items-center gap-1 flex-shrink-0">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white">
