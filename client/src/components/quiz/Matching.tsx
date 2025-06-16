@@ -209,14 +209,21 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                     )}
                     <Dialog>
                       <DialogTrigger asChild>
-                        <img 
-                          src={item} 
-                          alt="Matching item" 
-                          className="max-w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
-                          onError={() => {
-                            // Image failed to load - fallback text will show instead
-                          }}
-                        />
+                        <div className="w-full h-full flex items-center justify-center">
+                          <img 
+                            src={item} 
+                            alt="Matching item" 
+                            className="max-w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                            onError={(e) => {
+                              // Hide broken image and show fallback text
+                              e.currentTarget.style.display = 'none';
+                              const parent = e.currentTarget.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<div class="text-xs text-center p-2 bg-gray-100 rounded border">${item}</div>`;
+                              }
+                            }}
+                          />
+                        </div>
                       </DialogTrigger>
                       <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
                         <img 
@@ -265,7 +272,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </svg>
                       </div>
                     )}
-                    <span className="text-center text-xs font-medium leading-tight whitespace-pre-line">{item}</span>
+                    <span className="text-center text-xs font-medium leading-tight whitespace-pre-line text-center">{item}</span>
                   </div>
                 );
               })}
@@ -310,14 +317,21 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                     {isImageItem(item) ? (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <img 
-                            src={item} 
-                            alt="Matching target" 
-                            className="w-full max-h-20 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
-                            onError={() => {
-                              // Image failed to load - fallback text will show instead
-                            }}
-                          />
+                          <div className="w-full h-full flex items-center justify-center">
+                            <img 
+                              src={item} 
+                              alt="Matching target" 
+                              className="w-full max-h-20 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                              onError={(e) => {
+                                // Hide broken image and show fallback text
+                                e.currentTarget.style.display = 'none';
+                                const parent = e.currentTarget.parentElement;
+                                if (parent) {
+                                  parent.innerHTML = `<div class="text-sm text-center p-2 bg-gray-100 rounded border">${item}</div>`;
+                                }
+                              }}
+                            />
+                          </div>
                         </DialogTrigger>
                         <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
                           <img 
@@ -328,7 +342,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </DialogContent>
                       </Dialog>
                     ) : (
-                      <div className="font-medium text-base leading-tight whitespace-pre-line">{item}</div>
+                      <div className="font-medium text-base leading-tight whitespace-pre-line text-center">{item}</div>
                     )}
                     {matchedLeft && (
                       <div className={`flex items-center gap-2 text-sm mt-2 p-2 rounded border ${
@@ -343,14 +357,21 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                           <div className="flex items-center gap-1">
                             <Dialog>
                               <DialogTrigger asChild>
-                                <img 
-                                  src={matchedLeft} 
-                                  alt="Matched item" 
-                                  className="w-8 h-8 object-contain rounded border border-blue-300 cursor-pointer hover:opacity-80 transition-opacity"
-                                  onError={() => {
-                                    // Image failed to load - fallback will show
-                                  }}
-                                />
+                                <div className="w-8 h-8 flex items-center justify-center">
+                                  <img 
+                                    src={matchedLeft} 
+                                    alt="Matched item" 
+                                    className="w-8 h-8 object-contain rounded border border-blue-300 cursor-pointer hover:opacity-80 transition-opacity"
+                                    onError={(e) => {
+                                      // Hide broken image and show fallback
+                                      e.currentTarget.style.display = 'none';
+                                      const parent = e.currentTarget.parentElement;
+                                      if (parent) {
+                                        parent.innerHTML = `<div class="w-8 h-8 text-xs bg-gray-100 rounded border flex items-center justify-center">IMG</div>`;
+                                      }
+                                    }}
+                                  />
+                                </div>
                               </DialogTrigger>
                               <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
                                 <img 
