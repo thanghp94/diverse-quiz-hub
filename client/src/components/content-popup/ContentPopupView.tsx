@@ -4,6 +4,7 @@ import { PopupHeader } from "./PopupHeader";
 import { MediaDisplay } from "./MediaDisplay";
 import { VideoPlayer } from "./VideoPlayer";
 import { ContentBody } from "./ContentBody";
+import { ContentRatingButtons } from "../ContentRatingButtons";
 
 interface ContentPopupViewProps {
   content: Content;
@@ -69,6 +70,14 @@ export const ContentPopupView = ({
       />
 
       <ContentBody content={content} />
+      
+      {/* Content Rating Section */}
+      <div className="border-t pt-4">
+        <ContentRatingButtons
+          contentId={content.id}
+          studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'anonymous'}
+        />
+      </div>
     </div>
   );
 };

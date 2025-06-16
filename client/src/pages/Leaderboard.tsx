@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trophy, Medal, Award, Star } from "lucide-react";
 import Header from "@/components/Header";
+import { LeaderboardPanel } from "@/components/LeaderboardPanel";
 
 const Leaderboard = () => {
   const leaderboardData = [
@@ -84,57 +85,10 @@ const Leaderboard = () => {
           ))}
         </div>
 
-        {/* Full Leaderboard Table */}
-        <Card className="bg-white/10 backdrop-blur-lg border border-white/20">
-          <CardHeader>
-            <CardTitle>Complete Rankings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b-0 hover:bg-transparent">
-                  <TableHead className="w-16 text-white/80">Rank</TableHead>
-                  <TableHead className="text-white/80">Player</TableHead>
-                  <TableHead className="text-right text-white/80">Points</TableHead>
-                  <TableHead className="text-right text-white/80">Streak</TableHead>
-                  <TableHead className="text-right text-white/80">Badges</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leaderboardData.map((user) => (
-                  <TableRow key={user.rank} className={`border-b border-white/10 last:border-b-0 ${user.rank <= 3 ? 'bg-white/5' : ''} hover:bg-white/20 transition-colors`}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center justify-center h-full">
-                        {getRankIcon(user.rank)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-cyan-500/20 rounded-full flex items-center justify-center border border-cyan-400/30">
-                          <span className="text-sm font-medium text-cyan-200">{user.avatar}</span>
-                        </div>
-                        <span className="font-medium">{user.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right font-semibold">
-                      {user.points.toLocaleString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="outline" className="bg-orange-500/20 text-orange-300 border-orange-400/30 px-2 py-1">
-                        {user.streak}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Badge variant="outline" className="bg-purple-500/20 text-purple-300 border-purple-400/30 px-2 py-1">
-                        {user.badges}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        {/* Comprehensive Leaderboard System */}
+        <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg">
+          <LeaderboardPanel />
+        </div>
       </div>
     </div>
   );

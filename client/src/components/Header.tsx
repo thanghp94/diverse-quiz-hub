@@ -4,6 +4,7 @@ import { Search, User, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { StreakDisplay } from "./StreakDisplay";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -83,6 +84,12 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          {currentUser && (
+            <StreakDisplay 
+              studentId={currentUser.id} 
+              className="text-white/90 bg-white/10 px-3 py-1 rounded-full"
+            />
+          )}
           <div className="relative max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
