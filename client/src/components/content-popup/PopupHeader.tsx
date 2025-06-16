@@ -93,18 +93,18 @@ export const PopupHeader = ({
       <div className="px-4 mt-4">
         <div className="flex flex-col gap-2">
           <span className="text-sm text-gray-600">Rate this quiz difficulty:</span>
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-end">
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 hover:bg-green-50 hover:border-green-300 hover:text-green-700"
+              className="hover:bg-green-50 hover:border-green-300 hover:text-green-700"
             >
               👍 Easy
             </Button>
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 hover:bg-red-50 hover:border-red-300 hover:text-red-700"
+              className="hover:bg-red-50 hover:border-red-300 hover:text-red-700"
             >
               👎 Hard
             </Button>
