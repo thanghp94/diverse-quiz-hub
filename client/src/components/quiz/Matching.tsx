@@ -137,7 +137,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
   return (
     <Card className="bg-white border-gray-300 shadow-lg h-full flex flex-col">
       <CardHeader className="pb-1 pt-2">
-        <div className="flex justify-between items-center mb-1">
+        <div className="flex justify-start items-center mb-1">
           <Button 
             variant="outline" 
             size="sm" 
@@ -145,14 +145,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
             onClick={onGoBack || (() => setLocation('/topics'))}
           >
             ← Go Back
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs"
-            onClick={onNextActivity || (() => setLocation('/matching'))}
-          >
-            Next Activity →
           </Button>
         </div>
         <CardTitle className="text-black text-lg font-bold">{question.question}</CardTitle>
