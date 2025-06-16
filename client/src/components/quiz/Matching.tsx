@@ -159,7 +159,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
         <CardTitle className="text-black text-lg font-bold">{question.question}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-4">
-        <div className="flex flex-col gap-4 h-full">
+        <div className="flex flex-col gap-2 h-full">
           {/* Top Row - Images */}
           <div className="flex-1">
             <div className="grid grid-cols-4 lg:grid-cols-5 gap-3 h-[180px] overflow-y-auto">
