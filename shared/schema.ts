@@ -224,8 +224,71 @@ export const student_try_content = pgTable("student_try_content", {
   update: text("update"),
 });
 
-export const insertUserSchema = createInsertSchema(users);
+// Content difficulty ratings by students
+export const content_ratings = pgTable("content_ratings", {
+  id: text("id").primaryKey(),
+  student_id: text("student_id").notNull(),
+  content_id: text("content_id").notNull(),
+  rating: text("rating").notNull(), // "really_bad", "normal", "ok"
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
 
+// Student activity streaks
+export const student_streaks = pgTable("student_streaks", {
+  id: text("id").primaryKey(),
+  student_id: text("student_id").notNull(),
+  current_streak: integer("current_streak").default(0),
+  longest_streak: integer("longest_streak").default(0),
+  last_activity_date: timestamp("last_activity_date"),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+// Student daily activities for streak tracking
+export const daily_activities = pgTable("daily_activities", {
+  id: text("id").primaryKey(),
+  student_id: text("student_id").notNull(),
+  activity_date: timestamp("activity_date").notNull(),
+  activities_count: integer("activities_count").default(0),
+  points_earned: integer("points_earned").default(0),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Writing prompts and categories
+export const writing_prompts = pgTable("writing_prompts", {
+  id: text("id").primaryKey(),
+  category: text("category").notNull(), // "personal_experience", "creative_writing", etc.
+  title: text("title").notNull(),
+  description: text("description"),
+  icon: text("icon"), // emoji or icon name
+  prompts: jsonb("prompts"), // array of writing prompts/questions
+  suggestions: jsonb("suggestions"), // writing suggestions for each paragraph
+  created_at: timestamp("created_at").defaultNow(),
+});
+
+// Student writing submissions
+export const writing_submissions = pgTable("writing_submissions", {
+  id: text("id").primaryKey(),
+  student_id: text("student_id").notNull(),
+  prompt_id: text("prompt_id").notNull(),
+  title: text("title"),
+  opening_paragraph: text("opening_paragraph"),
+  body_paragraph_1: text("body_paragraph_1"),
+  body_paragraph_2: text("body_paragraph_2"),
+  body_paragraph_3: text("body_paragraph_3"),
+  conclusion_paragraph: text("conclusion_paragraph"),
+  full_essay: text("full_essay"),
+  ai_feedback: jsonb("ai_feedback"), // GPT ratings and feedback
+  overall_score: integer("overall_score"), // 0-100
+  paragraph_scores: jsonb("paragraph_scores"), // individual paragraph scores
+  word_count: integer("word_count"),
+  status: text("status").default("draft"), // "draft", "submitted", "graded"
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserSchema = createInsertSchema(users);
 export const insertTopicSchema = createInsertSchema(topics);
 export const insertContentSchema = createInsertSchema(content);
 export const insertImageSchema = createInsertSchema(images);
@@ -233,6 +296,11 @@ export const insertQuestionSchema = createInsertSchema(questions);
 export const insertMatchingSchema = createInsertSchema(matching);
 export const insertVideoSchema = createInsertSchema(videos);
 export const insertMatchingAttemptSchema = createInsertSchema(matching_attempts);
+export const insertContentRatingSchema = createInsertSchema(content_ratings);
+export const insertStudentStreakSchema = createInsertSchema(student_streaks);
+export const insertDailyActivitySchema = createInsertSchema(daily_activities);
+export const insertWritingPromptSchema = createInsertSchema(writing_prompts);
+export const insertWritingSubmissionSchema = createInsertSchema(writing_submissions);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -244,3 +312,13 @@ export type Matching = typeof matching.$inferSelect;
 export type Video = typeof videos.$inferSelect;
 export type MatchingAttempt = typeof matching_attempts.$inferSelect;
 export type InsertMatchingAttempt = z.infer<typeof insertMatchingAttemptSchema>;
+export type ContentRating = typeof content_ratings.$inferSelect;
+export type InsertContentRating = z.infer<typeof insertContentRatingSchema>;
+export type StudentStreak = typeof student_streaks.$inferSelect;
+export type InsertStudentStreak = z.infer<typeof insertStudentStreakSchema>;
+export type DailyActivity = typeof daily_activities.$inferSelect;
+export type InsertDailyActivity = z.infer<typeof insertDailyActivitySchema>;
+export type WritingPrompt = typeof writing_prompts.$inferSelect;
+export type InsertWritingPrompt = z.infer<typeof insertWritingPromptSchema>;
+export type WritingSubmission = typeof writing_submissions.$inferSelect;
+export type InsertWritingSubmission = z.infer<typeof insertWritingSubmissionSchema>;

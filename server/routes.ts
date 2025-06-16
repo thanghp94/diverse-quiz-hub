@@ -257,6 +257,158 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Content Ratings API
+  app.post("/api/content-ratings", async (req, res) => {
+    try {
+      const rating = await storage.createContentRating(req.body);
+      res.json(rating);
+    } catch (error) {
+      console.error('Error creating content rating:', error);
+      res.status(500).json({ error: 'Failed to create content rating' });
+    }
+  });
+
+  app.get("/api/content-ratings/:studentId/:contentId", async (req, res) => {
+    try {
+      const rating = await storage.getContentRating(req.params.studentId, req.params.contentId);
+      res.json(rating);
+    } catch (error) {
+      console.error('Error fetching content rating:', error);
+      res.status(500).json({ error: 'Failed to fetch content rating' });
+    }
+  });
+
+  app.put("/api/content-ratings/:studentId/:contentId", async (req, res) => {
+    try {
+      const rating = await storage.updateContentRating(req.params.studentId, req.params.contentId, req.body.rating);
+      res.json(rating);
+    } catch (error) {
+      console.error('Error updating content rating:', error);
+      res.status(500).json({ error: 'Failed to update content rating' });
+    }
+  });
+
+  // Student Streaks API
+  app.get("/api/streaks/:studentId", async (req, res) => {
+    try {
+      const streak = await storage.getStudentStreak(req.params.studentId);
+      res.json(streak);
+    } catch (error) {
+      console.error('Error fetching student streak:', error);
+      res.status(500).json({ error: 'Failed to fetch student streak' });
+    }
+  });
+
+  app.post("/api/streaks/:studentId", async (req, res) => {
+    try {
+      const streak = await storage.updateStudentStreak(req.params.studentId);
+      res.json(streak);
+    } catch (error) {
+      console.error('Error updating student streak:', error);
+      res.status(500).json({ error: 'Failed to update student streak' });
+    }
+  });
+
+  // Daily Activities API
+  app.post("/api/daily-activities", async (req, res) => {
+    try {
+      const activity = await storage.recordDailyActivity(req.body.studentId, req.body.points);
+      res.json(activity);
+    } catch (error) {
+      console.error('Error recording daily activity:', error);
+      res.status(500).json({ error: 'Failed to record daily activity' });
+    }
+  });
+
+  // Leaderboards API
+  app.get("/api/leaderboards", async (req, res) => {
+    try {
+      const leaderboards = await storage.getLeaderboards();
+      res.json(leaderboards);
+    } catch (error) {
+      console.error('Error fetching leaderboards:', error);
+      res.status(500).json({ error: 'Failed to fetch leaderboards' });
+    }
+  });
+
+  // Writing Prompts API
+  app.get("/api/writing-prompts", async (req, res) => {
+    try {
+      const prompts = await storage.getWritingPrompts();
+      res.json(prompts);
+    } catch (error) {
+      console.error('Error fetching writing prompts:', error);
+      res.status(500).json({ error: 'Failed to fetch writing prompts' });
+    }
+  });
+
+  app.get("/api/writing-prompts/category/:category", async (req, res) => {
+    try {
+      const prompts = await storage.getWritingPromptsByCategory(req.params.category);
+      res.json(prompts);
+    } catch (error) {
+      console.error('Error fetching writing prompts by category:', error);
+      res.status(500).json({ error: 'Failed to fetch writing prompts by category' });
+    }
+  });
+
+  app.get("/api/writing-prompts/:id", async (req, res) => {
+    try {
+      const prompt = await storage.getWritingPromptById(req.params.id);
+      if (!prompt) {
+        return res.status(404).json({ error: 'Writing prompt not found' });
+      }
+      res.json(prompt);
+    } catch (error) {
+      console.error('Error fetching writing prompt:', error);
+      res.status(500).json({ error: 'Failed to fetch writing prompt' });
+    }
+  });
+
+  // Writing Submissions API
+  app.post("/api/writing-submissions", async (req, res) => {
+    try {
+      const submission = await storage.createWritingSubmission(req.body);
+      res.json(submission);
+    } catch (error) {
+      console.error('Error creating writing submission:', error);
+      res.status(500).json({ error: 'Failed to create writing submission' });
+    }
+  });
+
+  app.get("/api/writing-submissions/:id", async (req, res) => {
+    try {
+      const submission = await storage.getWritingSubmission(req.params.id);
+      if (!submission) {
+        return res.status(404).json({ error: 'Writing submission not found' });
+      }
+      res.json(submission);
+    } catch (error) {
+      console.error('Error fetching writing submission:', error);
+      res.status(500).json({ error: 'Failed to fetch writing submission' });
+    }
+  });
+
+  app.get("/api/writing-submissions/student/:studentId", async (req, res) => {
+    try {
+      const submissions = await storage.getStudentWritingSubmissions(req.params.studentId);
+      res.json(submissions);
+    } catch (error) {
+      console.error('Error fetching student writing submissions:', error);
+      res.status(500).json({ error: 'Failed to fetch student writing submissions' });
+    }
+  });
+
+  app.patch("/api/writing-submissions/:id", async (req, res) => {
+    try {
+      const submission = await storage.updateWritingSubmission(req.params.id, req.body);
+      res.json(submission);
+    } catch (error) {
+      console.error('Error updating writing submission:', error);
+      res.status(500).json({ error: 'Failed to update writing submission' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
