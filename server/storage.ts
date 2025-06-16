@@ -30,6 +30,7 @@ export interface IStorage {
   // Matching
   getMatchingActivities(): Promise<Matching[]>;
   getMatchingById(id: string): Promise<Matching | undefined>;
+  getMatchingByTopicId(topicId: string): Promise<Matching[]>;
   
   // Videos
   getVideos(): Promise<Video[]>;

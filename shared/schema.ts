@@ -131,6 +131,7 @@ export const matching = pgTable("matching", {
   choice4: text("choice4"),
   choice5: text("choice5"),
   choice6: text("choice6"),
+  topicid: text("topicid"),
   created_at: timestamp("created_at").defaultNow(),
 });
 
