@@ -229,8 +229,6 @@ export const TopicListItem = ({
                             <div className="flex items-center gap-2">
                               <ContentThumbnail content={content} />
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-start gap-2 mb-1">
-                                </div>
                                 <h4 className="text-white/90 text-base font-medium leading-tight mb-2">{content.title}</h4>
                                 {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                 <div className="mt-2">
