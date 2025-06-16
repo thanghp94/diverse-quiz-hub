@@ -153,9 +153,11 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
         const timeEnd = new Date().toTimeString().slice(0, 8);
 
         try {
-            // Save individual question response to database
-            if (studentTryId) {
+            // Create new student_try record for each question response
+            if (assignmentStudentTryId) {
                 const responseData = {
+                    assignment_student_try_id: assignmentStudentTryId,
+                    hocsinh_id: 'user-123-placeholder',
                     question_id: currentQuestion.id,
                     answer_choice: selectedAnswer,
                     correct_answer: currentQuestion.correct_choice,
@@ -166,8 +168,8 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                     showcontent: didShowContent,
                 };
 
-                await fetch(`/api/student-tries/${studentTryId}`, {
-                    method: 'PATCH',
+                await fetch('/api/student-tries', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(responseData)
                 });

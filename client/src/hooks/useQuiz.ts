@@ -65,29 +65,10 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
 
       const quizSession = await sessionResponse.json();
 
-      // Create initial student_try record for tracking individual responses
-      const studentTryData = {
-        assignment_student_try_id: quizSession.id,
-        hocsinh_id: hocsinh_id
-      };
-
-      const studentTryResponse = await fetch('/api/student-tries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(studentTryData)
-      });
-
-      if (!studentTryResponse.ok) {
-        throw new Error('Failed to create student try record');
-      }
-
-      const studentTryRecord = await studentTryResponse.json();
-
       console.log('Quiz session created:', quizSession);
-      console.log('Student try record created:', studentTryRecord);
 
       setAssignmentTry(quizSession);
-      setStudentTry(studentTryRecord);
+      setStudentTry(null); // Individual records will be created per question
       setQuestionIds(randomizedQuestionIds);
       setQuizMode(true);
     } catch (error) {
