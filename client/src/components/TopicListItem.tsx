@@ -145,31 +145,33 @@ export const TopicListItem = ({
                       </Badge>
                     )}
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
-                        <HelpCircle className="h-5 w-5" />
-                        <span className="sr-only">Start Quiz for {topic.topic}</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
-                        Overview Quiz
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
-                        Easy Quiz
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
-                        Hard Quiz
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <div className="flex items-center gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
+                          <HelpCircle className="h-5 w-5" />
+                          <span className="sr-only">Start Quiz for {topic.topic}</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
+                          Overview Quiz
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
+                          Easy Quiz
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
+                          Hard Quiz
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    <ChevronDown className={cn("h-6 w-6 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
+                  </div>
                 </div>
                 {topic.short_summary && (
                   <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
                 )}
               </div>
-              <ChevronDown className={cn("h-5 w-5 text-white/80 shrink-0 ml-4 mt-1 transition-transform duration-200", isExpanded && "rotate-180")} />
             </div>
           </div>
           
