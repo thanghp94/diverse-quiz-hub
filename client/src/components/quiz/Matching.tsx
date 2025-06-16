@@ -21,6 +21,11 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
   const leftItems = question.pairs?.map(pair => pair.left) || [];
   const rightItems = question.pairs?.map(pair => pair.right) || [];
   const shuffledRightItems = [...rightItems].sort(() => Math.random() - 0.5);
+  
+  // Check if any items are images
+  const isImageItem = (item: string) => {
+    return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
+  };
 
   const handleDragStart = (e: React.DragEvent, item: string) => {
     setDraggedItem(item);
@@ -128,9 +133,23 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                 key={item}
                 draggable
                 onDragStart={(e) => handleDragStart(e, item)}
-                className="p-4 bg-blue-500/20 rounded-lg text-white cursor-move hover:bg-blue-500/30 transition-colors border-2 border-blue-400/30"
+                className="p-4 bg-blue-500/20 rounded-lg text-white cursor-move hover:bg-blue-500/30 transition-colors border-2 border-blue-400/30 flex items-center justify-center min-h-[120px]"
               >
-                {item}
+                {isImageItem(item) ? (
+                  <img 
+                    src={item} 
+                    alt="Matching item" 
+                    className="max-w-full max-h-24 object-contain rounded"
+                    onError={() => {
+                      // Image failed to load - fallback text will show instead
+                    }}
+                  />
+                ) : (
+                  <span className="text-center">{item}</span>
+                )}
+                {isImageItem(item) && (
+                  <span className="text-center text-sm hidden">Image failed to load</span>
+                )}
               </div>
             ))}
           </div>

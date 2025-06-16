@@ -303,14 +303,15 @@ const HomePage = () => {
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-green-600" />
-                  <h3 className="font-semibold text-gray-800">Test Activity 13</h3>
+                  <h3 className="font-semibold text-gray-800">Ancient Calendar</h3>
                 </div>
                 <p className="text-sm text-gray-600">
-                  Additional matching activity for comprehensive testing
+                  6-item matching activity: Ancient ways to observe sun, stars, and weather
                 </p>
                 <MatchingActivityButton
-                  matchingId="13"
+                  matchingId="16"
                   title="Launch Activity"
+                  description="Complete 6-item matching with all prompt fields"
                   variant="secondary"
                   size="sm"
                 />
