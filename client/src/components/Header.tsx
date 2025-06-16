@@ -75,12 +75,7 @@ const Header = () => {
           >
             Leaderboard
           </button>
-          <button 
-            onClick={() => setLocation('/matching')}
-            className="text-white hover:text-white/80 transition-colors"
-          >
-            Matching
-          </button>
+          
         </div>
 
         <div className="flex items-center gap-4">

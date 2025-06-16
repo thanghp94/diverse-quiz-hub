@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StreakDisplay } from './StreakDisplay';
-import { User, BookOpen } from 'lucide-react';
+import { User, BookOpen, Home, ArrowLeft } from 'lucide-react';
+import { Link } from 'wouter';
 
 interface WritingJournalProps {
   studentId: string;
@@ -67,6 +68,25 @@ export const WritingJournal = ({ studentId, studentName }: WritingJournalProps) 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
       <div className="max-w-4xl mx-auto">
+        {/* Navigation Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <Link href="/">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                Back to Home
+              </Button>
+            </Link>
+            <Link href="/topics">
+              <Button variant="outline" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Topics
+              </Button>
+            </Link>
+          </div>
+          <StreakDisplay studentId={studentId} />
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -82,7 +102,6 @@ export const WritingJournal = ({ studentId, studentName }: WritingJournalProps) 
           </div>
           
           <div className="flex items-center gap-4">
-            <StreakDisplay studentId={studentId} />
             <div className="bg-purple-500 rounded-full p-2">
               <User className="w-6 h-6 text-white" />
             </div>
