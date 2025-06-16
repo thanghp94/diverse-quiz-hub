@@ -347,6 +347,7 @@ export const TopicListItem = ({
                                                 <ContentRatingButtons 
                                                   contentId={content.id}
                                                   compact={true}
+                                                  studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
                                                 />
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>

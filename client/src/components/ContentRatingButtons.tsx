@@ -33,15 +33,19 @@ export const ContentRatingButtons = ({
   const { data: existingRating } = useQuery<{ rating: string }>({
     queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`],
     enabled: !!effectiveStudentId && !!contentId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
   });
 
-  // Update current rating when existing rating is fetched
+  // Update current rating when existing rating is fetched or when initial rating changes
   useEffect(() => {
     if (existingRating?.rating) {
       console.log('Setting current rating from API:', existingRating.rating);
       setCurrentRating(existingRating.rating);
+    } else if (initialRating) {
+      setCurrentRating(initialRating);
     }
-  }, [existingRating?.rating]);
+  }, [existingRating?.rating, initialRating]);
 
   // Debug log current state
   useEffect(() => {
@@ -69,12 +73,17 @@ export const ContentRatingButtons = ({
       setCurrentRating(rating);
       onRatingChange?.(rating);
       
-      // Invalidate queries to refresh the cache
-      queryClient.invalidateQueries({ 
+      // Invalidate and refetch queries to refresh the cache
+      await queryClient.invalidateQueries({ 
         queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`] 
       });
-      queryClient.invalidateQueries({ 
+      await queryClient.invalidateQueries({ 
         queryKey: [`/api/content-ratings/stats/${contentId}`] 
+      });
+      
+      // Ensure the data is refetched immediately
+      queryClient.refetchQueries({ 
+        queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`] 
       });
       
       const ratingText = rating === 'really_bad' ? 'Really Hard' : 
