@@ -65,7 +65,6 @@ export const ContentRatingButtons = ({
 
   if (compact) {
     return (
-      <div className="flex gap-1 items-center">
         <Button
           variant={currentRating === 'really_bad' ? 'default' : 'outline'}
           size="sm"
@@ -93,7 +92,6 @@ export const ContentRatingButtons = ({
         >
           <ThumbsUp className="w-3 h-3" />
         </Button>
-      </div>
     );
   }
 
