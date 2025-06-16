@@ -26,7 +26,7 @@ export const ContentRatingButtons = ({
     
     setIsSubmitting(true);
     try {
-      await apiRequest(`/api/content-ratings/${studentId}/${contentId}`, {
+      await apiRequest(`/content-ratings/${studentId}/${contentId}`, {
         method: 'PUT',
         body: JSON.stringify({ rating }),
         headers: {
