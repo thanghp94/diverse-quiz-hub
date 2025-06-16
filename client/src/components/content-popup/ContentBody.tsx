@@ -20,7 +20,7 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
             <h3 className="font-semibold text-lg">Short Blurb</h3>
         </CardHeader>
         <CardContent>
-            <MarkdownRenderer className="text-sm">
+            <MarkdownRenderer className="text-base leading-relaxed">
                 {content.short_blurb}
             </MarkdownRenderer>
         </CardContent>
