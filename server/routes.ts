@@ -409,6 +409,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Assignment API
+  app.post("/api/assignments", async (req, res) => {
+    try {
+      const assignment = await storage.createAssignment(req.body);
+      res.json(assignment);
+    } catch (error) {
+      console.error('Error creating assignment:', error);
+      res.status(500).json({ error: 'Failed to create assignment' });
+    }
+  });
+
+  app.get("/api/assignments/:id", async (req, res) => {
+    try {
+      const assignment = await storage.getAssignmentById(req.params.id);
+      if (!assignment) {
+        return res.status(404).json({ error: 'Assignment not found' });
+      }
+      res.json(assignment);
+    } catch (error) {
+      console.error('Error fetching assignment:', error);
+      res.status(500).json({ error: 'Failed to fetch assignment' });
+    }
+  });
+
+  // Student Try API
+  app.post("/api/student-tries", async (req, res) => {
+    try {
+      const studentTry = await storage.createStudentTry(req.body);
+      res.json(studentTry);
+    } catch (error) {
+      console.error('Error creating student try:', error);
+      res.status(500).json({ error: 'Failed to create student try' });
+    }
+  });
+
+  app.get("/api/student-tries/:id", async (req, res) => {
+    try {
+      const studentTry = await storage.getStudentTryById(req.params.id);
+      if (!studentTry) {
+        return res.status(404).json({ error: 'Student try not found' });
+      }
+      res.json(studentTry);
+    } catch (error) {
+      console.error('Error fetching student try:', error);
+      res.status(500).json({ error: 'Failed to fetch student try' });
+    }
+  });
+
+  app.patch("/api/student-tries/:id", async (req, res) => {
+    try {
+      const studentTry = await storage.updateStudentTry(req.params.id, req.body);
+      res.json(studentTry);
+    } catch (error) {
+      console.error('Error updating student try:', error);
+      res.status(500).json({ error: 'Failed to update student try' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

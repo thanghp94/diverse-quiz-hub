@@ -50,18 +50,64 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
 
             const randomizedQuestionIds = questions.map((q: any) => q.id).sort(() => Math.random() - 0.5);
             
-            const hocsinh_id = 'user-123-placeholder';
+            // Get current user from localStorage
+            const currentUser = localStorage.getItem('currentUser');
+            const studentId = currentUser ? JSON.parse(currentUser).id : null;
+            
+            if (!studentId) {
+                toast({
+                    title: "Authentication Required",
+                    description: "Please log in to take quizzes.",
+                    variant: "destructive",
+                });
+                onClose();
+                return;
+            }
+
+            // Create assignment and assignment_student_try in database
+            const assignmentResponse = await fetch('/api/assignments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    topic_id: topicId,
+                    level: level,
+                    question_ids: randomizedQuestionIds
+                })
+            });
+
+            if (!assignmentResponse.ok) {
+                throw new Error('Failed to create assignment');
+            }
+
+            const assignment = await assignmentResponse.json();
+
+            // Create student try
+            const tryResponse = await fetch('/api/student-tries', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    assignment_id: assignment.id,
+                    student_id: studentId,
+                    level: level
+                })
+            });
+
+            if (!tryResponse.ok) {
+                throw new Error('Failed to create student try');
+            }
+
+            const studentTry = await tryResponse.json();
             
             const newAssignmentTry = {
-                id: Date.now(),
-                hocsinh_id,
+                id: studentTry.id,
+                assignment_id: assignment.id,
+                student_id: studentId,
                 topicID: topicId,
                 questionIDs: JSON.stringify(randomizedQuestionIds),
                 level: level
             };
 
-            // Note: Assignment tracking will be implemented when authentication is added
-            console.log('Topic quiz started:', newAssignmentTry);
+            console.log('Topic quiz started with database tracking:', newAssignmentTry);
 
             setAssignmentTry(newAssignmentTry);
             setQuestionIds(randomizedQuestionIds);
