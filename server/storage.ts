@@ -612,11 +612,19 @@ export class DatabaseStorage implements IStorage {
   // Student Tries
   async createStudentTry(studentTry: any): Promise<any> {
     return this.executeWithRetry(async () => {
-      // Create student_try record
+      // Create student_try record with all question response data
       const studentTryData = {
         id: `try_${Date.now()}`,
         assignment_student_try_id: studentTry.assignment_student_try_id?.toString() || null,
-        hocsinh_id: studentTry.hocsinh_id
+        hocsinh_id: studentTry.hocsinh_id,
+        question_id: studentTry.question_id || null,
+        answer_choice: studentTry.answer_choice || null,
+        correct_answer: studentTry.correct_answer || null,
+        quiz_result: studentTry.quiz_result || null,
+        time_start: studentTry.time_start || null,
+        time_end: studentTry.time_end || null,
+        currentindex: studentTry.currentindex || null,
+        showcontent: studentTry.showcontent || null
       };
       
       console.log('Creating student_try with data:', studentTryData);
