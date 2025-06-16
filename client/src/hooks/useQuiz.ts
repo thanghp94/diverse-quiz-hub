@@ -11,7 +11,7 @@ interface UseQuizProps {
 
 export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuizProps) => {
   const [quizMode, setQuizMode] = useState(false);
-  const [assignmentTry, setAssignmentTry] = useState<Tables<'assignment_student_try'> | null>(null);
+  const [assignmentTry, setAssignmentTry] = useState<any>(null);
   const [questionIds, setQuestionIds] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -19,57 +19,46 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
     if (!content) return;
 
     // Fetch questions for this content
-    let query = supabase
-        .from('question')
-        .select('id')
-        .eq('contentid', content.id);
-
-    if (level) {
-        query = query.eq('questionlevel', level);
-    }
-
-    const { data: questions, error: questionsError } = await query;
-
-    if (questionsError) {
-        console.error("Error fetching questions:", questionsError.message);
-        toast({
-            title: "Error Fetching Quiz",
-            description: "Could not fetch questions for the quiz. Please try again.",
-            variant: "destructive",
-        });
-        if (startQuizDirectly) onClose();
-        return;
-    }
-
-    if (!questions || questions.length === 0) {
-        console.log("No questions available for this content.", level ? `Level: ${level}` : '');
-        toast({
-            title: "No Quiz Available",
-            description: `There are no ${level ? level.toLowerCase() + ' ' : ''}questions for this content yet. Check back later!`,
-        });
-        if (startQuizDirectly) onClose();
-        return;
-    }
-
-    const randomizedQuestionIds = questions.map(q => q.id).sort(() => Math.random() - 0.5);
+    const url = level 
+      ? `/api/questions?contentId=${content.id}&level=${level}`
+      : `/api/questions?contentId=${content.id}`;
     
-    const hocsinh_id = 'user-123-placeholder';
-    
-    const newAssignmentTry = {
-        id: Date.now(),
-        hocsinh_id,
-        contentID: content.id,
-        questionIDs: JSON.stringify(randomizedQuestionIds),
-    };
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch questions');
+      }
+      const questions = await response.json();
 
-    const { data: insertedData, error: insertError } = await supabase
-        .from('assignment_student_try')
-        .insert(newAssignmentTry)
-        .select()
-        .single();
+      if (!questions || questions.length === 0) {
+          console.log("No questions available for this content.", level ? `Level: ${level}` : '');
+          toast({
+              title: "No Quiz Available",
+              description: `There are no ${level ? level.toLowerCase() + ' ' : ''}questions for this content yet. Check back later!`,
+          });
+          if (startQuizDirectly) onClose();
+          return;
+      }
 
-    if (insertError) {
-        console.error("Error starting quiz:", insertError.message);
+      const randomizedQuestionIds = questions.map((q: any) => q.id).sort(() => Math.random() - 0.5);
+      
+      const hocsinh_id = 'user-123-placeholder';
+      
+      const newAssignmentTry = {
+          id: Date.now(),
+          hocsinh_id,
+          contentID: content.id,
+          questionIDs: JSON.stringify(randomizedQuestionIds),
+      };
+
+      // Note: Assignment tracking will be implemented when authentication is added
+      console.log('Quiz started:', newAssignmentTry);
+
+      setAssignmentTry(newAssignmentTry);
+      setQuestionIds(randomizedQuestionIds);
+      setQuizMode(true);
+    } catch (error) {
+        console.error("Error starting quiz:", error);
         toast({
             title: "Error Starting Quiz",
             description: "Could not start the quiz due to a server error. Please try again.",
@@ -78,10 +67,6 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
         if (startQuizDirectly) onClose();
         return;
     }
-
-    setAssignmentTry(insertedData as Tables<'assignment_student_try'>);
-    setQuestionIds(randomizedQuestionIds);
-    setQuizMode(true);
   }, [content, toast, startQuizDirectly, onClose]);
 
   const handleQuizFinish = () => {

@@ -3,8 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Question } from "@/features/quiz/types";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface MatchingProps {
   question: Question;
@@ -75,32 +74,12 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
 
       const studentId = 'user-123-placeholder'; // Replace with actual auth.uid() when authentication is implemented
       
-      const { error } = await supabase
-        .from('matching_student_try')
-        .insert({
-          matching_id: question.id.toString(),
-          student_id: studentId,
-          student_matches: studentMatches,
-          correct_matches: correctMatches,
-          score: score,
-          total_pairs: question.pairs?.length || 0,
-          is_completed: true,
-          is_correct: isCorrect,
-          time_start: startTime.toISOString(),
-          time_end: endTime.toISOString(),
-          duration_seconds: durationSeconds
-        });
-
-      if (error) {
-        console.error('Error saving student attempt:', error);
-        toast({
-          title: "Warning",
-          description: "Your attempt was processed but not saved to your record.",
-          variant: "destructive",
-        });
-      } else {
-        console.log('Student attempt saved successfully');
-      }
+      // Note: Student attempt tracking will be implemented when authentication is added
+      console.log('Student attempt completed:', {
+        score,
+        isCorrect,
+        durationSeconds
+      });
     } catch (error) {
       console.error('Error in saveStudentAttempt:', error);
     }
