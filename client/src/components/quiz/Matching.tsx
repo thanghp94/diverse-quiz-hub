@@ -136,8 +136,8 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
 
   return (
     <Card className="bg-white border-gray-300 shadow-lg h-full flex flex-col">
-      <CardHeader className="pb-2 pt-3">
-        <div className="flex justify-between items-center mb-2">
+      <CardHeader className="pb-1 pt-2">
+        <div className="flex justify-between items-center mb-1">
           <Button 
             variant="outline" 
             size="sm" 
@@ -157,12 +157,12 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
         </div>
         <CardTitle className="text-black text-lg font-bold">{question.question}</CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 overflow-hidden p-4">
-        <div className="flex flex-col gap-2 h-full">
+      <CardContent className="flex-1 overflow-hidden p-2">
+        <div className="flex flex-col gap-1 h-full">
           {/* Top Row - Images */}
           <div className="flex-1">
             <div 
-              className={`grid gap-3 h-[180px] overflow-y-auto ${
+              className={`grid gap-2 h-[160px] overflow-y-auto ${
                 leftItems.length <= 4 
                   ? 'grid-cols-4' 
                   : leftItems.length <= 5 
@@ -182,7 +182,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                     key={item}
                     draggable={!isUsed && !isSubmitted}
                     onDragStart={(e) => handleDragStart(e, item)}
-                    className={`relative p-1 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
+                    className={`relative p-0.5 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
                       isCorrect 
                         ? 'bg-green-100 border-green-400 cursor-not-allowed'
                         : isIncorrect
@@ -247,7 +247,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                     key={item}
                     draggable={!isUsed && !isSubmitted}
                     onDragStart={(e) => handleDragStart(e, item)}
-                    className={`relative p-2 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
+                    className={`relative p-1 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
                       isCorrect 
                         ? 'bg-green-100 border-green-400 cursor-not-allowed'
                         : isIncorrect
@@ -282,7 +282,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
           {/* Bottom Row - Descriptions/Drop Zones */}
           <div className="flex-1">
             <div 
-              className={`grid gap-3 h-[180px] overflow-y-auto ${
+              className={`grid gap-2 h-[160px] overflow-y-auto ${
                 fixedRightItems.length <= 4 
                   ? 'grid-cols-4' 
                   : fixedRightItems.length <= 5 
@@ -304,7 +304,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                     onDragEnter={!isSubmitted ? handleDragEnter : undefined}
                     onDragLeave={!isSubmitted ? handleDragLeave : undefined}
                     onDrop={!isSubmitted ? (e) => handleDrop(e, item) : undefined}
-                    className={`p-3 rounded-lg text-black border-2 border-dashed transition-all duration-300 ${
+                    className={`p-1.5 rounded-lg text-black border-2 border-dashed transition-all duration-300 ${
                       isCorrect
                         ? 'bg-green-100 border-green-400 shadow-lg'
                         : isIncorrect
