@@ -165,11 +165,28 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, item)}
-                  className="p-4 bg-purple-500/20 rounded-lg text-white min-h-[60px] border-2 border-dashed border-purple-400/30 hover:border-purple-400/60 transition-colors"
+                  className="p-4 bg-purple-500/20 rounded-lg text-white min-h-[120px] border-2 border-dashed border-purple-400/30 hover:border-purple-400/60 transition-colors"
                 >
-                  <div className="font-semibold">{item}</div>
+                  <div className="font-semibold mb-2">{item}</div>
                   {matchedLeft && (
-                    <div className="text-sm text-blue-200 mt-1">← {matchedLeft}</div>
+                    <div className="flex items-center gap-3 text-sm text-blue-200 mt-2 p-2 bg-blue-500/20 rounded border-l-2 border-blue-400">
+                      <span>Matched with:</span>
+                      {isImageItem(matchedLeft) ? (
+                        <div className="flex items-center gap-2">
+                          <img 
+                            src={matchedLeft} 
+                            alt="Matched item" 
+                            className="w-12 h-12 object-contain rounded border border-blue-300"
+                            onError={() => {
+                              // Image failed to load - fallback will show
+                            }}
+                          />
+                          <span className="text-xs text-gray-300">Image</span>
+                        </div>
+                      ) : (
+                        <span className="font-medium">{matchedLeft}</span>
+                      )}
+                    </div>
                   )}
                 </div>
               );
