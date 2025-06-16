@@ -58,6 +58,16 @@ const fetchImages = async (): Promise<ImageData[]> => {
   return response.json();
 };
 
+// Fisher-Yates shuffle algorithm for randomizing arrays
+const shuffleArray = (array: any[]): any[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 const transformToQuestions = async (activity: MatchingActivityData): Promise<Question[]> => {
   const questions: Question[] = [];
   const types = activity.type?.split(', ') || [];
@@ -147,11 +157,19 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
       console.log('🎯 Picture-title pairs generated:', pairs.length);
       
       if (pairs.length > 0) {
+        // Randomize the order of right column items while keeping left items in order
+        const rightItems = pairs.map(pair => pair.right);
+        const shuffledRightItems = shuffleArray(rightItems);
+        const randomizedPairs = pairs.map((pair, index) => ({
+          ...pair,
+          right: shuffledRightItems[index]
+        }));
+        
         questions.push({
           id: `${activity.id}-picture-title`,
           question: 'Match the images with their corresponding titles.',
           type: 'matching' as const,
-          pairs: pairs,
+          pairs: randomizedPairs,
         });
       }
     }
@@ -180,11 +198,19 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
       console.log('📋 Title-description pairs generated:', pairs.length);
       
       if (pairs.length > 0) {
+        // Randomize the order of right column items while keeping left items in order
+        const rightItems = pairs.map(pair => pair.right);
+        const shuffledRightItems = shuffleArray(rightItems);
+        const randomizedPairs = pairs.map((pair, index) => ({
+          ...pair,
+          right: shuffledRightItems[index]
+        }));
+        
         questions.push({
           id: `${activity.id}-title-description`,
           question: 'Match the titles with their descriptions.',
           type: 'matching' as const,
-          pairs: pairs,
+          pairs: randomizedPairs,
         });
       }
     }
