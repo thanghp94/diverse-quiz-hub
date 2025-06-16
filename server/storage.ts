@@ -30,6 +30,11 @@ export interface IStorage {
   // Matching
   getMatchingActivities(): Promise<Matching[]>;
   getMatchingById(id: string): Promise<Matching | undefined>;
+  
+  // Videos
+  getVideos(): Promise<Video[]>;
+  getVideoById(id: string): Promise<Video | undefined>;
+  getVideosByContentId(contentId: string): Promise<Video[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -123,6 +128,19 @@ export class DatabaseStorage implements IStorage {
   async getMatchingById(id: string): Promise<Matching | undefined> {
     const result = await db.select().from(matching).where(eq(matching.id, id));
     return result[0];
+  }
+
+  async getVideos(): Promise<Video[]> {
+    return await db.select().from(videos);
+  }
+
+  async getVideoById(id: string): Promise<Video | undefined> {
+    const result = await db.select().from(videos).where(eq(videos.id, id));
+    return result[0] || undefined;
+  }
+
+  async getVideosByContentId(contentId: string): Promise<Video[]> {
+    return await db.select().from(videos).where(eq(videos.contentid, contentId));
   }
 }
 
