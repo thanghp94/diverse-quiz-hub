@@ -93,36 +93,36 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
   console.log('📚 Total content items loaded:', content.length);
   console.log('🖼️ Total images loaded:', images.length);
   
+  // First, collect and validate all content IDs for the activity
+  const allContentIds = [];
+  for (let i = 1; i <= 6; i++) {
+    const contentId = activity[`prompt${i}`];
+    if (contentId) allContentIds.push(contentId);
+  }
+  
+  console.log(`🔗 Activity ${activity.id} has ${allContentIds.length} content IDs: ${allContentIds.join(', ')}`);
+  
+  // Find valid content items that exist in the database
+  const validContentItems = [];
+  const missingContentIds = [];
+  
+  for (const contentId of allContentIds) {
+    const contentItem = content.find(c => c.id === contentId);
+    if (contentItem) {
+      validContentItems.push({ id: contentId, item: contentItem });
+    } else {
+      missingContentIds.push(contentId);
+    }
+  }
+  
+  console.log(`📊 Content validation: ${validContentItems.length} found, ${missingContentIds.length} missing`);
+  if (missingContentIds.length > 0) {
+    console.log(`❌ Missing content IDs: ${missingContentIds.join(', ')}`);
+  }
+
   for (const type of types) {
     if (type === 'picture-title') {
       const pairs = [];
-      
-      // Collect all content IDs and validate them
-      const allContentIds = [];
-      for (let i = 1; i <= 6; i++) {
-        const contentId = activity[`prompt${i}`];
-        if (contentId) allContentIds.push(contentId);
-      }
-      
-      console.log(`🔗 Activity ${activity.id} has ${allContentIds.length} content IDs: ${allContentIds.join(', ')}`);
-      
-      // Find valid content items that exist in the database
-      const validContentItems = [];
-      const missingContentIds = [];
-      
-      for (const contentId of allContentIds) {
-        const contentItem = content.find(c => c.id === contentId);
-        if (contentItem) {
-          validContentItems.push({ id: contentId, item: contentItem });
-        } else {
-          missingContentIds.push(contentId);
-        }
-      }
-      
-      console.log(`📊 Content validation: ${validContentItems.length} found, ${missingContentIds.length} missing`);
-      if (missingContentIds.length > 0) {
-        console.log(`❌ Missing content IDs: ${missingContentIds.join(', ')}`);
-      }
       
       // Process valid content items for picture-title matching
       for (const { id: contentId, item: contentItem } of validContentItems) {
@@ -159,7 +159,6 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
     if (type === 'title-description') {
       const pairs = [];
       
-      // Reuse the same valid content items from picture-title validation
       console.log(`📝 Processing ${validContentItems.length} valid content items for title-description matching`);
       
       for (const { id: contentId, item: contentItem } of validContentItems) {
