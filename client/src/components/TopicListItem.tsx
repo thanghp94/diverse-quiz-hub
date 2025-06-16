@@ -76,6 +76,10 @@ const getContentTypeColor = (content: any) => {
     return 'bg-green-500/20 text-green-200';
 };
 
+
+
+
+
 const getSubtopicLabel = (parentTopic: string, index: number) => {
     const letter = parentTopic.charAt(0).toUpperCase();
     return `${letter}.${index + 1}`;
@@ -252,6 +256,23 @@ export const TopicListItem = ({
                                 {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0">
+                                {(() => {
+                                  const { hasMatchingActivities } = useTopicMatching(subtopic.id);
+                                  return hasMatchingActivities ? (
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onStartTopicMatching(subtopic.id, subtopic.topic);
+                                      }}
+                                    >
+                                      <Shuffle className="h-4 w-4" />
+                                      <span className="sr-only">Start Matching for {subtopic.topic}</span>
+                                    </Button>
+                                  ) : null;
+                                })()}
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                       <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
