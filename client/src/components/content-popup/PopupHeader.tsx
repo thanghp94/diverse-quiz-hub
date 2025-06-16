@@ -57,7 +57,6 @@ export const PopupHeader = ({
                       </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => startQuiz()}>Overview Quiz</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => startQuiz('Easy')}>Easy Quiz</DropdownMenuItem>
                       <DropdownMenuItem onClick={() => startQuiz('Hard')}>Hard Quiz</DropdownMenuItem>
                   </DropdownMenuContent>

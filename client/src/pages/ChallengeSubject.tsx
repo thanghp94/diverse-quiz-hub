@@ -81,7 +81,7 @@ const ChallengeSubject = () => {
   // Helper function to get content for a specific challenge subject
   const getContentBySubject = useCallback((subject: string): Content[] => {
     if (!allContent) return [];
-    
+
     return allContent.filter(content => 
       content.challengesubject && 
       content.challengesubject.includes(subject)
