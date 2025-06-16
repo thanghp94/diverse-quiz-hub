@@ -231,27 +231,33 @@ export const TopicListItem = ({
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2 mb-2">
                                   <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="outline" size="sm" className="text-white/70 hover:bg-white/20 hover:text-white text-xs px-2 py-1 h-6">
-                                        Quiz
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                      <DropdownMenuItem onClick={(e) => {
-                                        e.stopPropagation();
-                                        onStartQuiz(content, topicContent, 'Easy');
-                                      }}>
-                                        Easy Quiz
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={(e) => {
-                                        e.stopPropagation();
-                                        onStartQuiz(content, topicContent, 'Hard');
-                                      }}>
-                                        Hard Quiz
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
+                                  <div className="flex items-center gap-2">
+                                    <ContentRatingButtons 
+                                      contentId={content.id}
+                                      compact={true}
+                                    />
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="outline" size="sm" className="text-white/70 hover:bg-white/20 hover:text-white text-xs px-2 py-1 h-6">
+                                          Quiz
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={(e) => {
+                                          e.stopPropagation();
+                                          onStartQuiz(content, topicContent, 'Easy');
+                                        }}>
+                                          Easy Quiz
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={(e) => {
+                                          e.stopPropagation();
+                                          onStartQuiz(content, topicContent, 'Hard');
+                                        }}>
+                                          Hard Quiz
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
                                 </div>
                                 {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                 <CompactContentDifficultyIndicator contentId={content.id} />
@@ -326,6 +332,10 @@ export const TopicListItem = ({
                                             <div className="flex items-center justify-between gap-2 mb-2">
                                               <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
                                               <div className="flex items-center gap-2">
+                                                <ContentRatingButtons 
+                                                  contentId={content.id}
+                                                  compact={true}
+                                                />
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
                                                     <Button variant="outline" size="sm" className="text-white/70 hover:bg-white/20 hover:text-white text-xs px-2 py-1 h-6">
