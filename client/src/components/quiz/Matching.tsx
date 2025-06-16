@@ -159,12 +159,69 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
         <CardTitle className="text-black text-lg font-bold">{question.question}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-4">
-        <div className="flex flex-col gap-6 h-full">
+        <div className="flex flex-col gap-4 h-full">
           {/* Top Row - Images */}
           <div className="flex-1">
-            <h3 className="text-black font-semibold text-base mb-3">Drag from here (Images):</h3>
-            <div className="grid grid-cols-3 gap-4 h-[200px] overflow-y-auto">
+            <div className="grid grid-cols-4 lg:grid-cols-5 gap-3 h-[180px] overflow-y-auto">
               {leftItems.filter(item => isImageItem(item)).map(item => {
+                const isUsed = Object.keys(matches).includes(item);
+                const isCorrect = isSubmitted && correctMatches[item];
+                const isIncorrect = isSubmitted && correctMatches[item] === false;
+                
+                return (
+                  <div
+                    key={item}
+                    draggable={!isUsed && !isSubmitted}
+                    onDragStart={(e) => handleDragStart(e, item)}
+                    className={`relative p-1 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
+                      isCorrect 
+                        ? 'bg-green-100 border-green-400 cursor-not-allowed'
+                        : isIncorrect
+                        ? 'bg-red-100 border-red-400 cursor-not-allowed'
+                        : isUsed 
+                        ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' 
+                        : 'bg-blue-50 border-blue-300 cursor-move hover:bg-blue-100 hover:border-blue-400'
+                    }`}
+                  >
+                    {isUsed && (
+                      <div className={`absolute top-1 right-1 text-white rounded-full p-1 z-10 ${
+                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-green-500'
+                      }`}>
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          {isCorrect ? (
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          ) : isIncorrect ? (
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          ) : (
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          )}
+                        </svg>
+                      </div>
+                    )}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <img 
+                          src={item} 
+                          alt="Matching item" 
+                          className="max-w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                          onError={() => {
+                            // Image failed to load - fallback text will show instead
+                          }}
+                        />
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh]">
+                        <img 
+                          src={item} 
+                          alt="Full size matching item" 
+                          className="w-full h-auto object-contain"
+                        />
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                );
+              })}
+              {/* Text items from left side */}
+              {leftItems.filter(item => !isImageItem(item)).map(item => {
                 const isUsed = Object.keys(matches).includes(item);
                 const isCorrect = isSubmitted && correctMatches[item];
                 const isIncorrect = isSubmitted && correctMatches[item] === false;
@@ -199,65 +256,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </svg>
                       </div>
                     )}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <img 
-                          src={item} 
-                          alt="Matching item" 
-                          className="max-w-full max-h-32 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
-                          onError={() => {
-                            // Image failed to load - fallback text will show instead
-                          }}
-                        />
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh]">
-                        <img 
-                          src={item} 
-                          alt="Full size matching item" 
-                          className="w-full h-auto object-contain"
-                        />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                );
-              })}
-              {/* Text items from left side */}
-              {leftItems.filter(item => !isImageItem(item)).map(item => {
-                const isUsed = Object.keys(matches).includes(item);
-                const isCorrect = isSubmitted && correctMatches[item];
-                const isIncorrect = isSubmitted && correctMatches[item] === false;
-                
-                return (
-                  <div
-                    key={item}
-                    draggable={!isUsed && !isSubmitted}
-                    onDragStart={(e) => handleDragStart(e, item)}
-                    className={`relative p-3 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
-                      isCorrect 
-                        ? 'bg-green-100 border-green-400 cursor-not-allowed'
-                        : isIncorrect
-                        ? 'bg-red-100 border-red-400 cursor-not-allowed'
-                        : isUsed 
-                        ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' 
-                        : 'bg-blue-50 border-blue-300 cursor-move hover:bg-blue-100 hover:border-blue-400'
-                    }`}
-                  >
-                    {isUsed && (
-                      <div className={`absolute top-1 right-1 text-white rounded-full p-1 z-10 ${
-                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-green-500'
-                      }`}>
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          {isCorrect ? (
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          ) : isIncorrect ? (
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          ) : (
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          )}
-                        </svg>
-                      </div>
-                    )}
-                    <span className="text-center text-sm font-medium leading-tight whitespace-pre-line">{item}</span>
+                    <span className="text-center text-xs font-medium leading-tight whitespace-pre-line">{item}</span>
                   </div>
                 );
               })}
@@ -266,8 +265,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
           
           {/* Bottom Row - Descriptions/Drop Zones */}
           <div className="flex-1">
-            <h3 className="text-black font-semibold text-base mb-3">Drop here (Descriptions):</h3>
-            <div className="grid grid-cols-2 gap-4 h-[200px] overflow-y-auto">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 h-[180px] overflow-y-auto">
               {fixedRightItems.map((item: string) => {
                 const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
                 const isCorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft];
@@ -311,17 +309,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </DialogContent>
                       </Dialog>
                     ) : (
-                      <div className="font-medium text-sm leading-tight whitespace-pre-line">{item}</div>
+                      <div className="font-medium text-base leading-tight whitespace-pre-line">{item}</div>
                     )}
                     {matchedLeft && (
-                      <div className={`flex items-center gap-2 text-xs mt-2 p-2 rounded border ${
+                      <div className={`flex items-center gap-2 text-sm mt-2 p-2 rounded border ${
                         isCorrect 
                           ? 'text-green-700 bg-green-200 border-green-300'
                           : isIncorrect
                           ? 'text-red-700 bg-red-200 border-red-300'
                           : 'text-blue-700 bg-blue-200 border-blue-300'
                       }`}>
-                        <span>Matched with:</span>
+                        <span className="font-medium">Matched with:</span>
                         {isImageItem(matchedLeft) ? (
                           <div className="flex items-center gap-1">
                             <Dialog>
@@ -343,13 +341,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                                 />
                               </DialogContent>
                             </Dialog>
-                            <span className="text-xs text-gray-600">Image</span>
+                            <span className="text-sm text-gray-600 font-medium">Image</span>
                           </div>
                         ) : (
-                          <span className="font-medium text-xs">{matchedLeft}</span>
+                          <span className="font-semibold text-sm">{matchedLeft}</span>
                         )}
                         {isSubmitted && (
-                          <div className={`ml-auto text-xs font-bold ${
+                          <div className={`ml-auto text-sm font-bold ${
                             isCorrect ? 'text-green-600' : 'text-red-600'
                           }`}>
                             {isCorrect ? '✓ Correct' : '✗ Incorrect'}
