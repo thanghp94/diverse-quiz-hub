@@ -312,9 +312,6 @@ const TopicContentWithMatching = ({
               )}
               {hasVideo2 && (
                 <div>
-                  {video2Data.video_name && (
-                    <h4 className="text-white font-medium mb-3 text-base">{video2Data.video_name}</h4>
-                  )}
                   <div className="aspect-video bg-black rounded-lg overflow-hidden">
                     <iframe 
                       className="w-full h-full" 
@@ -732,9 +729,6 @@ export const TopicListItem = ({
                                               )}
                                               {hasVideo2 && (
                                                 <div>
-                                                  {video2Data.video_name && (
-                                                    <h4 className="text-white font-medium mb-3 text-base">{video2Data.video_name}</h4>
-                                                  )}
                                                   <div className="aspect-video bg-black rounded-lg overflow-hidden">
                                                     <iframe 
                                                       className="w-full h-full" 
@@ -769,7 +763,8 @@ export const TopicListItem = ({
                   <div className="text-center py-4">
                     <p className="text-white/60 text-sm">No content available for this topic</p>
                   </div>
-                )}
+                )}```text
+
               </div>
             </div>
           )}
