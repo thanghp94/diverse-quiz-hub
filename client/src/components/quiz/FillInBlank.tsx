@@ -8,9 +8,10 @@ import { Question } from "@/features/quiz/types";
 interface FillInBlankProps {
   question: Question;
   onAnswer: (answer: any, isCorrect: boolean) => void;
+  studentTryId?: string;
 }
 
-const FillInBlank = ({ question, onAnswer }: FillInBlankProps) => {
+const FillInBlank = ({ question, onAnswer, studentTryId }: FillInBlankProps) => {
   const [answers, setAnswers] = useState<string[]>(new Array(question.blanks?.length || 0).fill(""));
 
   const handleAnswerChange = (index: number, value: string) => {

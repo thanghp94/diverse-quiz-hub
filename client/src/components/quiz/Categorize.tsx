@@ -7,9 +7,10 @@ import { Question } from "../QuizApp";
 interface CategorizeProps {
   question: Question;
   onAnswer: (answer: any, isCorrect: boolean) => void;
+  studentTryId?: string;
 }
 
-const Categorize = ({ question, onAnswer }: CategorizeProps) => {
+const Categorize = ({ question, onAnswer, studentTryId }: CategorizeProps) => {
   const [categories, setCategories] = useState(
     question.categories?.map(cat => ({ ...cat, items: [...cat.items] })) || []
   );

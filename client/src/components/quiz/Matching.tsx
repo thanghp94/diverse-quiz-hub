@@ -8,9 +8,10 @@ import { useToast } from "@/hooks/use-toast";
 interface MatchingProps {
   question: Question;
   onAnswer: (answer: any, isCorrect: boolean) => void;
+  studentTryId?: string;
 }
 
-const Matching = ({ question, onAnswer }: MatchingProps) => {
+const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
   const [matches, setMatches] = useState<{[key: string]: string}>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

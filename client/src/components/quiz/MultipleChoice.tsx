@@ -9,9 +9,10 @@ import { Question } from "@/features/quiz/types";
 interface MultipleChoiceProps {
   question: Question;
   onAnswer: (answer: any, isCorrect: boolean) => void;
+  studentTryId?: string;
 }
 
-const MultipleChoice = ({ question, onAnswer }: MultipleChoiceProps) => {
+const MultipleChoice = ({ question, onAnswer, studentTryId }: MultipleChoiceProps) => {
   const [selectedOption, setSelectedOption] = useState<string>("");
 
   const handleSubmit = () => {

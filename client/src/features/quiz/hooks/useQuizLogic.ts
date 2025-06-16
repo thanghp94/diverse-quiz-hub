@@ -8,6 +8,7 @@ export interface QuizAppProps {
     questionIds?: string[];
     onFinish?: () => void;
     content?: any;
+    studentTryId?: string;
 }
 
 export const useQuizLogic = ({ assignmentTry, questionIds, onFinish }: QuizAppProps) => {
