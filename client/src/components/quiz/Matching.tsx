@@ -268,13 +268,50 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
           </div>
         </div>
         
-        <Button 
-          onClick={handleSubmit}
-          disabled={!isComplete || isSubmitting}
-          className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50 mt-4"
-        >
-          {isSubmitting ? 'Submitting...' : 'Submit Matches'}
-        </Button>
+        {!isSubmitted ? (
+          <Button 
+            onClick={handleSubmit}
+            disabled={!isComplete || isSubmitting}
+            className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50 mt-4"
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Matches'}
+          </Button>
+        ) : (
+          <div className="mt-4 space-y-2">
+            <div className="text-center">
+              <div className={`text-lg font-bold ${
+                Object.values(correctMatches).every(Boolean) ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {Object.values(correctMatches).filter(Boolean).length} / {Object.keys(correctMatches).length} Correct
+              </div>
+              <div className="text-sm text-gray-600 mt-1">
+                Score: {Math.round((Object.values(correctMatches).filter(Boolean).length / Object.keys(correctMatches).length) * 100)}%
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setMatches({});
+                  setIsSubmitted(false);
+                  setCorrectMatches({});
+                }}
+              >
+                Try Again
+              </Button>
+              <Button 
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+                onClick={() => {
+                  // This could trigger navigation to next activity
+                  console.log('Move to next activity');
+                }}
+              >
+                Next Activity
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
