@@ -812,6 +812,52 @@ export class DatabaseStorage implements IStorage {
       return result[0];
     });
   }
+
+  async updateContent(id: string, updates: { 
+    short_description?: string; 
+    short_blurb?: string;
+    imageid?: string;
+    videoid?: string;
+    videoid2?: string;
+  }): Promise<Content | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db.update(content)
+        .set(updates)
+        .where(eq(content.id, id))
+        .returning();
+      return result[0] || undefined;
+    });
+  }
+
+  async getContentGroups(): Promise<Array<{ contentgroup: string; url: string; content_count: number }>> {
+    return this.executeWithRetry(async () => {
+      const result = await db.execute(sql`
+        SELECT 
+          contentgroup,
+          url,
+          COUNT(*) as content_count
+        FROM content 
+        WHERE contentgroup IS NOT NULL AND contentgroup != ''
+        GROUP BY contentgroup, url
+        ORDER BY content_count DESC
+      `);
+      
+      return result.rows.map((row: any) => ({
+        contentgroup: row.contentgroup,
+        url: row.url || '',
+        content_count: parseInt(row.content_count)
+      }));
+    });
+  }
+
+  async getContentByGroup(contentgroup: string): Promise<Content[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select()
+        .from(content)
+        .where(eq(content.contentgroup, contentgroup));
+      return result;
+    });
+  }
 }
 
 export const storage = new DatabaseStorage();
