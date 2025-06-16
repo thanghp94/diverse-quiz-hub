@@ -133,20 +133,22 @@ export const TopicListItem = ({
             )}
             <div className="flex-grow flex items-start justify-between">
               <div className="w-full">
-                <div className="flex items-center gap-2 mb-1">
-                  <CardTitle className="text-white text-lg">{topic.topic}</CardTitle>
-                  {topic.challengesubject && (
-                    <Badge variant="outline" className="border-white/30 text-white/70 text-xs">
-                      {topic.challengesubject}
-                    </Badge>
-                  )}
-                  {topicContent.length > 0 && (
-                    <span className="text-white/70 text-sm">• Content ({topicContent.length})</span>
-                  )}
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <CardTitle className="text-white text-xl">{topic.topic}</CardTitle>
+                    {topicContent.length > 0 && (
+                      <span className="text-white/80 text-lg font-medium">Content ({topicContent.length})</span>
+                    )}
+                    {topic.challengesubject && (
+                      <Badge variant="outline" className="border-white/30 text-white/70 text-sm">
+                        {topic.challengesubject}
+                      </Badge>
+                    )}
+                  </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-6 w-6">
-                        <HelpCircle className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
+                        <HelpCircle className="h-5 w-5" />
                         <span className="sr-only">Start Quiz for {topic.topic}</span>
                       </Button>
                     </DropdownMenuTrigger>
