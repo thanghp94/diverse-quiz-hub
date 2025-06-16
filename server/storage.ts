@@ -1,6 +1,6 @@
 import { users, topics, content, images, questions, matching, videos, matching_attempts, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt } from "@shared/schema";
 import { db } from "./db";
-import { eq, isNull, ne, asc, sql } from "drizzle-orm";
+import { eq, isNull, ne, asc, sql, and, desc } from "drizzle-orm";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -157,13 +157,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMatchingAttempts(studentId: string, matchingId?: string): Promise<MatchingAttempt[]> {
-    let query = db.select().from(matching_attempts).where(eq(matching_attempts.student_id, studentId));
-    
     if (matchingId) {
-      query = query.where(eq(matching_attempts.matching_id, matchingId));
+      return await db.select().from(matching_attempts)
+        .where(and(
+          eq(matching_attempts.student_id, studentId),
+          eq(matching_attempts.matching_id, matchingId)
+        ))
+        .orderBy(desc(matching_attempts.created_at));
     }
     
-    return await query.orderBy(sql`${matching_attempts.created_at} DESC`);
+    return await db.select().from(matching_attempts)
+      .where(eq(matching_attempts.student_id, studentId))
+      .orderBy(desc(matching_attempts.created_at));
   }
 
   async getMatchingAttemptById(id: string): Promise<MatchingAttempt | undefined> {
