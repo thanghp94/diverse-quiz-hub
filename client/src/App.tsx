@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Topics from "./pages/Topics";
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
+import QuizLeaderboardPage from "./pages/QuizLeaderboardPage";
 import NotFound from "./pages/NotFound";
 import MatchingListPage from "./pages/MatchingList";
 import MatchingActivityPage from "./pages/MatchingActivity";
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/challenge-subject" component={ChallengeSubject} />
           <Route path="/content/:id" component={Content} />
           <Route path="/leaderboard" component={Leaderboard} />
+          <Route path="/quiz-leaderboard" component={QuizLeaderboardPage} />
           <Route path="/matching" component={MatchingListPage} />
           <Route path="/matching/:id" component={MatchingActivityPage} />
           <Route path="/debate" component={DebatePage} />
