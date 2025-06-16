@@ -6,6 +6,7 @@ import { Question } from '@/features/quiz/types';
 import { MatchingActivityTracker, type MatchingActivityTrackerRef } from '@/components/MatchingActivityTracker';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import Header from '@/components/Header';
 
 type MatchingActivityData = {
     id: string;
@@ -238,49 +239,73 @@ const MatchingActivityPage = () => {
   };
 
   if (isLoading || isLoadingQuestions) {
-    return <div className="flex justify-center items-center h-screen bg-gray-900"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+        <Header />
+        <div className="flex justify-center items-center h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-white" />
+        </div>
+      </div>
+    );
   }
 
   if (error || !activity) {
-    return <div className="flex justify-center items-center h-screen bg-gray-900"><p className="text-red-500">Error loading activity.</p></div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+        <Header />
+        <div className="flex justify-center items-center h-96">
+          <p className="text-red-500">Error loading activity.</p>
+        </div>
+      </div>
+    );
   }
 
   if (questions.length === 0) {
-    return <div className="flex justify-center items-center h-screen bg-gray-900"><p className="text-yellow-500">No matching questions found for this activity.</p></div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+        <Header />
+        <div className="flex justify-center items-center h-96">
+          <p className="text-yellow-500">No matching questions found for this activity.</p>
+        </div>
+      </div>
+    );
   }
 
   const currentQuestion = questions[currentQuestionIndex];
   const isMultiQuestion = questions.length > 1;
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Activity Area */}
-        <div className="lg:col-span-2">
-          <div className="bg-gray-900 text-white rounded-lg p-6">
-            {isMultiQuestion && (
-              <div className="mb-4 text-center">
-                <div className="text-sm text-gray-400">
-                  Question {currentQuestionIndex + 1} of {questions.length}
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+      <Header />
+      <div className="p-4">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Activity Area */}
+          <div className="lg:col-span-2">
+            <div className="bg-gray-900 text-white rounded-lg p-6">
+              {isMultiQuestion && (
+                <div className="mb-4 text-center">
+                  <div className="text-sm text-gray-400">
+                    Question {currentQuestionIndex + 1} of {questions.length}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {activity.type}
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">
-                  {activity.type}
-                </div>
-              </div>
-            )}
-            <Matching question={currentQuestion} onAnswer={handleAnswer} />
+              )}
+              <Matching question={currentQuestion} onAnswer={handleAnswer} />
+            </div>
           </div>
-        </div>
-        
-        {/* Activity Tracker Sidebar */}
-        <div className="lg:col-span-1">
-          <MatchingActivityTracker
-            ref={trackerRef}
-            matchingId={id!}
-            studentId={studentId}
-            onAttemptStart={handleAttemptStart}
-            onAttemptComplete={handleAttemptComplete}
-          />
+          
+          {/* Activity Tracker Sidebar */}
+          <div className="lg:col-span-1">
+            <MatchingActivityTracker
+              ref={trackerRef}
+              matchingId={id!}
+              studentId={studentId}
+              onAttemptStart={handleAttemptStart}
+              onAttemptComplete={handleAttemptComplete}
+            />
+          </div>
         </div>
       </div>
     </div>

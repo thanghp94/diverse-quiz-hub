@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Trophy, Medal, Award, Star } from "lucide-react";
-import SharedNav from "@/components/SharedNav";
+import Header from "@/components/Header";
 
 const Leaderboard = () => {
   const leaderboardData = [
@@ -40,8 +40,8 @@ const Leaderboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
+      <Header />
       <div className="container mx-auto p-4 md:p-8">
-        <SharedNav />
         
         <div className="text-center my-8">
           <div className="inline-flex items-center gap-3 mb-2">
