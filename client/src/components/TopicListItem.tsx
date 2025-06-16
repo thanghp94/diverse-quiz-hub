@@ -202,10 +202,10 @@ const TopicContentWithMatching = ({
   const ContentCard = ({ content }: { content: Content }) => {
     const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
     const [videoPopupOpen, setVideoPopupOpen] = useState(false);
-    
+
     const hasVideo1 = videoEmbedUrl && videoData;
     const hasVideo2 = video2EmbedUrl && video2Data;
-    
+
     return (
       <>
         <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
@@ -220,9 +220,9 @@ const TopicContentWithMatching = ({
               <div className="flex items-center gap-2">
                 <ContentThumbnail content={content} />
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <h4 className="text-white/90 text-base font-medium leading-tight text-center">{content.title}</h4>
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
@@ -246,32 +246,38 @@ const TopicContentWithMatching = ({
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      {(hasVideo1 || hasVideo2) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVideoPopupOpen(true);
+                          }}
+                        >
+                          <Play className="h-3 w-3 mr-1" />
+                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                        </Button>
+                      )}
                     </div>
                   </div>
                   {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                   <div className="flex items-center gap-2 mt-2">
                     <CompactContentDifficultyIndicator contentId={content.id} />
-                    {(hasVideo1 || hasVideo2) && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setVideoPopupOpen(true);
-                        }}
-                      >
-                        <Play className="h-3 w-3 mr-1" />
-                        Video{(hasVideo1 && hasVideo2) ? 's' : ''}
-                      </Button>
-                    )}
+                    <ContentRatingButtons 
+                      key={`${content.id}-rating`}
+                      contentId={content.id}
+                      compact={true}
+                      studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        
+
         {/* Video Popup */}
         {videoPopupOpen && (
           <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
@@ -612,10 +618,10 @@ export const TopicListItem = ({
                                   const SubtopicContentCard = () => {
                                     const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                     const [videoPopupOpen, setVideoPopupOpen] = useState(false);
-                                    
+
                                     const hasVideo1 = videoEmbedUrl && videoData;
                                     const hasVideo2 = video2EmbedUrl && video2Data;
-                                    
+
                                     return (
                                       <>
                                         <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
@@ -637,8 +643,8 @@ export const TopicListItem = ({
                                                 />
                                                 <div className="flex-1 min-w-0">
                                                   <div className="flex items-center justify-between gap-2 mb-2">
-                                                    <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
-                                                    <div className="flex items-center gap-2">
+                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                                                    <div className="flex items-center gap-1 flex-shrink-0">
                                                       <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                           <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
@@ -662,6 +668,20 @@ export const TopicListItem = ({
                                                           </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                       </DropdownMenu>
+                                                      {(hasVideo1 || hasVideo2) && (
+                                                        <Button 
+                                                          variant="outline" 
+                                                          size="sm" 
+                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setVideoPopupOpen(true);
+                                                          }}
+                                                        >
+                                                          <Play className="h-3 w-3 mr-1" />
+                                                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                        </Button>
+                                                      )}
                                                     </div>
                                                   </div>
                                                   <div className="flex items-center gap-2 mb-2">
@@ -672,20 +692,6 @@ export const TopicListItem = ({
                                                       compact={true}
                                                       studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
                                                     />
-                                                    {(hasVideo1 || hasVideo2) && (
-                                                      <Button 
-                                                        variant="outline" 
-                                                        size="sm" 
-                                                        className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          setVideoPopupOpen(true);
-                                                        }}
-                                                      >
-                                                        <Play className="h-3 w-3 mr-1" />
-                                                        Video{(hasVideo1 && hasVideo2) ? 's' : ''}
-                                                      </Button>
-                                                    )}
                                                   </div>
                                                   {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                                 </div>
@@ -693,7 +699,7 @@ export const TopicListItem = ({
                                             </div>
                                           </div>
                                         </div>
-                                        
+
                                         {/* Video Popup */}
                                         {videoPopupOpen && (
                                           <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
@@ -751,7 +757,7 @@ export const TopicListItem = ({
                                       </>
                                     );
                                   };
-                                  
+
                                   return <SubtopicContentCard key={content.id} />;
                                 })}
                               </div>
