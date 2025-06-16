@@ -315,6 +315,65 @@ export type Database = {
         }
         Relationships: []
       }
+      matching_student_try: {
+        Row: {
+          correct_matches: Json | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          is_completed: boolean | null
+          is_correct: boolean | null
+          matching_id: string
+          score: number | null
+          student_id: string
+          student_matches: Json | null
+          time_end: string | null
+          time_start: string | null
+          total_pairs: number
+          updated_at: string
+        }
+        Insert: {
+          correct_matches?: Json | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          is_completed?: boolean | null
+          is_correct?: boolean | null
+          matching_id: string
+          score?: number | null
+          student_id: string
+          student_matches?: Json | null
+          time_end?: string | null
+          time_start?: string | null
+          total_pairs: number
+          updated_at?: string
+        }
+        Update: {
+          correct_matches?: Json | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          is_completed?: boolean | null
+          is_correct?: boolean | null
+          matching_id?: string
+          score?: number | null
+          student_id?: string
+          student_matches?: Json | null
+          time_end?: string | null
+          time_start?: string | null
+          total_pairs?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matching_student_try_matching_id_fkey"
+            columns: ["matching_id"]
+            isOneToOne: false
+            referencedRelation: "matching"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question: {
         Row: {
           answer: string | null

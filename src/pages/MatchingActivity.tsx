@@ -48,9 +48,27 @@ const MatchingActivityPage = () => {
 
   const handleAnswer = (answer: any, isCorrect: boolean) => {
     console.log('Answer submitted', { answer, isCorrect });
+    
+    // Calculate score details for display
+    const totalPairs = Object.keys(answer).length;
+    let correctCount = 0;
+    
+    if (activity) {
+      const question = transformToQuestion(activity);
+      question.pairs?.forEach(pair => {
+        if (answer[pair.left] === pair.right) {
+          correctCount++;
+        }
+      });
+    }
+    
+    const score = totalPairs > 0 ? Math.round((correctCount / totalPairs) * 100) : 0;
+    
     toast({
-      title: isCorrect ? 'Congratulations!' : 'Almost there!',
-      description: isCorrect ? 'You matched all items correctly!' : 'Some matches were incorrect. You can try again.',
+      title: isCorrect ? 'Perfect Match!' : 'Good Effort!',
+      description: isCorrect 
+        ? 'You matched all items correctly! Great job!' 
+        : `You got ${correctCount} out of ${totalPairs} matches correct (${score}%). Keep practicing!`,
       variant: isCorrect ? 'default' : 'destructive',
     });
   };

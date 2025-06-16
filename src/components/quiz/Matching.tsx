@@ -1,8 +1,10 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Question } from "@/features/quiz/types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface MatchingProps {
   question: Question;
@@ -12,7 +14,10 @@ interface MatchingProps {
 const Matching = ({ question, onAnswer }: MatchingProps) => {
   const [matches, setMatches] = useState<{[key: string]: string}>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [startTime] = useState(new Date());
   const dragCounter = useRef(0);
+  const { toast } = useToast();
 
   const leftItems = question.pairs?.map(pair => pair.left) || [];
   const rightItems = question.pairs?.map(pair => pair.right) || [];
@@ -57,7 +62,55 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
     setDraggedItem(null);
   };
 
-  const handleSubmit = () => {
+  const saveStudentAttempt = async (studentMatches: {[key: string]: string}, score: number, isCorrect: boolean) => {
+    try {
+      const endTime = new Date();
+      const durationSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
+      
+      // Create correct matches object for reference
+      const correctMatches: {[key: string]: string} = {};
+      question.pairs?.forEach(pair => {
+        correctMatches[pair.left] = pair.right;
+      });
+
+      const studentId = 'user-123-placeholder'; // Replace with actual auth.uid() when authentication is implemented
+      
+      const { error } = await supabase
+        .from('matching_student_try')
+        .insert({
+          matching_id: question.id.toString(),
+          student_id: studentId,
+          student_matches: studentMatches,
+          correct_matches: correctMatches,
+          score: score,
+          total_pairs: question.pairs?.length || 0,
+          is_completed: true,
+          is_correct: isCorrect,
+          time_start: startTime.toISOString(),
+          time_end: endTime.toISOString(),
+          duration_seconds: durationSeconds
+        });
+
+      if (error) {
+        console.error('Error saving student attempt:', error);
+        toast({
+          title: "Warning",
+          description: "Your attempt was processed but not saved to your record.",
+          variant: "destructive",
+        });
+      } else {
+        console.log('Student attempt saved successfully');
+      }
+    } catch (error) {
+      console.error('Error in saveStudentAttempt:', error);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
+    
     let correctCount = 0;
     const correctPairs = question.pairs || [];
     
@@ -67,8 +120,17 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
       }
     });
     
-    const isCorrect = correctCount === correctPairs.length;
+    const totalPairs = correctPairs.length;
+    const score = Math.round((correctCount / totalPairs) * 100);
+    const isCorrect = correctCount === totalPairs;
+    
+    // Save attempt to database
+    await saveStudentAttempt(matches, score, isCorrect);
+    
+    // Call the original onAnswer callback
     onAnswer(matches, isCorrect);
+    
+    setIsSubmitting(false);
   };
 
   const isComplete = Object.keys(matches).length === leftItems.length;
@@ -119,10 +181,10 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
         
         <Button 
           onClick={handleSubmit}
-          disabled={!isComplete}
-          className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg"
+          disabled={!isComplete || isSubmitting}
+          className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50"
         >
-          Submit Matches
+          {isSubmitting ? 'Submitting...' : 'Submit Matches'}
         </Button>
       </CardContent>
     </Card>
