@@ -71,9 +71,9 @@ export const MediaDisplay = ({ imageUrl, isImageLoading, title, imageid, content
             <DialogDescription>Full size view of {title}</DialogDescription>
           </VisuallyHidden>
           <div className="relative w-full h-full flex items-center justify-center bg-black">
-            {imageUrl && (
+            {actualImageUrl && (
               <img 
-                src={imageUrl} 
+                src={actualImageUrl} 
                 alt={title} 
                 className="max-w-full max-h-[85vh] object-contain"
               />
