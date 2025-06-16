@@ -97,58 +97,50 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
     if (type === 'picture-title') {
       const pairs = [];
       
-      // Get content IDs from prompt1-6 fields
+      // Collect all content IDs and validate them
+      const allContentIds = [];
       for (let i = 1; i <= 6; i++) {
         const contentId = activity[`prompt${i}`];
-        if (contentId) {
-          console.log(`🔗 Processing prompt${i} with contentId:`, contentId);
-          
-          const contentItem = content.find(c => c.id === contentId);
-          if (contentItem) {
-            console.log('✅ Found content:', { 
-              id: contentItem.id, 
-              title: contentItem.title, 
-              imageid: contentItem.imageid,
-              hasTitle: !!contentItem.title,
-              titleLength: contentItem.title?.length || 0
-            });
-            
-            // Find image for this content
-            const image = images.find(img => 
-              img.contentid === contentId || 
-              img.id === contentItem.imageid
-            );
-            
-            if (image && image.imagelink) {
-              console.log('🖼️ Found image:', { 
-                imagelink: image.imagelink.substring(0, 50) + '...', 
-                contentId,
-                hasImagelink: !!image.imagelink
-              });
-              
-              if (contentItem.title && contentItem.title.trim()) {
-                console.log('✅ Adding picture-title pair:', { 
-                  image: image.imagelink.substring(0, 30) + '...', 
-                  title: contentItem.title 
-                });
-                pairs.push({ 
-                  left: image.imagelink, 
-                  right: contentItem.title,
-                  leftType: 'image'
-                });
-              } else {
-                console.log('❌ Content has image but no title:', contentId);
-              }
-            } else {
-              console.log('❌ No image found for content:', contentId, {
-                imageByContentId: images.find(img => img.contentid === contentId) ? 'found' : 'not found',
-                imageByImageId: images.find(img => img.id === contentItem.imageid) ? 'found' : 'not found',
-                contentImageId: contentItem.imageid
-              });
-            }
-          } else {
-            console.log('❌ Content not found for ID:', contentId);
-          }
+        if (contentId) allContentIds.push(contentId);
+      }
+      
+      console.log(`🔗 Activity ${activity.id} has ${allContentIds.length} content IDs: ${allContentIds.join(', ')}`);
+      
+      // Find valid content items that exist in the database
+      const validContentItems = [];
+      const missingContentIds = [];
+      
+      for (const contentId of allContentIds) {
+        const contentItem = content.find(c => c.id === contentId);
+        if (contentItem) {
+          validContentItems.push({ id: contentId, item: contentItem });
+        } else {
+          missingContentIds.push(contentId);
+        }
+      }
+      
+      console.log(`📊 Content validation: ${validContentItems.length} found, ${missingContentIds.length} missing`);
+      if (missingContentIds.length > 0) {
+        console.log(`❌ Missing content IDs: ${missingContentIds.join(', ')}`);
+      }
+      
+      // Process valid content items for picture-title matching
+      for (const { id: contentId, item: contentItem } of validContentItems) {
+        // Find image for this content
+        const image = images.find(img => 
+          img.contentid === contentId || 
+          img.id === contentItem.imageid
+        );
+        
+        if (image && image.imagelink && contentItem.title && contentItem.title.trim()) {
+          console.log(`✅ Adding picture-title pair: "${contentItem.title}" with image`);
+          pairs.push({ 
+            left: image.imagelink, 
+            right: contentItem.title,
+            leftType: 'image'
+          });
+        } else {
+          console.log(`⚠️ Skipping content ${contentId}: missing ${!image?.imagelink ? 'image' : 'title'}`);
         }
       }
       
@@ -167,41 +159,22 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
     if (type === 'title-description') {
       const pairs = [];
       
-      // Get content IDs from prompt1-6 fields
-      for (let i = 1; i <= 6; i++) {
-        const contentId = activity[`prompt${i}`];
-        if (contentId) {
-          console.log(`📝 Processing prompt${i} for title-description with contentId:`, contentId);
-          
-          const contentItem = content.find(c => c.id === contentId);
-          if (contentItem) {
-            console.log('📋 Content details:', {
-              id: contentItem.id,
-              hasTitle: !!contentItem.title,
-              hasShortDescription: !!contentItem.short_description,
-              title: contentItem.title?.substring(0, 30) + '...',
-              shortDescLength: contentItem.short_description?.length || 0
-            });
-            
-            if (contentItem.title && contentItem.title.trim() && 
-                contentItem.short_description && contentItem.short_description.trim()) {
-              console.log('✅ Adding title-description pair:', { 
-                title: contentItem.title, 
-                description: contentItem.short_description?.substring(0, 50) + '...' 
-              });
-              pairs.push({ 
-                left: contentItem.title, 
-                right: contentItem.short_description 
-              });
-            } else {
-              console.log('❌ Missing title or description for content:', contentId, {
-                missingTitle: !contentItem.title || !contentItem.title.trim(),
-                missingDescription: !contentItem.short_description || !contentItem.short_description.trim()
-              });
-            }
-          } else {
-            console.log('❌ Content not found for ID:', contentId);
-          }
+      // Reuse the same valid content items from picture-title validation
+      console.log(`📝 Processing ${validContentItems.length} valid content items for title-description matching`);
+      
+      for (const { id: contentId, item: contentItem } of validContentItems) {
+        if (contentItem.title && contentItem.title.trim() && 
+            contentItem.short_description && contentItem.short_description.trim()) {
+          console.log(`✅ Adding title-description pair: "${contentItem.title}" with description`);
+          pairs.push({ 
+            left: contentItem.title, 
+            right: contentItem.short_description 
+          });
+        } else {
+          const missing = [];
+          if (!contentItem.title || !contentItem.title.trim()) missing.push('title');
+          if (!contentItem.short_description || !contentItem.short_description.trim()) missing.push('description');
+          console.log(`⚠️ Skipping content ${contentId}: missing ${missing.join(' and ')}`);
         }
       }
       
