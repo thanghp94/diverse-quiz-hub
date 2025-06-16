@@ -182,31 +182,25 @@ export const TopicListItem = ({
                         <span className="sr-only">Start Matching for {topic.topic}</span>
                       </Button>
                     )}
-                    <div className="flex flex-col items-center gap-1">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
-                            <HelpCircle className="h-5 w-5" />
-                            <span className="sr-only">Start Quiz for {topic.topic}</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
-                            Overview Quiz
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
-                            Easy Quiz
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
-                            Hard Quiz
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <ContentRatingButtons 
-                        contentId={topic.id}
-                        compact={true}
-                      />
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
+                          <HelpCircle className="h-5 w-5" />
+                          <span className="sr-only">Start Quiz for {topic.topic}</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
+                          Overview Quiz
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
+                          Easy Quiz
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
+                          Hard Quiz
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <ChevronDown className={cn("h-6 w-6 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
                   </div>
                 </div>
@@ -244,6 +238,12 @@ export const TopicListItem = ({
                                 {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                 <div className="mt-2">
                                   <CompactContentDifficultyIndicator contentId={content.id} />
+                                </div>
+                                <div className="mt-2 flex justify-center">
+                                  <ContentRatingButtons 
+                                    contentId={content.id}
+                                    compact={true}
+                                  />
                                 </div>
                               </div>
                             </div>
