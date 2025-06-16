@@ -81,20 +81,6 @@ export const ContentRatingButtons = ({
         </Button>
         
         <Button
-          variant={currentRating === 'normal' ? 'default' : 'outline'}
-          size="sm"
-          onClick={() => handleRating('normal')}
-          disabled={isSubmitting}
-          className={`flex items-center justify-center w-6 h-6 p-0 ${
-            currentRating === 'normal' 
-              ? 'bg-orange-500 hover:bg-orange-600 text-white' 
-              : 'hover:bg-orange-50 hover:border-orange-300'
-          }`}
-        >
-          <Minus className="w-3 h-3" />
-        </Button>
-        
-        <Button
           variant={currentRating === 'ok' ? 'default' : 'outline'}
           size="sm"
           onClick={() => handleRating('ok')}

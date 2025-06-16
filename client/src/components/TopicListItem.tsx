@@ -12,6 +12,7 @@ import { useTopicMatching } from "@/hooks/useTopicMatching";
 import { SubtopicMatchingButton } from "@/components/SubtopicMatchingButton";
 import { ParentTopicMatchingButton } from "@/components/ParentTopicMatchingButton";
 import { CompactContentDifficultyIndicator } from "@/components/ContentDifficultyIndicator";
+import { ContentRatingButtons } from "@/components/ContentRatingButtons";
 
 interface Topic {
   id: string;
@@ -241,22 +242,28 @@ export const TopicListItem = ({
                               </div>
                             </div>
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1">
-                                <HelpCircle className="h-5 w-5" />
-                                <span className="sr-only">Start Quiz for {content.title}</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Easy')}>
-                                Easy Quiz
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Hard')}>
-                                Hard Quiz
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                          <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white">
+                                  <HelpCircle className="h-5 w-5" />
+                                  <span className="sr-only">Start Quiz for {content.title}</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Easy')}>
+                                  Easy Quiz
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Hard')}>
+                                  Hard Quiz
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                            <ContentRatingButtons 
+                              contentId={content.id}
+                              compact={true}
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
