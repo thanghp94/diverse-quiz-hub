@@ -1,4 +1,3 @@
-
 import QuizOrchestrator from "@/features/quiz/components/QuizOrchestrator";
 import type { QuizAppProps as QuizOrchestratorProps } from "@/features/quiz/hooks/useQuizLogic";
 import type { Question as QuizQuestion } from "@/features/quiz/types";

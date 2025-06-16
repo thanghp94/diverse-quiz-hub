@@ -103,10 +103,12 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
                 student_id: studentId,
                 topicID: topicId,
                 questionIDs: JSON.stringify(randomizedQuestionIds),
-                level: level
+                level: level,
+                studentTryId: studentTry.id
             };
 
             console.log('Topic quiz started with database tracking:', newAssignmentTry);
+            console.log('Created student_try:', studentTry);
 
             setAssignmentTry(newAssignmentTry);
             setQuestionIds(randomizedQuestionIds);
@@ -160,6 +162,7 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
             questionIds={questionIds}
             onFinish={handleQuizFinish}
             assignmentTry={assignmentTry}
+            studentTryId={assignmentTry.studentTryId}
         />
     );
 };
