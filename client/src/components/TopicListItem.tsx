@@ -763,8 +763,7 @@ export const TopicListItem = ({
                   <div className="text-center py-4">
                     <p className="text-white/60 text-sm">No content available for this topic</p>
                   </div>
-                )}```text
-
+                )}
               </div>
             </div>
           )}
