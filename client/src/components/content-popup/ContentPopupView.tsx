@@ -22,6 +22,7 @@ interface ContentPopupViewProps {
   video2Data: {
     video_name?: string | null;
   } | null;
+  hideMediaDisplay?: boolean;
 }
 
 export const ContentPopupView = ({
@@ -36,7 +37,8 @@ export const ContentPopupView = ({
   videoEmbedUrl,
   video2EmbedUrl,
   videoData,
-  video2Data
+  video2Data,
+  hideMediaDisplay = false
 }: ContentPopupViewProps) => {
 
   return (
@@ -50,12 +52,14 @@ export const ContentPopupView = ({
         translation={content.translation}
       />
 
-      <MediaDisplay
-        imageUrl={imageUrl}
-        isImageLoading={isImageLoading}
-        title={content.title}
-        imageid={content.imageid}
-      />
+      {!hideMediaDisplay && (
+        <MediaDisplay
+          imageUrl={imageUrl}
+          isImageLoading={isImageLoading}
+          title={content.title}
+          imageid={content.imageid}
+        />
+      )}
       
       <VideoPlayer 
         videoEmbedUrl={videoEmbedUrl}

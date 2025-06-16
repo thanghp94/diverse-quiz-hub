@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import QuizView from "./QuizView";
 import { cn } from "@/lib/utils";
 import { ContentPopupView } from "./content-popup/ContentPopupView";
+import { MediaDisplay } from "./content-popup/MediaDisplay";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
 
@@ -85,20 +86,34 @@ const ContentPopup = ({
               </DialogDescription>
             </DialogHeader>
 
-            <ContentPopupView
-                content={content}
-                contentListLength={contentList.length}
-                currentIndex={currentIndex}
-                handlePrevious={handlePrevious}
-                handleNext={handleNext}
-                startQuiz={startQuiz}
+            {/* Image displayed at top on desktop, below description on mobile */}
+            <div className="order-1 md:order-0">
+              <MediaDisplay
                 imageUrl={imageUrl}
                 isImageLoading={isImageLoading}
-                videoEmbedUrl={videoEmbedUrl}
-                video2EmbedUrl={video2EmbedUrl}
-                videoData={videoData}
-                video2Data={video2Data}
-            />
+                title={content.title}
+                imageid={content.imageid}
+                isFullWidth={true}
+              />
+            </div>
+
+            <div className="order-0 md:order-1">
+              <ContentPopupView
+                  content={content}
+                  contentListLength={contentList.length}
+                  currentIndex={currentIndex}
+                  handlePrevious={handlePrevious}
+                  handleNext={handleNext}
+                  startQuiz={startQuiz}
+                  imageUrl={imageUrl}
+                  isImageLoading={isImageLoading}
+                  videoEmbedUrl={videoEmbedUrl}
+                  video2EmbedUrl={video2EmbedUrl}
+                  videoData={videoData}
+                  video2Data={video2Data}
+                  hideMediaDisplay={true}
+              />
+            </div>
           </>
         )}
       </DialogContent>
