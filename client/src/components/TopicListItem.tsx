@@ -229,28 +229,35 @@ export const TopicListItem = ({
                             <div className="flex items-center gap-2">
                               <ContentThumbnail content={content} />
                               <div className="flex-1 min-w-0">
-                                <h4 className="text-white/90 text-base font-medium leading-tight mb-2">{content.title}</h4>
+                                <div className="flex items-center justify-between gap-2 mb-2">
+                                  <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button variant="outline" size="sm" className="text-white/70 hover:bg-white/20 hover:text-white text-xs px-2 py-1 h-6">
+                                        Quiz
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                      <DropdownMenuItem onClick={(e) => {
+                                        e.stopPropagation();
+                                        onStartQuiz(content, topicContent, 'Easy');
+                                      }}>
+                                        Easy Quiz
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={(e) => {
+                                        e.stopPropagation();
+                                        onStartQuiz(content, topicContent, 'Hard');
+                                      }}>
+                                        Hard Quiz
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </div>
                                 {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                 <CompactContentDifficultyIndicator contentId={content.id} />
                               </div>
                             </div>
                           </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1">
-                                <HelpCircle className="h-5 w-5" />
-                                <span className="sr-only">Start Quiz for {content.title}</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Easy')}>
-                                Easy Quiz
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Hard')}>
-                                Hard Quiz
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </div>
                       </div>
                     ))}
