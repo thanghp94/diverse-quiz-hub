@@ -190,10 +190,10 @@ export const TopicListItem = ({
                             })}
                             className="flex-grow cursor-pointer"
                           >
-                            <div className="flex flex-col items-center text-center gap-3">
+                            <div className="flex items-start gap-2">
                               <ContentThumbnail content={content} />
                               <div className="flex-1 min-w-0">
-                                <div className="flex justify-center mb-1">
+                                <div className="flex items-start gap-2 mb-1">
                                   <Badge className={`${getContentTypeColor(content)} text-sm`}>
                                     {getContentIcon(content)}
                                   </Badge>
@@ -266,7 +266,7 @@ export const TopicListItem = ({
                                         })}
                                         className="flex-grow cursor-pointer"
                                       >
-                                        <div className="flex flex-col items-center text-center gap-3">
+                                        <div className="flex items-start gap-2">
                                           <ContentThumbnail content={content} />
                                           <div className="flex-1 min-w-0">
                                             <h4 className="text-white/90 text-base font-medium leading-tight mb-2">{content.title}</h4>
