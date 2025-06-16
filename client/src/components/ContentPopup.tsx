@@ -76,20 +76,19 @@ const ContentPopup = ({
             assignmentStudentTryId={assignmentTry.id.toString()}
           />
         ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-blue-600">
-                {content.title}
-              </DialogTitle>
-              <DialogDescription className="whitespace-pre-line">
-                {content.short_description || "Detailed content view."}
-              </DialogDescription>
-            </DialogHeader>
+          <div className="flex flex-col lg:flex-row lg:h-[600px]">
+            {/* Left content column */}
+            <div className="flex-1 lg:w-1/2 lg:pr-4 flex flex-col">
+              <DialogHeader className="flex-shrink-0">
+                <DialogTitle className="text-2xl font-bold text-blue-600">
+                  {content.title}
+                </DialogTitle>
+                <DialogDescription className="whitespace-pre-line">
+                  {content.short_description || "Detailed content view."}
+                </DialogDescription>
+              </DialogHeader>
 
-            {/* Two-column layout for desktop, stacked for mobile */}
-            <div className="flex flex-col lg:flex-row lg:gap-6 space-y-6 lg:space-y-0">
-              {/* Content side */}
-              <div className="flex-1 lg:w-1/2">
+              <div className="flex-1 overflow-y-auto lg:max-h-[500px]">
                 <ContentPopupView
                     content={content}
                     contentListLength={contentList.length}
@@ -106,9 +105,11 @@ const ContentPopup = ({
                     hideMediaDisplay={true}
                 />
               </div>
+            </div>
 
-              {/* Image side */}
-              <div className="flex-1 lg:w-1/2">
+            {/* Right image column */}
+            <div className="lg:w-1/2 lg:pl-4 mt-6 lg:mt-0">
+              <div className="h-64 lg:h-full">
                 <MediaDisplay
                   imageUrl={imageUrl}
                   isImageLoading={isImageLoading}
@@ -118,7 +119,7 @@ const ContentPopup = ({
                 />
               </div>
             </div>
-          </>
+          </div>
         )}
       </DialogContent>
     </Dialog>;
