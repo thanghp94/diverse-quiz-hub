@@ -735,6 +735,35 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return result[0];
   }
+
+  // Learning Progress Methods
+  async getStudentLearningProgress(studentId: string): Promise<any[]> {
+    return await this.executeWithRetry(async () => {
+      const result = await db.select()
+        .from(schema.learning_progress)
+        .where(eq(schema.learning_progress.student_id, studentId));
+      return result;
+    });
+  }
+
+  async createLearningProgress(progress: any): Promise<any> {
+    return await this.executeWithRetry(async () => {
+      const result = await db.insert(schema.learning_progress)
+        .values(progress)
+        .returning();
+      return result[0];
+    });
+  }
+
+  async updateLearningProgress(id: string, updates: any): Promise<any> {
+    return await this.executeWithRetry(async () => {
+      const result = await db.update(schema.learning_progress)
+        .set({ ...updates, updated_at: new Date() })
+        .where(eq(schema.learning_progress.id, id))
+        .returning();
+      return result[0];
+    });
+  }
 }
 
 export const storage = new DatabaseStorage();
