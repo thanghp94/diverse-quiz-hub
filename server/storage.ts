@@ -203,7 +203,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (topicId) {
-        conditions.push(eq(schema.questions.topicid, topicId));
+        conditions.push(eq(schema.questions.topic, topicId));
         console.log(`Added topicId condition: ${topicId}`);
       }
 
@@ -228,7 +228,7 @@ export class DatabaseStorage implements IStorage {
         
         const debugQuery = contentId 
           ? db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId))
-          : db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.topicid, topicId!));
+          : db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.topic, topicId!));
 
         const availableLevels = await debugQuery;
         const uniqueLevels = [...new Set(availableLevels.map(q => q.level).filter(Boolean))];
