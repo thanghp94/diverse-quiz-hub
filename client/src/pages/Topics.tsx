@@ -37,7 +37,6 @@ const Topics = () => {
     imageUrl: string | null;
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
-  const [quizLevel, setQuizLevel] = useState<'Easy' | 'Hard' | null>(null);
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
   const [topicQuizInfo, setTopicQuizInfo] = useState<{
     topicId: string;
@@ -154,30 +153,17 @@ const Topics = () => {
       imageUrl: findImageUrl(info.content),
     });
   };
-  const handleStartQuiz = (content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => {
-    if (level) {
-      // Start quiz directly without opening content popup
-      setSelectedContentInfo({
-        content,
-        contextList,
-        imageUrl: findImageUrl(content),
-      });
-      setQuizContentId(content.id);
-      setQuizLevel(level);
-    } else {
-      // Original behavior - open content popup
-      setSelectedContentInfo({
-        content,
-        contextList,
-        imageUrl: findImageUrl(content),
-      });
-      setQuizContentId(content.id);
-    }
+  const handleStartQuiz = (content: Content, contextList: Content[]) => {
+    setSelectedContentInfo({
+      content,
+      contextList,
+      imageUrl: findImageUrl(content),
+    });
+    setQuizContentId(content.id);
   };
   const closePopup = useCallback(() => {
     setSelectedContentInfo(null);
     setQuizContentId(null);
-    setQuizLevel(null);
   }, []);
   const handleStartTopicQuiz = (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => {
     setTopicQuizInfo({ topicId, level, topicName });
@@ -311,7 +297,6 @@ const Topics = () => {
           }
         }}
         startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
-        quizLevel={quizLevel}
         imageUrl={selectedContentInfo?.imageUrl ?? null}
         isImageLoading={isImagesLoading}
       />

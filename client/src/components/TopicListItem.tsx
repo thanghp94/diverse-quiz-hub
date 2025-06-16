@@ -56,12 +56,12 @@ const getContentIcon = (content: any) => {
 // Component for content item thumbnail
 const ContentThumbnail = ({ content }: { content: any }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
-
+  
   // Only show thumbnail if there's an imageid
   if (!content.imageid || !imageUrl) {
     return null;
   }
-
+  
   return (
     <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0">
       <img 
@@ -114,7 +114,7 @@ export const TopicListItem = ({
     onStartTopicMatching
 }: TopicListItemProps) => {
     const { hasMatchingActivities } = useTopicMatching(topic.id);
-
+    
     let topicImageUrl: string | undefined | null = null;
     if (allImages && topicContent.length > 0) {
       for (const content of topicContent) {
@@ -209,7 +209,7 @@ export const TopicListItem = ({
               </div>
             </div>
           </div>
-
+          
           {isExpanded && (
             <div className="px-3 pb-3 pt-1">
               <div className="space-y-1">
@@ -240,27 +240,16 @@ export const TopicListItem = ({
                           </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1"
-                                onClick={(e) => e.stopPropagation()}
-                              >
+                              <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1">
                                 <HelpCircle className="h-5 w-5" />
                                 <span className="sr-only">Start Quiz for {content.title}</span>
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                              <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                onStartQuiz(content, [content], 'Easy');
-                              }}>
+                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Easy')}>
                                 Easy Quiz
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={(e) => {
-                                e.stopPropagation();
-                                onStartQuiz(content, [content], 'Hard');
-                              }}>
+                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Hard')}>
                                 Hard Quiz
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -270,7 +259,7 @@ export const TopicListItem = ({
                     ))}
                   </div>
                 )}
-
+              
                 {subtopics.length > 0 && (
                   <div className="mt-3">
                     <div className="space-y-2">
@@ -314,7 +303,7 @@ export const TopicListItem = ({
                                 <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
                               </div>
                             </div>
-
+                          
                             {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
                               <div className="mt-3 grid grid-cols-2 gap-3">
                                 {subtopicContent.map(content => (
@@ -340,27 +329,16 @@ export const TopicListItem = ({
                                       </div>
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                          <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1"
-                                            onClick={(e) => e.stopPropagation()}
-                                          >
+                                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1">
                                             <HelpCircle className="h-5 w-5" />
                                             <span className="sr-only">Start Quiz for {content.title}</span>
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                          <DropdownMenuItem onClick={(e) => {
-                                            e.stopPropagation();
-                                            onStartQuiz(content, [content], 'Easy');
-                                          }}>
+                                          <DropdownMenuItem onClick={() => onStartQuiz(content, subtopicContent, 'Easy')}>
                                             Easy Quiz
                                           </DropdownMenuItem>
-                                          <DropdownMenuItem onClick={(e) => {
-                                            e.stopPropagation();
-                                            onStartQuiz(content, [content], 'Hard');
-                                          }}>
+                                          <DropdownMenuItem onClick={() => onStartQuiz(content, subtopicContent, 'Hard')}>
                                             Hard Quiz
                                           </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -376,7 +354,7 @@ export const TopicListItem = ({
                     </div>
                   </div>
                 )}
-
+              
                 {topicContent.length === 0 && subtopics.length === 0 && (
                   <div className="text-center py-4">
                     <p className="text-white/60 text-sm">No content available for this topic</p>
