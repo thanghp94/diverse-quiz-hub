@@ -1,6 +1,6 @@
 import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission } from "@shared/schema";
 import { db } from "./db";
-import { eq, isNull, ne, asc, sql, and, desc } from "drizzle-orm";
+import { eq, isNull, ne, asc, sql, and, desc, inArray } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
 // modify the interface with any CRUD methods
@@ -194,17 +194,30 @@ export class DatabaseStorage implements IStorage {
       console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
       
       let query = db.select().from(schema.questions);
-
       const conditions = [];
 
       if (contentId) {
         conditions.push(eq(schema.questions.contentid, contentId));
         console.log(`Added contentId condition: ${contentId}`);
-      }
-
-      if (topicId) {
-        conditions.push(eq(schema.questions.topic, topicId));
-        console.log(`Added topicId condition: ${topicId}`);
+      } else if (topicId) {
+        // For topic-level queries, first get all content IDs for this topic
+        console.log(`Getting content IDs for topicId: ${topicId}`);
+        const contentInTopic = await db
+          .select({ id: schema.content.id })
+          .from(schema.content)
+          .where(eq(schema.content.topicid, topicId));
+        
+        const contentIds = contentInTopic.map(c => c.id);
+        console.log(`Found ${contentIds.length} content items in topic ${topicId}:`, contentIds);
+        
+        if (contentIds.length > 0) {
+          // Filter questions by these content IDs
+          conditions.push(inArray(schema.questions.contentid, contentIds));
+          console.log(`Added content IDs condition for topic: ${topicId}`);
+        } else {
+          console.log(`No content found for topic ${topicId}, returning empty result`);
+          return [];
+        }
       }
 
       if (level && level !== 'Overview') {
@@ -226,18 +239,41 @@ export class DatabaseStorage implements IStorage {
       if (level && level !== 'Overview' && questions.length === 0 && (contentId || topicId)) {
         console.log(`No questions found for level "${level}". Checking available levels...`);
         
-        const debugQuery = contentId 
-          ? db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId))
-          : db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.topic, topicId!));
+        let debugQuery;
+        if (contentId) {
+          debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId));
+        } else if (topicId) {
+          // For topic-level debug, check levels across all content in the topic
+          const contentInTopic = await db
+            .select({ id: schema.content.id })
+            .from(schema.content)
+            .where(eq(schema.content.topicid, topicId));
+          
+          const contentIds = contentInTopic.map(c => c.id);
+          if (contentIds.length > 0) {
+            debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(inArray(schema.questions.contentid, contentIds));
+          } else {
+            return [];
+          }
+        }
 
-        const availableLevels = await debugQuery;
-        const uniqueLevels = [...new Set(availableLevels.map(q => q.level).filter(Boolean))];
-        console.log(`Available levels for this content/topic:`, uniqueLevels);
-        
-        // Try to match with available levels case-insensitively
-        const matchingLevel = uniqueLevels.find(l => l && l.toLowerCase() === level.toLowerCase());
-        if (matchingLevel) {
-          console.log(`Found matching level with different case: "${matchingLevel}"`);
+        if (debugQuery) {
+          const availableLevels = await debugQuery;
+          const uniqueLevels = [...new Set(availableLevels.map(q => q.level).filter(Boolean))];
+          console.log(`Available levels for this content/topic:`, uniqueLevels);
+          
+          // Try to match with available levels case-insensitively
+          const matchingLevel = uniqueLevels.find(l => l && l.toLowerCase() === level.toLowerCase());
+          if (matchingLevel) {
+            console.log(`Found matching level with different case: "${matchingLevel}"`);
+            // Re-run query with the correctly cased level
+            const correctedConditions = [...conditions];
+            correctedConditions[correctedConditions.length - 1] = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${matchingLevel.toLowerCase()}`;
+            const correctedQuery = db.select().from(schema.questions).where(and(...correctedConditions));
+            const correctedQuestions = await correctedQuery;
+            console.log(`Found ${correctedQuestions.length} questions with corrected level case`);
+            return correctedQuestions;
+          }
         }
       }
 
