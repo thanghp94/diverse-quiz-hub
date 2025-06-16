@@ -105,7 +105,13 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
           
           const contentItem = content.find(c => c.id === contentId);
           if (contentItem) {
-            console.log('✅ Found content:', { id: contentItem.id, title: contentItem.title, imageid: contentItem.imageid });
+            console.log('✅ Found content:', { 
+              id: contentItem.id, 
+              title: contentItem.title, 
+              imageid: contentItem.imageid,
+              hasTitle: !!contentItem.title,
+              titleLength: contentItem.title?.length || 0
+            });
             
             // Find image for this content
             const image = images.find(img => 
@@ -113,15 +119,32 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
               img.id === contentItem.imageid
             );
             
-            if (image && image.imagelink && contentItem.title) {
-              console.log('🖼️ Found matching image:', { imagelink: image.imagelink, title: contentItem.title });
-              pairs.push({ 
-                left: image.imagelink, 
-                right: contentItem.title,
-                leftType: 'image'
+            if (image && image.imagelink) {
+              console.log('🖼️ Found image:', { 
+                imagelink: image.imagelink.substring(0, 50) + '...', 
+                contentId,
+                hasImagelink: !!image.imagelink
               });
+              
+              if (contentItem.title && contentItem.title.trim()) {
+                console.log('✅ Adding picture-title pair:', { 
+                  image: image.imagelink.substring(0, 30) + '...', 
+                  title: contentItem.title 
+                });
+                pairs.push({ 
+                  left: image.imagelink, 
+                  right: contentItem.title,
+                  leftType: 'image'
+                });
+              } else {
+                console.log('❌ Content has image but no title:', contentId);
+              }
             } else {
-              console.log('❌ No image found for content:', contentId);
+              console.log('❌ No image found for content:', contentId, {
+                imageByContentId: images.find(img => img.contentid === contentId) ? 'found' : 'not found',
+                imageByImageId: images.find(img => img.id === contentItem.imageid) ? 'found' : 'not found',
+                contentImageId: contentItem.imageid
+              });
             }
           } else {
             console.log('❌ Content not found for ID:', contentId);
@@ -151,17 +174,33 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
           console.log(`📝 Processing prompt${i} for title-description with contentId:`, contentId);
           
           const contentItem = content.find(c => c.id === contentId);
-          if (contentItem && contentItem.title && contentItem.short_description) {
-            console.log('✅ Found title-description pair:', { 
-              title: contentItem.title, 
-              description: contentItem.short_description?.substring(0, 50) + '...' 
+          if (contentItem) {
+            console.log('📋 Content details:', {
+              id: contentItem.id,
+              hasTitle: !!contentItem.title,
+              hasShortDescription: !!contentItem.short_description,
+              title: contentItem.title?.substring(0, 30) + '...',
+              shortDescLength: contentItem.short_description?.length || 0
             });
-            pairs.push({ 
-              left: contentItem.title, 
-              right: contentItem.short_description 
-            });
+            
+            if (contentItem.title && contentItem.title.trim() && 
+                contentItem.short_description && contentItem.short_description.trim()) {
+              console.log('✅ Adding title-description pair:', { 
+                title: contentItem.title, 
+                description: contentItem.short_description?.substring(0, 50) + '...' 
+              });
+              pairs.push({ 
+                left: contentItem.title, 
+                right: contentItem.short_description 
+              });
+            } else {
+              console.log('❌ Missing title or description for content:', contentId, {
+                missingTitle: !contentItem.title || !contentItem.title.trim(),
+                missingDescription: !contentItem.short_description || !contentItem.short_description.trim()
+              });
+            }
           } else {
-            console.log('❌ Missing title or description for content:', contentId);
+            console.log('❌ Content not found for ID:', contentId);
           }
         }
       }
