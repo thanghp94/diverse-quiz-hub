@@ -169,49 +169,46 @@ export const MatchingListPopup = ({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+            <div className="space-y-3 p-4">
               {matchingActivities.map((activity) => (
-                <Card 
+                <div 
                   key={activity.id} 
-                  className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-blue-300"
+                  className="cursor-pointer hover:shadow-lg transition-shadow duration-200 border-2 hover:border-blue-300 bg-white rounded-lg p-4 flex items-center justify-between"
                   onClick={() => handleMatchingClick(activity)}
                 >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg flex items-center gap-2 mb-2">
-                          <span className="truncate">{activity.topic || 'Untitled Activity'}</span>
-                          <Play className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                        </CardTitle>
-                        {activity.isFromSubtopic && activity.topicName && (
-                          <Badge variant="secondary" className="text-xs">
-                            From: {activity.topicName}
-                          </Badge>
-                        )}
-                      </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {activity.topic || 'Untitled Activity'}
+                      </h3>
+                      {activity.isFromSubtopic && activity.topicName && (
+                        <Badge variant="secondary" className="text-xs">
+                          From: {activity.topicName}
+                        </Badge>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
+                    <div className="flex items-center gap-4 text-sm text-gray-600">
                       {activity.type && (
-                        <div className="text-sm text-gray-600">
+                        <span>
                           <span className="font-medium">Type:</span> {activity.type}
-                        </div>
+                        </span>
                       )}
                       {activity.subject && (
-                        <div className="text-sm text-gray-600">
+                        <span>
                           <span className="font-medium">Subject:</span> {activity.subject}
-                        </div>
+                        </span>
                       )}
-                      {activity.description && (
-                        <div className="text-sm text-gray-600">
-                          <span className="font-medium">Description:</span> {activity.description}
-                        </div>
-                      )}
-                      
                     </div>
-                  </CardContent>
-                </Card>
+                    {activity.description && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        <span className="font-medium">Description:</span> {activity.description}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex-shrink-0 ml-4">
+                    <Play className="h-6 w-6 text-blue-500" />
+                  </div>
+                </div>
               ))}
             </div>
           )}
