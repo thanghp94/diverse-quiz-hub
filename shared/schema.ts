@@ -198,16 +198,15 @@ export const student_try = pgTable("student_try", {
   id: text("id").primaryKey(),
   answer_choice: text("answer_choice"),
   assignment_student_try_id: text("assignment_student_try_id"),
-  correct_answer: text("correct_answer"),
   currentindex: integer("currentindex"),
   hocsinh_id: text("hocsinh_id"),
   question_id: text("question_id"),
   quiz_result: text("quiz_result"),
   score: integer("score"),
-  showcontent: boolean("showcontent"),
+  showcontent: text("showcontent"),
   time_end: text("time_end"),
   time_start: text("time_start"),
-  update: text("update"),
+  update: timestamp("update"),
   writing_answer: text("writing_answer"),
 });
 
