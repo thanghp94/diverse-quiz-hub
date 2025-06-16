@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Search, User, LogOut, Trophy } from "lucide-react";
+import { Search, User, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -86,13 +86,6 @@ const Header = () => {
             className="text-white hover:text-white/80 transition-colors"
           >
             Leaderboard
-          </button>
-          <button 
-            onClick={() => setLocation('/quiz-leaderboard')}
-            className="text-white hover:text-white/80 transition-colors flex items-center gap-1"
-          >
-            <Trophy className="h-4 w-4" />
-            Quiz Leaders
           </button>
           
         </div>

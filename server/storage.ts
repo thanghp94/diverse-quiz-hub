@@ -19,10 +19,6 @@ export interface IStorage {
   // Content
   getContent(topicId?: string): Promise<Content[]>;
   getContentById(id: string): Promise<Content | undefined>;
-  updateContent(id: string, updates: { short_description?: string; short_blurb?: string }): Promise<Content | undefined>;
-
-  // Quiz Leaderboard
-  getQuizLeaderboard(): Promise<Array<{ user_id: string; full_name: string | null; quiz_count: number }>>;
 
   // Images
   getImages(): Promise<Image[]>;
@@ -786,39 +782,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(student_try.id, id))
       .returning();
     return result[0];
-  }
-
-  async updateContent(id: string, updates: { short_description?: string; short_blurb?: string }): Promise<Content | undefined> {
-    return this.executeWithRetry(async () => {
-      const result = await db.update(content)
-        .set(updates)
-        .where(eq(content.id, id))
-        .returning();
-      return result[0] || undefined;
-    });
-  }
-
-  async getQuizLeaderboard(): Promise<Array<{ user_id: string; full_name: string | null; quiz_count: number }>> {
-    return this.executeWithRetry(async () => {
-      const result = await db.execute(sql`
-        SELECT 
-          u.id as user_id,
-          u.full_name,
-          COUNT(st.id) as quiz_count
-        FROM users u
-        LEFT JOIN student_try st ON u.id = st.hocsinh_id
-        WHERE u.id = 'GV0002' OR u.full_name IS NOT NULL
-        GROUP BY u.id, u.full_name
-        ORDER BY quiz_count DESC
-        LIMIT 10
-      `);
-      
-      return result.rows.map((row: any) => ({
-        user_id: row.user_id,
-        full_name: row.full_name,
-        quiz_count: parseInt(row.quiz_count)
-      }));
-    });
   }
 
   // Learning Progress Methods

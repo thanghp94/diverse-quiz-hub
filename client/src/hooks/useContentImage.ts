@@ -13,9 +13,40 @@ export const useContentImage = (imageid: string | null | undefined, fallbackImag
             }
             
             if (imageid) {
-                // Use imageid directly as it now contains the image URL
-                console.log('Using imageid directly as image URL:', imageid);
-                return imageid;
+                // Check if imageid is already a direct URL
+                if (imageid.startsWith('http://') || imageid.startsWith('https://')) {
+                    console.log('imageid is a direct URL, using it directly:', imageid);
+                    return imageid;
+                }
+                
+                console.log('Looking for image record with id:', imageid);
+                
+                try {
+                    const response = await fetch(`/api/images/${imageid}`);
+                    
+                    if (!response.ok) {
+                        if (response.status === 404) {
+                            console.log('Image not found, falling back to content imagelink:', fallbackImageLink);
+                            return fallbackImageLink || null;
+                        }
+                        throw new Error('Failed to fetch image');
+                    }
+                    
+                    const imageRecord = await response.json();
+                    console.log('Image record found:', imageRecord);
+                    
+                    if (imageRecord?.imagelink) {
+                        console.log('Using imagelink from image table:', imageRecord.imagelink);
+                        return imageRecord.imagelink;
+                    }
+                    
+                    console.log('No imagelink in image record, falling back to content imagelink:', fallbackImageLink);
+                    return fallbackImageLink || null;
+                } catch (error) {
+                    console.error('Error fetching image record:', error);
+                    console.log('Falling back to content imagelink:', fallbackImageLink);
+                    return fallbackImageLink || null;
+                }
             }
             
             // If no imageid but we have fallback, use it

@@ -103,41 +103,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/content/:id", async (req, res) => {
-    try {
-      const { userId, short_description, short_blurb } = req.body;
-      
-      // Only allow GV0002 to edit content
-      if (userId !== 'GV0002') {
-        return res.status(403).json({ error: 'Unauthorized to edit content' });
-      }
-
-      const updatedContent = await storage.updateContent(req.params.id, {
-        short_description,
-        short_blurb
-      });
-      
-      if (!updatedContent) {
-        return res.status(404).json({ error: 'Content not found' });
-      }
-      
-      res.json(updatedContent);
-    } catch (error) {
-      console.error('Error updating content:', error);
-      res.status(500).json({ error: 'Failed to update content' });
-    }
-  });
-
-  app.get("/api/quiz-leaderboard", async (req, res) => {
-    try {
-      const leaderboard = await storage.getQuizLeaderboard();
-      res.json(leaderboard);
-    } catch (error) {
-      console.error('Error fetching quiz leaderboard:', error);
-      res.status(500).json({ error: 'Failed to fetch quiz leaderboard' });
-    }
-  });
-
   // Images API
   app.get("/api/images", async (req, res) => {
     try {
