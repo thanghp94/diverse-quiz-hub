@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState, useRef } from 'react';
 import Matching from '@/components/quiz/Matching';
 import { Question } from '@/features/quiz/types';
-import { MatchingActivityTracker } from '@/components/MatchingActivityTracker';
+import { MatchingActivityTracker, type MatchingActivityTrackerRef } from '@/components/MatchingActivityTracker';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 

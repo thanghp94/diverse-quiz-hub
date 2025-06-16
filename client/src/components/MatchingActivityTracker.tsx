@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { useMatchingAttempts, useCreateMatchingAttempt, useUpdateMatchingAttempt, type CreateMatchingAttempt } from '@/hooks/useMatchingAttempts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +12,16 @@ interface MatchingActivityTrackerProps {
   onAttemptComplete?: (score: number, isCorrect: boolean) => void;
 }
 
-export const MatchingActivityTracker = ({ 
+export interface MatchingActivityTrackerRef {
+  completeAttempt: (answers: any, score: number, maxScore?: number) => void;
+}
+
+export const MatchingActivityTracker = forwardRef<MatchingActivityTrackerRef, MatchingActivityTrackerProps>(({ 
   matchingId, 
   studentId, 
   onAttemptStart, 
   onAttemptComplete 
-}: MatchingActivityTrackerProps) => {
+}, ref) => {
   const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [isActive, setIsActive] = useState(false);
@@ -75,6 +79,10 @@ export const MatchingActivityTracker = ({
     });
   };
 
+  useImperativeHandle(ref, () => ({
+    completeAttempt
+  }));
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -89,14 +97,14 @@ export const MatchingActivityTracker = ({
   };
 
   const bestScore = attempts.length > 0 
-    ? Math.max(...attempts.map(a => a.score || 0))
+    ? Math.max(...attempts.map((a: any) => a.score || 0))
     : 0;
 
   const averageScore = attempts.length > 0
-    ? attempts.reduce((sum, a) => sum + (a.score || 0), 0) / attempts.length
+    ? attempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0) / attempts.length
     : 0;
 
-  const totalPoints = attempts.reduce((sum, a) => sum + (a.score || 0), 0);
+  const totalPoints = attempts.reduce((sum: number, a: any) => sum + (a.score || 0), 0);
 
   if (isLoading) {
     return (
@@ -187,7 +195,7 @@ export const MatchingActivityTracker = ({
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {attempts.slice(0, 5).map((attempt, index) => (
+              {attempts.slice(0, 5).map((attempt: any, index: number) => (
                 <div key={attempt.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Badge variant="outline">#{attempt.attempt_number}</Badge>
@@ -224,7 +232,6 @@ export const MatchingActivityTracker = ({
       )}
     </div>
   );
+});
 
-  // Expose the completeAttempt function for external use
-  (MatchingActivityTracker as any).completeAttempt = completeAttempt;
-};
+MatchingActivityTracker.displayName = 'MatchingActivityTracker';
