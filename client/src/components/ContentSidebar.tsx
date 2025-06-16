@@ -1,5 +1,5 @@
 
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Play, BookOpen, Image as ImageIcon, Loader2 } from "lucide-react";

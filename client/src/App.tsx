@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Router, Route, Switch } from "wouter";
 import Index from "./pages/Index";
 import Topics from "./pages/Topics";
 import Content from "./pages/Content";
@@ -21,20 +21,19 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/topics" element={<Topics />} />
-          <Route path="/content/:id" element={<Content />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/matching" element={<MatchingListPage />} />
-          <Route path="/matching/:id" element={<MatchingActivityPage />} />
-          <Route path="/debate" element={<DebatePage />} />
-          <Route path="/writing" element={<WritingPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <Router>
+        <Switch>
+          <Route path="/" component={Index} />
+          <Route path="/topics" component={Topics} />
+          <Route path="/content/:id" component={Content} />
+          <Route path="/leaderboard" component={Leaderboard} />
+          <Route path="/matching" component={MatchingListPage} />
+          <Route path="/matching/:id" component={MatchingActivityPage} />
+          <Route path="/debate" component={DebatePage} />
+          <Route path="/writing" component={WritingPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
     </TooltipProvider>
   </QueryClientProvider>
 );

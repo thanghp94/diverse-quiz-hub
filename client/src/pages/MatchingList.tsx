@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Link } from 'react-router-dom';
+import { Link } from 'wouter';
 import { Loader2, Target } from 'lucide-react';
 import SharedNav from '@/components/SharedNav';
 

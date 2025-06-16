@@ -1,5 +1,5 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Matching from '@/components/quiz/Matching';
