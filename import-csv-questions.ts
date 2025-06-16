@@ -35,10 +35,26 @@ function parseCSV(csvContent: string) {
   return records;
 }
 
-async function importCSVQuestions() {
-  console.log('Importing questions from CSV...');
+async function clearExistingQuestions() {
+  console.log('Clearing existing question data...');
   
   try {
+    // Delete all existing questions
+    await destDb.delete(schema.questions);
+    console.log('All existing questions removed successfully');
+  } catch (error) {
+    console.error('Error clearing questions:', error);
+    throw error;
+  }
+}
+
+async function importCSVQuestions() {
+  console.log('Starting CSV import process...');
+  
+  try {
+    // First, clear existing questions
+    await clearExistingQuestions();
+    
     // Read the CSV file
     const csvContent = readFileSync('attached_assets/Question (3)_1750062204084.csv', 'utf-8');
     
@@ -81,7 +97,7 @@ async function importCSVQuestions() {
         };
         
         // Insert into the database
-        await destDb.insert(schema.questions).values(questionData).onConflictDoNothing();
+        await destDb.insert(schema.questions).values(questionData);
         imported++;
         
         if (imported % 10 === 0) {
