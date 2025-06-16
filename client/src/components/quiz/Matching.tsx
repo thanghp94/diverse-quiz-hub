@@ -136,12 +136,19 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                 key={item}
                 draggable={!isUsed}
                 onDragStart={(e) => handleDragStart(e, item)}
-                className={`p-4 rounded-xl text-white transition-all duration-300 border-2 flex items-center justify-center min-h-[120px] shadow-lg ${
+                className={`relative p-4 rounded-xl text-white transition-all duration-300 border-2 flex items-center justify-center min-h-[120px] shadow-lg ${
                   isUsed 
                     ? 'bg-gray-600/40 border-gray-500/60 opacity-50 cursor-not-allowed transform scale-95' 
                     : 'bg-blue-600/40 border-blue-400/60 cursor-move hover:bg-blue-500/50 hover:border-blue-300/80 hover:shadow-xl hover:scale-105'
                 }`}
               >
+                {isUsed && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1 z-10 shadow-lg">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
                 {isImageItem(item) ? (
                   <img 
                     src={item} 
