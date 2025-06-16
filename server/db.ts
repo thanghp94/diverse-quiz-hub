@@ -21,18 +21,31 @@ export const pool = new Pool({
 
 export const db = drizzle({ client: pool, schema });
 
-// Add a function to wake up the database
+// Add a function to wake up the database with retry logic
 export async function wakeUpDatabase() {
-  try {
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
-    console.log('Database connection verified');
-    return true;
-  } catch (error) {
-    console.error('Database wake up failed:', error);
-    return false;
+  const maxRetries = 3;
+  let lastError;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const client = await pool.connect();
+      await client.query('SELECT 1');
+      client.release();
+      console.log('Database connection verified');
+      return true;
+    } catch (error) {
+      lastError = error;
+      console.error(`Database wake up attempt ${attempt} failed:`, error);
+      
+      if (attempt < maxRetries) {
+        console.log(`Retrying in ${attempt * 1000}ms...`);
+        await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+      }
+    }
   }
+  
+  console.error('Database wake up failed after all retries:', lastError);
+  return false;
 }
 
 // Graceful shutdown
