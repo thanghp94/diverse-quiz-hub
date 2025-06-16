@@ -611,23 +611,20 @@ export class DatabaseStorage implements IStorage {
 
   // Student Tries
   async createStudentTry(studentTry: any): Promise<any> {
-    // Create student_try record
-    const studentTryData = {
-      id: `try_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      assignment_student_try_id: studentTry.assignment_student_try_id?.toString() || null,
-      hocsinh_id: studentTry.hocsinh_id
-    };
-    
-    console.log('Creating student_try with data:', studentTryData);
-    
-    try {
+    return this.executeWithRetry(async () => {
+      // Create student_try record
+      const studentTryData = {
+        id: `try_${Date.now()}`,
+        assignment_student_try_id: studentTry.assignment_student_try_id?.toString() || null,
+        hocsinh_id: studentTry.hocsinh_id
+      };
+      
+      console.log('Creating student_try with data:', studentTryData);
+      
       const studentTryResult = await db.insert(student_try).values(studentTryData).returning();
       console.log('Student_try created successfully:', studentTryResult[0]);
       return studentTryResult[0];
-    } catch (error) {
-      console.error('Error creating student_try:', error);
-      throw error;
-    }
+    });
   }
 
   async getStudentTryById(id: string): Promise<any> {
