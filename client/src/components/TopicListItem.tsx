@@ -282,7 +282,7 @@ export const TopicListItem = ({
                                   <Badge className="bg-green-500/20 text-green-200 text-xs">
                                     <BookOpen className="h-3 w-3" />
                                   </Badge>
-                                  <span className="text-white/90 text-lg font-bold">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                                  <span className="text-white/90 text-lg font-bold text-center">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
 
                                 </div>
                                 {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
