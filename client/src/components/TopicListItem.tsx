@@ -645,54 +645,54 @@ export const TopicListItem = ({
                                                   <div className="flex items-center justify-between gap-2 mb-2">
                                                     <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
                                                     <div className="flex items-center gap-1 flex-shrink-0">
-                                                      <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
-                                                            Quiz
+                                                        <ContentRatingButtons 
+                                                          key={`${content.id}-rating`}
+                                                          contentId={content.id}
+                                                          compact={true}
+                                                          studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                        />
+                                                        {(hasVideo1 || hasVideo2) && (
+                                                          <Button 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              setVideoPopupOpen(true);
+                                                            }}
+                                                          >
+                                                            <Play className="h-3 w-3 mr-1" />
+                                                            Video{(hasVideo1 && hasVideo2) ? 's' : ''}
                                                           </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent>
-                                                          <DropdownMenuItem onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            console.log('Easy Quiz clicked for subtopic content:', content.id, content.title);
-                                                            onStartQuiz(content, subtopicContent, 'Easy');
-                                                          }}>
-                                                            Easy Quiz
-                                                          </DropdownMenuItem>
-                                                          <DropdownMenuItem onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            console.log('Hard Quiz clicked for subtopic content:', content.id, content.title);
-                                                            onStartQuiz(content, subtopicContent, 'Hard');
-                                                          }}>
-                                                            Hard Quiz
-                                                          </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                      </DropdownMenu>
-                                                      {(hasVideo1 || hasVideo2) && (
-                                                        <Button 
-                                                          variant="outline" 
-                                                          size="sm" 
-                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setVideoPopupOpen(true);
-                                                          }}
-                                                        >
-                                                          <Play className="h-3 w-3 mr-1" />
-                                                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
-                                                        </Button>
-                                                      )}
+                                                        )}
+                                                        <DropdownMenu>
+                                                          <DropdownMenuTrigger asChild>
+                                                            <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                              Quiz
+                                                            </Button>
+                                                          </DropdownMenuTrigger>
+                                                          <DropdownMenuContent>
+                                                            <DropdownMenuItem onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              console.log('Easy Quiz clicked for subtopic content:', content.id, content.title);
+                                                              onStartQuiz(content, subtopicContent, 'Easy');
+                                                            }}>
+                                                              Easy Quiz
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              console.log('Hard Quiz clicked for subtopic content:', content.id, content.title);
+                                                              onStartQuiz(content, subtopicContent, 'Hard');
+                                                            }}>
+                                                              Hard Quiz
+                                                            </DropdownMenuItem>
+                                                          </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                      </div>
                                                     </div>
-                                                  </div>
-                                                  <div className="flex items-center gap-2 mb-2">
-                                                    <CompactContentDifficultyIndicator contentId={content.id} />
-                                                    <ContentRatingButtons 
-                                                      key={`${content.id}-rating`}
-                                                      contentId={content.id}
-                                                      compact={true}
-                                                      studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
-                                                    />
-                                                  </div>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                      <CompactContentDifficultyIndicator contentId={content.id} />
+                                                    </div>
                                                   {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                                 </div>
                                               </div>
@@ -762,7 +762,7 @@ export const TopicListItem = ({
                                 })}
                               </div>
                             )}
-                          </div>
+                                                    </div>
                         );
                       })}
                     </div>
