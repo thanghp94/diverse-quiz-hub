@@ -44,57 +44,31 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
       
       const hocsinh_id = 'user-123-placeholder';
       
-      // Create assignment record
-      const assignmentData = {
-        id: `assignment_${Date.now()}`,
-        assignmentname: `${content.title} Quiz`,
-        contentid: content.id,
-        question_id: JSON.stringify(randomizedQuestionIds),
-        testtype: 'content_quiz',
-        typeofquestion: level || 'Overview'
+      // Create quiz session using assignment_student_try (eliminates need for assignment table)
+      const quizSessionData = {
+        hocsinh_id: hocsinh_id,
+        contentID: content.id,
+        questionIDs: JSON.stringify(randomizedQuestionIds),
+        start_time: new Date().toISOString(),
+        typeoftaking: level || 'Overview'
       };
 
-      const assignmentResponse = await fetch('/api/assignments', {
+      const sessionResponse = await fetch('/api/assignment-student-tries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(assignmentData)
+        body: JSON.stringify(quizSessionData)
       });
 
-      if (!assignmentResponse.ok) {
-        throw new Error('Failed to create assignment');
+      if (!sessionResponse.ok) {
+        throw new Error('Failed to create quiz session');
       }
 
-      const assignment = await assignmentResponse.json();
+      const quizSession = await sessionResponse.json();
 
-      // Create student try
-      const studentTryResponse = await fetch('/api/student-tries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          assignment_id: assignment.id,
-          student_id: hocsinh_id,
-          level: level || 'Overview',
-          question_ids: randomizedQuestionIds
-        })
-      });
+      console.log('Quiz session created:', quizSession);
 
-      if (!studentTryResponse.ok) {
-        throw new Error('Failed to create student try');
-      }
-
-      const studentTryRecord = await studentTryResponse.json();
-
-      const newAssignmentTry = {
-          id: studentTryRecord.assignment_student_try_id,
-          hocsinh_id,
-          contentID: content.id,
-          questionIDs: JSON.stringify(randomizedQuestionIds),
-      };
-
-      console.log('Quiz started with database tracking:', { assignment, studentTryRecord });
-
-      setAssignmentTry(newAssignmentTry);
-      setStudentTry(studentTryRecord);
+      setAssignmentTry(quizSession);
+      setStudentTry(null); // Will be set when first question is answered
       setQuestionIds(randomizedQuestionIds);
       setQuizMode(true);
     } catch (error) {
@@ -107,14 +81,23 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
         if (startQuizDirectly) onClose();
         return;
     }
-  }, [content, toast, startQuizDirectly, onClose]);
+  }, [content, onClose, startQuizDirectly, toast]);
 
-  const handleQuizFinish = () => {
-      setQuizMode(false);
-      setAssignmentTry(null);
-      setStudentTry(null);
-      setQuestionIds([]);
+  const closeQuiz = useCallback(() => {
+    setQuizMode(false);
+    setAssignmentTry(null);
+    setStudentTry(null);
+    setQuestionIds([]);
+    onClose();
+  }, [onClose]);
+
+  return {
+    quizMode,
+    assignmentTry,
+    studentTry,
+    questionIds,
+    startQuiz,
+    closeQuiz,
+    setStudentTry
   };
-
-  return { quizMode, setQuizMode, assignmentTry, setAssignmentTry, studentTry, questionIds, startQuiz, handleQuizFinish };
 };
