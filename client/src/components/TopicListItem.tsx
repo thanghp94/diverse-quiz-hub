@@ -41,7 +41,7 @@ interface TopicListItemProps {
     onToggleContent: (contentKey: string) => void;
     onContentClick: (info: { content: Content; contextList: Content[] }) => void;
     onSubtopicClick: (topicId: string) => void;
-    onStartQuiz: (content: Content, contextList: Content[]) => void;
+    onStartQuiz: (content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => void;
     getTopicContent: (topicId: string) => Content[];
     onStartTopicQuiz: (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => void;
     onStartTopicMatching: (topicId: string, topicName: string) => void;
@@ -238,10 +238,22 @@ export const TopicListItem = ({
                               </div>
                             </div>
                           </div>
-                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1" onClick={() => onStartQuiz(content, topicContent)}>
-                            <HelpCircle className="h-5 w-5" />
-                            <span className="sr-only">Start Quiz for {content.title}</span>
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1">
+                                <HelpCircle className="h-5 w-5" />
+                                <span className="sr-only">Start Quiz for {content.title}</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Easy')}>
+                                Easy Quiz
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => onStartQuiz(content, topicContent, 'Hard')}>
+                                Hard Quiz
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     ))}
@@ -315,10 +327,22 @@ export const TopicListItem = ({
                                           </div>
                                         </div>
                                       </div>
-                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1" onClick={() => onStartQuiz(content, subtopicContent)}>
-                                        <HelpCircle className="h-5 w-5" />
-                                        <span className="sr-only">Start Quiz for {content.title}</span>
-                                      </Button>
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1">
+                                            <HelpCircle className="h-5 w-5" />
+                                            <span className="sr-only">Start Quiz for {content.title}</span>
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                          <DropdownMenuItem onClick={() => onStartQuiz(content, subtopicContent, 'Easy')}>
+                                            Easy Quiz
+                                          </DropdownMenuItem>
+                                          <DropdownMenuItem onClick={() => onStartQuiz(content, subtopicContent, 'Hard')}>
+                                            Hard Quiz
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
                                     </div>
                                   </div>
                                 ))}
