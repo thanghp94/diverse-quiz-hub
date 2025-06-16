@@ -1,11 +1,10 @@
 
 import { useParams } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import Matching from '@/components/quiz/Matching';
 import { Question } from '@/features/quiz/types';
 import { Loader2 } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type MatchingActivityData = {
     id: string;
@@ -14,11 +13,11 @@ type MatchingActivityData = {
 };
 
 const fetchMatchingActivity = async (id: string): Promise<MatchingActivityData> => {
-  const { data, error } = await supabase.from('matching').select('*').eq('id', id).single();
-  if (error) {
-    throw new Error(error.message);
+  const response = await fetch(`/api/matching/${id}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch matching activity');
   }
-  return data;
+  return response.json();
 };
 
 const transformToQuestion = (activity: MatchingActivityData): Question => {

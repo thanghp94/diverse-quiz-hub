@@ -3,7 +3,7 @@ import Header from "./Header";
 import ContentSection from "./ContentSection";
 import TopicCard from "./TopicCard";
 import { Card } from "@/components/ui/card";
-import { Link } from "react-router-dom";
+import { Link } from "wouter";
 import { useTopics } from "@/hooks/useTopics";
 import { 
   Book, 

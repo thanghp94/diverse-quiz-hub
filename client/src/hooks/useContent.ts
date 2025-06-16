@@ -1,6 +1,5 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export interface Content {
   id: string;
@@ -38,23 +37,16 @@ export const useContent = (topicId?: string) => {
   return useQuery({
     queryKey: ['content', topicId],
     queryFn: async () => {
-      console.log('Fetching content from Supabase...', topicId ? `for topic ${topicId}` : 'all content');
+      console.log('Fetching content from API...', topicId ? `for topic ${topicId}` : 'all content');
       
-      let query = supabase
-        .from('content')
-        .select('*');
+      const url = topicId ? `/api/content?topicId=${topicId}` : '/api/content';
+      const response = await fetch(url);
       
-      if (topicId) {
-        query = query.eq('topicid', topicId);
+      if (!response.ok) {
+        throw new Error('Failed to fetch content');
       }
       
-      const { data, error } = await query.order('order', { ascending: true, nullsFirst: false });
-      
-      if (error) {
-        console.error('Error fetching content:', error);
-        throw error;
-      }
-      
+      const data = await response.json();
       console.log('Content fetched:', data);
       return data as Content[];
     },
@@ -66,19 +58,18 @@ export const useContentById = (contentId: string) => {
   return useQuery({
     queryKey: ['content', contentId],
     queryFn: async () => {
-      console.log('Fetching content by ID from Supabase...', contentId);
+      console.log('Fetching content by ID from API...', contentId);
       
-      const { data, error } = await supabase
-        .from('content')
-        .select('*')
-        .eq('id', contentId)
-        .maybeSingle();
+      const response = await fetch(`/api/content/${contentId}`);
       
-      if (error) {
-        console.error('Error fetching content by ID:', error);
-        throw error;
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error('Failed to fetch content by ID');
       }
       
+      const data = await response.json();
       console.log('Content by ID fetched:', data);
       return data as Content | null;
     },
