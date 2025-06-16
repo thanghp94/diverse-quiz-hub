@@ -12,8 +12,8 @@ const navItems = [
 ];
 
 const SharedNav = () => {
-  const location = useLocation();
-  const activeTab = navItems.find(item => location.pathname.startsWith(item.href))?.href;
+  const [location] = useLocation();
+  const activeTab = navItems.find(item => location.startsWith(item.href))?.href;
 
   return (
     <div className="mb-6 flex justify-center">

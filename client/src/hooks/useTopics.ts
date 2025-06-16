@@ -1,6 +1,5 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export interface Topic {
   id: string;
@@ -16,18 +15,12 @@ export const useTopics = () => {
   return useQuery({
     queryKey: ['topics'],
     queryFn: async () => {
-      console.log('Fetching topics from Supabase...');
-      const { data, error } = await supabase
-        .from('topic')
-        .select('*')
-        .eq('showstudent', true)
-        .order('Order', { ascending: true });
-      
-      if (error) {
-        console.error('Error fetching topics:', error);
-        throw error;
+      console.log('Fetching topics from API...');
+      const response = await fetch('/api/topics');
+      if (!response.ok) {
+        throw new Error('Failed to fetch topics');
       }
-      
+      const data = await response.json();
       console.log('Topics fetched:', data);
       return data as Topic[];
     },
