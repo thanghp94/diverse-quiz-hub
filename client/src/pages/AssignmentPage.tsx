@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Copy, Users, Play, X } from 'lucide-react';
+import { Copy, Users, Play, X, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
@@ -185,46 +186,62 @@ const AssignmentPage: React.FC = () => {
     duplicateAssignmentMutation.mutate(assignmentId);
   };
 
-  const handleJoinLiveClass = (assignment: Assignment) => {
-    // Get content IDs for this assignment
-    const assignmentContent = content.filter((c: any) => c.topicid === assignment.topicid);
-    const contentIds = assignmentContent.map((c: any) => c.id);
+  const handleJoinLiveClass = async (assignment: Assignment, difficultyLevel: 'Easy' | 'Hard' = 'Easy') => {
+    try {
+      // Fetch questions using the API endpoint that supports level filtering
+      let questionsResponse;
+      if (assignment.contentid) {
+        // If assignment has specific content, filter by contentId and level
+        questionsResponse = await fetch(`/api/questions?contentId=${assignment.contentid}&level=${difficultyLevel}`);
+      } else {
+        // If assignment is topic-based, filter by topicId and level
+        questionsResponse = await fetch(`/api/questions?topicId=${assignment.topicid}&level=${difficultyLevel}`);
+      }
+      
+      if (!questionsResponse.ok) {
+        throw new Error('Failed to fetch questions');
+      }
+      
+      const assignmentQuestions = await questionsResponse.json();
+      
+      if (assignmentQuestions.length === 0) {
+        toast({
+          title: "No Questions Available",
+          description: `No ${difficultyLevel.toLowerCase()} questions found for this assignment.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Randomize question order
+      const shuffledQuestions = [...assignmentQuestions].sort(() => Math.random() - 0.5);
+      const selectedQuestions = shuffledQuestions.slice(0, assignment.noofquestion || 15);
+      const selectedQuestionIds = selectedQuestions.map((q: Question) => q.id);
+      
+      // Set up quiz data first
+      setSelectedAssignment(assignment);
+      setQuestionIds(selectedQuestionIds);
+      
+      // Create assignment student try
+      const studentTryData = {
+        assignmentid: assignment.id,
+        hocsinh_id: currentUser.id,
+        contentid: assignment.contentid || '',
+        questionids: JSON.stringify(selectedQuestionIds),
+        start_time: new Date().toISOString(),
+        typeoftaking: assignment.type === 'homework' ? 'homework' : 'live_class',
+        number_of_question: assignment.noofquestion || selectedQuestionIds.length
+      };
 
-    // Get questions for this assignment
-    const assignmentQuestions = questions.filter((q: Question) => 
-      contentIds.includes(q.contentid) || q.topicid === assignment.topicid
-    );
-
-    if (assignmentQuestions.length === 0) {
+      createStudentTryMutation.mutate(studentTryData);
+    } catch (error) {
+      console.error('Error starting assignment quiz:', error);
       toast({
-        title: "No Questions Available",
-        description: "No questions found for this assignment topic.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to start the assignment quiz. Please try again.",
+        variant: "destructive",
       });
-      return;
     }
-
-    // Randomize question order
-    const shuffledQuestions = [...assignmentQuestions].sort(() => Math.random() - 0.5);
-    const selectedQuestions = shuffledQuestions.slice(0, assignment.noofquestion || 15);
-    const selectedQuestionIds = selectedQuestions.map((q: Question) => q.id);
-
-    // Set up quiz data first
-    setSelectedAssignment(assignment);
-    setQuestionIds(selectedQuestionIds);
-
-    // Create assignment student try
-    const studentTryData = {
-      assignmentid: assignment.id,
-      hocsinh_id: currentUser.id,
-      contentid: contentIds.join(','),
-      questionids: JSON.stringify(selectedQuestionIds),
-      start_time: new Date().toISOString(),
-      typeoftaking: assignment.type === 'homework' ? 'homework' : 'live_class',
-      number_of_question: assignment.noofquestion || selectedQuestionIds.length
-    };
-
-    createStudentTryMutation.mutate(studentTryData);
   };
 
   const closeQuiz = () => {
@@ -262,8 +279,7 @@ const AssignmentPage: React.FC = () => {
               {assignments.map((assignment) => (
                 <TableRow 
                   key={assignment.id}
-                  className={assignment.type === 'homework' ? 'cursor-pointer hover:bg-gray-50' : ''}
-                  onClick={assignment.type === 'homework' ? () => handleJoinLiveClass(assignment) : undefined}
+                  className=""
                 >
                   <TableCell className="font-medium">{assignment.assignmentname}</TableCell>
                   {!isLiveClass && <TableCell>{assignment.subject}</TableCell>}
@@ -297,13 +313,31 @@ const AssignmentPage: React.FC = () => {
                           </Button>
                         )}
                         {assignment.type === 'live class' && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleJoinLiveClass(assignment)}
-                          >
-                            <Play className="w-3 h-3" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="default"
+                                size="sm"
+                              >
+                                <Play className="w-3 h-3 mr-1" />
+                                <ChevronDown className="w-3 h-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleJoinLiveClass(assignment, 'Easy');
+                              }}>
+                                Easy Quiz
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleJoinLiveClass(assignment, 'Hard');
+                              }}>
+                                Hard Quiz
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </div>
                     </TableCell>
