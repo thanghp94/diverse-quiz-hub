@@ -20,7 +20,8 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
 
   const leftItems = question.pairs?.map(pair => pair.left) || [];
   const rightItems = question.pairs?.map(pair => pair.right) || [];
-  const shuffledRightItems = [...rightItems].sort(() => Math.random() - 0.5);
+  // Keep right items in consistent order instead of shuffling
+  const fixedRightItems = [...rightItems];
   
   // Check if any items are images
   const isImageItem = (item: string) => {
@@ -128,12 +129,18 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="space-y-3">
             <h3 className="text-white font-semibold text-lg">Drag from here:</h3>
-            {leftItems.map(item => (
+            {leftItems.map(item => {
+              const isUsed = Object.keys(matches).includes(item);
+              return (
               <div
                 key={item}
-                draggable
+                draggable={!isUsed}
                 onDragStart={(e) => handleDragStart(e, item)}
-                className="p-4 bg-blue-500/20 rounded-lg text-white cursor-move hover:bg-blue-500/30 transition-colors border-2 border-blue-400/30 flex items-center justify-center min-h-[120px]"
+                className={`p-4 rounded-lg text-white transition-all border-2 flex items-center justify-center min-h-[120px] ${
+                  isUsed 
+                    ? 'bg-gray-500/30 border-gray-400/50 opacity-60 cursor-not-allowed' 
+                    : 'bg-blue-500/30 border-blue-400/50 cursor-move hover:bg-blue-500/40 hover:border-blue-400/70'
+                }`}
               >
                 {isImageItem(item) ? (
                   <img 
@@ -151,12 +158,13 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                   <span className="text-center text-sm hidden">Image failed to load</span>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
           
           <div className="space-y-3">
             <h3 className="text-white font-semibold text-lg">Drop here:</h3>
-            {shuffledRightItems.map(item => {
+            {fixedRightItems.map((item: string) => {
               const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
               return (
                 <div

@@ -325,9 +325,9 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
           </Button>
         </DialogHeader>
         
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Main Activity Area */}
-          <div className="lg:col-span-2 flex flex-col">
+          <div className="flex-1 flex flex-col">
             {isLoading || isLoadingQuestions ? (
               <div className="flex-1 flex justify-center items-center bg-gray-900 rounded-lg">
                 <Loader2 className="h-8 w-8 animate-spin text-white" />
@@ -341,13 +341,13 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
                 <p className="text-yellow-500">No matching questions found for this activity.</p>
               </div>
             ) : (
-              <div className="flex-1 bg-gray-900 text-white rounded-lg p-6 flex flex-col">
+              <div className="flex-1 bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-lg p-6 flex flex-col">
                 {isMultiQuestion && (
-                  <div className="mb-4 text-center">
-                    <div className="text-sm text-gray-400">
+                  <div className="mb-6 text-center">
+                    <div className="text-lg font-semibold text-white">
                       Question {currentQuestionIndex + 1} of {questions.length}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-sm text-gray-300">
                       {activity.type}
                     </div>
                   </div>
