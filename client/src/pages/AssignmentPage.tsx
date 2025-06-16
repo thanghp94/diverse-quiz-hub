@@ -101,21 +101,20 @@ const AssignmentPage: React.FC = () => {
 
   // Duplicate assignment mutation
   const duplicateAssignmentMutation = useMutation({
-    mutationFn: async ({ assignmentId, targetType }: { assignmentId: string, targetType: string }) => {
+    mutationFn: async (assignmentId: string) => {
       const response = await fetch(`/api/assignments/${assignmentId}/duplicate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: targetType })
+        body: JSON.stringify({ type: 'live class' })
       });
       if (!response.ok) throw new Error('Failed to duplicate assignment');
       return response.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/assignments'] });
-      const typeLabel = variables.targetType === 'live class' ? 'Live Class' : 'Mock Test';
       toast({
-        title: `${typeLabel} Created`,
-        description: `Assignment duplicated as ${variables.targetType}.`
+        title: "Live Class Created",
+        description: "Assignment duplicated as live class."
       });
     },
     onError: () => {
@@ -160,8 +159,14 @@ const AssignmentPage: React.FC = () => {
   const homeworkAssignments = assignments.filter((a: Assignment) => a.type === 'homework');
   const mockTestAssignments = assignments.filter((a: Assignment) => a.type === 'mock test');
 
-  // Filter live classes 
-  const liveClassAssignments = assignments.filter((a: Assignment) => a.type === 'live class');
+  // Filter live classes to show only those within 4 hours
+  const now = new Date();
+  const fourHoursFromNow = new Date(now.getTime() + 4 * 60 * 60 * 1000);
+  const liveClassAssignments = assignments.filter((a: Assignment) => {
+    if (a.type !== 'live class') return false;
+    const createdAt = new Date(a.created_at);
+    return createdAt >= now && createdAt <= fourHoursFromNow;
+  });
 
   // Get student progress for a live class
   const getStudentProgress = (assignmentId: string) => {
@@ -176,8 +181,8 @@ const AssignmentPage: React.FC = () => {
     }));
   };
 
-  const handleDuplicateAssignment = (assignmentId: string, targetType: string = 'live class') => {
-    duplicateAssignmentMutation.mutate({ assignmentId, targetType });
+  const handleDuplicateAssignment = (assignmentId: string) => {
+    duplicateAssignmentMutation.mutate(assignmentId);
   };
 
   const handleJoinLiveClass = (assignment: Assignment) => {
@@ -211,7 +216,7 @@ const AssignmentPage: React.FC = () => {
     // Create assignment student try
     const studentTryData = {
       assignmentid: assignment.id,
-      hocsinh_id: currentUser.id, // This will use the actual logged-in user ID
+      hocsinh_id: currentUser.id,
       contentid: contentIds.join(','),
       questionids: JSON.stringify(selectedQuestionIds),
       start_time: new Date().toISOString(),
@@ -268,32 +273,17 @@ const AssignmentPage: React.FC = () => {
                     <TableCell>
                       <div className="flex gap-1">
                         {isTeacher && assignment.type === 'homework' && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDuplicateAssignment(assignment.id, 'live class');
-                              }}
-                              disabled={duplicateAssignmentMutation.isPending}
-                              title="Duplicate as Live Class"
-                            >
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDuplicateAssignment(assignment.id, 'mock test');
-                              }}
-                              disabled={duplicateAssignmentMutation.isPending}
-                              title="Duplicate as Mock Test"
-                            >
-                              <Copy className="w-3 h-3" />
-                            </Button>
-                          </>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDuplicateAssignment(assignment.id);
+                            }}
+                            disabled={duplicateAssignmentMutation.isPending}
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
                         )}
                         {isTeacher && assignment.type === 'live class' && (
                           <Button
