@@ -1,4 +1,4 @@
-import { users, topics, content, images, questions, matching, videos, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video } from "@shared/schema";
+import { users, topics, content, images, questions, matching, videos, matching_attempts, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, ne, asc, sql } from "drizzle-orm";
 
@@ -35,6 +35,12 @@ export interface IStorage {
   getVideos(): Promise<Video[]>;
   getVideoById(id: string): Promise<Video | undefined>;
   getVideosByContentId(contentId: string): Promise<Video[]>;
+  
+  // Matching Attempts
+  createMatchingAttempt(attempt: InsertMatchingAttempt): Promise<MatchingAttempt>;
+  getMatchingAttempts(studentId: string, matchingId?: string): Promise<MatchingAttempt[]>;
+  getMatchingAttemptById(id: string): Promise<MatchingAttempt | undefined>;
+  updateMatchingAttempt(id: string, updates: Partial<MatchingAttempt>): Promise<MatchingAttempt>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -143,6 +149,34 @@ export class DatabaseStorage implements IStorage {
 
   async getVideosByContentId(contentId: string): Promise<Video[]> {
     return await db.select().from(videos).where(eq(videos.contentid, contentId));
+  }
+
+  async createMatchingAttempt(attempt: InsertMatchingAttempt): Promise<MatchingAttempt> {
+    const result = await db.insert(matching_attempts).values(attempt).returning();
+    return result[0];
+  }
+
+  async getMatchingAttempts(studentId: string, matchingId?: string): Promise<MatchingAttempt[]> {
+    let query = db.select().from(matching_attempts).where(eq(matching_attempts.student_id, studentId));
+    
+    if (matchingId) {
+      query = query.where(eq(matching_attempts.matching_id, matchingId));
+    }
+    
+    return await query.orderBy(sql`${matching_attempts.created_at} DESC`);
+  }
+
+  async getMatchingAttemptById(id: string): Promise<MatchingAttempt | undefined> {
+    const result = await db.select().from(matching_attempts).where(eq(matching_attempts.id, id));
+    return result[0] || undefined;
+  }
+
+  async updateMatchingAttempt(id: string, updates: Partial<MatchingAttempt>): Promise<MatchingAttempt> {
+    const result = await db.update(matching_attempts)
+      .set(updates)
+      .where(eq(matching_attempts.id, id))
+      .returning();
+    return result[0];
   }
 }
 

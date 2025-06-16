@@ -148,6 +148,21 @@ export const videos = pgTable("video", {
   created_at: timestamp("created_at").defaultNow(),
 });
 
+export const matching_attempts = pgTable("matching_attempts", {
+  id: text("id").primaryKey(),
+  student_id: text("student_id").notNull(),
+  matching_id: text("matching_id").notNull(),
+  answers: jsonb("answers"), // Store student's matching pairs as JSON
+  score: integer("score"), // Points earned (0-100)
+  max_score: integer("max_score"), // Maximum possible points
+  is_correct: boolean("is_correct"), // Whether the attempt was fully correct
+  time_start: timestamp("time_start").defaultNow(),
+  time_end: timestamp("time_end"),
+  duration_seconds: integer("duration_seconds"),
+  attempt_number: integer("attempt_number").default(1),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export const assignment = pgTable("assignment", {
   id: text("id").primaryKey(),
   assignmentname: text("Assignmentname"),
@@ -216,6 +231,7 @@ export const insertImageSchema = createInsertSchema(images);
 export const insertQuestionSchema = createInsertSchema(questions);
 export const insertMatchingSchema = createInsertSchema(matching);
 export const insertVideoSchema = createInsertSchema(videos);
+export const insertMatchingAttemptSchema = createInsertSchema(matching_attempts);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -225,3 +241,5 @@ export type Image = typeof images.$inferSelect;
 export type Question = typeof questions.$inferSelect;
 export type Matching = typeof matching.$inferSelect;
 export type Video = typeof videos.$inferSelect;
+export type MatchingAttempt = typeof matching_attempts.$inferSelect;
+export type InsertMatchingAttempt = z.infer<typeof insertMatchingAttemptSchema>;

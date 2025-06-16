@@ -201,6 +201,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Matching Attempts routes
+  app.post("/api/matching-attempts", async (req, res) => {
+    try {
+      const attempt = await storage.createMatchingAttempt(req.body);
+      res.json(attempt);
+    } catch (error) {
+      console.error('Error creating matching attempt:', error);
+      res.status(500).json({ error: 'Failed to create matching attempt' });
+    }
+  });
+
+  app.get("/api/matching-attempts/student/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const { matchingId } = req.query;
+      const attempts = await storage.getMatchingAttempts(studentId, matchingId as string);
+      res.json(attempts);
+    } catch (error) {
+      console.error('Error fetching matching attempts:', error);
+      res.status(500).json({ error: 'Failed to fetch matching attempts' });
+    }
+  });
+
+  app.get("/api/matching-attempts/:id", async (req, res) => {
+    try {
+      const attempt = await storage.getMatchingAttemptById(req.params.id);
+      if (!attempt) {
+        return res.status(404).json({ error: 'Matching attempt not found' });
+      }
+      res.json(attempt);
+    } catch (error) {
+      console.error('Error fetching matching attempt:', error);
+      res.status(500).json({ error: 'Failed to fetch matching attempt' });
+    }
+  });
+
+  app.patch("/api/matching-attempts/:id", async (req, res) => {
+    try {
+      const attempt = await storage.updateMatchingAttempt(req.params.id, req.body);
+      res.json(attempt);
+    } catch (error) {
+      console.error('Error updating matching attempt:', error);
+      res.status(500).json({ error: 'Failed to update matching attempt' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
