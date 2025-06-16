@@ -152,27 +152,17 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
         const timeEnd = new Date().toTimeString().slice(0, 8);
 
         try {
-            const { error } = await supabase.from('student_try').insert({
-                id: crypto.randomUUID(),
+            // Note: Student progress tracking will be implemented when authentication is added
+            console.log('Student answer recorded:', {
                 question_id: currentQuestion.id,
                 answer_choice: selectedAnswer,
                 correct_answer: currentQuestion.correct_choice,
                 quiz_result: isCorrect ? '✅' : '❌',
-                assignment_student_try_id: assignmentStudentTryId,
                 time_start: timeStart,
                 time_end: timeEnd,
                 currentindex: currentQuestionIndex,
                 showcontent: didShowContent,
             });
-
-            if (error) {
-                console.error("Error saving student try:", error);
-                toast({
-                    title: "Error",
-                    description: "There was an issue saving your answer. Please try again.",
-                    variant: "destructive",
-                });
-            }
         } catch (err) {
             console.error("Unexpected error saving student try:", err);
         }

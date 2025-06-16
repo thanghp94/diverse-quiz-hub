@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import QuizApp from "@/components/QuizApp";
@@ -19,116 +18,104 @@ interface TopicQuizRunnerProps {
 }
 
 const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunnerProps) => {
-    const [assignmentTry, setAssignmentTry] = useState<Tables<'assignment_student_try'> | null>(null);
+    const [assignmentTry, setAssignmentTry] = useState<any>(null);
     const [questionIds, setQuestionIds] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
 
     const startQuiz = useCallback(async () => {
         setIsLoading(true);
-        let query = supabase.from('question').select('id').eq('topicid', topicId);
-
-        if (level === 'Easy' || level === 'Hard') {
-            query = query.eq('questionlevel', level).limit(50);
-        }
-
-        const { data: questions, error: questionsError } = await query;
-
-        if (questionsError) {
-            console.error("Error fetching questions:", questionsError.message);
-            toast({
-                title: "Error Fetching Quiz",
-                description: "Could not fetch questions for the quiz. Please try again.",
-                variant: "destructive",
-            });
-            onClose();
-            return;
-        }
-
-        if (!questions || questions.length === 0) {
-            console.log("No questions available for this topic.", level ? `Level: ${level}` : '');
-            toast({
-                title: "No Quiz Available",
-                description: `There are no ${level ? level.toLowerCase() + ' ' : ''}questions for this topic yet. Check back later!`,
-            });
-            onClose();
-            return;
-        }
-
-        const randomizedQuestionIds = questions.map(q => q.id).sort(() => Math.random() - 0.5);
         
-        const hocsinh_id = 'user-123-placeholder';
-        
-        const newAssignmentTry = {
-            id: Date.now(),
-            hocsinh_id,
-            contentID: null,
-            questionIDs: JSON.stringify(randomizedQuestionIds),
-            typeoftaking: `topic_${level.toLowerCase()}`
-        };
+        try {
+            // Fetch questions for this topic
+            const url = level === 'Overview' 
+                ? `/api/questions?topicId=${topicId}`
+                : `/api/questions?topicId=${topicId}&level=${level}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Failed to fetch questions');
+            }
+            const questions = await response.json();
 
-        const { data: insertedData, error: insertError } = await supabase
-            .from('assignment_student_try')
-            .insert(newAssignmentTry)
-            .select()
-            .single();
+            if (!questions || questions.length === 0) {
+                console.log(`No ${level} questions available for topic ${topicId}`);
+                toast({
+                    title: "No Quiz Available",
+                    description: `There are no ${level.toLowerCase()} questions for this topic yet. Check back later!`,
+                });
+                onClose();
+                return;
+            }
 
-        if (insertError) {
-            console.error("Error starting quiz:", insertError.message);
+            const randomizedQuestionIds = questions.map((q: any) => q.id).sort(() => Math.random() - 0.5);
+            
+            const hocsinh_id = 'user-123-placeholder';
+            
+            const newAssignmentTry = {
+                id: Date.now(),
+                hocsinh_id,
+                topicID: topicId,
+                questionIDs: JSON.stringify(randomizedQuestionIds),
+                level: level
+            };
+
+            // Note: Assignment tracking will be implemented when authentication is added
+            console.log('Topic quiz started:', newAssignmentTry);
+
+            setAssignmentTry(newAssignmentTry);
+            setQuestionIds(randomizedQuestionIds);
+        } catch (error) {
+            console.error("Error starting topic quiz:", error);
             toast({
                 title: "Error Starting Quiz",
                 description: "Could not start the quiz due to a server error. Please try again.",
                 variant: "destructive",
             });
             onClose();
-            return;
+        } finally {
+            setIsLoading(false);
         }
-
-        setAssignmentTry(insertedData as Tables<'assignment_student_try'>);
-        setQuestionIds(randomizedQuestionIds);
-        setIsLoading(false);
     }, [topicId, level, toast, onClose]);
 
     useEffect(() => {
-        if (topicId) {
-            startQuiz();
-        }
-    }, [startQuiz, topicId]);
+        startQuiz();
+    }, [startQuiz]);
 
     const handleQuizFinish = () => {
+        setAssignmentTry(null);
+        setQuestionIds([]);
         onClose();
     };
 
-    if (!topicId) return null;
+    if (isLoading) {
+        return (
+            <Dialog open onOpenChange={onClose}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Loading Quiz</DialogTitle>
+                        <DialogDescription>
+                            Preparing your {level.toLowerCase()} quiz for {topicName}...
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
+    }
+
+    if (!assignmentTry || questionIds.length === 0) {
+        return null;
+    }
 
     return (
-        <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col bg-slate-900/80 backdrop-blur-sm text-white border-slate-700">
-                <DialogHeader>
-                    <DialogTitle>Quiz: {topicName}</DialogTitle>
-                    <DialogDescription className="text-slate-400">{level} level ({questionIds.length} questions)</DialogDescription>
-                </DialogHeader>
-                {isLoading ? (
-                    <div className="flex-grow flex items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin" />
-                        <span className="ml-2">Preparing your quiz...</span>
-                    </div>
-                ) : assignmentTry && questionIds.length > 0 ? (
-                    <div className="flex-grow overflow-y-auto">
-                        <QuizApp
-                            assignmentTry={assignmentTry}
-                            questionIds={questionIds}
-                            onFinish={handleQuizFinish}
-                            content={null}
-                        />
-                    </div>
-                ) : (
-                    <div className="flex-grow flex items-center justify-center">
-                        <p>Could not load quiz.</p>
-                    </div>
-                )}
-            </DialogContent>
-        </Dialog>
+        <QuizApp
+            questionIds={questionIds}
+            onFinish={handleQuizFinish}
+            assignmentTry={assignmentTry}
+        />
     );
 };
 

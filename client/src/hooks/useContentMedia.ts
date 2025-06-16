@@ -29,9 +29,9 @@ export const useContentMedia = (content: Content | null) => {
         queryKey: ['video2', content?.videoid2],
         queryFn: async () => {
             if (!content?.videoid2) return null;
-            const { data, error } = await supabase.from('video').select('*').eq('id', content.videoid2).maybeSingle();
-            if (error) throw error;
-            return data;
+            const response = await fetch(`/api/videos/${content.videoid2}`);
+            if (!response.ok) return null;
+            return response.json();
         },
         enabled: !!content?.videoid2
     });
