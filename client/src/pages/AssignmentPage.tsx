@@ -301,6 +301,33 @@ const AssignmentPage: React.FC = () => {
                             <Copy className="w-3 h-3" />
                           </Button>
                         )}
+                        {assignment.type === 'homework' && (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="default"
+                                size="sm"
+                              >
+                                <Play className="w-3 h-3 mr-1" />
+                                <ChevronDown className="w-3 h-3" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleJoinLiveClass(assignment, 'Easy');
+                              }}>
+                                Easy Quiz
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => {
+                                e.stopPropagation();
+                                handleJoinLiveClass(assignment, 'Hard');
+                              }}>
+                                Hard Quiz
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        )}
                         {isTeacher && assignment.type === 'live class' && (
                           <Button
                             variant="outline"
