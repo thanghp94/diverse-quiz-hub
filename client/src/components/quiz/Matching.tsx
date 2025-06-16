@@ -162,7 +162,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
         <div className="flex flex-col gap-2 h-full">
           {/* Top Row - Images */}
           <div className="flex-1">
-            <div className="grid grid-cols-4 lg:grid-cols-5 gap-3 h-[180px] overflow-y-auto">
+            <div 
+              className={`grid gap-3 h-[180px] overflow-y-auto ${
+                leftItems.length <= 4 
+                  ? 'grid-cols-4' 
+                  : leftItems.length <= 5 
+                  ? 'grid-cols-5' 
+                  : leftItems.length <= 6 
+                  ? 'grid-cols-6' 
+                  : 'grid-cols-7'
+              }`}
+            ></div>
               {leftItems.filter(item => isImageItem(item)).map(item => {
                 const isUsed = Object.keys(matches).includes(item);
                 const isCorrect = isSubmitted && correctMatches[item];
@@ -209,11 +219,11 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                           }}
                         />
                       </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh]">
+                      <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] flex items-center justify-center">
                         <img 
                           src={item} 
                           alt="Full size matching item" 
-                          className="w-full h-auto object-contain"
+                          className="max-w-full max-h-full object-contain"
                         />
                       </DialogContent>
                     </Dialog>
@@ -265,7 +275,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
           
           {/* Bottom Row - Descriptions/Drop Zones */}
           <div className="flex-1">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 h-[180px] overflow-y-auto">
+            <div 
+              className={`grid gap-3 h-[180px] overflow-y-auto ${
+                fixedRightItems.length <= 4 
+                  ? 'grid-cols-4' 
+                  : fixedRightItems.length <= 5 
+                  ? 'grid-cols-5' 
+                  : fixedRightItems.length <= 6 
+                  ? 'grid-cols-6' 
+                  : 'grid-cols-7'
+              }`}
+            ></div>
               {fixedRightItems.map((item: string) => {
                 const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
                 const isCorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft];
@@ -300,11 +320,11 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                             }}
                           />
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh]">
+                        <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] flex items-center justify-center">
                           <img 
                             src={item} 
                             alt="Full size matching target" 
-                            className="w-full h-auto object-contain"
+                            className="max-w-full max-h-full object-contain"
                           />
                         </DialogContent>
                       </Dialog>
@@ -333,11 +353,11 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                                   }}
                                 />
                               </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[90vh]">
+                              <DialogContent className="max-w-[95vw] max-h-[95vh] w-[95vw] h-[95vh] flex items-center justify-center">
                                 <img 
                                   src={matchedLeft} 
                                   alt="Full size matched item" 
-                                  className="w-full h-auto object-contain"
+                                  className="max-w-full max-h-full object-contain"
                                 />
                               </DialogContent>
                             </Dialog>
