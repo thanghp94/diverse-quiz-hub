@@ -136,9 +136,7 @@ export const TopicListItem = ({
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <div className="flex items-center gap-3 flex-wrap">
                     <CardTitle className="text-white text-2xl font-bold">{topic.topic}</CardTitle>
-                    {topicContent.length > 0 && (
-                      <span className="text-yellow-300 text-2xl font-bold">Content</span>
-                    )}
+
                     {topic.challengesubject && (
                       <Badge variant="outline" className="border-white/30 text-white/70 text-sm">
                         {topic.challengesubject}
@@ -230,9 +228,7 @@ export const TopicListItem = ({
                                     <BookOpen className="h-3 w-3" />
                                   </Badge>
                                   <span className="text-white/90 text-lg font-bold">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
-                                  {subtopicContent.length > 0 && (
-                                    <span className="text-yellow-300 text-lg font-bold">Content</span>
-                                  )}
+
                                 </div>
                                 {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                               </div>
