@@ -284,6 +284,21 @@ export const writing_submissions = pgTable("writing_submissions", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
+export const learning_progress = pgTable("learning_progress", {
+  id: text("id").primaryKey(),
+  student_id: text("student_id").notNull(),
+  topic_id: text("topic_id"),
+  content_id: text("content_id"),
+  status: text("status").notNull(), // not_started, in_progress, completed
+  progress_percentage: integer("progress_percentage").default(0),
+  time_spent: integer("time_spent").default(0), // in minutes
+  score: integer("score"),
+  completed_at: timestamp("completed_at"),
+  last_accessed: timestamp("last_accessed").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const insertTopicSchema = createInsertSchema(topics);
 export const insertContentSchema = createInsertSchema(content);
@@ -297,6 +312,7 @@ export const insertStudentStreakSchema = createInsertSchema(student_streaks);
 export const insertDailyActivitySchema = createInsertSchema(daily_activities);
 export const insertWritingPromptSchema = createInsertSchema(writing_prompts);
 export const insertWritingSubmissionSchema = createInsertSchema(writing_submissions);
+export const insertLearningProgressSchema = createInsertSchema(learning_progress);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -318,3 +334,5 @@ export type WritingPrompt = typeof writing_prompts.$inferSelect;
 export type InsertWritingPrompt = z.infer<typeof insertWritingPromptSchema>;
 export type WritingSubmission = typeof writing_submissions.$inferSelect;
 export type InsertWritingSubmission = z.infer<typeof insertWritingSubmissionSchema>;
+export type LearningProgress = typeof learning_progress.$inferSelect;
+export type InsertLearningProgress = z.infer<typeof insertLearningProgressSchema>;
