@@ -11,19 +11,25 @@ interface MediaDisplayProps {
   isImageLoading: boolean;
   title: Content['title'];
   imageid: Content['imageid'];
+  content?: Content;
   isFullWidth?: boolean;
 }
 
-export const MediaDisplay = ({ imageUrl, isImageLoading, title, imageid, isFullWidth = false }: MediaDisplayProps) => {
+export const MediaDisplay = ({ imageUrl, isImageLoading, title, imageid, content, isFullWidth = false }: MediaDisplayProps) => {
   const [imageLoadError, setImageLoadError] = useState(false);
   const [isImagePopupOpen, setIsImagePopupOpen] = useState(false);
 
+  // Determine the actual image URL to use - prioritize direct imageid URLs over imageUrl from image table
+  const actualImageUrl = (imageid && (imageid.startsWith('http://') || imageid.startsWith('https://'))) 
+    ? imageid 
+    : imageUrl;
+
   useEffect(() => {
     setImageLoadError(false);
-  }, [imageUrl]);
+  }, [actualImageUrl]);
 
   const handleImageClick = () => {
-    if (imageUrl && !imageLoadError) {
+    if (actualImageUrl && !imageLoadError) {
       setIsImagePopupOpen(true);
     }
   };
@@ -34,18 +40,18 @@ export const MediaDisplay = ({ imageUrl, isImageLoading, title, imageid, isFullW
           {isImageLoading ? <Skeleton className="w-full h-full" /> : imageLoadError ? <div className="text-red-500 flex flex-col items-center">
                   <ImageOff className="h-12 w-12 mb-2" />
                   <span className="text-lg font-semibold">Error loading image</span>
-                  <span className="text-sm mt-1">URL: {imageUrl}</span>
-              </div> : imageUrl ? <img 
-                src={imageUrl} 
+                  <span className="text-sm mt-1">URL: {actualImageUrl}</span>
+              </div> : actualImageUrl ? <img 
+                src={actualImageUrl} 
                 alt={title} 
                 className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity" 
                 onClick={handleImageClick}
                 onError={() => {
-                  console.error('Image failed to load:', imageUrl);
+                  console.error('Image failed to load:', actualImageUrl);
                   setImageLoadError(true);
                 }} 
                 onLoad={() => {
-                  console.log('Image loaded successfully:', imageUrl);
+                  console.log('Image loaded successfully:', actualImageUrl);
                 }} 
               /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center text-center p-4">
                   <div className="max-w-full">

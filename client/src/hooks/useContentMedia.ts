@@ -4,6 +4,15 @@ import { Content } from "@/hooks/useContent";
 
 const getYouTubeEmbedUrl = (url: string | null | undefined): string | null => {
     if (!url) return null;
+    
+    // Handle YouTube Shorts URLs
+    const shortsRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/;
+    const shortsMatch = url.match(shortsRegex);
+    if (shortsMatch && shortsMatch[1]) {
+        return `https://www.youtube.com/embed/${shortsMatch[1]}`;
+    }
+    
+    // Handle regular YouTube URLs
     const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const match = url.match(youtubeRegex);
     return match && match[1] ? `https://www.youtube.com/embed/${match[1]}` : null;
