@@ -7,6 +7,7 @@ import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 import TopicQuizRunner from "@/components/TopicQuizRunner";
+import TopicMatchingPopup from "@/components/TopicMatchingPopup";
 import { useLocation } from "wouter";
 
 interface Topic {
@@ -293,6 +294,15 @@ const Topics = () => {
           level={topicQuizInfo.level}
           topicName={topicQuizInfo.topicName}
           onClose={closeTopicQuiz}
+        />
+      )}
+
+      {topicMatchingInfo && (
+        <TopicMatchingPopup
+          isOpen={!!topicMatchingInfo}
+          onClose={closeTopicMatching}
+          topicId={topicMatchingInfo.topicId}
+          topicName={topicMatchingInfo.topicName}
         />
       )}
     </div>

@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Loader2, X, Shuffle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Matching } from "./quiz/Matching";
+import Matching from "./quiz/Matching";
 import { MatchingActivityTracker, MatchingActivityTrackerRef } from "./MatchingActivityTracker";
 
 interface TopicMatchingPopupProps {
@@ -14,16 +14,7 @@ interface TopicMatchingPopupProps {
   topicName: string;
 }
 
-type Question = {
-  id: string;
-  question: string;
-  type: string;
-  pairs: Array<{
-    left: string;
-    right: string;
-    leftType?: string;
-  }>;
-};
+import type { Question } from '@/features/quiz/types';
 
 type MatchingActivityData = {
   id: string;
@@ -96,8 +87,7 @@ const generateTopicBasedQuestions = async (topicId: string, activities: Matching
     if (image && image.imagelink && contentItem.title && contentItem.title.trim()) {
       pairs.push({ 
         left: image.imagelink, 
-        right: contentItem.title,
-        leftType: 'image'
+        right: contentItem.title
       });
     }
   }
@@ -106,8 +96,8 @@ const generateTopicBasedQuestions = async (topicId: string, activities: Matching
     questions.push({
       id: `topic-matching-${topicId}`,
       question: `Match the images with their corresponding titles`,
-      type: 'picture-title',
-      pairs: pairs
+      type: 'matching',
+      pairs: pairs.map(pair => ({ left: pair.left, right: pair.right }))
     });
   }
   
