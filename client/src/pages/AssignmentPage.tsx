@@ -51,7 +51,7 @@ const AssignmentPage: React.FC = () => {
     queryFn: async () => {
       const response = await fetch('/api/assignments');
       if (!response.ok) throw new Error('Failed to fetch assignments');
-      return response.json() as Assignment[];
+      return response.json();
     }
   });
 
@@ -61,7 +61,7 @@ const AssignmentPage: React.FC = () => {
     queryFn: async () => {
       const response = await fetch('/api/assignment-student-tries');
       if (!response.ok) throw new Error('Failed to fetch student tries');
-      return response.json() as AssignmentStudentTry[];
+      return response.json();
     }
   });
 
