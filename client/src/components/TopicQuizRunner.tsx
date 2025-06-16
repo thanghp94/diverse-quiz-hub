@@ -135,8 +135,12 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
     }, [startQuiz]);
 
     const handleQuizFinish = () => {
+        // Clean up local state
         setAssignmentTry(null);
         setQuestionIds([]);
+        setIsLoading(false);
+        
+        // Call the parent's onClose function
         onClose();
     };
 
