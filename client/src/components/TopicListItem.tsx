@@ -137,7 +137,7 @@ export const TopicListItem = ({
                   <div className="flex items-center gap-3 flex-wrap">
                     <CardTitle className="text-white text-2xl font-bold">{topic.topic}</CardTitle>
                     {topicContent.length > 0 && (
-                      <span className="text-yellow-300 text-2xl font-bold">Content ({topicContent.length})</span>
+                      <span className="text-yellow-300 text-2xl font-bold">Content</span>
                     )}
                     {topic.challengesubject && (
                       <Badge variant="outline" className="border-white/30 text-white/70 text-sm">
