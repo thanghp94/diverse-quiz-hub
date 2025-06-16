@@ -215,15 +215,17 @@ export const TopicListItem = ({
               
                 {subtopics.length > 0 && (
                   <div className="mt-3">
-                    <h4 className="text-white/90 text-sm font-medium mb-2">Subtopics</h4>
                     <div className="space-y-2">
                       {subtopics.map((subtopic, index) => {
                         const subtopicContent = getTopicContent(subtopic.id);
                         return (
                           <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
-                            <div onClick={() => onSubtopicClick(subtopic.id)} className="block cursor-pointer">
-                              <div className="flex items-center justify-between gap-3 mb-2">
-                                <div className="flex items-center gap-3">
+                            <div 
+                              className="flex items-start justify-between cursor-pointer"
+                              onClick={() => onToggleContent(`subtopic-${subtopic.id}`)}
+                            >
+                              <div className="flex-grow" onClick={() => onSubtopicClick(subtopic.id)}>
+                                <div className="flex items-center gap-3 mb-2">
                                   <Badge className="bg-green-500/20 text-green-200 text-xs">
                                     <BookOpen className="h-3 w-3" />
                                   </Badge>
@@ -232,9 +234,12 @@ export const TopicListItem = ({
                                     <span className="text-yellow-300 text-lg font-bold">Content ({subtopicContent.length})</span>
                                   )}
                                 </div>
+                                {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
+                              </div>
+                              <div className="flex items-center gap-2 flex-shrink-0">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
                                           <HelpCircle className="h-4 w-4" />
                                           <span className="sr-only">Start Quiz for {subtopic.topic}</span>
                                       </Button>
@@ -245,11 +250,11 @@ export const TopicListItem = ({
                                       <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
+                                <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
                               </div>
-                              {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                             </div>
                           
-                            {subtopicContent.length > 0 && (
+                            {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
                               <div className="mt-2 space-y-1">
                                 {subtopicContent.map(content => (
                                   <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
