@@ -231,7 +231,7 @@ export const TopicListItem = ({
                                   </Badge>
                                   <span className="text-white/90 text-lg font-bold">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
                                   {subtopicContent.length > 0 && (
-                                    <span className="text-yellow-300 text-lg font-bold">Content ({subtopicContent.length})</span>
+                                    <span className="text-yellow-300 text-lg font-bold">Content</span>
                                   )}
                                 </div>
                                 {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
