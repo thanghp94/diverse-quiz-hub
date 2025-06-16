@@ -179,10 +179,10 @@ export const TopicListItem = ({
             <div className="px-3 pb-3 pt-1">
               <div className="space-y-1">
                 {topicContent.length > 0 && (
-                  <div className="space-y-1">
+                  <div className="grid grid-cols-2 gap-3">
                     {topicContent.map(content => (
-                      <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                        <div className="flex items-center justify-between gap-2">
+                      <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                        <div className="flex items-start justify-between gap-2">
                           <div
                             onClick={() => onContentClick({
                               content,
@@ -190,21 +190,21 @@ export const TopicListItem = ({
                             })}
                             className="flex-grow cursor-pointer"
                           >
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-start gap-2">
                               <ContentThumbnail content={content} />
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                <div className="flex items-start gap-2 mb-1">
+                                  <Badge className={`${getContentTypeColor(content)} text-sm`}>
                                     {getContentIcon(content)}
                                   </Badge>
-                                  <span className="text-white/90 text-sm">{content.title}</span>
                                 </div>
-                                {content.short_description && <p className="text-white/60 text-xs mt-1">{formatDescription(content.short_description)}</p>}
+                                <h4 className="text-white/90 text-base font-medium leading-tight mb-2">{content.title}</h4>
+                                {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                               </div>
                             </div>
                           </div>
-                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={() => onStartQuiz(content, topicContent)}>
-                            <HelpCircle className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1" onClick={() => onStartQuiz(content, topicContent)}>
+                            <HelpCircle className="h-5 w-5" />
                             <span className="sr-only">Start Quiz for {content.title}</span>
                           </Button>
                         </div>
@@ -255,10 +255,10 @@ export const TopicListItem = ({
                             </div>
                           
                             {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
-                              <div className="mt-2 space-y-1">
+                              <div className="mt-3 grid grid-cols-2 gap-3">
                                 {subtopicContent.map(content => (
-                                  <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                    <div className="flex items-center justify-between gap-2">
+                                  <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                    <div className="flex items-start justify-between gap-2">
                                       <div
                                         onClick={() => onContentClick({
                                           content,
@@ -266,18 +266,16 @@ export const TopicListItem = ({
                                         })}
                                         className="flex-grow cursor-pointer"
                                       >
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-start gap-2">
                                           <ContentThumbnail content={content} />
                                           <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                              <span className="text-white/90 text-xs">{content.title}</span>
-                                            </div>
-                                            {content.short_description && <p className="text-white/60 text-xs mt-1">{formatDescription(content.short_description)}</p>}
+                                            <h4 className="text-white/90 text-base font-medium leading-tight mb-2">{content.title}</h4>
+                                            {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                           </div>
                                         </div>
                                       </div>
-                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={() => onStartQuiz(content, subtopicContent)}>
-                                        <HelpCircle className="h-4 w-4" />
+                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0 mt-1" onClick={() => onStartQuiz(content, subtopicContent)}>
+                                        <HelpCircle className="h-5 w-5" />
                                         <span className="sr-only">Start Quiz for {content.title}</span>
                                       </Button>
                                     </div>
