@@ -282,7 +282,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
           {/* Bottom Row - Descriptions/Drop Zones */}
           <div className="flex-1">
             <div 
-              className={`grid gap-2 h-[160px] overflow-y-auto ${
+              className={`grid gap-1 h-[140px] overflow-y-auto ${
                 fixedRightItems.length <= 4 
                   ? 'grid-cols-4' 
                   : fixedRightItems.length <= 5 
@@ -304,7 +304,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                     onDragEnter={!isSubmitted ? handleDragEnter : undefined}
                     onDragLeave={!isSubmitted ? handleDragLeave : undefined}
                     onDrop={!isSubmitted ? (e) => handleDrop(e, item) : undefined}
-                    className={`p-1.5 rounded-lg text-black border-2 border-dashed transition-all duration-300 ${
+                    className={`p-1 rounded-lg text-black border-2 border-dashed transition-all duration-300 ${
                       isCorrect
                         ? 'bg-green-100 border-green-400 shadow-lg'
                         : isIncorrect
@@ -345,7 +345,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                       <div className="font-medium text-base leading-tight whitespace-pre-line text-center">{item}</div>
                     )}
                     {matchedLeft && (
-                      <div className={`flex items-center gap-2 text-sm mt-2 p-2 rounded border ${
+                      <div className={`flex items-center gap-1 text-xs mt-1 p-1 rounded border ${
                         isCorrect 
                           ? 'text-green-700 bg-green-200 border-green-300'
                           : isIncorrect
