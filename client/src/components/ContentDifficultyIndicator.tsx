@@ -1,26 +1,34 @@
-import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
-import { ThumbsDown, Minus, ThumbsUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ThumbsUp, Minus, ThumbsDown } from "lucide-react";
 
 interface ContentDifficultyIndicatorProps {
   contentId: string;
   className?: string;
 }
 
+interface RatingStats {
+  easy: number;
+  normal: number;
+  hard: number;
+}
+
 export const ContentDifficultyIndicator = ({ contentId, className = "" }: ContentDifficultyIndicatorProps) => {
-  const { data: stats } = useQuery({
-    queryKey: ['/content-ratings/stats', contentId],
+  const { data: stats } = useQuery<RatingStats>({
+    queryKey: [`/api/content/${contentId}/rating-stats`],
     enabled: !!contentId,
   });
 
-  if (!stats || (stats?.easy === 0 && stats?.normal === 0 && stats?.hard === 0)) {
+  const ratingStats: RatingStats = stats || { easy: 0, normal: 0, hard: 0 };
+  
+  if (ratingStats.easy === 0 && ratingStats.normal === 0 && ratingStats.hard === 0) {
     return null;
   }
 
-  const total = (stats?.easy || 0) + (stats?.normal || 0) + (stats?.hard || 0);
+  const total = ratingStats.easy + ratingStats.normal + ratingStats.hard;
   const predominantDifficulty = 
-    (stats?.hard || 0) > (stats?.normal || 0) && (stats?.hard || 0) > (stats?.easy || 0) ? 'hard' :
-    (stats?.easy || 0) > (stats?.normal || 0) && (stats?.easy || 0) > (stats?.hard || 0) ? 'easy' : 'normal';
+    ratingStats.hard > ratingStats.normal && ratingStats.hard > ratingStats.easy ? 'hard' :
+    ratingStats.easy > ratingStats.normal && ratingStats.easy > ratingStats.hard ? 'easy' : 'normal';
 
   const getDifficultyConfig = (difficulty: string) => {
     switch (difficulty) {
@@ -28,25 +36,28 @@ export const ContentDifficultyIndicator = ({ contentId, className = "" }: Conten
         return {
           icon: <ThumbsDown className="w-3 h-3" />,
           label: 'Really Hard',
-          className: 'bg-red-100 text-red-800 border-red-200',
-          bgColor: 'bg-red-500/20',
-          textColor: 'text-red-200'
+          variant: 'destructive' as const,
+          bgColor: 'bg-red-100 dark:bg-red-900/20',
+          textColor: 'text-red-800 dark:text-red-200',
+          borderColor: 'border-red-300 dark:border-red-700'
         };
-      case 'easy':
-        return {
-          icon: <ThumbsUp className="w-3 h-3" />,
-          label: 'Easy',
-          className: 'bg-green-100 text-green-800 border-green-200',
-          bgColor: 'bg-green-500/20',
-          textColor: 'text-green-200'
-        };
-      default:
+      case 'normal':
         return {
           icon: <Minus className="w-3 h-3" />,
           label: 'Normal',
-          className: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-          bgColor: 'bg-yellow-500/20',
-          textColor: 'text-yellow-200'
+          variant: 'secondary' as const,
+          bgColor: 'bg-orange-100 dark:bg-orange-900/20',
+          textColor: 'text-orange-800 dark:text-orange-200',
+          borderColor: 'border-orange-300 dark:border-orange-700'
+        };
+      default:
+        return {
+          icon: <ThumbsUp className="w-3 h-3" />,
+          label: 'Easy',
+          variant: 'default' as const,
+          bgColor: 'bg-green-100 dark:bg-green-900/20',
+          textColor: 'text-green-800 dark:text-green-200',
+          borderColor: 'border-green-300 dark:border-green-700'
         };
     }
   };
@@ -54,52 +65,62 @@ export const ContentDifficultyIndicator = ({ contentId, className = "" }: Conten
   const config = getDifficultyConfig(predominantDifficulty);
 
   return (
-    <Badge 
-      variant="outline" 
-      className={`${config.className} flex items-center gap-1 text-xs ${className}`}
-    >
-      {config.icon}
-      <span>{config.label}</span>
-      <span className="text-xs opacity-75">({total})</span>
-    </Badge>
+    <div className={`flex items-center gap-2 ${className}`}>
+      <div className={`flex items-center gap-1 px-2 py-1 rounded-md border ${config.bgColor} ${config.textColor} ${config.borderColor}`}>
+        {config.icon}
+        <span className="text-xs font-medium">{config.label}</span>
+        <span className="text-xs opacity-75">({total})</span>
+      </div>
+    </div>
   );
 };
 
-// For dark backgrounds (like gradient content displays)
-export const ContentDifficultyIndicatorDark = ({ contentId, className = "" }: ContentDifficultyIndicatorProps) => {
-  const { data: stats } = useQuery({
-    queryKey: ['/content-ratings/stats', contentId],
+// Compact version for smaller spaces
+export const CompactContentDifficultyIndicator = ({ contentId, className = "" }: ContentDifficultyIndicatorProps) => {
+  const { data: stats } = useQuery<RatingStats>({
+    queryKey: [`/api/content/${contentId}/rating-stats`],
     enabled: !!contentId,
   });
 
-  if (!stats || (stats?.easy === 0 && stats?.normal === 0 && stats?.hard === 0)) {
+  const ratingStats: RatingStats = stats || { easy: 0, normal: 0, hard: 0 };
+  
+  if (ratingStats.easy === 0 && ratingStats.normal === 0 && ratingStats.hard === 0) {
     return null;
   }
 
-  const total = (stats?.easy || 0) + (stats?.normal || 0) + (stats?.hard || 0);
+  const total = ratingStats.easy + ratingStats.normal + ratingStats.hard;
   const predominantDifficulty = 
-    (stats?.hard || 0) > (stats?.normal || 0) && (stats?.hard || 0) > (stats?.easy || 0) ? 'hard' :
-    (stats?.easy || 0) > (stats?.normal || 0) && (stats?.easy || 0) > (stats?.hard || 0) ? 'easy' : 'normal';
+    ratingStats.hard > ratingStats.normal && ratingStats.hard > ratingStats.easy ? 'hard' :
+    ratingStats.easy > ratingStats.normal && ratingStats.easy > ratingStats.hard ? 'easy' : 'normal';
 
   const getDifficultyConfig = (difficulty: string) => {
     switch (difficulty) {
       case 'hard':
         return {
           icon: <ThumbsDown className="w-3 h-3" />,
-          label: 'Really Hard',
-          className: 'bg-red-500/20 text-red-200 border-red-400/30'
+          label: 'Hard',
+          variant: 'destructive' as const,
+          bgColor: 'bg-red-100 dark:bg-red-900/20',
+          textColor: 'text-red-800 dark:text-red-200',
+          borderColor: 'border-red-300 dark:border-red-700'
         };
-      case 'easy':
-        return {
-          icon: <ThumbsUp className="w-3 h-3" />,
-          label: 'Easy',
-          className: 'bg-green-500/20 text-green-200 border-green-400/30'
-        };
-      default:
+      case 'normal':
         return {
           icon: <Minus className="w-3 h-3" />,
           label: 'Normal',
-          className: 'bg-yellow-500/20 text-yellow-200 border-yellow-400/30'
+          variant: 'secondary' as const,
+          bgColor: 'bg-orange-100 dark:bg-orange-900/20',
+          textColor: 'text-orange-800 dark:text-orange-200',
+          borderColor: 'border-orange-300 dark:border-orange-700'
+        };
+      default:
+        return {
+          icon: <ThumbsUp className="w-3 h-3" />,
+          label: 'Easy',
+          variant: 'default' as const,
+          bgColor: 'bg-green-100 dark:bg-green-900/20',
+          textColor: 'text-green-800 dark:text-green-200',
+          borderColor: 'border-green-300 dark:border-green-700'
         };
     }
   };
@@ -107,13 +128,9 @@ export const ContentDifficultyIndicatorDark = ({ contentId, className = "" }: Co
   const config = getDifficultyConfig(predominantDifficulty);
 
   return (
-    <Badge 
-      variant="outline" 
-      className={`${config.className} flex items-center gap-1 text-xs ${className}`}
-    >
+    <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs ${config.bgColor} ${config.textColor} ${config.borderColor} border ${className}`}>
       {config.icon}
-      <span>{config.label}</span>
-      <span className="text-xs opacity-75">({total})</span>
-    </Badge>
+      <span className="font-medium">{config.label}</span>
+    </div>
   );
 };

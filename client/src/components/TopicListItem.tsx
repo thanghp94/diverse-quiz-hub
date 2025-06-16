@@ -11,7 +11,7 @@ import { useContentImage } from "@/hooks/useContentImage";
 import { useTopicMatching } from "@/hooks/useTopicMatching";
 import { SubtopicMatchingButton } from "@/components/SubtopicMatchingButton";
 import { ParentTopicMatchingButton } from "@/components/ParentTopicMatchingButton";
-import { ContentDifficultyIndicatorDark } from "@/components/ContentDifficultyIndicator";
+import { CompactContentDifficultyIndicator } from "@/components/ContentDifficultyIndicator";
 
 interface Topic {
   id: string;
