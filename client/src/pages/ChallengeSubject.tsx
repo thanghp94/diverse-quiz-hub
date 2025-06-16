@@ -162,7 +162,7 @@ const ChallengeSubject = () => {
     setSelectedMatchingActivity(null);
   }, []);
 
-  const handleSubtopicClick = useCallback((subtopic: Topic) => {
+  const handleSubtopicClick = useCallback((topicId: string) => {
     // Handle subtopic navigation if needed
   }, []);
 
@@ -267,6 +267,23 @@ const ChallengeSubject = () => {
           level={topicQuizInfo.level}
           topicName={topicQuizInfo.topicName}
           onClose={closeTopicQuiz}
+        />
+      )}
+
+      {topicMatchingInfo && (
+        <MatchingListPopup
+          topicId={topicMatchingInfo.topicId}
+          topicName={topicMatchingInfo.topicName}
+          onClose={closeTopicMatching}
+          onSelectActivity={handleMatchingActivitySelect}
+        />
+      )}
+
+      {selectedMatchingActivity && (
+        <MatchingActivityPopup
+          matchingId={selectedMatchingActivity.matchingId}
+          title={selectedMatchingActivity.matchingTitle}
+          onClose={closeMatchingActivity}
         />
       )}
     </div>
