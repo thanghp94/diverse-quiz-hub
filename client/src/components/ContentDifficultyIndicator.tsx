@@ -21,7 +21,7 @@ export const ContentDifficultyIndicator = ({ contentId, className = "" }: Conten
   });
 
   const ratingStats: RatingStats = stats || { easy: 0, normal: 0, hard: 0 };
-  
+
   if (ratingStats.easy === 0 && ratingStats.normal === 0 && ratingStats.hard === 0) {
     return null;
   }
@@ -84,7 +84,7 @@ export const CompactContentDifficultyIndicator = ({ contentId, className = "" }:
   });
 
   const ratingStats: RatingStats = stats || { easy: 0, normal: 0, hard: 0 };
-  
+
   const total = ratingStats.easy + ratingStats.normal + ratingStats.hard;
   const predominantDifficulty = 
     ratingStats.hard > ratingStats.normal && ratingStats.hard > ratingStats.easy ? 'hard' :

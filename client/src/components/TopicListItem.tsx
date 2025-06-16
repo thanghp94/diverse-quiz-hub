@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -143,19 +142,19 @@ const TopicContentWithMatching = ({
   // Enhanced function to get content IDs from prompt
   const getContentIdsFromPrompt = (matching: any) => {
     const contentIds = new Set<string>();
-    
+
     // Check all prompt fields
     const promptFields = ['prompt', 'prompt1', 'prompt2', 'prompt3', 'prompt4', 'prompt5', 'prompt6'];
-    
+
     promptFields.forEach(field => {
       if (matching[field]) {
         const promptText = matching[field].toString();
-        
+
         // Try to match UUID patterns (both full and short)
         const uuidPattern = /[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|[a-f0-9]{8}/gi;
         const matches = promptText.match(uuidPattern) || [];
         matches.forEach(id => contentIds.add(id));
-        
+
         // Also try to match content by title or partial text match
         topicContent.forEach(content => {
           if (promptText.toLowerCase().includes(content.title?.toLowerCase() || '')) {
@@ -164,7 +163,7 @@ const TopicContentWithMatching = ({
         });
       }
     });
-    
+
     return Array.from(contentIds);
   };
 
@@ -181,27 +180,27 @@ const TopicContentWithMatching = ({
       matching: any;
       content: Content[];
     }> = [];
-    
+
     const usedContentIds = new Set<string>();
 
     // For each matching activity, find associated content
     matchingActivities.forEach((matching: any) => {
       const contentIds = getContentIdsFromPrompt(matching);
       console.log(`Matching ${matching.id} content IDs:`, contentIds);
-      
+
       const associatedContent = topicContent.filter(content => 
         contentIds.includes(content.id)
       );
-      
+
       console.log(`Matching ${matching.id} associated content:`, associatedContent);
-      
+
       // Even if no content is directly associated, still show the matching activity
       // This way users can see that matching activities exist for this topic
       grouped.push({
         matching,
         content: associatedContent
       });
-      
+
       associatedContent.forEach(content => usedContentIds.add(content.id));
     });
 
@@ -270,7 +269,7 @@ const TopicContentWithMatching = ({
           Found {matchingActivities.length} matching activities for this topic
         </div>
       )}
-      
+
       {/* Ungrouped content at the top */}
       {organizedContent.ungrouped.length > 0 && (
         <div className="space-y-3">
@@ -282,12 +281,12 @@ const TopicContentWithMatching = ({
           </div>
         </div>
       )}
-      
+
       {/* Matching activity section */}
       {organizedContent.grouped.length > 0 && (
         <div className="space-y-4">
           <h4 className="text-white/80 text-sm font-medium">Matching Activities</h4>
-          
+
           {/* Matching activity cards in 2-column layout */}
           <div className="grid grid-cols-2 gap-3">
             {organizedContent.grouped.map(({ matching, content }) => (
@@ -318,14 +317,14 @@ const TopicContentWithMatching = ({
               </div>
             ))}
           </div>
-          
+
           {/* Expanded content for selected matching activity - breaks out of grid */}
           {expandedMatching && (
             <div className="mt-4 p-4 bg-blue-500/5 border border-blue-400/20 rounded-lg">
               {(() => {
                 const selectedGroup = organizedContent.grouped.find(g => g.matching.id === expandedMatching);
                 if (!selectedGroup) return null;
-                
+
                 return (
                   <div>
                     <div className="flex items-center justify-between mb-3">
@@ -341,7 +340,7 @@ const TopicContentWithMatching = ({
                         Collapse
                       </Button>
                     </div>
-                    
+
                     {selectedGroup.content.length > 0 ? (
                       <div className="grid grid-cols-2 gap-3">
                         {selectedGroup.content.map(contentItem => (
@@ -557,6 +556,7 @@ export const TopicListItem = ({
                                               <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
                                               <div className="flex items-center gap-2">
                                                 <ContentRatingButtons 
+                                                  key={`${content.id}-rating`}
                                                   contentId={content.id}
                                                   compact={true}
                                                   studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}

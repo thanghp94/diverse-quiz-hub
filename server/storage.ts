@@ -363,13 +363,18 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async getContentRating(studentId: string, contentId: string): Promise<ContentRating | undefined> {
-    const result = await db.select().from(content_ratings)
-      .where(and(
-        eq(content_ratings.student_id, studentId),
-        eq(content_ratings.content_id, contentId)
-      ));
-    return result[0] || undefined;
+  async getContentRating(studentId: string, contentId: string): Promise<ContentRating | null> {
+    try {
+      const result = await db.select().from(content_ratings)
+        .where(and(
+          eq(content_ratings.student_id, studentId),
+          eq(content_ratings.content_id, contentId)
+        ));
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error fetching content rating:', error);
+      return null;
+    }
   }
 
   async updateContentRating(studentId: string, contentId: string, rating: string): Promise<ContentRating> {

@@ -319,6 +319,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/content-ratings/:studentId/:contentId", async (req, res) => {
     try {
       const rating = await storage.getContentRating(req.params.studentId, req.params.contentId);
+      if (rating === null) {
+        return res.status(404).json({ error: 'Rating not found' });
+      }
       res.json(rating);
     } catch (error) {
       console.error('Error fetching content rating:', error);

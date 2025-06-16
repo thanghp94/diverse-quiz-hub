@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -20,7 +21,6 @@ export const ContentRatingButtons = ({
   onRatingChange,
   compact = false 
 }: ContentRatingButtonsProps) => {
-  const [currentRating, setCurrentRating] = useState(initialRating);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -30,22 +30,31 @@ export const ContentRatingButtons = ({
     : 'GV0002'); // Default demo student
 
   // Fetch existing rating for this user and content
-  const { data: existingRating } = useQuery<{ rating: string }>({
+  const { data: existingRating, isLoading, refetch } = useQuery<{ rating: string } | null>({
     queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/content-ratings/${effectiveStudentId}/${contentId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            return null; // No rating exists yet
+          }
+          throw new Error('Failed to fetch rating');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching rating:', error);
+        return null;
+      }
+    },
     enabled: !!effectiveStudentId && !!contentId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (was cacheTime)
+    staleTime: 1000, // Consider data stale after 1 second
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    retry: 1, // Only retry once on failure
   });
 
-  // Update current rating when existing rating is fetched or when initial rating changes
-  useEffect(() => {
-    if (existingRating?.rating) {
-      console.log('Setting current rating from API:', existingRating.rating);
-      setCurrentRating(existingRating.rating);
-    } else if (initialRating) {
-      setCurrentRating(initialRating);
-    }
-  }, [existingRating?.rating, initialRating]);
+  // Get the current rating - prioritize database data over initial prop
+  const currentRating = existingRating?.rating || initialRating || null;
 
   // Debug log current state
   useEffect(() => {
@@ -53,15 +62,18 @@ export const ContentRatingButtons = ({
       contentId,
       effectiveStudentId,
       currentRating,
-      existingRating: existingRating?.rating
+      existingRating: existingRating?.rating,
+      isLoading
     });
-  }, [contentId, effectiveStudentId, currentRating, existingRating?.rating]);
+  }, [contentId, effectiveStudentId, currentRating, existingRating?.rating, isLoading]);
 
   const handleRating = async (rating: string) => {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
     try {
+      console.log('Submitting rating:', { effectiveStudentId, contentId, rating });
+      
       await apiRequest(`/content-ratings/${effectiveStudentId}/${contentId}`, {
         method: 'PUT',
         body: JSON.stringify({ rating }),
@@ -70,20 +82,17 @@ export const ContentRatingButtons = ({
         }
       });
       
-      setCurrentRating(rating);
+      // Immediately refetch the rating to ensure consistency
+      await refetch();
+      
       onRatingChange?.(rating);
       
-      // Invalidate and refetch queries to refresh the cache
+      // Invalidate related queries to refresh the cache
       await queryClient.invalidateQueries({ 
         queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`] 
       });
       await queryClient.invalidateQueries({ 
         queryKey: [`/api/content-ratings/stats/${contentId}`] 
-      });
-      
-      // Ensure the data is refetched immediately
-      queryClient.refetchQueries({ 
-        queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`] 
       });
       
       const ratingText = rating === 'really_bad' ? 'Really Hard' : 
@@ -104,6 +113,16 @@ export const ContentRatingButtons = ({
       setIsSubmitting(false);
     }
   };
+
+  // Don't render until we have loaded the rating data
+  if (isLoading) {
+    return compact ? (
+      <div className="flex gap-1">
+        <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+        <div className="w-6 h-6 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+    ) : null;
+  }
 
   if (compact) {
     return (
