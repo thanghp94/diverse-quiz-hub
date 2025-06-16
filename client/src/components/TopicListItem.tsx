@@ -66,7 +66,7 @@ const ContentThumbnail = ({ content, onClick }: { content: any, onClick?: () => 
   }
 
   return (
-    
+
         <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
           <img 
             src={imageUrl} 
@@ -610,5 +610,3 @@ export const TopicListItem = ({
 }
 
 export default TopicListItem;
-```OK.
-This change modifies the `ContentThumbnail` component within the subtopic content section to directly trigger the `onContentClick` handler, ensuring the full content popup appears instead of just the image.
