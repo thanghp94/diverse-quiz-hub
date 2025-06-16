@@ -41,7 +41,7 @@ const MatchingActivityPage = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const [currentAttemptId, setCurrentAttemptId] = useState<string | null>(null);
-  const trackerRef = useRef<any>(null);
+  const trackerRef = useRef<MatchingActivityTrackerRef>(null);
 
   // Get current user from localStorage (assuming student is logged in)
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
