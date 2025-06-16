@@ -57,12 +57,12 @@ const getContentIcon = (content: any) => {
 // Component for content item thumbnail
 const ContentThumbnail = ({ content }: { content: any }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
-  
+
   // Only show thumbnail if there's an imageid
   if (!content.imageid || !imageUrl) {
     return null;
   }
-  
+
   return (
     <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0">
       <img 
@@ -115,7 +115,7 @@ export const TopicListItem = ({
     onStartTopicMatching
 }: TopicListItemProps) => {
     const { hasMatchingActivities } = useTopicMatching(topic.id);
-    
+
     let topicImageUrl: string | undefined | null = null;
     if (allImages && topicContent.length > 0) {
       for (const content of topicContent) {
@@ -210,7 +210,7 @@ export const TopicListItem = ({
               </div>
             </div>
           </div>
-          
+
           {isExpanded && (
             <div className="px-3 pb-3 pt-1">
               <div className="space-y-1">
@@ -229,8 +229,8 @@ export const TopicListItem = ({
                             <div className="flex items-center gap-2">
                               <ContentThumbnail content={content} />
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-2 mb-2">
-                                  <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
+                                <div className="flex items-center justify-center gap-2 mb-2">
+                                  <h4 className="text-white/90 text-base font-medium leading-tight text-center">{content.title}</h4>
                                   <div className="flex items-center gap-2">
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
@@ -265,7 +265,7 @@ export const TopicListItem = ({
                     ))}
                   </div>
                 )}
-              
+
                 {subtopics.length > 0 && (
                   <div className="mt-3">
                     <div className="space-y-2">
@@ -309,7 +309,7 @@ export const TopicListItem = ({
                                 <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
                               </div>
                             </div>
-                          
+
                             {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
                               <div className="mt-3 grid grid-cols-2 gap-3">
                                 {subtopicContent.map(content => (
@@ -371,7 +371,7 @@ export const TopicListItem = ({
                     </div>
                   </div>
                 )}
-              
+
                 {topicContent.length === 0 && subtopics.length === 0 && (
                   <div className="text-center py-4">
                     <p className="text-white/60 text-sm">No content available for this topic</p>
