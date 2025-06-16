@@ -82,6 +82,35 @@ const Header = () => {
               </NavigationMenuContent>
             </NavigationMenuItem>
 
+            {/* Challenge Subject Dropdown */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
+                Challenge Subject
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="w-48 p-2">
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?subject=challenge&tab=overview-quiz')}
+                  >
+                    Overview Quiz
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?subject=challenge&tab=easy-quiz')}
+                  >
+                    Easy Quiz
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?subject=challenge&tab=hard-quiz')}
+                  >
+                    Hard Quiz
+                  </NavigationMenuLink>
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
             {/* Debate Dropdown */}
             <NavigationMenuItem>
               <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
@@ -129,35 +158,6 @@ const Header = () => {
                     onClick={() => setLocation('/writing?tab=assignment')}
                   >
                     Assignment
-                  </NavigationMenuLink>
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            {/* Challenge Subject Dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
-                Challenge Subject
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="w-48 p-2">
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?subject=challenge&tab=overview-quiz')}
-                  >
-                    Overview Quiz
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?subject=challenge&tab=easy-quiz')}
-                  >
-                    Easy Quiz
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?subject=challenge&tab=hard-quiz')}
-                  >
-                    Hard Quiz
                   </NavigationMenuLink>
                 </div>
               </NavigationMenuContent>
