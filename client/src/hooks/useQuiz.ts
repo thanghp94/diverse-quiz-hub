@@ -22,7 +22,7 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
     const url = level 
       ? `/api/questions?contentId=${content.id}&level=${level}`
       : `/api/questions?contentId=${content.id}`;
-    
+
     try {
       const response = await fetch(url);
       if (!response.ok) {
@@ -41,9 +41,9 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
       }
 
       const randomizedQuestionIds = questions.map((q: any) => q.id).sort(() => Math.random() - 0.5);
-      
+
       const hocsinh_id = 'user-123-placeholder';
-      
+
       // Create quiz session using assignment_student_try (eliminates need for assignment table)
       const quizSessionData = {
         hocsinh_id: hocsinh_id,

@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -46,7 +45,7 @@ export const PopupHeader = ({
                   {currentIndex + 1} / {contentListLength}
               </div>}
           </div>
-      
+
           <div className="flex items-center gap-2">
               <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -57,8 +56,14 @@ export const PopupHeader = ({
                       </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => startQuiz('Easy')}>Easy Quiz</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => startQuiz('Hard')}>Hard Quiz</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                        console.log('Easy Quiz clicked');
+                        startQuiz('Easy');
+                      }}>Easy Quiz</DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => {
+                         console.log('Hard Quiz clicked');
+                         startQuiz('Hard');
+                      }}>Hard Quiz</DropdownMenuItem>
                   </DropdownMenuContent>
               </DropdownMenu>
               <Popover open={isTranslationPopoverOpen} onOpenChange={setIsTranslationPopoverOpen}>
@@ -83,7 +88,7 @@ export const PopupHeader = ({
               </Popover>
           </div>
       </div>
-      
+
       {/* Content Rating Section */}
       <div className="px-4">
         <ContentRatingButtons
