@@ -380,55 +380,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
             </div>
           </div>
         </div>
-
-        {!isSubmitted ? (
-          <div className="mt-4 space-y-2">
-            <Button 
-              onClick={handleSubmit}
-              disabled={isSubmitting || Object.keys(matches).length === 0}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50"
-            >
-              {isSubmitting ? 'Checking...' : 'Check Result'}
-            </Button>
-            {Object.keys(matches).length > 0 && (
-              <div className="text-center text-sm text-gray-600">
-                {Object.keys(matches).length} of {leftItems.length} items matched
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="mt-4 space-y-2">
-            <div className="text-center">
-              <div className={`text-lg font-bold ${
-                Object.values(correctMatches).every(Boolean) ? 'text-green-600' : 'text-red-600'
-              }`}>
-                {Object.values(correctMatches).filter(Boolean).length} / {Object.keys(correctMatches).length} Correct
-              </div>
-              <div className="text-sm text-gray-600 mt-1">
-                Score: {Math.round((Object.values(correctMatches).filter(Boolean).length / Object.keys(correctMatches).length) * 100)}%
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                className="flex-1"
-                onClick={() => {
-                  setMatches({});
-                  setIsSubmitted(false);
-                  setCorrectMatches({});
-                }}
-              >
-                Try Again
-              </Button>
-              <Button 
-                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
-                onClick={onNextActivity || (() => setLocation('/matching'))}
-              >
-                Next Activity
-              </Button>
-            </div>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
