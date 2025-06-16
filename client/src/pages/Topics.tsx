@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 import TopicQuizRunner from "@/components/TopicQuizRunner";
 import TopicMatchingPopup from "@/components/TopicMatchingPopup";
+import MatchingListPopup from "@/components/MatchingListPopup";
+import { MatchingActivityPopup } from "@/components/MatchingActivityPopup";
 import { useLocation } from "wouter";
 
 interface Topic {
@@ -44,6 +46,10 @@ const Topics = () => {
   const [topicMatchingInfo, setTopicMatchingInfo] = useState<{
     topicId: string;
     topicName: string;
+  } | null>(null);
+  const [selectedMatchingActivity, setSelectedMatchingActivity] = useState<{
+    matchingId: string;
+    matchingTitle: string;
   } | null>(null);
 
   // Parse URL parameters
@@ -173,6 +179,13 @@ const Topics = () => {
     setTopicMatchingInfo(null);
   }, []);
 
+  const handleSelectMatchingActivity = (matchingId: string, matchingTitle: string) => {
+    setSelectedMatchingActivity({ matchingId, matchingTitle });
+  };
+  const closeMatchingActivity = useCallback(() => {
+    setSelectedMatchingActivity(null);
+  }, []);
+
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
     return allTopics.filter(topic => topic.parentid === parentId).sort((a, b) => a.topic.localeCompare(b.topic));
@@ -298,11 +311,20 @@ const Topics = () => {
       )}
 
       {topicMatchingInfo && (
-        <TopicMatchingPopup
+        <MatchingListPopup
           isOpen={!!topicMatchingInfo}
           onClose={closeTopicMatching}
           topicId={topicMatchingInfo.topicId}
           topicName={topicMatchingInfo.topicName}
+          onSelectMatching={handleSelectMatchingActivity}
+        />
+      )}
+
+      {selectedMatchingActivity && (
+        <MatchingActivityPopup
+          isOpen={!!selectedMatchingActivity}
+          onClose={closeMatchingActivity}
+          matchingId={selectedMatchingActivity.matchingId}
         />
       )}
     </div>

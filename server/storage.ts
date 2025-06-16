@@ -140,6 +140,10 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getMatchingByTopicId(topicId: string): Promise<Matching[]> {
+    return await db.select().from(matching).where(eq(matching.topicid, topicId));
+  }
+
   async getVideos(): Promise<Video[]> {
     return await db.select().from(videos);
   }

@@ -139,6 +139,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/matching/topic/:topicId", async (req, res) => {
+    try {
+      const matching = await storage.getMatchingByTopicId(req.params.topicId);
+      res.json(matching);
+    } catch (error) {
+      console.error('Error fetching matching activities by topic:', error);
+      res.status(500).json({ error: 'Failed to fetch matching activities by topic' });
+    }
+  });
+
   // Videos
   app.get("/api/videos", async (req, res) => {
     try {
