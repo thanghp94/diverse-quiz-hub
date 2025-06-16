@@ -338,7 +338,7 @@ export const TopicListItem = ({
                                                 />
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" size="sm" className="text-white/70 hover:bg-white/20 hover:text-white text-xs px-2 py-1 h-6">
+                                                    <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
                                                       Quiz
                                                     </Button>
                                                   </DropdownMenuTrigger>
