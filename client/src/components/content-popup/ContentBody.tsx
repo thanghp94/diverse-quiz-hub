@@ -14,12 +14,12 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {content.short_blurb && <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
             <h3 className="font-semibold text-xl break-words">Short Blurb</h3>
         </CardHeader>
-        <CardContent className="pb-4">
+        <CardContent className="pb-2 pt-0">
             <MarkdownRenderer className="text-base leading-relaxed">
                 {content.short_blurb}
             </MarkdownRenderer>
@@ -28,12 +28,12 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
 
       {content.second_short_blurb && <Card>
         <Collapsible open={isSecondBlurbOpen} onOpenChange={setIsSecondBlurbOpen}>
-            <CollapsibleTrigger className="flex w-full items-center justify-between p-6 text-left rounded-lg hover:bg-muted/50">
+            <CollapsibleTrigger className="flex w-full items-center justify-between p-3 text-left rounded-lg hover:bg-muted/50">
                 <h3 className="font-semibold text-xl break-words">Second Short Blurb</h3>
                 <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isSecondBlurbOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
             <CollapsibleContent>
-                <CardContent className="pt-0 pb-4 px-6">
+                <CardContent className="pt-0 pb-2 px-3">
                     <MarkdownRenderer className="text-base leading-relaxed">
                         {content.second_short_blurb}
                     </MarkdownRenderer>
@@ -43,10 +43,10 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
       </Card>}
 
       {content.short_description && <Card>
-          <CardHeader>
+          <CardHeader className="pb-2">
               <h3 className="font-semibold text-xl break-words">Description</h3>
           </CardHeader>
-          <CardContent className="pb-4">
+          <CardContent className="pb-2 pt-0">
               <MarkdownRenderer className="text-base leading-relaxed">
                   {content.short_description}
               </MarkdownRenderer>

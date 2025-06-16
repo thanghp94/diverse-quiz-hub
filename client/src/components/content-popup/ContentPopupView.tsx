@@ -43,7 +43,7 @@ export const ContentPopupView = ({
 }: ContentPopupViewProps) => {
 
   return (
-    <div className="py-4 space-y-6">
+    <div className="py-2 space-y-3">
       <PopupHeader
         contentListLength={contentListLength}
         currentIndex={currentIndex}

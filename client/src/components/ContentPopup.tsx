@@ -80,7 +80,7 @@ const ContentPopup = ({
         ) : (
           <>
             {/* Header with title, description and image */}
-            <div className="flex flex-col lg:flex-row lg:gap-6 mb-6">
+            <div className="flex flex-col lg:flex-row lg:gap-4 mb-3">
               {/* Left: Title and Description */}
               <div className="flex-1 lg:w-1/2">
                 <DialogHeader>
