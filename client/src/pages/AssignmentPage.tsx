@@ -131,6 +131,7 @@ const AssignmentPage: React.FC = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/assignment-student-tries'] });
       setAssignmentStudentTryId(data.id.toString());
+      setShowQuiz(true); // Show quiz after successful creation
       toast({
         title: "Quiz Started",
         description: "You have joined the assignment quiz."
@@ -184,11 +185,24 @@ const AssignmentPage: React.FC = () => {
     const assignmentQuestions = questions.filter((q: Question) => 
       contentIds.includes(q.contentid) || q.topicid === assignment.topicid
     );
+
+    if (assignmentQuestions.length === 0) {
+      toast({
+        title: "No Questions Available",
+        description: "No questions found for this assignment topic.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     // Randomize question order
     const shuffledQuestions = [...assignmentQuestions].sort(() => Math.random() - 0.5);
     const selectedQuestions = shuffledQuestions.slice(0, assignment.noofquestion || 15);
     const selectedQuestionIds = selectedQuestions.map((q: Question) => q.id);
+    
+    // Set up quiz data first
+    setSelectedAssignment(assignment);
+    setQuestionIds(selectedQuestionIds);
     
     // Create assignment student try
     const studentTryData = {
@@ -201,11 +215,7 @@ const AssignmentPage: React.FC = () => {
       number_of_question: assignment.noofquestion || selectedQuestionIds.length
     };
 
-    // Set up quiz data for the proper QuizView component
-    setSelectedAssignment(assignment);
-    setQuestionIds(selectedQuestionIds);
     createStudentTryMutation.mutate(studentTryData);
-    setShowQuiz(true);
   };
 
   const closeQuiz = () => {
