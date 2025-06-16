@@ -21,11 +21,11 @@ const sourcePool = new PgPool({
 const destPool = new Pool({ connectionString: process.env.DATABASE_URL });
 const destDb = drizzle({ client: destPool, schema });
 
-async function importAllContent() {
-  console.log('Importing all content from source database...');
+async function importContentFixed() {
+  console.log('Importing content with correct column names...');
   
   try {
-    // Import content with all fields
+    // Import only the essential columns that we know exist
     const contentQuery = `SELECT 
       "ID" as id,
       "TopicID" as topicid, 
@@ -53,9 +53,9 @@ async function importAllContent() {
       "TypeOfTaking" as typeoftaking,
       "Short_description" as short_description,
       "URL" as url,
-      "Header" as header,
-      "Update" as "update",
-      "ImageLink" as imagelink
+      "header" as header,
+      "update" as "update",
+      "Imagelink" as imagelink
       FROM "Content" ORDER BY "ID"`;
     
     const content = await sourcePool.query(contentQuery);
@@ -91,4 +91,4 @@ async function importAllContent() {
   }
 }
 
-importAllContent().catch(console.error);
+importContentFixed().catch(console.error);
