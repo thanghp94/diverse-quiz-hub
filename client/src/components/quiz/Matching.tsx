@@ -394,6 +394,21 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
           </div>
         </div>
       </CardContent>
+      <div className="p-4 border-t">
+        <Button
+          onClick={handleSubmit}
+          disabled={!isComplete || isSubmitting || isSubmitted}
+          className="w-full"
+          variant={isSubmitted ? "outline" : "default"}
+        >
+          {isSubmitting ? 'Submitting...' : isSubmitted ? 'Completed' : 'Submit Answers'}
+        </Button>
+        {isComplete && !isSubmitted && (
+          <p className="text-sm text-gray-600 mt-2 text-center">
+            All pairs matched! Click Submit to complete.
+          </p>
+        )}
+      </div>
     </Card>
   );
 };
