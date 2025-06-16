@@ -43,7 +43,7 @@ interface TopicListItemProps {
     onToggleContent: (contentKey: string) => void;
     onContentClick: (info: { content: Content; contextList: Content[] }) => void;
     onSubtopicClick: (topicId: string) => void;
-    onStartQuiz: (content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => void;
+    onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
     getTopicContent: (topicId: string) => Content[];
     onStartTopicQuiz: (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => void;
     onStartTopicMatching: (topicId: string, topicName: string) => void;

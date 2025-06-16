@@ -16,6 +16,7 @@ interface ContentPopupProps {
   contentList: Content[];
   onContentChange: (newContent: Content) => void;
   startQuizDirectly?: boolean;
+  quizLevel?: 'Easy' | 'Hard' | null;
   imageUrl: string | null | undefined;
   isImageLoading: boolean;
 }
@@ -27,6 +28,7 @@ const ContentPopup = ({
   contentList,
   onContentChange,
   startQuizDirectly = false,
+  quizLevel,
   imageUrl,
   isImageLoading,
 }: ContentPopupProps) => {
@@ -38,7 +40,7 @@ const ContentPopup = ({
     startQuiz,
     closeQuiz,
     setStudentTry,
-  } = useQuiz({ content, onClose, startQuizDirectly });
+  } = useQuiz({ content, onClose, startQuizDirectly, level: quizLevel });
 
   const {
     videoData,
