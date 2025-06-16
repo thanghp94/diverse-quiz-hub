@@ -86,33 +86,35 @@ const ContentPopup = ({
               </DialogDescription>
             </DialogHeader>
 
-            {/* Image displayed at top on desktop, below description on mobile */}
-            <div className="order-1 md:order-0">
-              <MediaDisplay
-                imageUrl={imageUrl}
-                isImageLoading={isImageLoading}
-                title={content.title}
-                imageid={content.imageid}
-                isFullWidth={true}
-              />
-            </div>
-
-            <div className="order-0 md:order-1">
-              <ContentPopupView
-                  content={content}
-                  contentListLength={contentList.length}
-                  currentIndex={currentIndex}
-                  handlePrevious={handlePrevious}
-                  handleNext={handleNext}
-                  startQuiz={startQuiz}
+            <div className="flex flex-col space-y-6">
+              {/* Image displayed at top on desktop, below description on mobile */}
+              <div className="order-2 md:order-1">
+                <MediaDisplay
                   imageUrl={imageUrl}
                   isImageLoading={isImageLoading}
-                  videoEmbedUrl={videoEmbedUrl}
-                  video2EmbedUrl={video2EmbedUrl}
-                  videoData={videoData}
-                  video2Data={video2Data}
-                  hideMediaDisplay={true}
-              />
+                  title={content.title}
+                  imageid={content.imageid}
+                  isFullWidth={true}
+                />
+              </div>
+
+              <div className="order-1 md:order-2">
+                <ContentPopupView
+                    content={content}
+                    contentListLength={contentList.length}
+                    currentIndex={currentIndex}
+                    handlePrevious={handlePrevious}
+                    handleNext={handleNext}
+                    startQuiz={startQuiz}
+                    imageUrl={imageUrl}
+                    isImageLoading={isImageLoading}
+                    videoEmbedUrl={videoEmbedUrl}
+                    video2EmbedUrl={video2EmbedUrl}
+                    videoData={videoData}
+                    video2Data={video2Data}
+                    hideMediaDisplay={true}
+                />
+              </div>
             </div>
           </>
         )}
