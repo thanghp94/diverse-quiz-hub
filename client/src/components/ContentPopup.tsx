@@ -55,7 +55,15 @@ const ContentPopup = ({
     }
   }, [isOpen, startQuizDirectly, quizMode, startQuiz]);
 
-  if (!content) return null;
+  if (!content) {
+    return (
+      <Dialog open={isOpen} onOpenChange={(open) => { if(!open) onClose(); }}>
+        <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh]">
+          <div>No content available</div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const currentIndex = contentList.findIndex(item => item.id === content.id);
   const handlePrevious = () => {
