@@ -559,10 +559,7 @@ export class DatabaseStorage implements IStorage {
     const studentTryData = {
       id: `try_${Date.now()}`,
       assignment_student_try_id: assignmentStudentTryResult[0].id.toString(),
-      assignment_id: studentTry.assignment_id,
-      hocsinh_id: studentTry.student_id,
-      started_at: new Date(),
-      level: studentTry.level || 'Overview'
+      hocsinh_id: studentTry.student_id
     };
     
     const studentTryResult = await db.insert(student_try).values(studentTryData).returning();

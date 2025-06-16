@@ -30,7 +30,7 @@ interface QuizViewProps {
     studentTryId?: string;
 }
 
-const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizViewProps) => {
+const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTryId }: QuizViewProps) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -153,7 +153,26 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
         const timeEnd = new Date().toTimeString().slice(0, 8);
 
         try {
-            // Note: Student progress tracking will be implemented when authentication is added
+            // Save individual question response to database
+            if (studentTryId) {
+                const responseData = {
+                    question_id: currentQuestion.id,
+                    answer_choice: selectedAnswer,
+                    correct_answer: currentQuestion.correct_choice,
+                    quiz_result: isCorrect ? '✅' : '❌',
+                    time_start: timeStart,
+                    time_end: timeEnd,
+                    currentindex: currentQuestionIndex,
+                    showcontent: didShowContent,
+                };
+
+                await fetch(`/api/student-tries/${studentTryId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(responseData)
+                });
+            }
+
             console.log('Student answer recorded:', {
                 question_id: currentQuestion.id,
                 answer_choice: selectedAnswer,
@@ -165,7 +184,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
                 showcontent: didShowContent,
             });
         } catch (err) {
-            console.error("Unexpected error saving student try:", err);
+            console.error("Error saving student response:", err);
         }
 
         const existingResults = JSON.parse(sessionStorage.getItem('quizResults') || '[]');
