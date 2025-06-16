@@ -134,10 +134,10 @@ export const TopicListItem = ({
             <div className="flex-grow flex items-start justify-between">
               <div className="w-full">
                 <div className="flex items-center justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <CardTitle className="text-white text-xl font-semibold">{topic.topic}</CardTitle>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <CardTitle className="text-white text-2xl font-bold">{topic.topic}</CardTitle>
                     {topicContent.length > 0 && (
-                      <span className="text-white/90 text-xl font-semibold">Content ({topicContent.length})</span>
+                      <span className="text-yellow-300 text-2xl font-bold">Content ({topicContent.length})</span>
                     )}
                     {topic.challengesubject && (
                       <Badge variant="outline" className="border-white/30 text-white/70 text-sm">
