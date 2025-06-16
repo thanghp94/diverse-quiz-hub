@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Check, X } from "lucide-react";
+import { Check, X, ThumbsUp, Minus, ThumbsDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
@@ -28,9 +28,10 @@ interface QuizViewProps {
     onQuizFinish: () => void;
     assignmentStudentTryId: string;
     studentTryId?: string;
+    contentId?: string;
 }
 
-const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTryId }: QuizViewProps) => {
+const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTryId, contentId }: QuizViewProps) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +46,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     const [linkedContent, setLinkedContent] = useState<LinkedContent | null>(null);
     const [isContentLoading, setIsContentLoading] = useState(false);
     const [isContentLoaded, setIsContentLoaded] = useState(false);
+    const [contentRating, setContentRating] = useState<string | null>(null);
     const { toast } = useToast();
 
     useEffect(() => {
@@ -148,6 +150,37 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
         }
     };
 
+    const handleContentRating = async (rating: string) => {
+        if (!contentId) return;
+        
+        try {
+            const response = await fetch('/api/content-ratings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    student_id: 'user-123-placeholder',
+                    content_id: contentId,
+                    rating: rating
+                })
+            });
+
+            if (response.ok) {
+                setContentRating(rating);
+                toast({
+                    title: "Rating Saved",
+                    description: `Content rated as ${rating}`,
+                });
+            }
+        } catch (error) {
+            console.error('Error saving content rating:', error);
+            toast({
+                title: "Error",
+                description: "Failed to save rating",
+                variant: "destructive"
+            });
+        }
+    };
+
     const handleNext = async () => {
         if (!currentQuestion || selectedAnswer === null) return;
         const timeEnd = new Date().toTimeString().slice(0, 8);
@@ -248,6 +281,56 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                             )
                         })}
                     </div>
+
+                    {/* Content Difficulty Rating */}
+                    {contentId && (
+                        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
+                            <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
+                                How difficult is this content?
+                            </h4>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant={contentRating === 'easy' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => handleContentRating('easy')}
+                                    className={`${
+                                        contentRating === 'easy' 
+                                            ? 'bg-green-600 hover:bg-green-700 text-white' 
+                                            : 'hover:bg-green-50 hover:border-green-300'
+                                    }`}
+                                >
+                                    <ThumbsUp className="w-3 h-3 mr-1" />
+                                    Easy
+                                </Button>
+                                <Button
+                                    variant={contentRating === 'normal' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => handleContentRating('normal')}
+                                    className={`${
+                                        contentRating === 'normal' 
+                                            ? 'bg-orange-600 hover:bg-orange-700 text-white' 
+                                            : 'hover:bg-orange-50 hover:border-orange-300'
+                                    }`}
+                                >
+                                    <Minus className="w-3 h-3 mr-1" />
+                                    Normal
+                                </Button>
+                                <Button
+                                    variant={contentRating === 'hard' ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => handleContentRating('hard')}
+                                    className={`${
+                                        contentRating === 'hard' 
+                                            ? 'bg-red-600 hover:bg-red-700 text-white' 
+                                            : 'hover:bg-red-50 hover:border-red-300'
+                                    }`}
+                                >
+                                    <ThumbsDown className="w-3 h-3 mr-1" />
+                                    Hard
+                                </Button>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="mt-6 flex justify-start">
                         <Button variant="outline" onClick={handleShowContent} disabled={isContentLoading || showFeedback}>
