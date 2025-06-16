@@ -14,6 +14,8 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
   const [matches, setMatches] = useState<{[key: string]: string}>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [correctMatches, setCorrectMatches] = useState<{[key: string]: boolean}>({});
   const [startTime] = useState(new Date());
   const dragCounter = useRef(0);
   const { toast } = useToast();
@@ -98,9 +100,12 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
     
     let correctCount = 0;
     const correctPairs = question.pairs || [];
+    const newCorrectMatches: {[key: string]: boolean} = {};
     
     correctPairs.forEach(pair => {
-      if (matches[pair.left] === pair.right) {
+      const isMatchCorrect = matches[pair.left] === pair.right;
+      newCorrectMatches[pair.left] = isMatchCorrect;
+      if (isMatchCorrect) {
         correctCount++;
       }
     });
@@ -108,6 +113,10 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
     const totalPairs = correctPairs.length;
     const score = Math.round((correctCount / totalPairs) * 100);
     const isCorrect = correctCount === totalPairs;
+    
+    // Set correctness state for visual feedback
+    setCorrectMatches(newCorrectMatches);
+    setIsSubmitted(true);
     
     // Save attempt to database
     await saveStudentAttempt(matches, score, isCorrect);
@@ -122,8 +131,16 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
 
   return (
     <Card className="bg-white border-gray-300 shadow-lg h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-black text-xl font-bold">{question.question}</CardTitle>
+      <CardHeader className="pb-2 pt-3">
+        <div className="flex justify-between items-center mb-2">
+          <Button variant="outline" size="sm" className="text-xs">
+            ← Go Back
+          </Button>
+          <Button variant="outline" size="sm" className="text-xs">
+            Next Activity →
+          </Button>
+        </div>
+        <CardTitle className="text-black text-lg font-bold">{question.question}</CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-4">
         <div className="grid grid-cols-5 gap-4 h-full">
@@ -133,21 +150,36 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
             <div className="flex-1 overflow-y-auto space-y-2 pr-2">
               {leftItems.map(item => {
                 const isUsed = Object.keys(matches).includes(item);
+                const isCorrect = isSubmitted && correctMatches[item];
+                const isIncorrect = isSubmitted && correctMatches[item] === false;
+                
                 return (
                   <div
                     key={item}
-                    draggable={!isUsed}
+                    draggable={!isUsed && !isSubmitted}
                     onDragStart={(e) => handleDragStart(e, item)}
                     className={`relative p-3 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center min-h-[70px] shadow-sm ${
-                      isUsed 
+                      isCorrect 
+                        ? 'bg-green-100 border-green-400 cursor-not-allowed'
+                        : isIncorrect
+                        ? 'bg-red-100 border-red-400 cursor-not-allowed'
+                        : isUsed 
                         ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' 
                         : 'bg-blue-50 border-blue-300 cursor-move hover:bg-blue-100 hover:border-blue-400'
                     }`}
                   >
                     {isUsed && (
-                      <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-1 z-10">
+                      <div className={`absolute top-1 right-1 text-white rounded-full p-1 z-10 ${
+                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-green-500'
+                      }`}>
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          {isCorrect ? (
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          ) : isIncorrect ? (
+                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                          ) : (
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          )}
                         </svg>
                       </div>
                     )}
@@ -161,7 +193,7 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                         }}
                       />
                     ) : (
-                      <span className="text-center text-lg font-medium leading-tight">{item}</span>
+                      <span className="text-center text-lg font-medium leading-tight whitespace-pre-line">{item}</span>
                     )}
                   </div>
                 );
@@ -175,22 +207,35 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
             <div className="flex-1 overflow-y-auto space-y-2 pl-2">
               {fixedRightItems.map((item: string) => {
                 const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
+                const isCorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft];
+                const isIncorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft] === false;
+                
                 return (
                   <div
                     key={item}
-                    onDragOver={handleDragOver}
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, item)}
+                    onDragOver={!isSubmitted ? handleDragOver : undefined}
+                    onDragEnter={!isSubmitted ? handleDragEnter : undefined}
+                    onDragLeave={!isSubmitted ? handleDragLeave : undefined}
+                    onDrop={!isSubmitted ? (e) => handleDrop(e, item) : undefined}
                     className={`p-3 rounded-lg text-black min-h-[70px] border-2 border-dashed transition-all duration-300 ${
-                      matchedLeft 
-                        ? 'bg-green-100 border-green-400 shadow-lg' 
+                      isCorrect
+                        ? 'bg-green-100 border-green-400 shadow-lg'
+                        : isIncorrect
+                        ? 'bg-red-100 border-red-400 shadow-lg'
+                        : matchedLeft 
+                        ? 'bg-gray-100 border-gray-400 shadow-lg' 
                         : 'bg-purple-50 border-purple-300 hover:border-purple-400 hover:bg-purple-100'
                     }`}
                   >
-                    <div className="font-medium mb-2 text-sm leading-tight">{item}</div>
+                    <div className="font-medium mb-2 text-sm leading-tight whitespace-pre-line">{item}</div>
                     {matchedLeft && (
-                      <div className="flex items-center gap-2 text-xs text-green-700 mt-2 p-2 bg-green-200 rounded border border-green-300">
+                      <div className={`flex items-center gap-2 text-xs mt-2 p-2 rounded border ${
+                        isCorrect 
+                          ? 'text-green-700 bg-green-200 border-green-300'
+                          : isIncorrect
+                          ? 'text-red-700 bg-red-200 border-red-300'
+                          : 'text-green-700 bg-green-200 border-green-300'
+                      }`}>
                         <span>Matched with:</span>
                         {isImageItem(matchedLeft) ? (
                           <div className="flex items-center gap-1">
@@ -206,6 +251,13 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                           </div>
                         ) : (
                           <span className="font-medium text-xs">{matchedLeft}</span>
+                        )}
+                        {isSubmitted && (
+                          <div className={`ml-auto text-xs font-bold ${
+                            isCorrect ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                          </div>
                         )}
                       </div>
                     )}
