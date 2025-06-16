@@ -7,6 +7,9 @@ import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 import TopicQuizRunner from "@/components/TopicQuizRunner";
+import TopicMatchingPopup from "@/components/TopicMatchingPopup";
+import MatchingListPopup from "@/components/MatchingListPopup";
+import { MatchingActivityPopup } from "@/components/MatchingActivityPopup";
 import { useLocation } from "wouter";
 
 interface Topic {
@@ -52,6 +55,14 @@ const ChallengeSubject = () => {
     topicId: string;
     level: 'Overview' | 'Easy' | 'Hard';
     topicName: string;
+  } | null>(null);
+  const [topicMatchingInfo, setTopicMatchingInfo] = useState<{
+    topicId: string;
+    topicName: string;
+  } | null>(null);
+  const [selectedMatchingActivity, setSelectedMatchingActivity] = useState<{
+    matchingId: string;
+    matchingTitle: string;
   } | null>(null);
 
   // Parse URL parameters
@@ -134,6 +145,32 @@ const ChallengeSubject = () => {
     setTopicQuizInfo(null);
   }, []);
 
+  const handleStartTopicMatching = useCallback((topicId: string, topicName: string) => {
+    setTopicMatchingInfo({ topicId, topicName });
+  }, []);
+
+  const closeTopicMatching = useCallback(() => {
+    setTopicMatchingInfo(null);
+  }, []);
+
+  const handleMatchingActivitySelect = useCallback((matchingId: string, matchingTitle: string) => {
+    setSelectedMatchingActivity({ matchingId, matchingTitle });
+    setTopicMatchingInfo(null);
+  }, []);
+
+  const closeMatchingActivity = useCallback(() => {
+    setSelectedMatchingActivity(null);
+  }, []);
+
+  const handleSubtopicClick = useCallback((subtopic: Topic) => {
+    // Handle subtopic navigation if needed
+  }, []);
+
+  const getTopicContent = useCallback((topicId: string): Content[] => {
+    if (!allContent) return [];
+    return allContent.filter(content => content.topicid === topicId);
+  }, [allContent]);
+
   // Create virtual "topics" for each challenge subject
   const subjectTopics = CHALLENGE_SUBJECTS.map(subject => {
     const content = getContentBySubject(subject);
@@ -143,7 +180,7 @@ const ChallengeSubject = () => {
       short_summary: `Content related to ${subject}`,
       challengesubject: subject,
       image: '',
-      parentid: null,
+      parentid: undefined,
       showstudent: true,
       contentCount: content.length
     };
@@ -182,71 +219,23 @@ const ChallengeSubject = () => {
               const isExpanded = expandedSubjectId === subject.id;
 
               return (
-                <div
+                <TopicListItem
                   key={subject.id}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20"
-                >
-                  <button
-                    onClick={() => handleToggleSubject(subject.id)}
-                    className="w-full p-4 text-left hover:bg-white/5 transition-colors rounded-lg"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-white mb-1">
-                          {subject.topic}
-                        </h3>
-                        <p className="text-sm text-white/70">
-                          {subject.contentCount} content items
-                        </p>
-                      </div>
-                      <div className="text-white/70">
-                        {isExpanded ? '−' : '+'}
-                      </div>
-                    </div>
-                  </button>
-
-                  {isExpanded && (
-                    <div className="px-4 pb-4">
-                      <div className="space-y-2">
-                        {subjectContent.map(content => (
-                          <div
-                            key={content.id}
-                            className="bg-white/5 rounded p-3 hover:bg-white/10 transition-colors cursor-pointer"
-                            onClick={() => handleContentClick({ 
-                              content, 
-                              contextList: subjectContent 
-                            })}
-                          >
-                            <h4 className="text-white font-medium text-sm mb-1">
-                              {content.title}
-                            </h4>
-                            {content.short_description && (
-                              <p className="text-white/70 text-xs">
-                                {content.short_description}
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-
-                      {activeTab && (
-                        <div className="mt-4 pt-3 border-t border-white/20">
-                          <button
-                            onClick={() => handleStartTopicQuiz(
-                              subject.id, 
-                              activeTab === 'overview-quiz' ? 'Overview' : 
-                              activeTab === 'easy-quiz' ? 'Easy' : 'Hard',
-                              subject.topic
-                            )}
-                            className="w-full bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded transition-colors text-sm font-medium"
-                          >
-                            Start {activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Quiz
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                  topic={subject}
+                  subtopics={[]}
+                  topicContent={subjectContent}
+                  allImages={allImages}
+                  isExpanded={isExpanded}
+                  openContent={openContent}
+                  onToggleTopic={handleToggleSubject}
+                  onToggleContent={toggleContent}
+                  onContentClick={handleContentClick}
+                  onSubtopicClick={handleSubtopicClick}
+                  onStartQuiz={handleStartQuiz}
+                  getTopicContent={getTopicContent}
+                  onStartTopicQuiz={handleStartTopicQuiz}
+                  onStartTopicMatching={handleStartTopicMatching}
+                />
               );
             })}
           </div>
