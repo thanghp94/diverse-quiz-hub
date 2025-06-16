@@ -89,6 +89,11 @@ export interface IStorage {
   getStudentTryById(id: string): Promise<any>;
   getAllStudentTries(): Promise<any[]>;
   updateStudentTry(id: string, updates: any): Promise<any>;
+
+  // Learning Progress
+  getStudentLearningProgress(studentId: string): Promise<any[]>;
+  createLearningProgress(progress: any): Promise<any>;
+  updateLearningProgress(id: string, updates: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {

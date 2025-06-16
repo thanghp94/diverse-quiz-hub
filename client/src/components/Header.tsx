@@ -70,6 +70,12 @@ const Header = () => {
             Writing
           </button>
           <button 
+            onClick={() => setLocation('/learning-journey')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Learning Journey
+          </button>
+          <button 
             onClick={() => setLocation('/leaderboard')}
             className="text-white hover:text-white/80 transition-colors"
           >

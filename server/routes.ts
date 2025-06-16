@@ -562,6 +562,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Learning Progress API
+  app.get("/api/learning-progress/student/:studentId", async (req, res) => {
+    try {
+      const progress = await storage.getStudentLearningProgress(req.params.studentId);
+      res.json(progress);
+    } catch (error) {
+      console.error('Error fetching student learning progress:', error);
+      res.status(500).json({ error: 'Failed to fetch student learning progress' });
+    }
+  });
+
+  app.post("/api/learning-progress", async (req, res) => {
+    try {
+      const progress = await storage.createLearningProgress(req.body);
+      res.json(progress);
+    } catch (error) {
+      console.error('Error creating learning progress:', error);
+      res.status(500).json({ error: 'Failed to create learning progress' });
+    }
+  });
+
+  app.patch("/api/learning-progress/:id", async (req, res) => {
+    try {
+      const progress = await storage.updateLearningProgress(req.params.id, req.body);
+      res.json(progress);
+    } catch (error) {
+      console.error('Error updating learning progress:', error);
+      res.status(500).json({ error: 'Failed to update learning progress' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
