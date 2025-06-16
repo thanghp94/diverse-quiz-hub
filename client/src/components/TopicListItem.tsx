@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useContentImage } from "@/hooks/useContentImage";
 import { useTopicMatching } from "@/hooks/useTopicMatching";
 import { SubtopicMatchingButton } from "@/components/SubtopicMatchingButton";
+import { ParentTopicMatchingButton } from "@/components/ParentTopicMatchingButton";
 
 interface Topic {
   id: string;
@@ -156,6 +157,15 @@ export const TopicListItem = ({
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    {/* Show parent topic matching button if this is a parent topic (no parentid) */}
+                    {!topic.parentid && (
+                      <ParentTopicMatchingButton 
+                        parentTopicId={topic.id} 
+                        parentTopicName={topic.topic} 
+                        onStartTopicMatching={onStartTopicMatching} 
+                      />
+                    )}
+                    {/* Show individual topic matching button if this topic has its own activities */}
                     {hasMatchingActivities && (
                       <Button 
                         variant="ghost" 

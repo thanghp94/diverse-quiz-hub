@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Loader2, X, Shuffle, Play } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface MatchingListPopupProps {
   isOpen: boolean;
@@ -28,8 +29,35 @@ interface MatchingActivity {
   prompt6: string | null;
 }
 
+interface Topic {
+  id: string;
+  topic: string;
+  parentid: string | null;
+}
+
+interface MatchingActivityWithTopic extends MatchingActivity {
+  topicName?: string;
+  isFromSubtopic?: boolean;
+}
+
 const fetchMatchingByTopic = async (topicId: string): Promise<MatchingActivity[]> => {
   const response = await fetch(`/api/matching/topic/${topicId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch matching activities');
+  }
+  return response.json();
+};
+
+const fetchAllTopics = async (): Promise<Topic[]> => {
+  const response = await fetch('/api/topics');
+  if (!response.ok) {
+    throw new Error('Failed to fetch topics');
+  }
+  return response.json();
+};
+
+const fetchAllMatchingActivities = async (): Promise<MatchingActivity[]> => {
+  const response = await fetch('/api/matching');
   if (!response.ok) {
     throw new Error('Failed to fetch matching activities');
   }
@@ -43,11 +71,59 @@ export const MatchingListPopup = ({
   topicName, 
   onSelectMatching 
 }: MatchingListPopupProps) => {
-  const { data: matchingActivities, isLoading, error } = useQuery({
+  // Fetch all data needed for hierarchical matching
+  const { data: allTopics } = useQuery({
+    queryKey: ['topics'],
+    queryFn: fetchAllTopics,
+    enabled: isOpen,
+  });
+
+  const { data: allMatchingActivities } = useQuery({
+    queryKey: ['matching'],
+    queryFn: fetchAllMatchingActivities,
+    enabled: isOpen,
+  });
+
+  const { data: directMatchingActivities, isLoading, error } = useQuery({
     queryKey: ['matchingByTopic', topicId],
     queryFn: () => fetchMatchingByTopic(topicId),
     enabled: isOpen && !!topicId,
   });
+
+  // Check if this is a parent topic (no parentid)
+  const currentTopic = allTopics?.find(topic => topic.id === topicId);
+  const isParentTopic = currentTopic && !currentTopic.parentid;
+
+  // Get hierarchical matching activities for parent topics
+  const hierarchicalMatchingActivities: MatchingActivityWithTopic[] = React.useMemo(() => {
+    if (!isParentTopic || !allTopics || !allMatchingActivities) {
+      return directMatchingActivities?.map(activity => ({ ...activity, isFromSubtopic: false })) || [];
+    }
+
+    // Get all subtopics under this parent
+    const subtopics = allTopics.filter(topic => topic.parentid === topicId);
+    const subtopicIds = subtopics.map(topic => topic.id);
+    
+    // Include the parent topic itself
+    const allRelevantTopicIds = [topicId, ...subtopicIds];
+    
+    // Get all matching activities for parent and subtopics
+    const relevantActivities = allMatchingActivities.filter(activity => 
+      activity.topicid && allRelevantTopicIds.includes(activity.topicid)
+    );
+
+    // Add topic name information to each activity
+    return relevantActivities.map(activity => {
+      const activityTopic = allTopics.find(topic => topic.id === activity.topicid);
+      return {
+        ...activity,
+        topicName: activityTopic?.topic,
+        isFromSubtopic: activity.topicid !== topicId
+      };
+    });
+  }, [isParentTopic, allTopics, allMatchingActivities, directMatchingActivities, topicId]);
+
+  const matchingActivities = hierarchicalMatchingActivities;
 
   const handleMatchingClick = (activity: MatchingActivity) => {
     onSelectMatching(activity.id, activity.topic || 'Matching Activity');
@@ -101,10 +177,19 @@ export const MatchingListPopup = ({
                   onClick={() => handleMatchingClick(activity)}
                 >
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center justify-between">
-                      <span className="truncate">{activity.topic || 'Untitled Activity'}</span>
-                      <Play className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                    </CardTitle>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <CardTitle className="text-lg flex items-center gap-2 mb-2">
+                          <span className="truncate">{activity.topic || 'Untitled Activity'}</span>
+                          <Play className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                        </CardTitle>
+                        {activity.isFromSubtopic && activity.topicName && (
+                          <Badge variant="secondary" className="text-xs">
+                            From: {activity.topicName}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
