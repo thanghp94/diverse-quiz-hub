@@ -191,20 +191,26 @@ export class DatabaseStorage implements IStorage {
   async getQuestions(contentId?: string, topicId?: string, level?: string) {
     try {
       let query = db.select().from(questions);
+      let conditions = [];
 
       if (contentId) {
-        query = query.where(eq(questions.contentid, contentId));
+        conditions.push(eq(questions.contentid, contentId));
       }
 
       if (topicId) {
-        query = query.where(eq(questions.topicid, topicId));
+        conditions.push(eq(questions.topicid, topicId));
       }
 
       // Add level filtering if provided
       if (level && level !== 'Overview') {
         // Handle case-insensitive level matching
         const dbLevel = level.toLowerCase();
-        query = query.where(sql`LOWER(${questions.questionlevel}) = ${dbLevel}`);
+        conditions.push(sql`LOWER(${questions.questionlevel}) = ${dbLevel}`);
+      }
+
+      // Apply all conditions with AND logic
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
       }
 
       const result = await query;
