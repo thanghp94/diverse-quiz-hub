@@ -125,6 +125,8 @@ const TopicContentWithMatching = ({
   onContentClick: (info: { content: Content; contextList: Content[] }) => void;
   onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
 }) => {
+  const [expandedMatching, setExpandedMatching] = React.useState<string | null>(null);
+
   // Fetch matching activities for this topic
   const { data: matchingActivities } = useQuery({
     queryKey: ['matchingByTopic', topicId],
@@ -245,45 +247,54 @@ const TopicContentWithMatching = ({
         </div>
       )}
       
-      {/* Grouped content by matching activities - show as expandable cards */}
+      {/* Matching activity cards in 2-column layout */}
       {organizedContent.grouped.length > 0 && (
         <div className="space-y-4 mt-4">
-          {organizedContent.grouped.map(({ matching, content }) => (
-            <Collapsible key={matching.id} className="w-full">
-              <CollapsibleTrigger asChild>
-                <div className="cursor-pointer bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-4 w-full">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-blue-500/20 p-2 rounded-lg border border-blue-400/30">
-                        <Shuffle className="h-5 w-5 text-blue-300" />
-                      </div>
-                      <div>
-                        <h5 className="text-white/90 font-medium text-lg">
-                          {matching.topic || matching.description || 'Matching Activity'}
-                        </h5>
-                        <p className="text-white/60 text-sm">
-                          Click to view {content.length} content item{content.length !== 1 ? 's' : ''}
-                        </p>
-                      </div>
+          <div className="grid grid-cols-2 gap-3">
+            {organizedContent.grouped.map(({ matching, content }) => (
+              <div
+                key={matching.id}
+                className="cursor-pointer bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3"
+                onClick={() => setExpandedMatching(expandedMatching === matching.id ? null : matching.id)}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-blue-500/20 p-2 rounded-lg border border-blue-400/30">
+                      <Shuffle className="h-4 w-4 text-blue-300" />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="border-blue-300/30 text-blue-200 text-xs">
-                        Matching
-                      </Badge>
-                      <ChevronDown className="h-5 w-5 text-white/80 transition-transform duration-200" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-center gap-2 mb-1">
+                        <h4 className="text-white/90 text-base font-medium leading-tight text-center">
+                          {matching.topic || matching.description || 'Matching Activity'}
+                        </h4>
+                      </div>
+                      <p className="text-white/60 text-sm text-center">
+                        {content.length} content item{content.length !== 1 ? 's' : ''}
+                      </p>
+                      <div className="flex justify-center mt-2">
+                        <Badge variant="outline" className="border-blue-300/30 text-blue-200 text-xs">
+                          Matching
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2">
-                <div className="grid grid-cols-2 gap-3 pl-6">
-                  {content.map(contentItem => (
+              </div>
+            ))}
+          </div>
+          
+          {/* Expanded content for selected matching activity */}
+          {expandedMatching && organizedContent.grouped.find(g => g.matching.id === expandedMatching) && (
+            <div className="mt-4">
+              <div className="grid grid-cols-2 gap-3">
+                {organizedContent.grouped
+                  .find(g => g.matching.id === expandedMatching)
+                  ?.content.map(contentItem => (
                     <ContentCard key={contentItem.id} content={contentItem} />
                   ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
