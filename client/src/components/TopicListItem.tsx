@@ -150,10 +150,10 @@ export const TopicListItem = ({
           </div>
           
           {isExpanded && (
-            <div className="px-3 pb-3 pt-0">
-              <div className="space-y-2">
+            <div className="px-3 pb-3 pt-1">
+              <div className="space-y-1">
                 {topicContent.length > 0 && (
-                  <div className="mb-3">
+                  <div className="mb-1">
                     <Collapsible open={openContent.includes(`topic-${topic.id}`)} onOpenChange={() => onToggleContent(`topic-${topic.id}`)}>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" className="w-full justify-between text-white/90 hover:bg-white/5 p-2">
