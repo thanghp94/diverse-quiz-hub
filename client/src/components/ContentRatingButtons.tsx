@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { useQuery } from '@tanstack/react-query';
 import { ThumbsDown, ThumbsUp } from 'lucide-react';
 
 interface ContentRatingButtonsProps {
@@ -28,6 +29,19 @@ export const ContentRatingButtons = ({
     ? JSON.parse(localStorage.getItem('currentUser')!).id 
     : 'GV0002'); // Default demo student
 
+  // Fetch existing rating for this user and content
+  const { data: existingRating } = useQuery<{ rating: string }>({
+    queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`],
+    enabled: !!effectiveStudentId && !!contentId,
+  });
+
+  // Update current rating when existing rating is fetched
+  useEffect(() => {
+    if (existingRating?.rating && !currentRating) {
+      setCurrentRating(existingRating.rating);
+    }
+  }, [existingRating?.rating, currentRating]);
+
   const handleRating = async (rating: string) => {
     if (isSubmitting) return;
     
@@ -43,6 +57,14 @@ export const ContentRatingButtons = ({
       
       setCurrentRating(rating);
       onRatingChange?.(rating);
+      
+      // Invalidate queries to refresh the cache
+      queryClient.invalidateQueries({ 
+        queryKey: [`/api/content-ratings/${effectiveStudentId}/${contentId}`] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: [`/api/content-ratings/stats/${contentId}`] 
+      });
       
       const ratingText = rating === 'really_bad' ? 'Really Hard' : 
                         rating === 'normal' ? 'Normal' : 'Easy';
