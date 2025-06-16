@@ -72,7 +72,7 @@ export class DatabaseStorage implements IStorage {
         sql`${topics.parentid} IS NULL 
         AND ${topics.topic} IS NOT NULL 
         AND ${topics.topic} != ''
-        AND ${topics.topic} NOT IN ('Art', 'Bowl', 'Challenge', 'Debate', 'Literature', 'Media', 'Music', 'Science and Technology', 'Social Studies', 'Special areas', 'Teaching lesson', 'Writing')`
+        AND ${topics.topic} NOT IN ('Art', 'Bowl', 'Challenge', 'Debate', 'History', 'Literature', 'Media', 'Music', 'Science and Technology', 'Social Studies', 'Special areas', 'Teaching lesson', 'Writing')`
       )
       .orderBy(asc(topics.topic));
   }
