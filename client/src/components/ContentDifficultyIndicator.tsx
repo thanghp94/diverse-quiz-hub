@@ -84,10 +84,6 @@ export const CompactContentDifficultyIndicator = ({ contentId, className = "" }:
 
   const ratingStats: RatingStats = stats || { easy: 0, normal: 0, hard: 0 };
   
-  if (ratingStats.easy === 0 && ratingStats.normal === 0 && ratingStats.hard === 0) {
-    return null;
-  }
-
   const total = ratingStats.easy + ratingStats.normal + ratingStats.hard;
   const predominantDifficulty = 
     ratingStats.hard > ratingStats.normal && ratingStats.hard > ratingStats.easy ? 'hard' :
@@ -125,12 +121,19 @@ export const CompactContentDifficultyIndicator = ({ contentId, className = "" }:
     }
   };
 
+  if (total === 0) {
+    return <ContentRatingButtons contentId={contentId} compact={true} />;
+  }
+
   const config = getDifficultyConfig(predominantDifficulty);
 
   return (
-    <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs ${config.bgColor} ${config.textColor} ${config.borderColor} border ${className}`}>
-      {config.icon}
-      <span className="font-medium">{config.label}</span>
+    <div className="flex items-center gap-2">
+      <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs ${config.bgColor} ${config.textColor} ${config.borderColor} border ${className}`}>
+        {config.icon}
+        <span className="font-medium">{config.label}</span>
+      </div>
+      <ContentRatingButtons contentId={contentId} compact={true} />
     </div>
   );
 };

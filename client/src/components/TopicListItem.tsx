@@ -235,6 +235,9 @@ export const TopicListItem = ({
                                 </div>
                                 <h4 className="text-white/90 text-base font-medium leading-tight mb-2">{content.title}</h4>
                                 {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+                                <div className="mt-2">
+                                  <CompactContentDifficultyIndicator contentId={content.id} />
+                                </div>
                               </div>
                             </div>
                           </div>
