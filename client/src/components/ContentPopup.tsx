@@ -76,40 +76,23 @@ const ContentPopup = ({
             assignmentStudentTryId={assignmentTry.id.toString()}
           />
         ) : (
-          <div className="flex flex-col lg:flex-row lg:h-[600px]">
-            {/* Left content column */}
-            <div className="flex-1 lg:w-1/2 lg:pr-4 flex flex-col">
-              <DialogHeader className="flex-shrink-0">
-                <DialogTitle className="text-2xl font-bold text-blue-600">
-                  {content.title}
-                </DialogTitle>
-                <DialogDescription className="whitespace-pre-line">
-                  {content.short_description || "Detailed content view."}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="flex-1 overflow-y-auto lg:max-h-[500px]">
-                <ContentPopupView
-                    content={content}
-                    contentListLength={contentList.length}
-                    currentIndex={currentIndex}
-                    handlePrevious={handlePrevious}
-                    handleNext={handleNext}
-                    startQuiz={startQuiz}
-                    imageUrl={imageUrl}
-                    isImageLoading={isImageLoading}
-                    videoEmbedUrl={videoEmbedUrl}
-                    video2EmbedUrl={video2EmbedUrl}
-                    videoData={videoData}
-                    video2Data={video2Data}
-                    hideMediaDisplay={true}
-                />
+          <>
+            {/* Header with title, description and image */}
+            <div className="flex flex-col lg:flex-row lg:gap-6 mb-6">
+              {/* Left: Title and Description */}
+              <div className="flex-1 lg:w-1/2">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-blue-600">
+                    {content.title}
+                  </DialogTitle>
+                  <DialogDescription className="whitespace-pre-line">
+                    {content.short_description || "Detailed content view."}
+                  </DialogDescription>
+                </DialogHeader>
               </div>
-            </div>
 
-            {/* Right image column */}
-            <div className="lg:w-1/2 lg:pl-4 mt-6 lg:mt-0">
-              <div className="h-64 lg:h-full">
+              {/* Right: Image */}
+              <div className="flex-1 lg:w-1/2 mt-4 lg:mt-0">
                 <MediaDisplay
                   imageUrl={imageUrl}
                   isImageLoading={isImageLoading}
@@ -119,7 +102,24 @@ const ContentPopup = ({
                 />
               </div>
             </div>
-          </div>
+
+            {/* Content below */}
+            <ContentPopupView
+                content={content}
+                contentListLength={contentList.length}
+                currentIndex={currentIndex}
+                handlePrevious={handlePrevious}
+                handleNext={handleNext}
+                startQuiz={startQuiz}
+                imageUrl={imageUrl}
+                isImageLoading={isImageLoading}
+                videoEmbedUrl={videoEmbedUrl}
+                video2EmbedUrl={video2EmbedUrl}
+                videoData={videoData}
+                video2Data={video2Data}
+                hideMediaDisplay={true}
+            />
+          </>
         )}
       </DialogContent>
     </Dialog>;
