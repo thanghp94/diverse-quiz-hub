@@ -235,7 +235,7 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
                           ? 'text-green-700 bg-green-200 border-green-300'
                           : isIncorrect
                           ? 'text-red-700 bg-red-200 border-red-300'
-                          : 'text-green-700 bg-green-200 border-green-300'
+                          : 'text-blue-700 bg-blue-200 border-blue-300'
                       }`}>
                         <span>Matched with:</span>
                         {isImageItem(matchedLeft) ? (
@@ -270,13 +270,20 @@ const Matching = ({ question, onAnswer, studentTryId }: MatchingProps) => {
         </div>
         
         {!isSubmitted ? (
-          <Button 
-            onClick={handleSubmit}
-            disabled={!isComplete || isSubmitting}
-            className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50 mt-4"
-          >
-            {isSubmitting ? 'Submitting...' : 'Submit Matches'}
-          </Button>
+          <div className="mt-4 space-y-2">
+            <Button 
+              onClick={handleSubmit}
+              disabled={isSubmitting || Object.keys(matches).length === 0}
+              className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white py-3 text-lg disabled:opacity-50"
+            >
+              {isSubmitting ? 'Checking...' : 'Check Result'}
+            </Button>
+            {Object.keys(matches).length > 0 && (
+              <div className="text-center text-sm text-gray-600">
+                {Object.keys(matches).length} of {leftItems.length} items matched
+              </div>
+            )}
+          </div>
         ) : (
           <div className="mt-4 space-y-2">
             <div className="text-center">
