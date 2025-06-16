@@ -3,7 +3,7 @@ import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, BookOpen, Play, HelpCircle } from "lucide-react";
+import { ChevronDown, BookOpen, Play, HelpCircle, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -40,6 +40,7 @@ interface TopicListItemProps {
     onStartQuiz: (content: Content, contextList: Content[]) => void;
     getTopicContent: (topicId: string) => Content[];
     onStartTopicQuiz: (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => void;
+    onStartTopicMatching: (topicId: string, topicName: string) => void;
 }
 
 const getContentIcon = (content: any) => {
@@ -99,7 +100,8 @@ export const TopicListItem = ({
     onSubtopicClick,
     onStartQuiz,
     getTopicContent,
-    onStartTopicQuiz
+    onStartTopicQuiz,
+    onStartTopicMatching
 }: TopicListItemProps) => {
     let topicImageUrl: string | undefined | null = null;
     if (allImages && topicContent.length > 0) {
@@ -144,6 +146,18 @@ export const TopicListItem = ({
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStartTopicMatching(topic.id, topic.topic);
+                      }}
+                    >
+                      <Shuffle className="h-5 w-5" />
+                      <span className="sr-only">Start Matching for {topic.topic}</span>
+                    </Button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">

@@ -40,6 +40,10 @@ const Topics = () => {
     level: 'Overview' | 'Easy' | 'Hard';
     topicName: string;
   } | null>(null);
+  const [topicMatchingInfo, setTopicMatchingInfo] = useState<{
+    topicId: string;
+    topicName: string;
+  } | null>(null);
 
   // Parse URL parameters
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
@@ -161,6 +165,13 @@ const Topics = () => {
     setTopicQuizInfo(null);
   }, []);
 
+  const handleStartTopicMatching = (topicId: string, topicName: string) => {
+    setTopicMatchingInfo({ topicId, topicName });
+  };
+  const closeTopicMatching = useCallback(() => {
+    setTopicMatchingInfo(null);
+  }, []);
+
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
     return allTopics.filter(topic => topic.parentid === parentId).sort((a, b) => a.topic.localeCompare(b.topic));
@@ -249,6 +260,7 @@ const Topics = () => {
                     onStartQuiz={handleStartQuiz}
                     getTopicContent={getTopicContent}
                     onStartTopicQuiz={handleStartTopicQuiz}
+                    onStartTopicMatching={handleStartTopicMatching}
                   />
                 );
               })}
