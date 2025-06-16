@@ -51,6 +51,7 @@ export const ContentPopupView = ({
         handleNext={handleNext}
         startQuiz={startQuiz}
         translation={content.translation}
+        contentId={content.id}
       />
 
       {!hideMediaDisplay && (
@@ -70,14 +71,6 @@ export const ContentPopupView = ({
       />
 
       <ContentBody content={content} />
-      
-      {/* Content Rating Section */}
-      <div className="border-t pt-4">
-        <ContentRatingButtons
-          contentId={content.id}
-          studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'anonymous'}
-        />
-      </div>
     </div>
   );
 };

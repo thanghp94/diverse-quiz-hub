@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import SharedNav from "@/components/SharedNav";
+import Header from "@/components/Header";
 import { WritingJournal } from "@/components/WritingJournal";
 import { WritingTopicSelection } from "@/components/WritingTopicSelection";
 import { StructuredEssayWriter } from "@/components/StructuredEssayWriter";
@@ -64,9 +64,9 @@ const WritingPage = () => {
 
     if (!currentUser) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
-                <div className="max-w-7xl mx-auto">
-                    <SharedNav />
+            <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 text-white">
+                <Header />
+                <div className="container mx-auto p-4 md:p-8">
                     <div className="text-center">
                         <h1 className="text-3xl font-bold text-white mb-3">Writing</h1>
                         <p className="text-lg text-white/80">Please log in to access the writing system.</p>
