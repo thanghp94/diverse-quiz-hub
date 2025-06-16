@@ -56,7 +56,7 @@ async function importCSVQuestions() {
     await clearExistingQuestions();
     
     // Read the CSV file
-    const csvContent = readFileSync('attached_assets/Question (3)_1750062204084.csv', 'utf-8');
+    const csvContent = readFileSync('attached_assets/Question (3)_1750063608692.csv', 'utf-8');
     
     // Parse CSV data
     const records = parseCSV(csvContent);
@@ -71,29 +71,26 @@ async function importCSVQuestions() {
       try {
         // Map CSV fields to database schema
         const questionData = {
-          id: record.id,
-          noi_dung: record.noi_dung,
-          cau_tra_loi_1: record.cau_tra_loi_1,
-          cau_tra_loi_2: record.cau_tra_loi_2,
-          cau_tra_loi_3: record.cau_tra_loi_3,
-          cau_tra_loi_4: record.cau_tra_loi_4,
-          correct_choice: record.correct_choice,
-          explanation: record.explanation,
-          contentid: record.contentid,
-          // Additional fields from CSV
-          topic: record.topic,
-          questionlevel: record.questionlevel,
-          question_type: record.question_type,
-          video: record.video,
-          picture: record.picture,
-          writing_choice: record.writing_choice,
-          time: record.time,
-          questionorder: record.questionorder,
-          translation: record.translation,
-          update: record.update,
-          tg_tao: record.tg_tao,
-          answer: record.answer,
-          randomorder: record.randomorder
+          id: record.id || null,
+          topic: record.topic || null,
+          randomorder: record.randomorder || null,
+          questionlevel: record.questionlevel || null,
+          contentid: record.contentid || null,
+          question_type: record.question_type || null,
+          noi_dung: record.noi_dung || null,
+          video: record.video || null,
+          picture: record.picture || null,
+          cau_tra_loi_1: record.cau_tra_loi_1 || null,
+          cau_tra_loi_2: record.cau_tra_loi_2 || null,
+          cau_tra_loi_3: record.cau_tra_loi_3 || null,
+          cau_tra_loi_4: record.cau_tra_loi_4 || null,
+          correct_choice: record.correct_choice || null,
+          writing_choice: record.writing_choice || null,
+          time: record.time || null,
+          explanation: record.explanation || null,
+          questionorder: record.questionorder || null,
+          tg_tao: record.tg_tao || null,
+          answer: record.answer || null
         };
         
         // Insert into the database
