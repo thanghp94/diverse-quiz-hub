@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useContentImage } from "@/hooks/useContentImage";
+import { useContentMedia } from "@/hooks/useContentMedia";
 import { useTopicMatching } from "@/hooks/useTopicMatching";
 import { SubtopicMatchingButton } from "@/components/SubtopicMatchingButton";
 import { ParentTopicMatchingButton } from "@/components/ParentTopicMatchingButton";
@@ -211,55 +212,134 @@ const TopicContentWithMatching = ({
     return { ungrouped, grouped };
   }, [matchingActivities, topicContent, topicId]);
 
-  const ContentCard = ({ content }: { content: Content }) => (
-    <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div
-          onClick={() => onContentClick({
-            content,
-            contextList: topicContent
-          })}
-          className="flex-grow cursor-pointer"
-        >
-          <div className="flex items-center gap-2">
-            <ContentThumbnail content={content} />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <h4 className="text-white/90 text-base font-medium leading-tight text-center">{content.title}</h4>
-                <div className="flex items-center gap-2">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
-                        Quiz
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Easy Quiz clicked for content:', content.id, content.title);
-                        onStartQuiz(content, topicContent, 'Easy');
-                      }}>
-                        Easy Quiz
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e) => {
-                        e.stopPropagation();
-                        console.log('Hard Quiz clicked for content:', content.id, content.title);
-                        onStartQuiz(content, topicContent, 'Hard');
-                      }}>
-                        Hard Quiz
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+  const ContentCard = ({ content }: { content: Content }) => {
+    const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
+    const [videoPopupOpen, setVideoPopupOpen] = useState(false);
+    
+    const hasVideo1 = videoEmbedUrl && videoData;
+    const hasVideo2 = video2EmbedUrl && video2Data;
+    
+    return (
+      <>
+        <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+          <div className="flex items-start justify-between gap-2">
+            <div
+              onClick={() => onContentClick({
+                content,
+                contextList: topicContent
+              })}
+              className="flex-grow cursor-pointer"
+            >
+              <div className="flex items-center gap-2">
+                <ContentThumbnail content={content} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <h4 className="text-white/90 text-base font-medium leading-tight text-center">{content.title}</h4>
+                    <div className="flex items-center gap-2">
+                      {(hasVideo1 || hasVideo2) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setVideoPopupOpen(true);
+                          }}
+                        >
+                          <Play className="h-3 w-3 mr-1" />
+                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                        </Button>
+                      )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                            Quiz
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Easy Quiz clicked for content:', content.id, content.title);
+                            onStartQuiz(content, topicContent, 'Easy');
+                          }}>
+                            Easy Quiz
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Hard Quiz clicked for content:', content.id, content.title);
+                            onStartQuiz(content, topicContent, 'Hard');
+                          }}>
+                            Hard Quiz
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                  {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+                  <CompactContentDifficultyIndicator contentId={content.id} />
                 </div>
               </div>
-              {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
-              <CompactContentDifficultyIndicator contentId={content.id} />
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
+        
+        {/* Video Popup */}
+        {videoPopupOpen && (
+          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-6xl max-h-[90vh] bg-gray-900 rounded-lg overflow-hidden">
+              <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                <h3 className="text-white text-lg font-medium">{content.title}</h3>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={() => setVideoPopupOpen(false)}
+                  className="text-white hover:bg-white/20"
+                >
+                  ×
+                </Button>
+              </div>
+              <div className="p-4 space-y-4 max-h-[calc(90vh-80px)] overflow-y-auto">
+                {hasVideo1 && (
+                  <div>
+                    {videoData.video_name && (
+                      <h4 className="text-white font-medium mb-2">{videoData.video_name}</h4>
+                    )}
+                    <div className="aspect-video">
+                      <iframe 
+                        className="w-full h-full rounded-lg" 
+                        src={videoEmbedUrl} 
+                        title={videoData.video_name || 'Video 1'} 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+                {hasVideo2 && (
+                  <div>
+                    {video2Data.video_name && (
+                      <h4 className="text-white font-medium mb-2">{video2Data.video_name}</h4>
+                    )}
+                    <div className="aspect-video">
+                      <iframe 
+                        className="w-full h-full rounded-lg" 
+                        src={video2EmbedUrl} 
+                        title={video2Data.video_name || 'Video 2'} 
+                        frameBorder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="space-y-4">
@@ -539,61 +619,150 @@ export const TopicListItem = ({
 
                             {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
                               <div className="mt-3 grid grid-cols-2 gap-3">
-                                {subtopicContent.map(content => (
-                                  <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div
-                                        onClick={() => onContentClick({
-                                          content,
-                                          contextList: subtopicContent
-                                        })}
-                                        className="flex-grow cursor-pointer"
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <ContentThumbnail content={content} />
-                                          <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between gap-2 mb-2">
-                                              <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
+                                {subtopicContent.map(content => {
+                                  const SubtopicContentCard = () => {
+                                    const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
+                                    const [videoPopupOpen, setVideoPopupOpen] = useState(false);
+                                    
+                                    const hasVideo1 = videoEmbedUrl && videoData;
+                                    const hasVideo2 = video2EmbedUrl && video2Data;
+                                    
+                                    return (
+                                      <>
+                                        <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                          <div className="flex items-start justify-between gap-2">
+                                            <div
+                                              onClick={() => onContentClick({
+                                                content,
+                                                contextList: subtopicContent
+                                              })}
+                                              className="flex-grow cursor-pointer"
+                                            >
                                               <div className="flex items-center gap-2">
-                                                <ContentRatingButtons 
-                                                  key={`${content.id}-rating`}
-                                                  contentId={content.id}
-                                                  compact={true}
-                                                  studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                <ContentThumbnail 
+                                                  content={content} 
+                                                  onClick={() => onContentClick({
+                                                    content,
+                                                    contextList: subtopicContent
+                                                  })}
                                                 />
-                                                <DropdownMenu>
-                                                  <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
-                                                      Quiz
-                                                    </Button>
-                                                  </DropdownMenuTrigger>
-                                                  <DropdownMenuContent>
-                                                    <DropdownMenuItem onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      console.log('Easy Quiz clicked for subtopic content:', content.id, content.title);
-                                                      onStartQuiz(content, subtopicContent, 'Easy');
-                                                    }}>
-                                                      Easy Quiz
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      console.log('Hard Quiz clicked for subtopic content:', content.id, content.title);
-                                                      onStartQuiz(content, subtopicContent, 'Hard');
-                                                    }}>
-                                                      Hard Quiz
-                                                    </DropdownMenuItem>
-                                                  </DropdownMenuContent>
-                                                </DropdownMenu>
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center justify-between gap-2 mb-2">
+                                                    <h4 className="text-white/90 text-base font-medium leading-tight">{content.title}</h4>
+                                                    <div className="flex items-center gap-2">
+                                                      {(hasVideo1 || hasVideo2) && (
+                                                        <Button 
+                                                          variant="outline" 
+                                                          size="sm" 
+                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setVideoPopupOpen(true);
+                                                          }}
+                                                        >
+                                                          <Play className="h-3 w-3 mr-1" />
+                                                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                        </Button>
+                                                      )}
+                                                      <ContentRatingButtons 
+                                                        key={`${content.id}-rating`}
+                                                        contentId={content.id}
+                                                        compact={true}
+                                                        studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                      />
+                                                      <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                            Quiz
+                                                          </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                          <DropdownMenuItem onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            console.log('Easy Quiz clicked for subtopic content:', content.id, content.title);
+                                                            onStartQuiz(content, subtopicContent, 'Easy');
+                                                          }}>
+                                                            Easy Quiz
+                                                          </DropdownMenuItem>
+                                                          <DropdownMenuItem onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            console.log('Hard Quiz clicked for subtopic content:', content.id, content.title);
+                                                            onStartQuiz(content, subtopicContent, 'Hard');
+                                                          }}>
+                                                            Hard Quiz
+                                                          </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                      </DropdownMenu>
+                                                    </div>
+                                                  </div>
+                                                  <CompactContentDifficultyIndicator contentId={content.id} />
+                                                  {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+                                                </div>
                                               </div>
                                             </div>
-                                            <CompactContentDifficultyIndicator contentId={content.id} />
-                                            {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                           </div>
                                         </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
+                                        
+                                        {/* Video Popup */}
+                                        {videoPopupOpen && (
+                                          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
+                                            <div className="w-full max-w-6xl max-h-[90vh] bg-gray-900 rounded-lg overflow-hidden">
+                                              <div className="flex items-center justify-between p-4 border-b border-gray-700">
+                                                <h3 className="text-white text-lg font-medium">{content.title}</h3>
+                                                <Button 
+                                                  variant="ghost" 
+                                                  size="icon"
+                                                  onClick={() => setVideoPopupOpen(false)}
+                                                  className="text-white hover:bg-white/20"
+                                                >
+                                                  ×
+                                                </Button>
+                                              </div>
+                                              <div className="p-4 space-y-4 max-h-[calc(90vh-80px)] overflow-y-auto">
+                                                {hasVideo1 && (
+                                                  <div>
+                                                    {videoData.video_name && (
+                                                      <h4 className="text-white font-medium mb-2">{videoData.video_name}</h4>
+                                                    )}
+                                                    <div className="aspect-video">
+                                                      <iframe 
+                                                        className="w-full h-full rounded-lg" 
+                                                        src={videoEmbedUrl} 
+                                                        title={videoData.video_name || 'Video 1'} 
+                                                        frameBorder="0" 
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                        allowFullScreen
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                                {hasVideo2 && (
+                                                  <div>
+                                                    {video2Data.video_name && (
+                                                      <h4 className="text-white font-medium mb-2">{video2Data.video_name}</h4>
+                                                    )}
+                                                    <div className="aspect-video">
+                                                      <iframe 
+                                                        className="w-full h-full rounded-lg" 
+                                                        src={video2EmbedUrl} 
+                                                        title={video2Data.video_name || 'Video 2'} 
+                                                        frameBorder="0" 
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                        allowFullScreen
+                                                      />
+                                                    </div>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  };
+                                  
+                                  return <SubtopicContentCard key={content.id} />;
+                                })}
                               </div>
                             )}
                           </div>
