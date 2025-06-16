@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useContentImage } from "@/hooks/useContentImage";
+import { useTopicMatching } from "@/hooks/useTopicMatching";
 
 interface Topic {
   id: string;
@@ -103,6 +104,8 @@ export const TopicListItem = ({
     onStartTopicQuiz,
     onStartTopicMatching
 }: TopicListItemProps) => {
+    const { hasMatchingActivities } = useTopicMatching(topic.id);
+    
     let topicImageUrl: string | undefined | null = null;
     if (allImages && topicContent.length > 0) {
       for (const content of topicContent) {
@@ -146,18 +149,20 @@ export const TopicListItem = ({
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onStartTopicMatching(topic.id, topic.topic);
-                      }}
-                    >
-                      <Shuffle className="h-5 w-5" />
-                      <span className="sr-only">Start Matching for {topic.topic}</span>
-                    </Button>
+                    {hasMatchingActivities && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onStartTopicMatching(topic.id, topic.topic);
+                        }}
+                      >
+                        <Shuffle className="h-5 w-5" />
+                        <span className="sr-only">Start Matching for {topic.topic}</span>
+                      </Button>
+                    )}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
