@@ -211,7 +211,7 @@ const AssignmentPage: React.FC = () => {
     // Create assignment student try
     const studentTryData = {
       assignmentid: assignment.id,
-      hocsinh_id: currentUser.id,
+      hocsinh_id: currentUser.id, // This will use the actual logged-in user ID
       contentid: contentIds.join(','),
       questionids: JSON.stringify(selectedQuestionIds),
       start_time: new Date().toISOString(),
