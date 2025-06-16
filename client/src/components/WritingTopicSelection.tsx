@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Home } from 'lucide-react';
+import { Link } from 'wouter';
 
 interface WritingTopic {
   id: string;
@@ -99,18 +100,26 @@ export const WritingTopicSelection = ({ category, onBack, onTopicSelect }: Writi
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button 
-            variant="outline" 
-            onClick={onBack}
-            className="flex items-center gap-2"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back to topics
-          </Button>
-          <h1 className="text-3xl font-bold text-purple-600">
-            ✨ {getCategoryTitle(category)}
-          </h1>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              onClick={onBack}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back to Writing
+            </Button>
+            <h1 className="text-3xl font-bold text-purple-600">
+              {getCategoryTitle(category)}
+            </h1>
+          </div>
+          <Link href="/">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Home className="w-4 h-4" />
+              Back to Topics
+            </Button>
+          </Link>
         </div>
 
         {/* Topics Grid */}
