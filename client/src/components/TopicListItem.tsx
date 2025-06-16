@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ChevronDown, BookOpen, Play, HelpCircle, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
@@ -64,13 +65,26 @@ const ContentThumbnail = ({ content }: { content: any }) => {
   }
 
   return (
-    <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0">
-      <img 
-        src={imageUrl} 
-        alt={content.title} 
-        className="w-full h-full object-cover"
-      />
-    </div>
+    <Dialog>
+      <DialogTrigger asChild>
+        <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+          <img 
+            src={imageUrl} 
+            alt={content.title} 
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0">
+        <div className="relative w-full">
+          <img 
+            src={imageUrl} 
+            alt={content.title}
+            className="w-full h-auto max-h-[85vh] object-contain"
+          />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
