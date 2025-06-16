@@ -110,6 +110,20 @@ export const matching = pgTable("matching", {
   created_at: timestamp("created_at").defaultNow(),
 });
 
+export const videos = pgTable("video", {
+  id: text("id").primaryKey(),
+  topicid: text("topicid"),
+  contentid: text("contentid"),
+  videolink: text("videolink"),
+  videoupload: text("videoupload"),
+  showvideo: text("showvideo"),
+  video_name: text("video_name"),
+  description: text("description"),
+  first: text("first"),
+  second: text("second"),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export const assignment = pgTable("assignment", {
   id: text("id").primaryKey(),
   assignmentname: text("Assignmentname"),
@@ -180,6 +194,7 @@ export const insertContentSchema = createInsertSchema(content);
 export const insertImageSchema = createInsertSchema(images);
 export const insertQuestionSchema = createInsertSchema(questions);
 export const insertMatchingSchema = createInsertSchema(matching);
+export const insertVideoSchema = createInsertSchema(videos);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -188,3 +203,4 @@ export type Content = typeof content.$inferSelect;
 export type Image = typeof images.$inferSelect;
 export type Question = typeof questions.$inferSelect;
 export type Matching = typeof matching.$inferSelect;
+export type Video = typeof videos.$inferSelect;

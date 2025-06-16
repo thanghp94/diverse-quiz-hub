@@ -1,4 +1,4 @@
-import { users, topics, content, images, questions, matching, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching } from "@shared/schema";
+import { users, topics, content, images, questions, matching, videos, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, ne, asc, sql } from "drizzle-orm";
 
