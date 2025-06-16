@@ -1,6 +1,7 @@
 import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, ne, asc, sql, and, desc } from "drizzle-orm";
+import * as schema from "@shared/schema";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -190,32 +191,44 @@ export class DatabaseStorage implements IStorage {
   // Questions
   async getQuestions(contentId?: string, topicId?: string, level?: string) {
     try {
-      let query = db.select().from(questions);
-      let conditions = [];
+      let query = db.select().from(schema.questions);
+
+      const conditions = [];
 
       if (contentId) {
-        conditions.push(eq(questions.contentid, contentId));
+        conditions.push(eq(schema.questions.contentid, contentId));
       }
 
       if (topicId) {
-        conditions.push(eq(questions.topicid, topicId));
+        conditions.push(eq(schema.questions.topicid, topicId));
       }
 
-      // Add level filtering if provided
       if (level && level !== 'Overview') {
-        // Handle case-insensitive level matching
-        const dbLevel = level.toLowerCase();
-        conditions.push(sql`LOWER(${questions.questionlevel}) = ${dbLevel}`);
+        // For level filtering, use case-insensitive comparison and handle both exact match and partial match
+        const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
+        conditions.push(levelCondition);
       }
 
-      // Apply all conditions with AND logic
       if (conditions.length > 0) {
         query = query.where(and(...conditions));
       }
 
-      const result = await query;
-      console.log(`Found ${result.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level} (db level: ${level ? level.toLowerCase() : 'all'})`);
-      return result;
+      const questions = await query;
+
+      console.log(`Found ${questions.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level} (db level: ${level || 'all'})`);
+
+      // If we're filtering by level and got no results, let's check what levels are available
+      if (level && level !== 'Overview' && questions.length === 0 && (contentId || topicId)) {
+        const debugQuery = contentId 
+          ? db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId))
+          : db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.topicid, topicId!));
+
+        const availableLevels = await debugQuery;
+        const uniqueLevels = [...new Set(availableLevels.map(q => q.level).filter(Boolean))];
+        console.log(`No questions found for level "${level}". Available levels:`, uniqueLevels);
+      }
+
+      return questions;
     } catch (error) {
       console.error('Error fetching questions:', error);
       throw error;
