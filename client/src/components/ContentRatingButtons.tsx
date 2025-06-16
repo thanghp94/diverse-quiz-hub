@@ -71,14 +71,13 @@ export const ContentRatingButtons = ({
           size="sm"
           onClick={() => handleRating('really_bad')}
           disabled={isSubmitting}
-          className={`flex items-center gap-1 text-xs px-2 py-1 h-6 ${
+          className={`flex items-center justify-center w-6 h-6 p-0 ${
             currentRating === 'really_bad' 
               ? 'bg-red-500 hover:bg-red-600 text-white' 
               : 'hover:bg-red-50 hover:border-red-300'
           }`}
         >
-          <ThumbsDown className="w-2 h-2" />
-          Hard
+          <ThumbsDown className="w-3 h-3" />
         </Button>
         
         <Button
@@ -86,14 +85,13 @@ export const ContentRatingButtons = ({
           size="sm"
           onClick={() => handleRating('normal')}
           disabled={isSubmitting}
-          className={`flex items-center gap-1 text-xs px-2 py-1 h-6 ${
+          className={`flex items-center justify-center w-6 h-6 p-0 ${
             currentRating === 'normal' 
               ? 'bg-orange-500 hover:bg-orange-600 text-white' 
               : 'hover:bg-orange-50 hover:border-orange-300'
           }`}
         >
-          <Minus className="w-2 h-2" />
-          Normal
+          <Minus className="w-3 h-3" />
         </Button>
         
         <Button
@@ -101,14 +99,13 @@ export const ContentRatingButtons = ({
           size="sm"
           onClick={() => handleRating('ok')}
           disabled={isSubmitting}
-          className={`flex items-center gap-1 text-xs px-2 py-1 h-6 ${
+          className={`flex items-center justify-center w-6 h-6 p-0 ${
             currentRating === 'ok' 
               ? 'bg-green-500 hover:bg-green-600 text-white' 
               : 'hover:bg-green-50 hover:border-green-300'
           }`}
         >
-          <ThumbsUp className="w-2 h-2" />
-          Easy
+          <ThumbsUp className="w-3 h-3" />
         </Button>
       </div>
     );
