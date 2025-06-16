@@ -288,6 +288,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/content-ratings/stats/:contentId", async (req, res) => {
+    try {
+      const stats = await storage.getContentRatingStats(req.params.contentId);
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching content rating stats:', error);
+      res.status(500).json({ error: 'Failed to fetch content rating stats' });
+    }
+  });
+
   // Student Streaks API
   app.get("/api/streaks/:studentId", async (req, res) => {
     try {

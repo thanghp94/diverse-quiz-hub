@@ -1,4 +1,4 @@
-import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission } from "@shared/schema";
+import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, ne, asc, sql, and, desc } from "drizzle-orm";
 
@@ -512,63 +512,68 @@ export class DatabaseStorage implements IStorage {
   async createAssignment(assignment: any): Promise<any> {
     const assignmentData = {
       id: `assignment_${Date.now()}`,
-      topic_id: assignment.topic_id,
-      level: assignment.level,
-      question_ids: JSON.stringify(assignment.question_ids),
+      assignmentname: `Quiz - ${assignment.level}`,
+      topicid: assignment.topic_id,
+      question_id: JSON.stringify(assignment.question_ids),
+      noofquestion: assignment.question_ids.length,
+      testtype: assignment.level,
+      status: 'active',
       created_at: new Date()
     };
-    // For now, return the assignment data without database insertion
-    // This will be properly implemented when assignment table structure is finalized
-    return assignmentData;
+    
+    const result = await db.insert(assignment).values(assignmentData).returning();
+    return result[0];
   }
 
   async getAssignmentById(id: string): Promise<any> {
-    // Placeholder implementation - will be replaced with actual database query
-    return {
-      id,
-      topic_id: null,
-      level: null,
-      question_ids: null,
-      created_at: new Date()
-    };
+    const result = await db.select().from(assignment).where(eq(assignment.id, id));
+    return result[0] || null;
   }
 
   // Student Tries
   async createStudentTry(studentTry: any): Promise<any> {
-    const tryData = {
-      id: `try_${Date.now()}`,
-      assignment_id: studentTry.assignment_id,
-      student_id: studentTry.student_id,
-      level: studentTry.level,
-      started_at: new Date(),
-      completed_at: null,
-      score: null
+    // Create assignment_student_try record
+    const assignmentStudentTryData = {
+      assignmentid: studentTry.assignment_id,
+      hocsinh_id: studentTry.student_id,
+      questionids: JSON.stringify(studentTry.question_ids || []),
+      start_time: new Date().toISOString(),
+      typeoftaking: studentTry.level || 'Overview'
     };
-    // For now, return the try data without database insertion
-    // This will be properly implemented when student_try table structure is finalized
-    return tryData;
+    
+    const assignmentStudentTryResult = await db.insert(assignment_student_try)
+      .values(assignmentStudentTryData)
+      .returning();
+    
+    // Create student_try record
+    const studentTryData = {
+      id: `try_${Date.now()}`,
+      assignment_student_try_id: assignmentStudentTryResult[0].id.toString(),
+      assignment_id: studentTry.assignment_id,
+      hocsinh_id: studentTry.student_id,
+      started_at: new Date(),
+      level: studentTry.level || 'Overview'
+    };
+    
+    const studentTryResult = await db.insert(student_try).values(studentTryData).returning();
+    
+    return {
+      ...studentTryResult[0],
+      assignment_student_try_id: assignmentStudentTryResult[0].id
+    };
   }
 
   async getStudentTryById(id: string): Promise<any> {
-    // Placeholder implementation - will be replaced with actual database query
-    return {
-      id,
-      assignment_id: null,
-      student_id: null,
-      level: null,
-      started_at: new Date(),
-      completed_at: null,
-      score: null
-    };
+    const result = await db.select().from(student_try).where(eq(student_try.id, id));
+    return result[0] || null;
   }
 
   async updateStudentTry(id: string, updates: any): Promise<any> {
-    // Placeholder implementation - will be replaced with actual database query
-    return {
-      id,
-      ...updates,
-      updated_at: new Date()
-    };
+    const result = await db.update(student_try)
+      .set({ ...updates, updated_at: new Date() })
+      .where(eq(student_try.id, id))
+      .returning();
+    return result[0];
   }
 }
 

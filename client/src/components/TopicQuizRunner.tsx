@@ -88,7 +88,8 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
                 body: JSON.stringify({
                     assignment_id: assignment.id,
                     student_id: studentId,
-                    level: level
+                    level: level,
+                    question_ids: randomizedQuestionIds
                 })
             });
 
