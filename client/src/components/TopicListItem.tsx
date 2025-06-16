@@ -7,6 +7,7 @@ import { ChevronDown, BookOpen, Play, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useContentImage } from "@/hooks/useContentImage";
 
 interface Topic {
   id: string;
@@ -45,6 +46,26 @@ const getContentIcon = (content: any) => {
     if (content.videoid || content.videoid2) return <Play className="h-3 w-3" />;
     if (content.url) return <BookOpen className="h-3 w-3" />;
     return <BookOpen className="h-3 w-3" />;
+};
+
+// Component for content item thumbnail
+const ContentThumbnail = ({ content }: { content: any }) => {
+  const { data: imageUrl } = useContentImage(content.imageid);
+  
+  // Only show thumbnail if there's an imageid
+  if (!content.imageid || !imageUrl) {
+    return null;
+  }
+  
+  return (
+    <div className="w-12 h-8 rounded-md overflow-hidden flex-shrink-0">
+      <img 
+        src={imageUrl} 
+        alt={content.title} 
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
 };
 
 const getContentTypeColor = (content: any) => {
@@ -228,12 +249,17 @@ export const TopicListItem = ({
                                               className="flex-grow cursor-pointer"
                                             >
                                               <div className="flex items-center gap-2">
-                                                <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                                  {getContentIcon(content)}
-                                                </Badge>
-                                                <span className="text-white/90 text-xs">{content.title}</span>
+                                                <ContentThumbnail content={content} />
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-2">
+                                                    <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                                      {getContentIcon(content)}
+                                                    </Badge>
+                                                    <span className="text-white/90 text-xs">{content.title}</span>
+                                                  </div>
+                                                  {content.short_description && <p className="text-white/60 text-xs mt-1">{formatDescription(content.short_description)}</p>}
+                                                </div>
                                               </div>
-                                              {content.short_description && <p className="text-white/60 text-xs mt-1 ml-8">{formatDescription(content.short_description)}</p>}
                                             </div>
                                             <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={() => onStartQuiz(content, subtopicContent)}>
                                               <HelpCircle className="h-4 w-4" />
