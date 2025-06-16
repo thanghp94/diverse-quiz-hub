@@ -52,11 +52,11 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
             
             // Get current user from localStorage
             const currentUser = localStorage.getItem('currentUser');
-            const studentId = currentUser ? JSON.parse(currentUser).id : null;
+            const studentId = currentUser ? JSON.parse(currentUser).id : 'GV0002'; // Default fallback
             
             if (!studentId) {
                 toast({
-                    title: "Authentication Required",
+                    title: "Authentication Required", 
                     description: "Please log in to take quizzes.",
                     variant: "destructive",
                 });

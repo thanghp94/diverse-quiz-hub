@@ -70,7 +70,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
             setDidShowContent(false);
             setLinkedContent(null);
             setIsContentLoaded(false);
-            
+
             const questionId = questionIds[currentQuestionIndex];
             try {
                 const response = await fetch(`/api/questions/${questionId}`);
@@ -94,13 +94,13 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
 
         fetchQuestion();
     }, [currentQuestionIndex, questionIds, onQuizFinish, toast]);
-    
+
     const handleAnswerSelect = (choiceIndex: number) => {
         if (showFeedback || !currentQuestion) return;
 
         const choiceLetter = String.fromCharCode(65 + choiceIndex);
         setSelectedAnswer(choiceLetter);
-        
+
         const correct = choiceLetter === currentQuestion.correct_choice;
         setIsCorrect(correct);
         if (correct) {
@@ -152,13 +152,24 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
 
     const handleContentRating = async (rating: string) => {
         if (!contentId) return;
-        
+
         try {
+            // Get current user for tracking
+            const getCurrentUser = () => {
+                const storedUser = localStorage.getItem('currentUser');
+                if (storedUser) {
+                    return JSON.parse(storedUser);
+                }
+                // Fallback to a default user if no user is stored
+                return { id: 'GV0002', name: 'Default User' };
+            };
+
+            const currentUser = getCurrentUser();
             const response = await fetch('/api/content-ratings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    student_id: 'user-123-placeholder',
+                    student_id: currentUser.id,
                     content_id: contentId,
                     rating: rating
                 })
@@ -187,10 +198,21 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
 
         try {
             // Create new student_try record for each question response
+            const getCurrentUser = () => {
+                const storedUser = localStorage.getItem('currentUser');
+                if (storedUser) {
+                    return JSON.parse(storedUser);
+                }
+                // Fallback to a default user if no user is stored
+                return { id: 'GV0002', name: 'Default User' };
+            };
+
+            const currentUser = getCurrentUser();
+
             if (assignmentStudentTryId) {
                 const responseData = {
                     assignment_student_try_id: assignmentStudentTryId,
-                    hocsinh_id: 'user-123-placeholder',
+                    hocsinh_id: currentUser.id,
                     question_id: currentQuestion.id,
                     answer_choice: selectedAnswer,
                     correct_answer: currentQuestion.correct_choice,
@@ -282,7 +304,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                         })}
                     </div>
 
-                    
+
 
                     <div className="mt-6 flex justify-start">
                         <Button variant="outline" onClick={handleShowContent} disabled={isContentLoading || showFeedback}>

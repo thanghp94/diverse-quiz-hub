@@ -46,8 +46,17 @@ const AssignmentPage: React.FC = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Current user check - in a real app this would come from auth context
-  const currentUser = { id: 'GV0002', email: 'thanghuynh@meraki.edu.vn' };
+  // Get current user from localStorage or use default
+  const getCurrentUser = () => {
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      return JSON.parse(storedUser);
+    }
+    // Default fallback user
+    return { id: 'GV0002', email: 'thanghuynh@meraki.edu.vn' };
+  };
+  
+  const currentUser = getCurrentUser();
   const isTeacher = currentUser.id === 'GV0002' || currentUser.email === 'thanghuynh@meraki.edu.vn';
 
   // Fetch all assignments
