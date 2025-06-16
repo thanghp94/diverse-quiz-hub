@@ -435,10 +435,26 @@ export class DatabaseStorage implements IStorage {
     .limit(10);
 
     return {
-      totalPoints: totalPointsResult,
-      bestStreak: bestStreakResult,
-      todayQuizzes: todayQuizzesResult,
-      weeklyQuizzes: weeklyQuizzesResult
+      totalPoints: totalPointsResult.map(r => ({
+        student_id: r.student_id,
+        total_points: r.total_points,
+        full_name: r.full_name || undefined
+      })),
+      bestStreak: bestStreakResult.map(r => ({
+        student_id: r.student_id,
+        longest_streak: r.longest_streak || 0,
+        full_name: r.full_name || undefined
+      })),
+      todayQuizzes: todayQuizzesResult.map(r => ({
+        student_id: r.student_id,
+        today_count: r.today_count || 0,
+        full_name: r.full_name || undefined
+      })),
+      weeklyQuizzes: weeklyQuizzesResult.map(r => ({
+        student_id: r.student_id,
+        weekly_count: r.weekly_count,
+        full_name: r.full_name || undefined
+      }))
     };
   }
 
