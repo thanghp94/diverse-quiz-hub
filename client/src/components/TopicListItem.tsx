@@ -221,11 +221,14 @@ export const TopicListItem = ({
                           <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
                             <div className="flex items-start justify-between gap-2">
                               <div onClick={() => onSubtopicClick(subtopic.id)} className="block cursor-pointer flex-grow">
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex items-center gap-3 mb-2">
                                   <Badge className="bg-green-500/20 text-green-200 text-xs">
                                     <BookOpen className="h-3 w-3" />
                                   </Badge>
-                                  <span className="text-white/90 text-sm">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                                  <span className="text-white/90 text-lg font-bold">{getSubtopicLabel(topic.topic, index)} - {subtopic.topic}</span>
+                                  {subtopicContent.length > 0 && (
+                                    <span className="text-yellow-300 text-lg font-bold">Content ({subtopicContent.length})</span>
+                                  )}
                                 </div>
                                 {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                               </div>
@@ -245,49 +248,37 @@ export const TopicListItem = ({
                             </div>
                           
                             {subtopicContent.length > 0 && (
-                              <div className="mt-2 ml-6">
-                                <Collapsible open={openContent.includes(`subtopic-${subtopic.id}`)} onOpenChange={() => onToggleContent(`subtopic-${subtopic.id}`)}>
-                                  <CollapsibleTrigger asChild>
-                                    <Button variant="ghost" className="w-full justify-between text-white/70 hover:bg-white/5 p-1 h-auto">
-                                      <span className="text-xs">Content ({subtopicContent.length})</span>
-                                      <ChevronDown className={`h-3 w-3 transition-transform duration-200 ${openContent.includes(`subtopic-${subtopic.id}`) ? 'rotate-180' : ''}`} />
-                                    </Button>
-                                  </CollapsibleTrigger>
-                                  <CollapsibleContent>
-                                    <div className="space-y-1 mt-1">
-                                      {subtopicContent.map(content => (
-                                        <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
-                                          <div className="flex items-center justify-between gap-2">
-                                            <div
-                                              onClick={() => onContentClick({
-                                                content,
-                                                contextList: subtopicContent
-                                              })}
-                                              className="flex-grow cursor-pointer"
-                                            >
-                                              <div className="flex items-center gap-2">
-                                                <ContentThumbnail content={content} />
-                                                <div className="flex-1 min-w-0">
-                                                  <div className="flex items-center gap-2">
-                                                    <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                                      {getContentIcon(content)}
-                                                    </Badge>
-                                                    <span className="text-white/90 text-xs">{content.title}</span>
-                                                  </div>
-                                                  {content.short_description && <p className="text-white/60 text-xs mt-1">{formatDescription(content.short_description)}</p>}
-                                                </div>
-                                              </div>
+                              <div className="mt-2 space-y-1">
+                                {subtopicContent.map(content => (
+                                  <div key={content.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-2">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <div
+                                        onClick={() => onContentClick({
+                                          content,
+                                          contextList: subtopicContent
+                                        })}
+                                        className="flex-grow cursor-pointer"
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          <ContentThumbnail content={content} />
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2">
+                                              <Badge className={`${getContentTypeColor(content)} text-xs`}>
+                                                {getContentIcon(content)}
+                                              </Badge>
+                                              <span className="text-white/90 text-xs">{content.title}</span>
                                             </div>
-                                            <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={() => onStartQuiz(content, subtopicContent)}>
-                                              <HelpCircle className="h-4 w-4" />
-                                              <span className="sr-only">Start Quiz for {content.title}</span>
-                                            </Button>
+                                            {content.short_description && <p className="text-white/60 text-xs mt-1">{formatDescription(content.short_description)}</p>}
                                           </div>
                                         </div>
-                                      ))}
+                                      </div>
+                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white flex-shrink-0" onClick={() => onStartQuiz(content, subtopicContent)}>
+                                        <HelpCircle className="h-4 w-4" />
+                                        <span className="sr-only">Start Quiz for {content.title}</span>
+                                      </Button>
                                     </div>
-                                  </CollapsibleContent>
-                                </Collapsible>
+                                  </div>
+                                ))}
                               </div>
                             )}
                           </div>
