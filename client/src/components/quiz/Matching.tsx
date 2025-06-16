@@ -171,7 +171,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                   ? 'grid-cols-6' 
                   : 'grid-cols-7'
               }`}
-            ></div>
+            >
               {leftItems.filter(item => isImageItem(item)).map(item => {
                 const isUsed = Object.keys(matches).includes(item);
                 const isCorrect = isSubmitted && correctMatches[item];
@@ -284,7 +284,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                   ? 'grid-cols-6' 
                   : 'grid-cols-7'
               }`}
-            ></div>
+            >
               {fixedRightItems.map((item: string) => {
                 const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
                 const isCorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft];
