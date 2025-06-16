@@ -1,7 +1,6 @@
-
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Content } from "@/hooks/useContent";
+import type { Content } from "./useContent";
 
 interface UseQuizProps {
   content: Content | null;

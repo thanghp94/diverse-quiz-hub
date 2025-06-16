@@ -69,13 +69,15 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
             setIsContentLoaded(false);
             
             const questionId = questionIds[currentQuestionIndex];
-            const { data, error } = await supabase
-                .from('question')
-                .select('*')
-                .eq('id', questionId)
-                .single();
-
-            if (error) {
+            try {
+                const response = await fetch(`/api/questions/${questionId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch question');
+                }
+                const data = await response.json();
+                setCurrentQuestion(data as QuizQuestion);
+                setTimeStart(new Date().toTimeString().slice(0, 8));
+            } catch (error) {
                 console.error("Error fetching question", error);
                 toast({
                     title: "Error",
@@ -83,9 +85,6 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
                     variant: "destructive"
                 });
                 setCurrentQuestion(null);
-            } else {
-                setCurrentQuestion(data as QuizQuestion);
-                setTimeStart(new Date().toTimeString().slice(0, 8));
             }
             setIsLoading(false);
         };
@@ -126,26 +125,25 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId }: QuizVie
         }
 
         setIsContentLoading(true);
-        const { data, error } = await supabase
-            .from('content')
-            .select('title, short_description')
-            .eq('id', currentQuestion.contentid)
-            .single();
-        
-        setIsContentLoading(false);
-
-        if (error) {
+        try {
+            const response = await fetch(`/api/content/${currentQuestion.contentid}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch content');
+            }
+            const data = await response.json();
+            setLinkedContent(data as LinkedContent);
+            setIsContentLoaded(true);
+            setShowContent(true);
+            setDidShowContent(true);
+        } catch (error) {
             console.error("Error fetching content:", error);
             toast({
                 title: "Error",
                 description: "Could not load content for this question.",
                 variant: "destructive",
             });
-        } else if (data) {
-            setLinkedContent(data as LinkedContent);
-            setIsContentLoaded(true);
-            setShowContent(true);
-            setDidShowContent(true);
+        } finally {
+            setIsContentLoading(false);
         }
     };
 

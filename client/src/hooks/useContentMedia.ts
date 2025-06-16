@@ -1,6 +1,5 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Content } from "@/hooks/useContent";
 
 const getYouTubeEmbedUrl = (url: string | null | undefined): string | null => {
@@ -18,9 +17,9 @@ export const useContentMedia = (content: Content | null) => {
         queryKey: ['video', content?.videoid],
         queryFn: async () => {
             if (!content?.videoid) return null;
-            const { data, error } = await supabase.from('video').select('*').eq('id', content.videoid).maybeSingle();
-            if (error) throw error;
-            return data;
+            const response = await fetch(`/api/videos/${content.videoid}`);
+            if (!response.ok) return null;
+            return response.json();
         },
         enabled: !!content?.videoid
     });
