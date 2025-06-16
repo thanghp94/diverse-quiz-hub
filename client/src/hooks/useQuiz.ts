@@ -11,6 +11,7 @@ interface UseQuizProps {
 export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuizProps) => {
   const [quizMode, setQuizMode] = useState(false);
   const [assignmentTry, setAssignmentTry] = useState<any>(null);
+  const [studentTry, setStudentTry] = useState<any>(null);
   const [questionIds, setQuestionIds] = useState<string[]>([]);
   const { toast } = useToast();
 
@@ -43,17 +44,57 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
       
       const hocsinh_id = 'user-123-placeholder';
       
+      // Create assignment record
+      const assignmentData = {
+        id: `assignment_${Date.now()}`,
+        assignmentname: `${content.title} Quiz`,
+        contentid: content.id,
+        question_id: JSON.stringify(randomizedQuestionIds),
+        testtype: 'content_quiz',
+        typeofquestion: level || 'Overview'
+      };
+
+      const assignmentResponse = await fetch('/api/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(assignmentData)
+      });
+
+      if (!assignmentResponse.ok) {
+        throw new Error('Failed to create assignment');
+      }
+
+      const assignment = await assignmentResponse.json();
+
+      // Create student try
+      const studentTryResponse = await fetch('/api/student-tries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assignment_id: assignment.id,
+          student_id: hocsinh_id,
+          level: level || 'Overview',
+          question_ids: randomizedQuestionIds
+        })
+      });
+
+      if (!studentTryResponse.ok) {
+        throw new Error('Failed to create student try');
+      }
+
+      const studentTryRecord = await studentTryResponse.json();
+
       const newAssignmentTry = {
-          id: Date.now(),
+          id: studentTryRecord.assignment_student_try_id,
           hocsinh_id,
           contentID: content.id,
           questionIDs: JSON.stringify(randomizedQuestionIds),
       };
 
-      // Note: Assignment tracking will be implemented when authentication is added
-      console.log('Quiz started:', newAssignmentTry);
+      console.log('Quiz started with database tracking:', { assignment, studentTryRecord });
 
       setAssignmentTry(newAssignmentTry);
+      setStudentTry(studentTryRecord);
       setQuestionIds(randomizedQuestionIds);
       setQuizMode(true);
     } catch (error) {
@@ -71,8 +112,9 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
   const handleQuizFinish = () => {
       setQuizMode(false);
       setAssignmentTry(null);
+      setStudentTry(null);
       setQuestionIds([]);
   };
 
-  return { quizMode, setQuizMode, assignmentTry, setAssignmentTry, questionIds, startQuiz, handleQuizFinish };
+  return { quizMode, setQuizMode, assignmentTry, setAssignmentTry, studentTry, questionIds, startQuiz, handleQuizFinish };
 };

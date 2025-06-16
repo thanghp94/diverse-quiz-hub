@@ -35,6 +35,7 @@ const ContentPopup = ({
     setQuizMode,
     assignmentTry,
     setAssignmentTry,
+    studentTry,
     questionIds,
     startQuiz,
     handleQuizFinish,
@@ -74,6 +75,7 @@ const ContentPopup = ({
             questionIds={questionIds} 
             onQuizFinish={handleQuizFinish}
             assignmentStudentTryId={assignmentTry.id.toString()}
+            studentTryId={studentTry?.id}
           />
         ) : (
           <>
