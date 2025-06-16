@@ -181,22 +181,20 @@ export const MatchingListPopup = ({
                       <h3 className="text-lg font-semibold text-gray-900">
                         {activity.topic || 'Untitled Activity'}
                       </h3>
+                      {activity.subject && (
+                        <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium border border-blue-200">
+                          {activity.subject}
+                        </div>
+                      )}
                       {activity.isFromSubtopic && activity.topicName && (
                         <Badge variant="secondary" className="text-xs">
                           From: {activity.topicName}
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      {activity.subject && (
-                        <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium border border-blue-200">
-                          {activity.subject}
-                        </div>
-                      )}
-                    </div>
                     {activity.description && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        <span className="font-medium">Description:</span> {activity.description}
+                      <p className="text-base text-gray-600 mt-2">
+                        {activity.description}
                       </p>
                     )}
                   </div>
