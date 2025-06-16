@@ -278,60 +278,58 @@ const TopicContentWithMatching = ({
           </div>
         </div>
 
-        {/* Video Popup */}
-        {videoPopupOpen && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setVideoPopupOpen(false)}>
-            <div className="relative w-full max-w-2xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between p-3 border-b border-gray-700 bg-gray-800">
-                <h3 className="text-white text-base font-medium truncate mr-4">{content.title}</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setVideoPopupOpen(false)}
-                  className="text-white hover:bg-white/20 flex-shrink-0"
-                >
-                  ✕
-                </Button>
-              </div>
-              <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto">
-                {hasVideo1 && (
-                  <div>
-                    {videoData.video_name && (
-                      <h4 className="text-white font-medium mb-2 text-sm">{videoData.video_name}</h4>
-                    )}
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                      <iframe 
-                        className="w-full h-full" 
-                        src={videoEmbedUrl} 
-                        title={videoData.video_name || 'Video 1'} 
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowFullScreen
-                      />
-                    </div>
-                  </div>
-                )}
-                {hasVideo2 && (
-                  <div>
-                    {video2Data.video_name && (
-                      <h4 className="text-white font-medium mb-2 text-sm">{video2Data.video_name}</h4>
-                    )}
-                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                      <iframe 
-                        className="w-full h-full" 
-                        src={video2EmbedUrl} 
-                        title={video2Data.video_name || 'Video 2'} 
-                        frameBorder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowFullScreen
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
+        {/* Video Popup - Using Dialog */}
+        <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
+          <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+              <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setVideoPopupOpen(false)}
+                className="text-white hover:bg-white/20 flex-shrink-0"
+              >
+                ✕
+              </Button>
             </div>
-          </div>
-        )}
+            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              {hasVideo1 && (
+                <div>
+                  {videoData.video_name && (
+                    <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
+                  )}
+                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <iframe 
+                      className="w-full h-full" 
+                      src={videoEmbedUrl} 
+                      title={videoData.video_name || 'Video 1'} 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+              {hasVideo2 && (
+                <div>
+                  {video2Data.video_name && (
+                    <h4 className="text-white font-medium mb-3 text-base">{video2Data.video_name}</h4>
+                  )}
+                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                    <iframe 
+                      className="w-full h-full" 
+                      src={video2EmbedUrl} 
+                      title={video2Data.video_name || 'Video 2'} 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
       </>
     );
   };
@@ -700,60 +698,58 @@ export const TopicListItem = ({
                                           </div>
                                         </div>
 
-                                        {/* Video Popup */}
-                                        {videoPopupOpen && (
-                                          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setVideoPopupOpen(false)}>
-                                            <div className="relative w-full max-w-2xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                                              <div className="flex items-center justify-between p-3 border-b border-gray-700 bg-gray-800">
-                                                <h3 className="text-white text-base font-medium truncate mr-4">{content.title}</h3>
-                                                <Button 
-                                                  variant="ghost" 
-                                                  size="sm"
-                                                  onClick={() => setVideoPopupOpen(false)}
-                                                  className="text-white hover:bg-white/20 flex-shrink-0"
-                                                >
-                                                  ✕
-                                                </Button>
-                                              </div>
-                                              <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto">
-                                                {hasVideo1 && (
-                                                  <div>
-                                                    {videoData.video_name && (
-                                                      <h4 className="text-white font-medium mb-2 text-sm">{videoData.video_name}</h4>
-                                                    )}
-                                                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                                                      <iframe 
-                                                        className="w-full h-full" 
-                                                        src={videoEmbedUrl} 
-                                                        title={videoData.video_name || 'Video 1'} 
-                                                        frameBorder="0" 
-                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                        allowFullScreen
-                                                      />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                                {hasVideo2 && (
-                                                  <div>
-                                                    {video2Data.video_name && (
-                                                      <h4 className="text-white font-medium mb-2 text-sm">{video2Data.video_name}</h4>
-                                                    )}
-                                                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                                                      <iframe 
-                                                        className="w-full h-full" 
-                                                        src={video2EmbedUrl} 
-                                                        title={video2Data.video_name || 'Video 2'} 
-                                                        frameBorder="0" 
-                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                        allowFullScreen
-                                                      />
-                                                    </div>
-                                                  </div>
-                                                )}
-                                              </div>
+                                        {/* Video Popup - Using Dialog */}
+                                        <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
+                                          <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+                                            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                                              <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => setVideoPopupOpen(false)}
+                                                className="text-white hover:bg-white/20 flex-shrink-0"
+                                              >
+                                                ✕
+                                              </Button>
                                             </div>
-                                          </div>
-                                        )}
+                                            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                                              {hasVideo1 && (
+                                                <div>
+                                                  {videoData.video_name && (
+                                                    <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
+                                                  )}
+                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                    <iframe 
+                                                      className="w-full h-full" 
+                                                      src={videoEmbedUrl} 
+                                                      title={videoData.video_name || 'Video 1'} 
+                                                      frameBorder="0" 
+                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                      allowFullScreen
+                                                    />
+                                                  </div>
+                                                </div>
+                                              )}
+                                              {hasVideo2 && (
+                                                <div>
+                                                  {video2Data.video_name && (
+                                                    <h4 className="text-white font-medium mb-3 text-base">{video2Data.video_name}</h4>
+                                                  )}
+                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                    <iframe 
+                                                      className="w-full h-full" 
+                                                      src={video2EmbedUrl} 
+                                                      title={video2Data.video_name || 'Video 2'} 
+                                                      frameBorder="0" 
+                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                      allowFullScreen
+                                                    />
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
                                       </>
                                     );
                                   };
