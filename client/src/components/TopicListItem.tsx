@@ -245,43 +245,47 @@ const TopicContentWithMatching = ({
         </div>
       )}
       
-      {/* Grouped content by matching activities */}
-      {organizedContent.grouped.map(({ matching, content }) => (
-        <Collapsible key={matching.id} className="mt-4">
-          <CollapsibleTrigger asChild>
-            <div className="cursor-pointer bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-500/20 p-2 rounded-lg border border-blue-400/30">
-                    <Shuffle className="h-5 w-5 text-blue-300" />
-                  </div>
-                  <div>
-                    <h5 className="text-white/90 font-medium text-lg">
-                      {matching.topic || matching.description || 'Matching Activity'}
-                    </h5>
-                    <p className="text-white/60 text-sm">
-                      {content.length} content item{content.length !== 1 ? 's' : ''}
-                    </p>
+      {/* Grouped content by matching activities - show as expandable cards */}
+      {organizedContent.grouped.length > 0 && (
+        <div className="space-y-4 mt-4">
+          {organizedContent.grouped.map(({ matching, content }) => (
+            <Collapsible key={matching.id} className="w-full">
+              <CollapsibleTrigger asChild>
+                <div className="cursor-pointer bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-4 w-full">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-500/20 p-2 rounded-lg border border-blue-400/30">
+                        <Shuffle className="h-5 w-5 text-blue-300" />
+                      </div>
+                      <div>
+                        <h5 className="text-white/90 font-medium text-lg">
+                          {matching.topic || matching.description || 'Matching Activity'}
+                        </h5>
+                        <p className="text-white/60 text-sm">
+                          Click to view {content.length} content item{content.length !== 1 ? 's' : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="border-blue-300/30 text-blue-200 text-xs">
+                        Matching
+                      </Badge>
+                      <ChevronDown className="h-5 w-5 text-white/80 transition-transform duration-200" />
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="border-blue-300/30 text-blue-200 text-xs">
-                    Matching
-                  </Badge>
-                  <ChevronDown className="h-5 w-5 text-white/80 transition-transform duration-200" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2">
+                <div className="grid grid-cols-2 gap-3 pl-6">
+                  {content.map(contentItem => (
+                    <ContentCard key={contentItem.id} content={contentItem} />
+                  ))}
                 </div>
-              </div>
-            </div>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="mt-2">
-            <div className="grid grid-cols-2 gap-3 ml-6">
-              {content.map(contentItem => (
-                <ContentCard key={contentItem.id} content={contentItem} />
-              ))}
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
-      ))}
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
