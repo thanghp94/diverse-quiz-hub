@@ -510,20 +510,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Assignments
-  async createAssignment(assignment: any): Promise<any> {
+  async createAssignment(assignmentInput: any): Promise<any> {
     const assignmentData = {
-      id: `assignment_${Date.now()}`,
-      assignmentname: `Quiz - ${assignment.level}`,
-      topicid: assignment.topic_id,
-      question_id: JSON.stringify(assignment.question_ids),
-      noofquestion: assignment.question_ids.length,
-      testtype: assignment.level,
+      id: assignmentInput.id || `assignment_${Date.now()}`,
+      assignmentname: assignmentInput.assignmentname || `Quiz - ${assignmentInput.typeofquestion || 'Overview'}`,
+      contentid: assignmentInput.contentid,
+      question_id: assignmentInput.question_id,
+      testtype: assignmentInput.testtype || 'content_quiz',
+      typeofquestion: assignmentInput.typeofquestion || 'Overview',
       status: 'active'
     };
     
     try {
       const result = await db.insert(assignment).values(assignmentData).returning();
-      return result[0];
+      return result[0] || assignmentData;
     } catch (error) {
       console.error('Error creating assignment:', error);
       // Return a simple assignment object if database insert fails
