@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Search, User, LogOut, ChevronDown } from "lucide-react";
+import { Search, User, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -11,14 +11,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
 
 const Header = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -51,145 +43,44 @@ const Header = () => {
           <h1 className="text-xl font-semibold">Meraki WSC</h1>
         </div>
         
-        <NavigationMenu>
-          <NavigationMenuList className="flex items-center gap-1">
-            {/* Bowl & Challenge Dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
-                Bowl & Challenge
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="w-48 p-2">
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?tab=overview-quiz')}
-                  >
-                    Overview Quiz
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?tab=easy-quiz')}
-                  >
-                    Easy Quiz
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/topics?tab=hard-quiz')}
-                  >
-                    Hard Quiz
-                  </NavigationMenuLink>
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            {/* Challenge Subject Dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
-                Challenge Subject
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="w-48 p-2">
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/challenge-subject')}
-                  >
-                    Challenge Subjects
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/challenge-subject?tab=overview-quiz')}
-                  >
-                    Overview Quiz
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/challenge-subject?tab=easy-quiz')}
-                  >
-                    Easy Quiz
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/challenge-subject?tab=hard-quiz')}
-                  >
-                    Hard Quiz
-                  </NavigationMenuLink>
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            {/* Debate Dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
-                Debate
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="w-48 p-2">
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/debate?tab=lesson')}
-                  >
-                    Debate Lesson
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/debate?tab=motions')}
-                  >
-                    Motions
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/debate?tab=assignment')}
-                  >
-                    Assignment
-                  </NavigationMenuLink>
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            {/* Writing Dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
-                Writing
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="w-48 p-2">
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/writing?tab=lesson')}
-                  >
-                    Writing Lesson
-                  </NavigationMenuLink>
-                  <NavigationMenuLink 
-                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    onClick={() => setLocation('/writing?tab=assignment')}
-                  >
-                    Assignment
-                  </NavigationMenuLink>
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            {/* Leaderboard */}
-            <NavigationMenuItem>
-              <NavigationMenuLink 
-                className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded cursor-pointer"
-                onClick={() => setLocation('/leaderboard')}
-              >
-                Leaderboard
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
-            {/* Matching */}
-            <NavigationMenuItem>
-              <NavigationMenuLink 
-                className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded cursor-pointer"
-                onClick={() => setLocation('/matching')}
-              >
-                Matching
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
+        <div className="flex items-center gap-6">
+          <button 
+            onClick={() => setLocation('/')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Bowl & Challenge
+          </button>
+          <button 
+            onClick={() => setLocation('/challenge-subject')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Challenge Subject
+          </button>
+          <button 
+            onClick={() => setLocation('/debate')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Debate
+          </button>
+          <button 
+            onClick={() => setLocation('/writing')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Writing
+          </button>
+          <button 
+            onClick={() => setLocation('/leaderboard')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Leaderboard
+          </button>
+          <button 
+            onClick={() => setLocation('/matching')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Matching
+          </button>
+        </div>
 
         <div className="flex items-center gap-4">
           <div className="relative max-w-md w-full">

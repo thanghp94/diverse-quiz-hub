@@ -67,11 +67,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getBowlChallengeTopics(): Promise<Topic[]> {
+    const excludedTopics = ['Art', 'Bowl', 'Challenge', 'Debate', 'Literature', 'Media', 'Music', 'Science and Technology', 'Social Studies', 'Special areas', 'Teaching lesson', 'Writing'];
+    
     return await db.select().from(topics)
       .where(
         sql`${topics.parentid} IS NULL 
         AND ${topics.topic} IS NOT NULL 
-        AND ${topics.topic} != ''`
+        AND ${topics.topic} != ''
+        AND ${topics.topic} NOT IN (${excludedTopics.map(t => `'${t}'`).join(', ')})`
       )
       .orderBy(asc(topics.topic));
   }
