@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { Content } from "./useContent";
 
@@ -6,9 +6,10 @@ interface UseQuizProps {
   content: Content | null;
   onClose: () => void;
   startQuizDirectly?: boolean;
+  level?: 'Easy' | 'Hard' | null;
 }
 
-export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuizProps) => {
+export const useQuiz = ({ content, onClose, startQuizDirectly = false, level }: UseQuizProps) => {
   const [quizMode, setQuizMode] = useState(false);
   const [assignmentTry, setAssignmentTry] = useState<any>(null);
   const [studentTry, setStudentTry] = useState<any>(null);
@@ -90,6 +91,13 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false }: UseQuiz
     setQuestionIds([]);
     onClose();
   }, [onClose]);
+
+  // Auto-start quiz when startQuizDirectly is true and level is provided
+  useEffect(() => {
+    if (startQuizDirectly && content && level) {
+      startQuiz(level);
+    }
+  }, [startQuizDirectly, content, level, startQuiz]);
 
   return {
     quizMode,
