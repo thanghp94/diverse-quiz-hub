@@ -9,34 +9,34 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   // Topics
   getTopics(): Promise<Topic[]>;
   getBowlChallengeTopics(): Promise<Topic[]>;
   getTopicById(id: string): Promise<Topic | undefined>;
-  
+
   // Content
   getContent(topicId?: string): Promise<Content[]>;
   getContentById(id: string): Promise<Content | undefined>;
-  
+
   // Images
   getImages(): Promise<Image[]>;
   getImageById(id: string): Promise<Image | undefined>;
-  
+
   // Questions
   getQuestions(contentId?: string, topicId?: string, level?: string): Promise<Question[]>;
   getQuestionById(id: string): Promise<Question | undefined>;
-  
+
   // Matching
   getMatchingActivities(): Promise<Matching[]>;
   getMatchingById(id: string): Promise<Matching | undefined>;
   getMatchingByTopicId(topicId: string): Promise<Matching[]>;
-  
+
   // Videos
   getVideos(): Promise<Video[]>;
   getVideoById(id: string): Promise<Video | undefined>;
   getVideosByContentId(contentId: string): Promise<Video[]>;
-  
+
   // Matching Attempts
   createMatchingAttempt(attempt: InsertMatchingAttempt): Promise<MatchingAttempt>;
   getMatchingAttempts(studentId: string, matchingId?: string): Promise<MatchingAttempt[]>;
@@ -97,11 +97,11 @@ export class DatabaseStorage implements IStorage {
         return await operation();
       } catch (error: any) {
         console.error(`Database operation failed (attempt ${attempt}/${retries}):`, error?.message || error);
-        
+
         if (attempt === retries) {
           throw error;
         }
-        
+
         // If it's a connection issue, wait and retry
         if (error?.message?.includes('endpoint is disabled') || 
             error?.message?.includes('connection') ||
@@ -188,22 +188,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Questions
-  async getQuestions(contentId?: string, topicId?: string, level?: string): Promise<Question[]> {
-    if (contentId && level) {
-      return await db.select().from(questions)
-        .where(sql`${questions.contentid} = ${contentId} AND ${questions.questionlevel} = ${level}`);
-    } else if (contentId) {
-      return await db.select().from(questions).where(eq(questions.contentid, contentId));
-    } else if (topicId && level) {
-      return await db.select().from(questions)
-        .where(sql`${questions.topicid} = ${topicId} AND ${questions.questionlevel} = ${level}`);
-    } else if (topicId) {
-      return await db.select().from(questions).where(eq(questions.topicid, topicId));
-    } else if (level) {
-      return await db.select().from(questions).where(eq(questions.questionlevel, level));
+  async getQuestions(contentId?: string, topicId?: string, level?: string) {
+    try {
+      let query = db.select().from(questions);
+
+      if (contentId) {
+        query = query.where(eq(questions.contentid, contentId));
+      }
+
+      if (topicId) {
+        query = query.where(eq(questions.topicid, topicId));
+      }
+
+      // Add level filtering if provided
+      if (level && level !== 'Overview') {
+        // Convert level to match database format (Easy -> easy, Hard -> hard)
+        const dbLevel = level.toLowerCase();
+        query = query.where(eq(questions.questionlevel, dbLevel));
+      }
+
+      const result = await query;
+      console.log(`Found ${result.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level} (db level: ${level ? level.toLowerCase() : 'all'})`);
+      return result;
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      throw error;
     }
-    
-    return await db.select().from(questions);
   }
 
   async getQuestionById(id: string): Promise<Question | undefined> {
@@ -252,7 +262,7 @@ export class DatabaseStorage implements IStorage {
         ))
         .orderBy(desc(matching_attempts.created_at));
     }
-    
+
     return await db.select().from(matching_attempts)
       .where(eq(matching_attempts.student_id, studentId))
       .orderBy(desc(matching_attempts.created_at));
@@ -310,7 +320,7 @@ export class DatabaseStorage implements IStorage {
   async getContentRatingStats(contentId: string): Promise<{ easy: number; normal: number; hard: number }> {
     const ratings = await db.select().from(content_ratings)
       .where(eq(content_ratings.content_id, contentId));
-    
+
     return {
       easy: ratings.filter(r => r.rating === 'ok').length,
       normal: ratings.filter(r => r.rating === 'normal').length,
@@ -328,10 +338,10 @@ export class DatabaseStorage implements IStorage {
   async updateStudentStreak(studentId: string): Promise<StudentStreak> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const existing = await this.getStudentStreak(studentId);
     const todayActivity = await this.getDailyActivity(studentId, today);
-    
+
     if (!existing) {
       const result = await db.insert(student_streaks).values({
         id: crypto.randomUUID(),
@@ -345,14 +355,14 @@ export class DatabaseStorage implements IStorage {
 
     let newCurrentStreak = existing.current_streak || 0;
     let newLongestStreak = existing.longest_streak || 0;
-    
+
     if (todayActivity) {
       const lastActivity = existing.last_activity_date;
       if (lastActivity) {
         const lastDate = new Date(lastActivity);
         lastDate.setHours(0, 0, 0, 0);
         const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
-        
+
         if (daysDiff === 1) {
           newCurrentStreak += 1;
         } else if (daysDiff > 1) {
@@ -361,7 +371,7 @@ export class DatabaseStorage implements IStorage {
       } else {
         newCurrentStreak = 1;
       }
-      
+
       newLongestStreak = Math.max(newLongestStreak, newCurrentStreak);
     }
 
@@ -387,9 +397,9 @@ export class DatabaseStorage implements IStorage {
   async recordDailyActivity(studentId: string, points: number): Promise<DailyActivity> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const existing = await this.getDailyActivity(studentId, today);
-    
+
     if (existing) {
       const result = await db.update(daily_activities)
         .set({
@@ -414,7 +424,7 @@ export class DatabaseStorage implements IStorage {
   async getDailyActivity(studentId: string, date: Date): Promise<DailyActivity | undefined> {
     const targetDate = new Date(date);
     targetDate.setHours(0, 0, 0, 0);
-    
+
     const result = await db.select().from(daily_activities)
       .where(and(
         eq(daily_activities.student_id, studentId),
@@ -431,7 +441,7 @@ export class DatabaseStorage implements IStorage {
   }> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
 
@@ -559,7 +569,7 @@ export class DatabaseStorage implements IStorage {
       typeofquestion: assignmentInput.typeofquestion || 'Overview',
       status: 'active'
     };
-    
+
     try {
       const result = await db.insert(assignment).values(assignmentData).returning();
       return result[0] || assignmentData;
@@ -582,7 +592,7 @@ export class DatabaseStorage implements IStorage {
   // Assignment Student Tries
   async createAssignmentStudentTry(assignmentStudentTryData: any): Promise<any> {
     console.log('Creating assignment_student_try with input:', assignmentStudentTryData);
-    
+
     const data = {
       assignmentid: assignmentStudentTryData.assignmentid || null,
       contentid: assignmentStudentTryData.contentid || assignmentStudentTryData.contentID || null,
@@ -591,9 +601,9 @@ export class DatabaseStorage implements IStorage {
       start_time: assignmentStudentTryData.start_time || new Date().toISOString(),
       typeoftaking: assignmentStudentTryData.typeoftaking || 'Overview'
     };
-    
+
     console.log('Inserting assignment_student_try data:', data);
-    
+
     try {
       const result = await db.insert(assignment_student_try).values(data).returning();
       console.log('Assignment_student_try created successfully:', result[0]);
@@ -626,9 +636,9 @@ export class DatabaseStorage implements IStorage {
         currentindex: studentTry.currentindex || null,
         showcontent: studentTry.showcontent || null
       };
-      
+
       console.log('Creating student_try with data:', studentTryData);
-      
+
       const studentTryResult = await db.insert(student_try).values(studentTryData).returning();
       console.log('Student_try created successfully:', studentTryResult[0]);
       return studentTryResult[0];
