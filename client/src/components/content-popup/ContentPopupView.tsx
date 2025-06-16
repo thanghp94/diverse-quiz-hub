@@ -73,6 +73,14 @@ export const ContentPopupView = ({
         video2Data={video2Data}
       />
 
+      {/* Content Editor for authorized users */}
+      {onContentUpdate && (
+        <ContentEditor 
+          content={content} 
+          onContentUpdate={onContentUpdate}
+        />
+      )}
+
       <ContentBody content={content} />
     </div>
   );

@@ -104,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Content Groups API
-  app.get("/api/content-groups", async (req, res) => {
+  app.get("/api/content/groups", async (req, res) => {
     try {
       const groups = await storage.getContentGroups();
       res.json(groups);

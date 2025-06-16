@@ -130,6 +130,7 @@ const ContentPopup = ({
                 videoData={videoData}
                 video2Data={video2Data}
                 hideMediaDisplay={true}
+                onContentUpdate={onContentChange}
             />
           </>
         )}
