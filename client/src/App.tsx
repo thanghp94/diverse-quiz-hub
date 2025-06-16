@@ -13,6 +13,7 @@ import MatchingListPage from "./pages/MatchingList";
 import MatchingActivityPage from "./pages/MatchingActivity";
 import DebatePage from "./pages/Debate";
 import WritingPage from "./pages/Writing";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
       <Sonner />
       <Router>
         <Switch>
+          <Route path="/login" component={Login} />
           <Route path="/" component={Index} />
           <Route path="/topics" component={Topics} />
           <Route path="/content/:id" component={Content} />

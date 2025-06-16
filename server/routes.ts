@@ -173,6 +173,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User authentication routes
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
+  });
+
+  app.get("/api/users/by-email/:email", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user by email:', error);
+      res.status(500).json({ error: 'Failed to fetch user' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
