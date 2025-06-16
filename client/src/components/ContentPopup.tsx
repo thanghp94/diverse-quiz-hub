@@ -75,6 +75,7 @@ const ContentPopup = ({
             onQuizFinish={closeQuiz}
             assignmentStudentTryId={assignmentTry.id.toString()}
             studentTryId={studentTry?.id}
+            contentId={content?.id}
           />
         ) : (
           <>
