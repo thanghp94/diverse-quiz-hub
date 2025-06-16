@@ -121,12 +121,12 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
   const isComplete = Object.keys(matches).length === leftItems.length;
 
   return (
-    <Card className="bg-white/10 backdrop-blur-lg border-white/20 animate-fade-in">
+    <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/90 backdrop-blur-lg border-gray-600/50 animate-fade-in shadow-2xl">
       <CardHeader>
-        <CardTitle className="text-white text-2xl">{question.question}</CardTitle>
+        <CardTitle className="text-white text-2xl font-bold">{question.question}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="grid md:grid-cols-2 gap-8">
+      <CardContent className="space-y-8 p-8">
+        <div className="grid md:grid-cols-2 gap-12">
           <div className="space-y-3">
             <h3 className="text-white font-semibold text-lg">Drag from here:</h3>
             {leftItems.map(item => {
@@ -136,10 +136,10 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                 key={item}
                 draggable={!isUsed}
                 onDragStart={(e) => handleDragStart(e, item)}
-                className={`p-4 rounded-lg text-white transition-all border-2 flex items-center justify-center min-h-[120px] ${
+                className={`p-4 rounded-xl text-white transition-all duration-300 border-2 flex items-center justify-center min-h-[120px] shadow-lg ${
                   isUsed 
-                    ? 'bg-gray-500/30 border-gray-400/50 opacity-60 cursor-not-allowed' 
-                    : 'bg-blue-500/30 border-blue-400/50 cursor-move hover:bg-blue-500/40 hover:border-blue-400/70'
+                    ? 'bg-gray-600/40 border-gray-500/60 opacity-50 cursor-not-allowed transform scale-95' 
+                    : 'bg-blue-600/40 border-blue-400/60 cursor-move hover:bg-blue-500/50 hover:border-blue-300/80 hover:shadow-xl hover:scale-105'
                 }`}
               >
                 {isImageItem(item) ? (
@@ -173,11 +173,15 @@ const Matching = ({ question, onAnswer }: MatchingProps) => {
                   onDragEnter={handleDragEnter}
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, item)}
-                  className="p-4 bg-purple-500/20 rounded-lg text-white min-h-[120px] border-2 border-dashed border-purple-400/30 hover:border-purple-400/60 transition-colors"
+                  className={`p-4 rounded-xl text-white min-h-[120px] border-2 border-dashed transition-all duration-300 ${
+                    matchedLeft 
+                      ? 'bg-green-600/40 border-green-400/60 shadow-lg' 
+                      : 'bg-purple-600/30 border-purple-400/50 hover:border-purple-300/70 hover:bg-purple-500/40'
+                  }`}
                 >
                   <div className="font-semibold mb-2">{item}</div>
                   {matchedLeft && (
-                    <div className="flex items-center gap-3 text-sm text-blue-200 mt-2 p-2 bg-blue-500/20 rounded border-l-2 border-blue-400">
+                    <div className="flex items-center gap-3 text-sm text-green-200 mt-2 p-3 bg-green-500/30 rounded-lg border border-green-400/50 shadow-sm">
                       <span>Matched with:</span>
                       {isImageItem(matchedLeft) ? (
                         <div className="flex items-center gap-2">

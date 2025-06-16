@@ -359,8 +359,8 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
             )}
           </div>
           
-          {/* Activity Tracker Sidebar */}
-          <div className="lg:col-span-1 flex flex-col">
+          {/* Hidden Activity Tracker for functionality */}
+          <div className="hidden">
             <MatchingActivityTracker
               ref={trackerRef}
               matchingId={matchingId}
