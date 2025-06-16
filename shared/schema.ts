@@ -183,15 +183,15 @@ export const assignment = pgTable("assignment", {
 });
 
 export const assignment_student_try = pgTable("assignment_student_try", {
-  id: serial("id").primaryKey(),
+  id: text("id").primaryKey(),
   assignmentid: text("assignmentid"),
-  contentid: text("contentID"),
-  end_time: text("end_time"),
+  contentid: text("contentid"),
+  end_time: timestamp("end_time"),
   hocsinh_id: text("hocsinh_id"),
-  questionids: text("questionIDs"),
-  start_time: text("start_time"),
+  start_time: timestamp("start_time"),
+  topicid: text("topicid"),
   typeoftaking: text("typeoftaking"),
-  update: text("update"),
+  update: timestamp("update"),
 });
 
 export const student_try = pgTable("student_try", {
