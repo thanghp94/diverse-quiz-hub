@@ -130,10 +130,10 @@ const AssignmentPage: React.FC = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/assignment-student-tries'] });
-      setAssignmentStudentTryId(data.id);
+      setAssignmentStudentTryId(data.id.toString());
       toast({
         title: "Quiz Started",
-        description: "You have joined the live class quiz."
+        description: "You have joined the assignment quiz."
       });
     },
     onError: () => {
@@ -208,64 +208,11 @@ const AssignmentPage: React.FC = () => {
     setShowQuiz(true);
   };
 
-  const handleAnswerSelect = (answer: string) => {
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: answer
-    }));
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < quizQuestions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-    } else {
-      // Submit quiz and create student try records
-      submitQuizAnswers();
-      setShowQuiz(false);
-      toast({
-        title: "Quiz Completed",
-        description: "Your answers have been submitted."
-      });
-    }
-  };
-
-  const submitQuizAnswers = async () => {
-    if (!assignmentStudentTryId) return;
-
-    for (let i = 0; i < quizQuestions.length; i++) {
-      const question = quizQuestions[i];
-      const userAnswer = answers[i];
-      const isCorrect = userAnswer === question.answer;
-
-      const studentTryData = {
-        assignment_student_try_id: assignmentStudentTryId,
-        hocsinh_id: currentUser.id,
-        question_id: question.id,
-        answer_choice: userAnswer,
-        correct_answer: question.answer,
-        quiz_result: isCorrect ? 'correct' : 'wrong',
-        time_start: new Date().toISOString(),
-        time_end: new Date().toISOString(),
-        currentindex: i,
-        showcontent: 'Yes'
-      };
-
-      try {
-        await fetch('/api/student-tries', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(studentTryData)
-        });
-      } catch (error) {
-        console.error('Failed to submit answer for question', i, error);
-      }
-    }
-  };
-
-  const handlePreviousQuestion = () => {
-    if (currentQuestion > 0) {
-      setCurrentQuestion(prev => prev - 1);
-    }
+  const closeQuiz = () => {
+    setShowQuiz(false);
+    setSelectedAssignment(null);
+    setQuestionIds([]);
+    setAssignmentStudentTryId(null);
   };
 
   const CompactAssignmentTable = ({ assignments, title, showActions = false, isLiveClass = false }: { 
@@ -432,7 +379,7 @@ const AssignmentPage: React.FC = () => {
           {questionIds.length > 0 && assignmentStudentTryId && selectedAssignment ? (
             <QuizView 
               questionIds={questionIds} 
-              onQuizFinish={() => setShowQuiz(false)}
+              onQuizFinish={closeQuiz}
               assignmentStudentTryId={assignmentStudentTryId}
               contentId={selectedAssignment.contentid}
             />
