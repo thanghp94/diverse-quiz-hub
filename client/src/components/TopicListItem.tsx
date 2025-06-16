@@ -280,10 +280,10 @@ const TopicContentWithMatching = ({
 
         {/* Video Popup */}
         {videoPopupOpen && (
-          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setVideoPopupOpen(false)}>
-            <div className="relative w-full max-w-5xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setVideoPopupOpen(false)}>
+            <div className="relative w-full max-w-2xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between p-3 border-b border-gray-700 bg-gray-800">
-                <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+                <h3 className="text-white text-base font-medium truncate mr-4">{content.title}</h3>
                 <Button 
                   variant="ghost" 
                   size="sm"
@@ -293,11 +293,11 @@ const TopicContentWithMatching = ({
                   ✕
                 </Button>
               </div>
-              <div className="p-4 space-y-4 max-h-[80vh] overflow-y-auto">
+              <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto">
                 {hasVideo1 && (
                   <div>
                     {videoData.video_name && (
-                      <h4 className="text-white font-medium mb-2">{videoData.video_name}</h4>
+                      <h4 className="text-white font-medium mb-2 text-sm">{videoData.video_name}</h4>
                     )}
                     <div className="aspect-video bg-black rounded-lg overflow-hidden">
                       <iframe 
@@ -314,7 +314,7 @@ const TopicContentWithMatching = ({
                 {hasVideo2 && (
                   <div>
                     {video2Data.video_name && (
-                      <h4 className="text-white font-medium mb-2">{video2Data.video_name}</h4>
+                      <h4 className="text-white font-medium mb-2 text-sm">{video2Data.video_name}</h4>
                     )}
                     <div className="aspect-video bg-black rounded-lg overflow-hidden">
                       <iframe 
@@ -702,10 +702,10 @@ export const TopicListItem = ({
 
                                         {/* Video Popup */}
                                         {videoPopupOpen && (
-                                          <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setVideoPopupOpen(false)}>
-                                            <div className="relative w-full max-w-5xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                                          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setVideoPopupOpen(false)}>
+                                            <div className="relative w-full max-w-2xl bg-gray-900 rounded-lg overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
                                               <div className="flex items-center justify-between p-3 border-b border-gray-700 bg-gray-800">
-                                                <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+                                                <h3 className="text-white text-base font-medium truncate mr-4">{content.title}</h3>
                                                 <Button 
                                                   variant="ghost" 
                                                   size="sm"
@@ -715,11 +715,11 @@ export const TopicListItem = ({
                                                   ✕
                                                 </Button>
                                               </div>
-                                              <div className="p-4 space-y-4 max-h-[80vh] overflow-y-auto">
+                                              <div className="p-3 space-y-3 max-h-[70vh] overflow-y-auto">
                                                 {hasVideo1 && (
                                                   <div>
                                                     {videoData.video_name && (
-                                                      <h4 className="text-white font-medium mb-2">{videoData.video_name}</h4>
+                                                      <h4 className="text-white font-medium mb-2 text-sm">{videoData.video_name}</h4>
                                                     )}
                                                     <div className="aspect-video bg-black rounded-lg overflow-hidden">
                                                       <iframe 
@@ -736,7 +736,7 @@ export const TopicListItem = ({
                                                 {hasVideo2 && (
                                                   <div>
                                                     {video2Data.video_name && (
-                                                      <h4 className="text-white font-medium mb-2">{video2Data.video_name}</h4>
+                                                      <h4 className="text-white font-medium mb-2 text-sm">{video2Data.video_name}</h4>
                                                     )}
                                                     <div className="aspect-video bg-black rounded-lg overflow-hidden">
                                                       <iframe 
