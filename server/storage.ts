@@ -19,6 +19,11 @@ export interface IStorage {
   // Content
   getContent(topicId?: string): Promise<Content[]>;
   getContentById(id: string): Promise<Content | undefined>;
+  updateContent(id: string, updates: { short_description?: string; short_blurb?: string; imageid?: string; videoid?: string; videoid2?: string }): Promise<Content | undefined>;
+
+  // Content Groups
+  getContentGroups(): Promise<Array<{ contentgroup: string; url: string; content_count: number }>>;
+  getContentByGroup(contentgroup: string): Promise<Content[]>;
 
   // Images
   getImages(): Promise<Image[]>;

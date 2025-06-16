@@ -103,6 +103,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Content Groups API
+  app.get("/api/content-groups", async (req, res) => {
+    try {
+      const groups = await storage.getContentGroups();
+      res.json(groups);
+    } catch (error) {
+      console.error('Error fetching content groups:', error);
+      res.status(500).json({ error: 'Failed to fetch content groups' });
+    }
+  });
+
+  app.get("/api/content/group/:groupName", async (req, res) => {
+    try {
+      const content = await storage.getContentByGroup(req.params.groupName);
+      res.json(content);
+    } catch (error) {
+      console.error('Error fetching content by group:', error);
+      res.status(500).json({ error: 'Failed to fetch content by group' });
+    }
+  });
+
+  // Content Update API
+  app.patch("/api/content/:id", async (req, res) => {
+    try {
+      const { short_description, short_blurb, imageid, videoid, videoid2 } = req.body;
+      const updates = { short_description, short_blurb, imageid, videoid, videoid2 };
+      
+      // Remove undefined fields
+      Object.keys(updates).forEach(key => {
+        if (updates[key as keyof typeof updates] === undefined) {
+          delete updates[key as keyof typeof updates];
+        }
+      });
+
+      const updatedContent = await storage.updateContent(req.params.id, updates);
+      if (!updatedContent) {
+        return res.status(404).json({ error: 'Content not found' });
+      }
+      res.json(updatedContent);
+    } catch (error) {
+      console.error('Error updating content:', error);
+      res.status(500).json({ error: 'Failed to update content' });
+    }
+  });
+
   // Images API
   app.get("/api/images", async (req, res) => {
     try {
