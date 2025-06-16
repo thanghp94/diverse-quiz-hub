@@ -83,6 +83,8 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
             const assignmentStudentTry = await assignmentTryResponse.json();
 
             // Create student try
+            console.log('Creating student try with assignment_student_try_id:', assignmentStudentTry.id);
+            
             const studentTryResponse = await fetch('/api/student-tries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -93,10 +95,13 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
             });
 
             if (!studentTryResponse.ok) {
-                throw new Error('Failed to create student try');
+                const errorText = await studentTryResponse.text();
+                console.error('Failed to create student try:', errorText);
+                throw new Error(`Failed to create student try: ${errorText}`);
             }
 
             const studentTry = await studentTryResponse.json();
+            console.log('Student try created successfully:', studentTry);
             
             const newAssignmentTry = {
                 id: assignmentStudentTry.id,

@@ -79,6 +79,10 @@ export interface IStorage {
   createAssignment(assignment: any): Promise<any>;
   getAssignmentById(id: string): Promise<any>;
 
+  // Assignment Student Tries
+  createAssignmentStudentTry(assignmentStudentTryData: any): Promise<any>;
+  getAssignmentStudentTryById(id: string): Promise<any>;
+
   // Student Tries
   createStudentTry(studentTry: any): Promise<any>;
   getStudentTryById(id: string): Promise<any>;
@@ -577,6 +581,8 @@ export class DatabaseStorage implements IStorage {
 
   // Assignment Student Tries
   async createAssignmentStudentTry(assignmentStudentTryData: any): Promise<any> {
+    console.log('Creating assignment_student_try with input:', assignmentStudentTryData);
+    
     const data = {
       assignmentid: assignmentStudentTryData.assignmentid || null,
       contentid: assignmentStudentTryData.contentid || assignmentStudentTryData.contentID || null,
@@ -586,8 +592,16 @@ export class DatabaseStorage implements IStorage {
       typeoftaking: assignmentStudentTryData.typeoftaking || 'Overview'
     };
     
-    const result = await db.insert(assignment_student_try).values(data).returning();
-    return result[0];
+    console.log('Inserting assignment_student_try data:', data);
+    
+    try {
+      const result = await db.insert(assignment_student_try).values(data).returning();
+      console.log('Assignment_student_try created successfully:', result[0]);
+      return result[0];
+    } catch (error) {
+      console.error('Error creating assignment_student_try:', error);
+      throw error;
+    }
   }
 
   async getAssignmentStudentTryById(id: string): Promise<any> {
@@ -606,11 +620,14 @@ export class DatabaseStorage implements IStorage {
     
     console.log('Creating student_try with data:', studentTryData);
     
-    const studentTryResult = await db.insert(student_try).values(studentTryData).returning();
-    
-    console.log('Student_try created successfully:', studentTryResult[0]);
-    
-    return studentTryResult[0];
+    try {
+      const studentTryResult = await db.insert(student_try).values(studentTryData).returning();
+      console.log('Student_try created successfully:', studentTryResult[0]);
+      return studentTryResult[0];
+    } catch (error) {
+      console.error('Error creating student_try:', error);
+      throw error;
+    }
   }
 
   async getStudentTryById(id: string): Promise<any> {
