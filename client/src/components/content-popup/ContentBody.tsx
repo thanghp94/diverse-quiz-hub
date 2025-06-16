@@ -14,12 +14,12 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {content.short_blurb && <Card>
         <CardHeader>
             <h3 className="font-semibold text-xl break-words">Short Blurb</h3>
         </CardHeader>
-        <CardContent className="pb-8">
+        <CardContent className="pb-4">
             <MarkdownRenderer className="text-base leading-relaxed">
                 {content.short_blurb}
             </MarkdownRenderer>
@@ -33,7 +33,7 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
                 <ChevronDown className={`h-5 w-5 text-muted-foreground transition-transform duration-200 ${isSecondBlurbOpen ? "rotate-180" : ""}`} />
             </CollapsibleTrigger>
             <CollapsibleContent>
-                <CardContent className="pt-0 pb-8 px-6">
+                <CardContent className="pt-0 pb-4 px-6">
                     <MarkdownRenderer className="text-base leading-relaxed">
                         {content.second_short_blurb}
                     </MarkdownRenderer>
@@ -46,7 +46,7 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
           <CardHeader>
               <h3 className="font-semibold text-xl break-words">Description</h3>
           </CardHeader>
-          <CardContent className="pb-8">
+          <CardContent className="pb-4">
               <MarkdownRenderer className="text-base leading-relaxed">
                   {content.short_description}
               </MarkdownRenderer>
@@ -57,7 +57,7 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
           <CardHeader>
               <h3 className="font-semibold text-xl break-words">Language Support</h3>
           </CardHeader>
-          <CardContent className="pb-8">
+          <CardContent className="pb-4">
               {content.translation && <div className="mb-4">
                   <h4 className="font-medium text-base text-gray-600 mb-2">Translation:</h4>
                   <MarkdownRenderer className="text-base leading-relaxed">

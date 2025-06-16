@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ImageOff } from "lucide-react";
 import { Content } from "@/hooks/useContent";
 
@@ -59,6 +60,10 @@ export const MediaDisplay = ({ imageUrl, isImageLoading, title, imageid, isFullW
       {/* Image popup modal */}
       <Dialog open={isImagePopupOpen} onOpenChange={setIsImagePopupOpen}>
         <DialogContent className="max-w-6xl max-h-[90vh] p-0">
+          <VisuallyHidden>
+            <DialogTitle>Image View</DialogTitle>
+            <DialogDescription>Full size view of {title}</DialogDescription>
+          </VisuallyHidden>
           <div className="relative w-full h-full flex items-center justify-center bg-black">
             {imageUrl && (
               <img 
