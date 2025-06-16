@@ -25,7 +25,7 @@ const App = () => (
       <Router>
         <Switch>
           <Route path="/login" component={Login} />
-          <Route path="/" component={Index} />
+          <Route path="/" component={Topics} />
           <Route path="/topics" component={Topics} />
           <Route path="/content/:id" component={Content} />
           <Route path="/leaderboard" component={Leaderboard} />

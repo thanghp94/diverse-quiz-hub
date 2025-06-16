@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
@@ -11,6 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 const Header = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -34,15 +42,149 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-cyan-500 text-white px-6 py-4">
+    <header className="bg-purple-600 text-white px-6 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-white rounded flex items-center justify-center">
-            <span className="text-cyan-500 font-bold text-sm">M</span>
+            <span className="text-purple-600 font-bold text-sm">M</span>
           </div>
           <h1 className="text-xl font-semibold">Meraki WSC</h1>
         </div>
         
+        <NavigationMenu>
+          <NavigationMenuList className="flex items-center gap-1">
+            {/* Bowl & Challenge Dropdown */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
+                Bowl & Challenge
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="w-48 p-2">
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?tab=overview-quiz')}
+                  >
+                    Overview Quiz
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?tab=easy-quiz')}
+                  >
+                    Easy Quiz
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?tab=hard-quiz')}
+                  >
+                    Hard Quiz
+                  </NavigationMenuLink>
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {/* Debate Dropdown */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
+                Debate
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="w-48 p-2">
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/debate?tab=lesson')}
+                  >
+                    Debate Lesson
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/debate?tab=motions')}
+                  >
+                    Motions
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/debate?tab=assignment')}
+                  >
+                    Assignment
+                  </NavigationMenuLink>
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {/* Writing Dropdown */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
+                Writing
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="w-48 p-2">
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/writing?tab=lesson')}
+                  >
+                    Writing Lesson
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/writing?tab=assignment')}
+                  >
+                    Assignment
+                  </NavigationMenuLink>
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {/* Challenge Subject Dropdown */}
+            <NavigationMenuItem>
+              <NavigationMenuTrigger className="bg-transparent text-white hover:bg-white/20 data-[state=open]:bg-white/20">
+                Challenge Subject
+              </NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <div className="w-48 p-2">
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?subject=challenge&tab=overview-quiz')}
+                  >
+                    Overview Quiz
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?subject=challenge&tab=easy-quiz')}
+                  >
+                    Easy Quiz
+                  </NavigationMenuLink>
+                  <NavigationMenuLink 
+                    className="block px-3 py-2 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    onClick={() => setLocation('/topics?subject=challenge&tab=hard-quiz')}
+                  >
+                    Hard Quiz
+                  </NavigationMenuLink>
+                </div>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+
+            {/* Leaderboard */}
+            <NavigationMenuItem>
+              <NavigationMenuLink 
+                className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded cursor-pointer"
+                onClick={() => setLocation('/leaderboard')}
+              >
+                Leaderboard
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            {/* Matching */}
+            <NavigationMenuItem>
+              <NavigationMenuLink 
+                className="px-4 py-2 text-sm text-white hover:bg-white/20 rounded cursor-pointer"
+                onClick={() => setLocation('/matching')}
+              >
+                Matching
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+
         <div className="flex items-center gap-4">
           <div className="relative max-w-md w-full">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />

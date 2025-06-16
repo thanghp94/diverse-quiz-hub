@@ -1,12 +1,13 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
 import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
-import SharedNav from "@/components/SharedNav";
+import Header from "@/components/Header";
 import TopicQuizRunner from "@/components/TopicQuizRunner";
+import { useLocation } from "wouter";
 
 interface Topic {
   id: string;
@@ -25,6 +26,7 @@ interface Image {
 }
 
 const Topics = () => {
+  const [location] = useLocation();
   const [openContent, setOpenContent] = useState<string[]>([]);
   const [selectedContentInfo, setSelectedContentInfo] = useState<{
     content: Content;
@@ -38,6 +40,11 @@ const Topics = () => {
     level: 'Overview' | 'Easy' | 'Hard';
     topicName: string;
   } | null>(null);
+
+  // Parse URL parameters
+  const urlParams = new URLSearchParams(location.split('?')[1] || '');
+  const activeTab = urlParams.get('tab');
+  const subjectFilter = urlParams.get('subject');
 
   // Fetch topics where parentid is blank and topic is not blank, ordered alphabetically
   const {
@@ -164,72 +171,94 @@ const Topics = () => {
   };
 
   if (isLoading) {
-    return <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
-        <div className="max-w-7xl mx-auto">
-          <SharedNav />
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
-            <p className="text-lg text-white/80">
-              Loading topics...
-            </p>
-          </div>
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-12 w-12 animate-spin text-white" />
-            <span className="ml-3 text-white text-lg">Loading topics...</span>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+        <Header />
+        <div className="p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-bold text-white mb-3">Topics</h1>
+              <p className="text-lg text-white/80">
+                Loading topics...
+              </p>
+            </div>
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-12 w-12 animate-spin text-white" />
+              <span className="ml-3 text-white text-lg">Loading topics...</span>
+            </div>
           </div>
         </div>
-      </div>;
+      </div>
+    );
   }
   if (error) {
-    return <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
-        <div className="max-w-7xl mx-auto">
-          <SharedNav />
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
-            <p className="text-lg text-white/80">
-              Error loading topics
-            </p>
-          </div>
-          <div className="text-center py-12">
-            <p className="text-white">Error loading topics. Please try again later.</p>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+        <Header />
+        <div className="p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-bold text-white mb-3">Topics</h1>
+              <p className="text-lg text-white/80">
+                Error loading topics
+              </p>
+            </div>
+            <div className="text-center py-12">
+              <p className="text-white">Error loading topics. Please try again later.</p>
+            </div>
           </div>
         </div>
-      </div>;
+      </div>
+    );
   }
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 p-4">
-      <div className="max-w-7xl mx-auto">
-        <SharedNav />
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+      <Header />
+      <div className="p-4">
+        <div className="max-w-7xl mx-auto">
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-white mb-3">Bowl & Challenge Topics</h1>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-          {topics?.map(topic => {
-            const subtopics = getSubtopics(topic.id);
-            const topicContent = getTopicContent(topic.id);
-            const isExpanded = expandedTopicId === topic.id;
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-white mb-3">
+              {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
+            </h1>
+            {activeTab && (
+              <p className="text-lg text-white/80">
+                Select a topic below to start your {activeTab.replace('-', ' ')} quiz
+              </p>
+            )}
+          </div>
 
-            return (
-              <TopicListItem
-                key={topic.id}
-                topic={topic}
-                subtopics={subtopics}
-                topicContent={topicContent}
-                allImages={allImages}
-                isExpanded={isExpanded}
-                openContent={openContent}
-                onToggleTopic={handleToggleTopic}
-                onToggleContent={toggleContent}
-                onContentClick={handleContentClick}
-                onSubtopicClick={handleSubtopicClick}
-                onStartQuiz={handleStartQuiz}
-                getTopicContent={getTopicContent}
-                onStartTopicQuiz={handleStartTopicQuiz}
-              />
-            );
-          })}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            {topics?.map(topic => {
+              const subtopics = getSubtopics(topic.id);
+              const topicContent = getTopicContent(topic.id);
+              const isExpanded = expandedTopicId === topic.id;
+
+              return (
+                <TopicListItem
+                  key={topic.id}
+                  topic={topic}
+                  subtopics={subtopics}
+                  topicContent={topicContent}
+                  allImages={allImages}
+                  isExpanded={isExpanded}
+                  openContent={openContent}
+                  onToggleTopic={handleToggleTopic}
+                  onToggleContent={toggleContent}
+                  onContentClick={handleContentClick}
+                  onSubtopicClick={handleSubtopicClick}
+                  onStartQuiz={handleStartQuiz}
+                  getTopicContent={getTopicContent}
+                  onStartTopicQuiz={handleStartTopicQuiz}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
+
       <ContentPopup
         isOpen={!!selectedContentInfo}
         onClose={closePopup}
@@ -248,6 +277,7 @@ const Topics = () => {
         imageUrl={selectedContentInfo?.imageUrl ?? null}
         isImageLoading={isImagesLoading}
       />
+
       {topicQuizInfo && (
         <TopicQuizRunner
           topicId={topicQuizInfo.topicId}
