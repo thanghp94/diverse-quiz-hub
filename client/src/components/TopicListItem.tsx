@@ -241,12 +241,14 @@ export const TopicListItem = ({
                                       <DropdownMenuContent>
                                         <DropdownMenuItem onClick={(e) => {
                                           e.stopPropagation();
+                                          console.log('Easy Quiz clicked for content:', content.id, content.title);
                                           onStartQuiz(content, topicContent, 'Easy');
                                         }}>
                                           Easy Quiz
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={(e) => {
                                           e.stopPropagation();
+                                          console.log('Hard Quiz clicked for content:', content.id, content.title);
                                           onStartQuiz(content, topicContent, 'Hard');
                                         }}>
                                           Hard Quiz
@@ -341,12 +343,14 @@ export const TopicListItem = ({
                                                   <DropdownMenuContent>
                                                     <DropdownMenuItem onClick={(e) => {
                                                       e.stopPropagation();
+                                                      console.log('Easy Quiz clicked for subtopic content:', content.id, content.title);
                                                       onStartQuiz(content, subtopicContent, 'Easy');
                                                     }}>
                                                       Easy Quiz
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={(e) => {
                                                       e.stopPropagation();
+                                                      console.log('Hard Quiz clicked for subtopic content:', content.id, content.title);
                                                       onStartQuiz(content, subtopicContent, 'Hard');
                                                     }}>
                                                       Hard Quiz
