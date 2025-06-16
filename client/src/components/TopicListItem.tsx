@@ -58,7 +58,7 @@ const getContentIcon = (content: any) => {
 };
 
 // Component for content item thumbnail
-const ContentThumbnail = ({ content }: { content: any }) => {
+const ContentThumbnail = ({ content, onClick }: { content: any, onClick?: () => void }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
 
   // Only show thumbnail if there's an imageid
@@ -67,26 +67,13 @@ const ContentThumbnail = ({ content }: { content: any }) => {
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-          <img 
-            src={imageUrl} 
-            alt={content.title} 
-            className="w-full h-full object-cover"
-          />
-        </div>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0">
-        <div className="relative w-full">
-          <img 
-            src={imageUrl} 
-            alt={content.title}
-            className="w-full h-auto max-h-[85vh] object-contain"
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+      <img 
+        src={imageUrl} 
+        alt={content.title} 
+        className="w-full h-full object-cover"
+      />
+    </div>
   );
 };
 
