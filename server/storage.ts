@@ -202,9 +202,9 @@ export class DatabaseStorage implements IStorage {
 
       // Add level filtering if provided
       if (level && level !== 'Overview') {
-        // Convert level to match database format (Easy -> easy, Hard -> hard)
+        // Handle case-insensitive level matching
         const dbLevel = level.toLowerCase();
-        query = query.where(eq(questions.questionlevel, dbLevel));
+        query = query.where(sql`LOWER(${questions.questionlevel}) = ${dbLevel}`);
       }
 
       const result = await query;
