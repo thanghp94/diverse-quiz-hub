@@ -270,9 +270,6 @@ export const TopicListItem = ({
                                           <ContentThumbnail content={content} />
                                           <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                              <Badge className={`${getContentTypeColor(content)} text-xs`}>
-                                                {getContentIcon(content)}
-                                              </Badge>
                                               <span className="text-white/90 text-xs">{content.title}</span>
                                             </div>
                                             {content.short_description && <p className="text-white/60 text-xs mt-1">{formatDescription(content.short_description)}</p>}
