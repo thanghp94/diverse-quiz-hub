@@ -187,16 +187,11 @@ export const MatchingListPopup = ({
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      {activity.type && (
-                        <span>
-                          <span className="font-medium">Type:</span> {activity.type}
-                        </span>
-                      )}
+                    <div className="flex items-center gap-2 text-sm">
                       {activity.subject && (
-                        <span>
-                          <span className="font-medium">Subject:</span> {activity.subject}
-                        </span>
+                        <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium border border-blue-200">
+                          {activity.subject}
+                        </div>
                       )}
                     </div>
                     {activity.description && (
