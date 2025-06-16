@@ -2,6 +2,7 @@
 import Header from "./Header";
 import ContentSection from "./ContentSection";
 import TopicCard from "./TopicCard";
+import MatchingActivityButton from "./MatchingActivityButton";
 import { Card } from "@/components/ui/card";
 import { Link } from "wouter";
 import { useTopics } from "@/hooks/useTopics";
@@ -250,6 +251,73 @@ const HomePage = () => {
           items={writingItems}
           color="bg-green-100"
         />
+
+        {/* Matching Activities Section */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1 rounded bg-orange-100">
+              <Target className="h-4 w-4 text-orange-600" />
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800">Matching Activities</h2>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card className="p-6 hover:shadow-md transition-shadow">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-orange-600" />
+                  <h3 className="font-semibold text-gray-800">Infrastructure Projects</h3>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Picture-title and title-description matching using real content from prompt1-6 fields
+                </p>
+                <MatchingActivityButton
+                  matchingId="1"
+                  title="Start Activity"
+                  description="Failed mega projects - costs, delays, and frustrations"
+                  variant="default"
+                  size="sm"
+                />
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-md transition-shadow">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold text-gray-800">Test Activity 10</h3>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Another matching activity to test different content combinations
+                </p>
+                <MatchingActivityButton
+                  matchingId="10"
+                  title="Try Activity"
+                  variant="outline"
+                  size="sm"
+                />
+              </div>
+            </Card>
+
+            <Card className="p-6 hover:shadow-md transition-shadow">
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-green-600" />
+                  <h3 className="font-semibold text-gray-800">Test Activity 13</h3>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Additional matching activity for comprehensive testing
+                </p>
+                <MatchingActivityButton
+                  matchingId="13"
+                  title="Launch Activity"
+                  variant="secondary"
+                  size="sm"
+                />
+              </div>
+            </Card>
+          </div>
+        </div>
 
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
