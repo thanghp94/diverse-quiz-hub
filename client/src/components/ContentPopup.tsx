@@ -80,7 +80,7 @@ const ContentPopup = ({
               <DialogTitle className="text-2xl font-bold text-blue-600">
                 {content.title}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="whitespace-pre-line">
                 {content.short_description || "Detailed content view."}
               </DialogDescription>
             </DialogHeader>
