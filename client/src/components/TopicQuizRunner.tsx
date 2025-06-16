@@ -172,7 +172,6 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
             onFinish={handleQuizFinish}
             assignmentTry={assignmentTry}
             studentTryId={assignmentTry.studentTryId}
-            setQuizMode={() => {}} // Provide empty function since TopicQuizRunner handles its own state
         />
     );
 };

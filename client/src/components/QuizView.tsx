@@ -282,55 +282,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                         })}
                     </div>
 
-                    {/* Content Difficulty Rating */}
-                    {contentId && (
-                        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                            <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">
-                                How difficult is this content?
-                            </h4>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant={contentRating === 'easy' ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => handleContentRating('easy')}
-                                    className={`${
-                                        contentRating === 'easy' 
-                                            ? 'bg-green-600 hover:bg-green-700 text-white' 
-                                            : 'hover:bg-green-50 hover:border-green-300'
-                                    }`}
-                                >
-                                    <ThumbsUp className="w-3 h-3 mr-1" />
-                                    Easy
-                                </Button>
-                                <Button
-                                    variant={contentRating === 'normal' ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => handleContentRating('normal')}
-                                    className={`${
-                                        contentRating === 'normal' 
-                                            ? 'bg-orange-600 hover:bg-orange-700 text-white' 
-                                            : 'hover:bg-orange-50 hover:border-orange-300'
-                                    }`}
-                                >
-                                    <Minus className="w-3 h-3 mr-1" />
-                                    Normal
-                                </Button>
-                                <Button
-                                    variant={contentRating === 'hard' ? 'default' : 'outline'}
-                                    size="sm"
-                                    onClick={() => handleContentRating('hard')}
-                                    className={`${
-                                        contentRating === 'hard' 
-                                            ? 'bg-red-600 hover:bg-red-700 text-white' 
-                                            : 'hover:bg-red-50 hover:border-red-300'
-                                    }`}
-                                >
-                                    <ThumbsDown className="w-3 h-3 mr-1" />
-                                    Hard
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                    
 
                     <div className="mt-6 flex justify-start">
                         <Button variant="outline" onClick={handleShowContent} disabled={isContentLoading || showFeedback}>
