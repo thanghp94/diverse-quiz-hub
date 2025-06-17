@@ -35,6 +35,7 @@ const Topics = () => {
     content: Content;
     contextList: Content[];
     imageUrl: string | null;
+    quizLevel?: 'Easy' | 'Hard' | null;
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
@@ -159,6 +160,7 @@ const Topics = () => {
       content,
       contextList,
       imageUrl: findImageUrl(content),
+      quizLevel: level,
     });
     setQuizContentId(content.id);
   };
@@ -298,6 +300,7 @@ const Topics = () => {
           }
         }}
         startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
+        quizLevel={selectedContentInfo?.quizLevel}
         imageUrl={selectedContentInfo?.imageUrl ?? null}
         isImageLoading={isImagesLoading}
       />
