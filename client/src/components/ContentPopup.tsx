@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import type { Content } from "@shared/schema";
 import { useContent } from "@/hooks/useContent";
 import { useEffect, useState } from "react";
@@ -459,58 +460,38 @@ const ContentPopup = ({
         document.body
       )}
 
-      {/* Full-screen Video Modal - Portal Rendered */}
-      {isVideoModalOpen && modalVideoUrl && createPortal(
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center p-4"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Video modal backdrop clicked, closing');
-            setIsVideoModalOpen(false);
-            setModalVideoUrl(null);
-          }}
-          style={{ zIndex: 99999 }}
-        >
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Video modal X button clicked - closing modal');
-              setIsVideoModalOpen(false);
-              setModalVideoUrl(null);
-            }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log('Video modal X button mouse down');
-            }}
-            onMouseUp={() => {
-              console.log('Video modal X button mouse up');
-            }}
-            className="fixed top-4 right-4 text-white text-3xl bg-black bg-opacity-70 hover:bg-opacity-90 rounded-full w-12 h-12 flex items-center justify-center z-[100001] font-bold cursor-pointer"
-            style={{ 
-              position: 'fixed',
-              top: '16px',
-              right: '16px',
-              zIndex: 100001,
-              pointerEvents: 'all'
-            }}
-          >
-            ×
-          </button>
-          <div className="relative w-full max-w-6xl aspect-video">
-            <iframe
-              src={modalVideoUrl}
-              title="Full-screen video"
-              className="w-full h-full rounded-lg"
-              allowFullScreen
-              onClick={(e) => e.stopPropagation()}
-            />
+      {/* Video Modal - Using Dialog like TopicListItem */}
+      <Dialog open={isVideoModalOpen} onOpenChange={setIsVideoModalOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+            <h3 className="text-white text-lg font-medium truncate mr-4">{content?.title || 'Video'}</h3>
+            <button
+              onClick={() => {
+                console.log('Video modal close button clicked');
+                setIsVideoModalOpen(false);
+                setModalVideoUrl(null);
+              }}
+              className="text-white hover:bg-white/20 flex-shrink-0 px-3 py-1 rounded transition-colors"
+            >
+              ✕
+            </button>
           </div>
-        </div>,
-        document.body
-      )}
+          <div className="p-6">
+            {modalVideoUrl && (
+              <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                <iframe 
+                  className="w-full h-full" 
+                  src={modalVideoUrl} 
+                  title={content?.title || 'Video'} 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
