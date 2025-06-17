@@ -78,7 +78,7 @@ const ContentPopup = ({
   };
 
   return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { closeQuiz(); } onClose(); }}>
-      <DialogContent className={cn("max-w-4xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-6xl")}>
+      <DialogContent className={cn("max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-7xl")}>
         {quizMode && questionIds.length > 0 && assignmentTry ? (
           <QuizView 
             questionIds={questionIds} 
