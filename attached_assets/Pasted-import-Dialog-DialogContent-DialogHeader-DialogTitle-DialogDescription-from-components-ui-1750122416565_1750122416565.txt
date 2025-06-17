@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Content } from "@/hooks/useContent";
 import { useEffect } from "react";
@@ -10,72 +9,13 @@ import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
 
 interface ContentPopupProps {
-  isOpen: boolean;
-  onClose: () => void;
-  content: Content | null;
-  contentList: Content[];
-  onContentChange: (newContent: Content) => void;
-  startQuizDirectly?: boolean;
-  quizLevel?: 'Easy' | 'Hard' | null;
-  imageUrl: string | null | undefined;
-  isImageLoading: boolean;
+  // ... other props
 }
 
 const ContentPopup = ({
-  isOpen,
-  onClose,
-  content,
-  contentList,
-  onContentChange,
-  startQuizDirectly = false,
-  quizLevel,
-  imageUrl,
-  isImageLoading,
+  // ... other parameters
 }: ContentPopupProps) => {
-  const {
-    quizMode,
-    assignmentTry,
-    studentTry,
-    questionIds,
-    startQuiz,
-    closeQuiz,
-    setStudentTry,
-  } = useQuiz({ content, onClose, startQuizDirectly, level: quizLevel });
-
-  const {
-    videoData,
-    video2Data,
-    videoEmbedUrl,
-    video2EmbedUrl,
-  } = useContentMedia(content);
-
-  useEffect(() => {
-    if (isOpen && startQuizDirectly && !quizMode) {
-      startQuiz();
-    }
-  }, [isOpen, startQuizDirectly, quizMode, startQuiz]);
-
-  if (!content) {
-    return (
-      <Dialog open={isOpen} onOpenChange={(open) => { if(!open) onClose(); }}>
-        <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh]">
-          <div>No content available</div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  const currentIndex = contentList.findIndex(item => item.id === content.id);
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      onContentChange(contentList[currentIndex - 1]);
-    }
-  };
-  const handleNext = () => {
-    if (currentIndex < contentList.length - 1) {
-      onContentChange(contentList[currentIndex + 1]);
-    }
-  };
+  // ... existing logic
 
   return <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { closeQuiz(); } onClose(); }}>
       <DialogContent className={cn("max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-7xl")}>
@@ -89,9 +29,7 @@ const ContentPopup = ({
           />
         ) : (
           <>
-            {/* Header with title, description and image */}
             <div className="flex flex-col lg:flex-row lg:gap-4 mb-3">
-              {/* Left: Title and Description */}
               <div className="flex-1 lg:w-1/2">
                 <DialogHeader>
                   <DialogTitle className="text-center text-2xl font-bold text-blue-600">
@@ -114,7 +52,6 @@ const ContentPopup = ({
                 />
               </div>
             </div>
-
             {/* Content below */}
             <ContentPopupView
                 content={content}
