@@ -9,7 +9,10 @@ import { Edit, Save, X, Video } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Content } from '@shared/schema';
 
-
+interface ContentEditorProps {
+  content: Content;
+  onContentUpdate?: (updatedContent: Content) => void;
+}
 
 export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) {
   const [isEditing, setIsEditing] = useState(false);

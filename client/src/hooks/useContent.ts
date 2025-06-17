@@ -2,6 +2,8 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Content } from "@shared/schema";
 
+export type { Content };
+
 export const useContent = (topicId?: string) => {
   return useQuery({
     queryKey: ['content', topicId],
