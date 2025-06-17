@@ -726,7 +726,7 @@ export const TopicListItem = ({
                               />
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
+                                    <Button variant="ghost" size="icon" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900" onClick={(e) => e.stopPropagation()}>
                                         <HelpCircle className="h-4 w-4" />
                                         <span className="sr-only">Start Quiz for {subtopic.topic}</span>
                                     </Button>
@@ -829,14 +829,14 @@ export const TopicListItem = ({
                                       </div>
                                       {/* Video Popup - Using Dialog */}
                                       <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
-                                        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
-                                          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
-                                            <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+                                        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-white border-gray-200">
+                                          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+                                            <h3 className="text-gray-900 text-lg font-medium truncate mr-4">{content.title}</h3>
                                             <Button 
                                               variant="ghost" 
                                               size="sm"
                                               onClick={() => setVideoPopupOpen(false)}
-                                              className="text-white hover:bg-white/20 flex-shrink-0"
+                                              className="text-gray-700 hover:bg-gray-100 flex-shrink-0"
                                             >
                                               ✕
                                             </Button>
@@ -845,7 +845,7 @@ export const TopicListItem = ({
                                             {hasVideo1 && (
                                               <div>
                                                 {videoData.video_name && (
-                                                  <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
+                                                  <h4 className="text-gray-900 font-medium mb-3 text-base">{videoData.video_name}</h4>
                                                 )}
                                                 <div className="aspect-video bg-black rounded-lg overflow-hidden">
                                                   <iframe 
