@@ -66,6 +66,21 @@ const ContentPopup = ({
     }
   }, [isOpen, startQuizDirectly, quizMode, startQuiz]);
 
+  // Reset modal states when popup opens/closes or content changes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsImageModalOpen(false);
+      setIsVideoModalOpen(false);
+      setModalVideoUrl(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setIsImageModalOpen(false);
+    setIsVideoModalOpen(false);
+    setModalVideoUrl(null);
+  }, [content?.id]);
+
   if (!content) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => { if(!open) onClose(); }}>
