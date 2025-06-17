@@ -19,8 +19,15 @@ interface QuizQuestion {
 }
 
 interface LinkedContent {
+    id: string;
     title: string;
     short_description: string | null;
+    short_blurb: string | null;
+    imageid: string | null;
+    topicid: string;
+    videoid: string | null;
+    videoid2: string | null;
+    information: string | null;
 }
 
 interface QuizViewProps {
@@ -260,25 +267,34 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
 
     const choices = [currentQuestion.cau_tra_loi_1, currentQuestion.cau_tra_loi_2, currentQuestion.cau_tra_loi_3, currentQuestion.cau_tra_loi_4].filter((c): c is string => c !== null && c !== '');
 
+    const totalQuestions = questionIds.length;
+    const progressPercentage = totalQuestions > 0 ? Math.round((correctAnswersCount / totalQuestions) * 100) : 0;
+
     return (
-        <div className="p-4">
-            <Card className="border-gray-200 shadow-lg">
-                <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle>Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
-                        <div className="flex gap-2">
-                            <Badge className="bg-green-100 text-green-800 border-green-500">
-                                <Check className="h-4 w-4 mr-1" /> Correct: {correctAnswersCount}
-                            </Badge>
-                            <Badge className="bg-red-100 text-red-800 border-red-500">
-                                <X className="h-4 w-4 mr-1" /> Incorrect: {incorrectAnswersCount}
-                            </Badge>
+        <div className="p-6 h-full">
+            <Card className="border-gray-200 shadow-lg h-full">
+                <CardHeader className="pb-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <CardTitle className="text-xl">Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
+                        <div className="flex items-center gap-3">
+                            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+                                <div className="text-sm text-blue-600 font-medium mb-1">Progress</div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-20 bg-blue-100 rounded-full h-2">
+                                        <div 
+                                            className="bg-blue-500 rounded-full h-2 transition-all duration-300"
+                                            style={{ width: `${(correctAnswersCount / totalQuestions) * 100}%` }}
+                                        />
+                                    </div>
+                                    <span className="text-blue-700 font-bold text-sm">{progressPercentage}%</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <CardDescription className="text-lg pt-2">{currentQuestion.noi_dung}</CardDescription>
+                    <CardDescription className="text-2xl font-semibold text-blue-600 pt-2 leading-relaxed">{currentQuestion.noi_dung}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CardContent className="pb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {choices.map((choice, index) => {
                             const choiceLetter = String.fromCharCode(65 + index);
                             let buttonClass = "";
@@ -293,12 +309,12 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                                 <Button
                                     key={index}
                                     variant="outline"
-                                    className={`justify-start text-left h-auto py-3 px-4 whitespace-normal ${buttonClass}`}
+                                    className={`justify-start text-left h-auto py-6 px-6 whitespace-normal text-lg min-h-[80px] ${buttonClass}`}
                                     onClick={() => handleAnswerSelect(index)}
                                     disabled={showFeedback}
                                 >
-                                    <span className="font-bold mr-4">{choiceLetter}</span>
-                                    <span>{choice}</span>
+                                    <span className="font-bold mr-4 text-blue-600 text-xl">{choiceLetter}</span>
+                                    <span className="text-blue-700 font-medium">{choice}</span>
                                 </Button>
                             )
                         })}
@@ -313,12 +329,44 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                     </div>
 
                     {showContent && linkedContent && (
-                        <Card className="mt-4 bg-gray-50 border-gray-200">
+                        <Card className="mt-6 bg-blue-50 border-blue-200">
                             <CardHeader>
-                                <CardTitle className="text-xl">{linkedContent.title}</CardTitle>
+                                <CardTitle className="text-2xl text-blue-700">{linkedContent.title}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-gray-700">{linkedContent.short_description || "No description available."}</p>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    {/* Left side: Text content */}
+                                    <div className="space-y-4">
+                                        {linkedContent.short_description && (
+                                            <div>
+                                                <h4 className="font-semibold text-blue-600 mb-2">Description:</h4>
+                                                <p className="text-gray-700 leading-relaxed">{linkedContent.short_description}</p>
+                                            </div>
+                                        )}
+                                        {linkedContent.short_blurb && (
+                                            <div>
+                                                <h4 className="font-semibold text-blue-600 mb-2">Details:</h4>
+                                                <div className="text-gray-700 leading-relaxed whitespace-pre-line">{linkedContent.short_blurb}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    {/* Right side: Image */}
+                                    {linkedContent.imageid && (
+                                        <div className="flex justify-center">
+                                            <img
+                                                src={linkedContent.imageid}
+                                                alt={linkedContent.title}
+                                                className="max-w-full h-auto rounded-lg shadow-md"
+                                                style={{ maxHeight: '400px' }}
+                                                onError={(e) => {
+                                                    console.log('Content image failed to load:', linkedContent.imageid);
+                                                    e.currentTarget.style.display = 'none';
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                             </CardContent>
                         </Card>
                     )}
