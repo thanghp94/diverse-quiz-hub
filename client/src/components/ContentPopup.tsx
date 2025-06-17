@@ -105,7 +105,12 @@ const ContentPopup = ({
 
   return (
     <>
-      <Dialog open={isOpen} onOpenChange={(open) => { if(!open) { closeQuiz(); } onClose(); }}>
+      <Dialog open={isOpen} onOpenChange={(open) => { 
+        if(!open && !isImageModalOpen && !isVideoModalOpen) { 
+          closeQuiz(); 
+          onClose(); 
+        } 
+      }}>
         <DialogContent className={cn("max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-7xl")}>
           {quizMode && questionIds.length > 0 && assignmentTry ? (
             <QuizView 
@@ -254,7 +259,10 @@ const ContentPopup = ({
                     {videoEmbedUrl && (
                       <div 
                         className="aspect-video relative cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Video 1 clicked, opening modal with URL:', videoEmbedUrl);
                           setModalVideoUrl(videoEmbedUrl);
                           setIsVideoModalOpen(true);
                         }}
@@ -277,7 +285,10 @@ const ContentPopup = ({
                     {video2EmbedUrl && (
                       <div 
                         className="aspect-video relative cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Video 2 clicked, opening modal with URL:', video2EmbedUrl);
                           setModalVideoUrl(video2EmbedUrl);
                           setIsVideoModalOpen(true);
                         }}
@@ -379,25 +390,32 @@ const ContentPopup = ({
         document.body
       )}
 
-      {/* Full-screen Video Modal */}
-      {isVideoModalOpen && modalVideoUrl && (
+      {/* Full-screen Video Modal - Portal Rendered */}
+      {isVideoModalOpen && modalVideoUrl && createPortal(
         <div 
-          className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4"
-          onClick={() => {
+          className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center p-4"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Video modal backdrop clicked, closing');
             setIsVideoModalOpen(false);
             setModalVideoUrl(null);
           }}
+          style={{ zIndex: 99999 }}
         >
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Video modal close button clicked');
+              setIsVideoModalOpen(false);
+              setModalVideoUrl(null);
+            }}
+            className="fixed top-4 right-4 text-white text-3xl bg-black bg-opacity-70 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-90 z-[100000] font-bold"
+          >
+            ×
+          </button>
           <div className="relative w-full max-w-6xl aspect-video">
-            <button
-              onClick={() => {
-                setIsVideoModalOpen(false);
-                setModalVideoUrl(null);
-              }}
-              className="absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 z-10"
-            >
-              ×
-            </button>
             <iframe
               src={modalVideoUrl}
               title="Full-screen video"
@@ -406,7 +424,8 @@ const ContentPopup = ({
               onClick={(e) => e.stopPropagation()}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
