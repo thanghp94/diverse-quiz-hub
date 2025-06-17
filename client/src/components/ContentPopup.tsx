@@ -108,7 +108,7 @@ const ContentPopup = ({
                     <DialogTitle className="text-2xl font-bold text-blue-600">
                       {content.title}
                     </DialogTitle>
-                    <DialogDescription className="whitespace-pre-line text-lg leading-relaxed">
+                    <DialogDescription className="whitespace-pre-line text-[16px] text-[#131b2a]">
                       {content.short_description || "Detailed content view."}
                     </DialogDescription>
                   </DialogHeader>
@@ -150,8 +150,51 @@ const ContentPopup = ({
                   )}
                 </div>
 
-                {/* Right: Image and Videos */}
-                <div className="space-y-6">
+                {/* Right: Controls, Image and Videos */}
+                <div className="space-y-4">
+                  {/* Navigation and Controls - Compact */}
+                  <div className="space-y-3">
+                    {/* Navigation Controls */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={handlePrevious} 
+                          disabled={currentIndex <= 0}
+                          className="px-2 py-1 text-xs border rounded disabled:opacity-50"
+                        >
+                          ← Prev
+                        </button>
+                        <span className="text-xs text-gray-600 px-2">
+                          {currentIndex + 1}/{contentList.length}
+                        </span>
+                        <button 
+                          onClick={handleNext} 
+                          disabled={currentIndex >= contentList.length - 1}
+                          className="px-2 py-1 text-xs border rounded disabled:opacity-50"
+                        >
+                          Next →
+                        </button>
+                      </div>
+                      <ContentRatingButtons contentId={content.id} />
+                    </div>
+
+                    {/* Quiz Controls */}
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => startQuiz('Easy')}
+                        className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                      >
+                        Easy Quiz
+                      </button>
+                      <button 
+                        onClick={() => startQuiz('Hard')}
+                        className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
+                      >
+                        Hard Quiz
+                      </button>
+                    </div>
+                  </div>
+
                   {content.imageid && (
                     <div className="w-full">
                       <img
@@ -238,46 +281,7 @@ const ContentPopup = ({
                 </div>
               </div>
 
-              {/* Navigation and Controls */}
-              <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t">
-                {/* Navigation Controls */}
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={handlePrevious} 
-                    disabled={currentIndex <= 0}
-                    className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                  >
-                    ← Previous
-                  </button>
-                  <span className="text-sm text-gray-600">
-                    {currentIndex + 1} of {contentList.length}
-                  </span>
-                  <button 
-                    onClick={handleNext} 
-                    disabled={currentIndex >= contentList.length - 1}
-                    className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                  >
-                    Next →
-                  </button>
-                </div>
 
-                {/* Quiz and Rating Controls */}
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => startQuiz('Easy')}
-                    className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                  >
-                    Easy Quiz
-                  </button>
-                  <button 
-                    onClick={() => startQuiz('Hard')}
-                    className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
-                  >
-                    Hard Quiz
-                  </button>
-                  <ContentRatingButtons contentId={content.id} />
-                </div>
-              </div>
 
               {/* Content Editor - Admin Only Dropdown */}
               {(() => {
