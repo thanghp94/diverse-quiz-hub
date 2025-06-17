@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { Search, User, LogOut } from "lucide-react";
+import { Search, User, LogOut, Sun, Moon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { StreakDisplay } from "./StreakDisplay";
+import { useTheme } from "../contexts/ThemeContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
 const Header = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [, setLocation] = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const userData = localStorage.getItem("currentUser");
@@ -35,11 +37,11 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 text-gray-900 px-6 py-3 shadow-sm">
+    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white px-6 py-3 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gray-900 rounded flex items-center justify-center">
-            <span className="text-white font-bold text-sm">M</span>
+          <div className="w-8 h-8 bg-gray-900 dark:bg-white rounded flex items-center justify-center">
+            <span className="text-white dark:text-gray-900 font-bold text-sm">M</span>
           </div>
           <h1 className="text-xl font-semibold">Meraki WSC</h1>
         </div>
@@ -47,37 +49,37 @@ const Header = () => {
         <div className="flex items-center gap-6">
           <button 
             onClick={() => setLocation('/')}
-            className="text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             Bowl & Challenge
           </button>
           <button 
             onClick={() => setLocation('/challenge-subject')}
-            className="text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             Challenge Subject
           </button>
           <button 
             onClick={() => setLocation('/debate')}
-            className="text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             Debate
           </button>
           <button 
             onClick={() => setLocation('/writing')}
-            className="text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             Writing
           </button>
           <button 
             onClick={() => setLocation('/assignments')}
-            className="text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             Assignments
           </button>
           <button 
             onClick={() => setLocation('/leaderboard')}
-            className="text-gray-700 hover:text-gray-900 transition-colors"
+            className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             Leaderboard
           </button>
