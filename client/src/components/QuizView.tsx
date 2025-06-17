@@ -5,6 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Check, X, ThumbsUp, Minus, ThumbsDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 
 interface QuizQuestion {
     id: string;
@@ -268,7 +269,8 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     const choices = [currentQuestion.cau_tra_loi_1, currentQuestion.cau_tra_loi_2, currentQuestion.cau_tra_loi_3, currentQuestion.cau_tra_loi_4].filter((c): c is string => c !== null && c !== '');
 
     const totalQuestions = questionIds.length;
-    const progressPercentage = totalQuestions > 0 ? Math.round((correctAnswersCount / totalQuestions) * 100) : 0;
+    const correctPercentage = totalQuestions > 0 ? Math.round((correctAnswersCount / totalQuestions) * 100) : 0;
+    const incorrectPercentage = totalQuestions > 0 ? Math.round((incorrectAnswersCount / totalQuestions) * 100) : 0;
 
     return (
         <div className="p-6 h-full">
@@ -277,16 +279,24 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                     <div className="flex justify-between items-center mb-4">
                         <CardTitle className="text-xl">Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
                         <div className="flex items-center gap-3">
-                            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
-                                <div className="text-sm text-blue-600 font-medium mb-1">Progress</div>
-                                <div className="flex items-center gap-2">
-                                    <div className="w-20 bg-blue-100 rounded-full h-2">
+                            <div className="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
+                                <div className="text-sm text-gray-600 font-medium mb-2">Progress</div>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-24 bg-gray-200 rounded-full h-3 relative overflow-hidden">
                                         <div 
-                                            className="bg-blue-500 rounded-full h-2 transition-all duration-300"
-                                            style={{ width: `${(correctAnswersCount / totalQuestions) * 100}%` }}
+                                            className="bg-green-500 rounded-full h-3 transition-all duration-300 absolute left-0"
+                                            style={{ width: `${correctPercentage}%` }}
+                                        />
+                                        <div 
+                                            className="bg-red-500 rounded-full h-3 transition-all duration-300 absolute right-0"
+                                            style={{ width: `${incorrectPercentage}%` }}
                                         />
                                     </div>
-                                    <span className="text-blue-700 font-bold text-sm">{progressPercentage}%</span>
+                                    <div className="flex items-center gap-2 text-sm font-bold">
+                                        <span className="text-green-600">{correctPercentage}%</span>
+                                        <span className="text-gray-400">|</span>
+                                        <span className="text-red-600">{incorrectPercentage}%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -340,13 +350,15 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                                         {linkedContent.short_description && (
                                             <div>
                                                 <h4 className="font-semibold text-blue-600 mb-2">Description:</h4>
-                                                <p className="text-gray-700 leading-relaxed">{linkedContent.short_description}</p>
+                                                <div className="text-gray-700 leading-relaxed whitespace-pre-line">{linkedContent.short_description}</div>
                                             </div>
                                         )}
                                         {linkedContent.short_blurb && (
                                             <div>
                                                 <h4 className="font-semibold text-blue-600 mb-2">Details:</h4>
-                                                <div className="text-gray-700 leading-relaxed whitespace-pre-line">{linkedContent.short_blurb}</div>
+                                                <MarkdownRenderer className="text-gray-700 leading-relaxed">
+                                                    {linkedContent.short_blurb}
+                                                </MarkdownRenderer>
                                             </div>
                                         )}
                                     </div>
