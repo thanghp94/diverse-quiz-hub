@@ -749,17 +749,24 @@ export class DatabaseStorage implements IStorage {
       const now = new Date();
       const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
       
-      // Calculate 3 hours ago in Vietnam time
+      // Calculate 3 hours from now in Vietnam time (assignments expiring within next 3 hours)
+      const threeHoursFromNow = new Date(vietnamTime.getTime() + (3 * 60 * 60 * 1000));
+      
+      // Also get assignments that started within the last 3 hours
       const threeHoursAgo = new Date(vietnamTime.getTime() - (3 * 60 * 60 * 1000));
       
-      // Query assignments with expiring_date within the last 3 hours
+      console.log('Vietnam time:', vietnamTime.toISOString());
+      console.log('Looking for assignments between:', threeHoursAgo.toISOString(), 'and', threeHoursFromNow.toISOString());
+      
+      // Query assignments that are currently active or starting soon
       const result = await db.select()
         .from(assignment)
         .where(
-          sql`${assignment.expiring_date} >= ${threeHoursAgo.toISOString()} AND ${assignment.expiring_date} <= ${vietnamTime.toISOString()}`
+          sql`${assignment.expiring_date} >= ${threeHoursAgo.toISOString()} AND ${assignment.expiring_date} <= ${threeHoursFromNow.toISOString()}`
         )
         .orderBy(desc(assignment.expiring_date));
       
+      console.log('Found live assignments:', result.length);
       return result;
     });
   }
