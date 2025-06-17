@@ -91,7 +91,7 @@ const getSubtopicLabel = (parentTopic: string, index: number) => {
 };
 
 const formatDescription = (description: string) => {
-    return description.split('\n').map((line, index) => <span key={index} className="text-gray-700 dark:text-gray-300">
+    return description.split('\n').map((line, index) => <span key={index} className="text-[#f1f1fd]">
         {line}
         {index < description.split('\n').length - 1 && <br />}
       </span>);
@@ -112,7 +112,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg p-3 shadow-sm">
+      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
         <div className="flex items-start justify-between gap-2">
           <div
             onClick={() => onContentClick({
@@ -131,11 +131,11 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <h4 className="text-gray-900 dark:text-white text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-xs px-2 py-1 h-6">
+                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
                           Quiz
                         </Button>
                       </DropdownMenuTrigger>
@@ -160,7 +160,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-xs px-2 py-1 h-6"
+                        className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6"
                         onClick={(e) => {
                           e.stopPropagation();
                           setVideoPopupOpen(true);
@@ -199,7 +199,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
             {hasVideo1 && (
               <div>
                 {videoData?.video_name && (
-                  <h4 className="text-gray-900 font-medium mb-3 text-base">{videoData.video_name}</h4>
+                  <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
                 )}
                 <div className="aspect-video bg-black rounded-lg overflow-hidden">
                   <iframe 
@@ -216,7 +216,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
             {hasVideo2 && (
               <div>
                 {video2Data?.video_name && (
-                  <h4 className="text-gray-900 font-medium mb-3 text-base">{video2Data.video_name}</h4>
+                  <h4 className="text-white font-medium mb-3 text-base">{video2Data.video_name}</h4>
                 )}
                 <div className="aspect-video bg-black rounded-lg overflow-hidden">
                   <iframe 
@@ -300,7 +300,7 @@ const GroupedContentDisplay = ({
       {/* Display individual content cards for ungrouped content */}
       {groupedContent.ungrouped.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Main Content</h4>
+          <h4 className="text-white/80 text-sm font-medium">Main Content</h4>
           <div className="grid grid-cols-2 gap-3">
             {groupedContent.ungrouped.map(content => (
               <ContentCard 
@@ -318,7 +318,7 @@ const GroupedContentDisplay = ({
       {/* Display content group cards */}
       {Object.entries(groupedContent.groups).length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Content Categories</h4>
+          <h4 className="text-white/80 text-sm font-medium">Content Categories</h4>
           <div className="grid grid-cols-1 gap-3">
             {Object.entries(groupedContent.groups).map(([groupName, content]) => (
               <ContentGroupCard
@@ -466,7 +466,7 @@ const TopicContentWithMatching = ({
       {/* Ungrouped content at the top */}
       {organizedContent.ungrouped.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Content</h4>
+          <h4 className="text-white/80 text-sm font-medium">Content</h4>
           <div className="grid grid-cols-2 gap-3">
             {organizedContent.ungrouped.map(content => (
               <ContentCard 
@@ -484,7 +484,7 @@ const TopicContentWithMatching = ({
       {/* Matching activity section */}
       {organizedContent.grouped.length > 0 && (
         <div className="space-y-4">
-          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Matching Activities</h4>
+          <h4 className="text-white/80 text-sm font-medium">Matching Activities</h4>
 
           {/* Matching activity cards in 2-column layout */}
           <div className="grid grid-cols-2 gap-3">
@@ -492,23 +492,23 @@ const TopicContentWithMatching = ({
               <div
                 key={matching.id}
                 className={cn(
-                  "cursor-pointer bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-all duration-200 rounded-lg p-3 shadow-sm",
-                  expandedMatching === matching.id && "ring-2 ring-blue-300 dark:ring-blue-600"
+                  "cursor-pointer bg-blue-500/10 border border-blue-400/30 hover:bg-blue-500/20 transition-all duration-200 rounded-lg p-3",
+                  expandedMatching === matching.id && "ring-2 ring-blue-400/50"
                 )}
                 onClick={() => setExpandedMatching(expandedMatching === matching.id ? null : matching.id)}
               >
                 <div className="flex flex-col items-center text-center gap-2">
-                  <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-lg border border-blue-200 dark:border-blue-700">
-                    <Shuffle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div className="bg-blue-500/30 p-2 rounded-lg border border-blue-400/40">
+                    <Shuffle className="h-5 w-5 text-blue-200" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-gray-900 dark:text-white text-sm font-medium leading-tight">
+                    <h4 className="text-white/90 text-sm font-medium leading-tight">
                       {matching.topic || matching.description || matching.subject || 'Matching Activity'}
                     </h4>
-                    <p className="text-gray-600 dark:text-gray-400 text-xs mt-1">
+                    <p className="text-white/60 text-xs mt-1">
                       {content.length > 0 ? `${content.length} content items` : 'Click to start'}
                     </p>
-                    <Badge variant="outline" className="border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400 text-xs mt-2">
+                    <Badge variant="outline" className="border-blue-300/30 text-blue-200 text-xs mt-2">
                       Matching
                     </Badge>
                   </div>
@@ -527,14 +527,14 @@ const TopicContentWithMatching = ({
                 return (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h5 className="text-gray-900 font-medium">
+                      <h5 className="text-white/90 font-medium">
                         {selectedGroup.matching.topic || selectedGroup.matching.description || 'Matching Activity Content'}
                       </h5>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setExpandedMatching(null)}
-                        className="text-gray-700 hover:text-gray-900"
+                        className="text-white/60 hover:text-white"
                       >
                         Collapse
                       </Button>
@@ -554,10 +554,10 @@ const TopicContentWithMatching = ({
                       </div>
                     ) : (
                       <div className="text-center py-4">
-                        <p className="text-gray-600 text-sm">
+                        <p className="text-white/60 text-sm">
                           No specific content items are linked to this matching activity.
                         </p>
-                        <p className="text-gray-600 text-xs mt-1">
+                        <p className="text-white/60 text-xs mt-1">
                           The activity may use content from multiple topics or external sources.
                         </p>
                       </div>
@@ -607,14 +607,14 @@ export const TopicListItem = ({
     return (
       <div
         className={cn(
-          "bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm transition-all duration-300",
+          "bg-white/10 backdrop-blur-lg border-white/20 rounded-lg overflow-hidden border-b-0 transition-all duration-300",
           isExpanded ? "md:col-span-2" : "md:col-span-1"
         )}
       >
         <div
           className={cn(
-            "flex items-start p-3 text-gray-900 w-full text-left cursor-pointer transition-colors hover:bg-gray-50",
-            isExpanded && "bg-gray-50"
+            "flex items-start p-3 text-white w-full text-left cursor-pointer transition-colors hover:bg-white/5",
+            isExpanded && "bg-white/5"
           )}
           onClick={() => onToggleTopic(topic.id)}
         >
@@ -625,10 +625,10 @@ export const TopicListItem = ({
             <div className="w-full">
               <div className="flex items-center justify-between gap-2 mb-1">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <CardTitle className="text-gray-900 text-2xl font-bold">{topic.topic}</CardTitle>
+                  <CardTitle className="text-white text-2xl font-bold">{topic.topic}</CardTitle>
 
                   {topic.challengesubject && (
-                    <Badge variant="outline" className="border-gray-300 text-gray-700 text-sm">
+                    <Badge variant="outline" className="border-white/30 text-white/70 text-sm">
                       {topic.challengesubject}
                     </Badge>
                   )}
@@ -647,7 +647,7 @@ export const TopicListItem = ({
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 h-8 w-8 flex-shrink-0"
+                      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         onStartTopicMatching(topic.id, topic.topic);
@@ -659,7 +659,7 @@ export const TopicListItem = ({
                   )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 h-8 w-8 flex-shrink-0">
+                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
                         <HelpCircle className="h-5 w-5" />
                         <span className="sr-only">Start Quiz for {topic.topic}</span>
                       </Button>
@@ -676,11 +676,11 @@ export const TopicListItem = ({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <ChevronDown className={cn("h-6 w-6 text-gray-600 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
+                  <ChevronDown className={cn("h-6 w-6 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
                 </div>
               </div>
               {topic.short_summary && (
-                <p className="text-gray-700 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
+                <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
               )}
             </div>
           </div>
@@ -703,20 +703,20 @@ export const TopicListItem = ({
                     {subtopics.map((subtopic, index) => {
                       const subtopicContent = getTopicContent(subtopic.id);
                       return (
-                        <div key={subtopic.id} className="bg-gray-50 border border-gray-200 rounded-lg p-2">
+                        <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
                           <div 
                             className="flex items-start justify-between cursor-pointer"
                             onClick={() => onToggleContent(`subtopic-${subtopic.id}`)}
                           >
                             <div className="flex-grow">
                               <div className="flex items-center gap-3 mb-2">
-                                <Badge className="bg-green-100 text-green-700 text-xs">
+                                <Badge className="bg-green-500/20 text-green-200 text-xs">
                                   <BookOpen className="h-3 w-3" />
                                 </Badge>
-                                <span className="text-gray-900 text-lg font-bold text-center">{subtopic.topic}</span>
+                                <span className="text-white/90 text-lg font-bold text-center">{subtopic.topic}</span>
 
                               </div>
-                              {subtopic.short_summary && <p className="text-gray-600 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
+                              {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
                               <SubtopicMatchingButton 
@@ -726,7 +726,7 @@ export const TopicListItem = ({
                               />
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900" onClick={(e) => e.stopPropagation()}>
+                                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
                                         <HelpCircle className="h-4 w-4" />
                                         <span className="sr-only">Start Quiz for {subtopic.topic}</span>
                                     </Button>
@@ -737,7 +737,7 @@ export const TopicListItem = ({
                                     <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                              <ChevronDown className={cn("h-5 w-5 text-gray-600 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
+                              <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
                             </div>
                           </div>
                           {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
@@ -752,7 +752,7 @@ export const TopicListItem = ({
 
                                   return (
                                     <>
-                                      <div className="bg-white border border-gray-200 hover:bg-gray-50 transition-all duration-200 rounded-lg p-3 shadow-sm">
+                                      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
                                         <div className="flex items-start justify-between gap-2">
                                           <div
                                             onClick={() => onContentClick({
@@ -771,7 +771,7 @@ export const TopicListItem = ({
                                               />
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2 mb-2">
-                                                  <h4 className="text-gray-900 text-base font-medium leading-tight flex-1 min-w-0 text-center">{content.title}</h4>
+                                                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-center">{content.title}</h4>
                                                   <div className="flex items-center gap-1 flex-shrink-0">
                                                       <ContentRatingButtons 
                                                         key={`${content.id}-rating`}
@@ -783,7 +783,7 @@ export const TopicListItem = ({
                                                         <Button 
                                                           variant="outline" 
                                                           size="sm" 
-                                                          className="text-red-700 hover:bg-red-50 hover:text-red-800 bg-red-50 border-red-200 text-xs px-2 py-1 h-6"
+                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
                                                           onClick={(e) => {
                                                             e.stopPropagation();
                                                             setVideoPopupOpen(true);
@@ -795,7 +795,7 @@ export const TopicListItem = ({
                                                       )}
                                                       <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                          <Button variant="outline" size="sm" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 bg-gray-50 border-gray-200 text-xs px-2 py-1 h-6">
+                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
                                                             Quiz
                                                           </Button>
                                                         </DropdownMenuTrigger>
@@ -821,7 +821,7 @@ export const TopicListItem = ({
                                                   <div className="flex items-center gap-2 mb-2">
                                                     <CompactContentDifficultyIndicator contentId={content.id} />
                                                   </div>
-                                                {content.short_description && <p className="text-gray-600 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+                                                {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                               </div>
                                             </div>
                                           </div>
@@ -829,14 +829,14 @@ export const TopicListItem = ({
                                       </div>
                                       {/* Video Popup - Using Dialog */}
                                       <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
-                                        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-white border-gray-200">
-                                          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-                                            <h3 className="text-gray-900 text-lg font-medium truncate mr-4">{content.title}</h3>
+                                        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+                                          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                                            <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
                                             <Button 
                                               variant="ghost" 
                                               size="sm"
                                               onClick={() => setVideoPopupOpen(false)}
-                                              className="text-gray-700 hover:bg-gray-100 flex-shrink-0"
+                                              className="text-white hover:bg-white/20 flex-shrink-0"
                                             >
                                               ✕
                                             </Button>
@@ -845,7 +845,7 @@ export const TopicListItem = ({
                                             {hasVideo1 && (
                                               <div>
                                                 {videoData.video_name && (
-                                                  <h4 className="text-gray-900 font-medium mb-3 text-base">{videoData.video_name}</h4>
+                                                  <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
                                                 )}
                                                 <div className="aspect-video bg-black rounded-lg overflow-hidden">
                                                   <iframe 

@@ -202,19 +202,19 @@ const Topics = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
         <Header />
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Topics</h1>
-              <p className="text-lg text-gray-700 dark:text-gray-300">
+              <h1 className="text-3xl font-bold text-white mb-3">Topics</h1>
+              <p className="text-lg text-white/80">
                 Loading topics...
               </p>
             </div>
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-12 w-12 animate-spin text-gray-900 dark:text-white" />
-              <span className="ml-3 text-gray-900 dark:text-white text-lg">Loading topics...</span>
+              <Loader2 className="h-12 w-12 animate-spin text-white" />
+              <span className="ml-3 text-white text-lg">Loading topics...</span>
             </div>
           </div>
         </div>
@@ -223,18 +223,18 @@ const Topics = () => {
   }
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
         <Header />
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">Topics</h1>
-              <p className="text-lg text-gray-700 dark:text-gray-300">
+              <h1 className="text-3xl font-bold text-white mb-3">Topics</h1>
+              <p className="text-lg text-white/80">
                 Error loading topics
               </p>
             </div>
             <div className="text-center py-12">
-              <p className="text-gray-900 dark:text-white">Error loading topics. Please try again later.</p>
+              <p className="text-white">Error loading topics. Please try again later.</p>
             </div>
           </div>
         </div>
@@ -242,16 +242,16 @@ const Topics = () => {
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
       <Header />
       <div className="p-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+              <h1 className="text-3xl font-bold text-white mb-3">
                 {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
               </h1>
               {activeTab && (
-                <p className="text-lg text-gray-700 dark:text-gray-300">
+                <p className="text-lg text-white/80">
                   Select a topic below to start your {activeTab.replace('-', ' ')} quiz
                 </p>
               )}

@@ -204,16 +204,16 @@ const ChallengeSubject = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
       <Header />
       <div className="p-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+            <h1 className="text-3xl font-bold text-white mb-3">
               {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Challenge Subjects'}
             </h1>
             {activeTab && (
-              <p className="text-lg text-gray-700">
+              <p className="text-lg text-white/80">
                 Select a subject below to start your {activeTab.replace('-', ' ')} quiz
               </p>
             )}

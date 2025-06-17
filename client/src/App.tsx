@@ -17,35 +17,32 @@ import Login from "./pages/Login";
 import { DemoPage } from "./pages/DemoPage";
 import AssignmentPage from "./pages/AssignmentPage";
 import LiveClass from "./pages/LiveClass";
-import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <Router>
-          <Switch>
-            <Route path="/login" component={Login} />
-            <Route path="/" component={Topics} />
-            <Route path="/topics" component={Topics} />
-            <Route path="/challenge-subject" component={ChallengeSubject} />
-            <Route path="/content/:id" component={Content} />
-            <Route path="/leaderboard" component={Leaderboard} />
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <Router>
+        <Switch>
+          <Route path="/login" component={Login} />
+          <Route path="/" component={Topics} />
+          <Route path="/topics" component={Topics} />
+          <Route path="/challenge-subject" component={ChallengeSubject} />
+          <Route path="/content/:id" component={Content} />
+          <Route path="/leaderboard" component={Leaderboard} />
 
-            <Route path="/debate" component={DebatePage} />
-            <Route path="/writing" component={WritingPage} />
-            <Route path="/assignments" component={AssignmentPage} />
-            <Route path="/live-class" component={LiveClass} />
-            <Route path="/demo" component={DemoPage} />
-            <Route component={NotFound} />
-          </Switch>
-        </Router>
-      </TooltipProvider>
-    </ThemeProvider>
+          <Route path="/debate" component={DebatePage} />
+          <Route path="/writing" component={WritingPage} />
+          <Route path="/assignments" component={AssignmentPage} />
+          <Route path="/live-class" component={LiveClass} />
+          <Route path="/demo" component={DemoPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </Router>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
