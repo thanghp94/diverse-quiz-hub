@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { MediaDisplay } from "./content-popup/MediaDisplay";
 import { VideoPlayer } from "./content-popup/VideoPlayer";
 import { ContentBody } from "./content-popup/ContentBody";
-import { PopupHeader } from "./content-popup/PopupHeader";
+import { ContentRatingButtons } from "./ContentRatingButtons";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
@@ -124,15 +124,13 @@ const ContentPopup = ({
                   isFullWidth={true}
                 />
                 {/* Video section directly under image */}
-                <div className="mt-3">
-                  <VideoPlayer 
-                    videoEmbedUrl={videoEmbedUrl}
-                    video2EmbedUrl={video2EmbedUrl}
-                    videoData={videoData}
-                    video2Data={video2Data}
-                    compact={true}
-                  />
-                </div>
+                <VideoPlayer 
+                  videoEmbedUrl={videoEmbedUrl}
+                  video2EmbedUrl={video2EmbedUrl}
+                  videoData={videoData}
+                  video2Data={video2Data}
+                  compact={true}
+                />
               </div>
 
               {/* Right: Content */}
@@ -141,16 +139,46 @@ const ContentPopup = ({
               </div>
             </div>
 
-            {/* Popup Header */}
-            <PopupHeader
-              contentListLength={contentList.length}
-              currentIndex={currentIndex}
-              handlePrevious={handlePrevious}
-              handleNext={handleNext}
-              startQuiz={startQuiz}
-              translation={content.translation}
-              contentId={content.id}
-            />
+            {/* Navigation and Controls */}
+            <div className="flex items-center justify-between gap-2 mt-4 pt-4 border-t">
+              {/* Navigation Controls */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={handlePrevious} 
+                  disabled={currentIndex <= 0}
+                  className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                >
+                  ← Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                  {currentIndex + 1} of {contentList.length}
+                </span>
+                <button 
+                  onClick={handleNext} 
+                  disabled={currentIndex >= contentList.length - 1}
+                  className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                >
+                  Next →
+                </button>
+              </div>
+
+              {/* Quiz and Rating Controls */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => startQuiz('Easy')}
+                  className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+                >
+                  Easy Quiz
+                </button>
+                <button 
+                  onClick={() => startQuiz('Hard')}
+                  className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200"
+                >
+                  Hard Quiz
+                </button>
+                <ContentRatingButtons contentId={content.id} />
+              </div>
+            </div>
           </>
         )}
       </DialogContent>
