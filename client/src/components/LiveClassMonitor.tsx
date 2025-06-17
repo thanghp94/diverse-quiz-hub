@@ -57,13 +57,13 @@ export const LiveClassMonitor = () => {
   const [showProgressDialog, setShowProgressDialog] = useState(false);
 
   // Fetch live assignments within 3 hours
-  const { data: liveAssignments, isLoading: assignmentsLoading, refetch: refetchAssignments } = useQuery({
+  const { data: liveAssignments = [], isLoading: assignmentsLoading, refetch: refetchAssignments } = useQuery({
     queryKey: ['/api/live-assignments'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Fetch student progress for selected assignment
-  const { data: studentProgress, isLoading: progressLoading } = useQuery({
+  const { data: studentProgress = [], isLoading: progressLoading } = useQuery({
     queryKey: ['/api/assignments', selectedAssignment?.id, 'progress'],
     enabled: !!selectedAssignment,
     refetchInterval: 10000, // Refresh every 10 seconds
