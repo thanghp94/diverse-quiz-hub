@@ -216,27 +216,16 @@ const ContentPopup = ({
                   </div>
 
                   {content.imageid && (
-                    <div className="w-full">
+                    <div className="w-full relative">
                       <img
                         src={content.imageid}
                         alt={content.title}
-                        className="w-full h-auto rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                        className="w-full h-auto rounded-lg"
                         style={{ 
                           aspectRatio: 'auto',
                           objectFit: 'contain',
                           maxHeight: '400px',
-                          zIndex: 1
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          // Only open image modal if we're not in a video area
-                          const target = e.target as HTMLElement;
-                          const videoContainer = target.closest('[data-video-container]');
-                          if (!videoContainer) {
-                            console.log('Image clicked, opening modal');
-                            setIsImageModalOpen(true);
-                          }
+                          pointerEvents: 'none'
                         }}
                         onLoad={(e) => {
                           console.log('Image loaded successfully:', content.imageid);
@@ -258,6 +247,47 @@ const ContentPopup = ({
                         }}
                         onError={() => console.log('Image failed to load:', content.imageid)}
                       />
+                      {/* Clickable overlay for image when no videos are present */}
+                      {!(videoEmbedUrl || video2EmbedUrl) && (
+                        <div
+                          className="absolute inset-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-lg"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Image clicked, opening modal');
+                            setIsImageModalOpen(true);
+                          }}
+                        />
+                      )}
+                      {/* Partial clickable areas for image when videos are present */}
+                      {(videoEmbedUrl || video2EmbedUrl) && (
+                        <>
+                          {/* Top area of image */}
+                          <div
+                            className="absolute top-0 left-0 right-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-t-lg"
+                            style={{ height: '60%' }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('Image (top area) clicked, opening modal');
+                              setIsImageModalOpen(true);
+                            }}
+                          />
+                          {/* Side areas if only one video */}
+                          {(videoEmbedUrl && !video2EmbedUrl) && (
+                            <div
+                              className="absolute bottom-0 left-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all"
+                              style={{ height: '40%', width: '20%' }}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('Image (left area) clicked, opening modal');
+                                setIsImageModalOpen(true);
+                              }}
+                            />
+                          )}
+                        </>
+                      )}
                     </div>
                   )}
                   
