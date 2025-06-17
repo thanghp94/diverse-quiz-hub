@@ -100,6 +100,8 @@ const Header = () => {
               className="pl-10 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30"
             />
           </div>
+          
+          <ThemeToggle />
 
           {currentUser ? (
             <DropdownMenu>
