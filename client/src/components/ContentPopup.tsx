@@ -128,7 +128,7 @@ const ContentPopup = ({
                 {/* Left: Title, Description, Short Blurb, Second Short Blurb */}
                 <div className="space-y-4">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-blue-600">
+                    <DialogTitle className="text-2xl font-bold text-blue-600 text-center">
                       {content.title}
                     </DialogTitle>
                     <DialogDescription className="whitespace-pre-line text-[16px] text-[#131b2a]">
