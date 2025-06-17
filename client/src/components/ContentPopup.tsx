@@ -181,13 +181,15 @@ const ContentPopup = ({
 
               {/* Right: Image and Videos */}
               <div className="space-y-6">
-                {imageUrl && (
+                {content.imageid && (
                   <div className="w-full">
                     <img
-                      src={imageUrl}
+                      src={content.imageid}
                       alt={content.title}
                       className="w-full h-auto max-h-64 object-contain rounded-lg"
                       style={{ aspectRatio: 'auto' }}
+                      onLoad={() => console.log('Image loaded successfully:', content.imageid)}
+                      onError={() => console.log('Image failed to load:', content.imageid)}
                     />
                   </div>
                 )}
