@@ -207,11 +207,14 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                             alt="Matching item" 
                             className="max-w-full max-h-36 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
                             onError={(e) => {
-                              // Hide broken image and show fallback text
+                              // Hide broken image and show fallback with clickable link
                               e.currentTarget.style.display = 'none';
                               const parent = e.currentTarget.parentElement;
                               if (parent) {
-                                parent.innerHTML = `<div class="text-xs text-center p-2 bg-gray-100 rounded border">${item}</div>`;
+                                parent.innerHTML = `<div class="text-xs text-center p-2 bg-gray-100 rounded border">
+                                  <div class="mb-1 font-medium">Image failed to load</div>
+                                  <a href="${item}" target="_blank" class="text-blue-600 hover:text-blue-800 underline break-all">${item}</a>
+                                </div>`;
                               }
                             }}
                           />
@@ -315,11 +318,14 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                               alt="Matching target" 
                               className="w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
                               onError={(e) => {
-                                // Hide broken image and show fallback text
+                                // Hide broken image and show fallback with clickable link
                                 e.currentTarget.style.display = 'none';
                                 const parent = e.currentTarget.parentElement;
                                 if (parent) {
-                                  parent.innerHTML = `<div class="text-sm text-center p-2 bg-gray-100 rounded border">${item}</div>`;
+                                  parent.innerHTML = `<div class="text-xs text-center p-2 bg-gray-100 rounded border">
+                                    <div class="mb-1 font-medium">Image failed to load</div>
+                                    <a href="${item}" target="_blank" class="text-blue-600 hover:text-blue-800 underline break-all">${item}</a>
+                                  </div>`;
                                 }
                               }}
                             />
@@ -355,11 +361,11 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                                     alt="Matched item" 
                                     className="w-8 h-8 object-contain rounded border border-blue-300 cursor-pointer hover:opacity-80 transition-opacity"
                                     onError={(e) => {
-                                      // Hide broken image and show fallback
+                                      // Hide broken image and show fallback with link
                                       e.currentTarget.style.display = 'none';
                                       const parent = e.currentTarget.parentElement;
                                       if (parent) {
-                                        parent.innerHTML = `<div class="w-8 h-8 text-xs bg-gray-100 rounded border flex items-center justify-center">IMG</div>`;
+                                        parent.innerHTML = `<a href="${matchedLeft}" target="_blank" class="w-8 h-8 text-xs bg-gray-100 rounded border flex items-center justify-center text-blue-600 hover:text-blue-800 underline" title="${matchedLeft}">IMG</a>`;
                                       }
                                     }}
                                   />
