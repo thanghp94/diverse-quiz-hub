@@ -1,7 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Content } from "@/hooks/useContent";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import QuizView from "./QuizView";
 import { cn } from "@/lib/utils";
 import { MediaDisplay } from "./content-popup/MediaDisplay";
@@ -35,6 +35,8 @@ const ContentPopup = ({
   imageUrl,
   isImageLoading,
 }: ContentPopupProps) => {
+  const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
+  
   const {
     quizMode,
     assignmentTry,
@@ -92,34 +94,92 @@ const ContentPopup = ({
           />
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-center text-2xl font-bold text-blue-600">
-                {content.title}
-              </DialogTitle>
-              <DialogDescription className="whitespace-pre-line text-lg leading-relaxed">
-                {content.short_description || "Detailed content view."}
-              </DialogDescription>
-            </DialogHeader>
+            {/* Two-column layout: Title/Content + Media */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-3">
+              {/* Left: Title, Description, Short Blurb, Second Short Blurb */}
+              <div className="space-y-4">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl font-bold text-blue-600">
+                    {content.title}
+                  </DialogTitle>
+                  <DialogDescription className="whitespace-pre-line text-lg leading-relaxed">
+                    {content.short_description || "Detailed content view."}
+                  </DialogDescription>
+                </DialogHeader>
 
-            {/* Second Short Blurb directly under DialogDescription */}
-            {content.second_short_blurb && (
-              <div className="mb-4">
-                <div className="p-4 border rounded-lg bg-muted/30">
-                  <MarkdownRenderer className="text-base leading-relaxed">
-                    {content.second_short_blurb}
-                  </MarkdownRenderer>
-                </div>
+                {/* Short Blurb directly under title */}
+                {content.short_blurb && (
+                  <div className="space-y-2">
+                    <MarkdownRenderer className="text-base leading-relaxed">
+                      {content.short_blurb}
+                    </MarkdownRenderer>
+                  </div>
+                )}
+
+                {/* Second Short Blurb as collapsible card */}
+                {content.second_short_blurb && (
+                  <div className="border border-gray-200 rounded-lg">
+                    <button 
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg"
+                      onClick={() => setIsSecondBlurbOpen(!isSecondBlurbOpen)}
+                    >
+                      <h3 className="font-semibold text-lg">Additional Information</h3>
+                      <svg 
+                        className={`w-5 h-5 transition-transform duration-200 ${isSecondBlurbOpen ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {isSecondBlurbOpen && (
+                      <div className="px-3 pb-3 border-t border-gray-100">
+                        <MarkdownRenderer className="text-base leading-relaxed">
+                          {content.second_short_blurb}
+                        </MarkdownRenderer>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Additional content (translation, vocabulary, external links) */}
+                {(content.translation || content.vocabulary || content.url) && (
+                  <div className="space-y-3 pt-2 border-t border-gray-200">
+                    {(content.translation || content.vocabulary) && (
+                      <div>
+                        <h3 className="font-semibold text-lg mb-2">Language Support</h3>
+                        {content.translation && (
+                          <div className="mb-3">
+                            <h4 className="font-medium text-base text-gray-600 mb-1">Translation:</h4>
+                            <MarkdownRenderer className="text-sm leading-relaxed">
+                              {content.translation}
+                            </MarkdownRenderer>
+                          </div>
+                        )}
+                        {content.vocabulary && (
+                          <div>
+                            <h4 className="font-medium text-base text-gray-600 mb-1">Vocabulary:</h4>
+                            <MarkdownRenderer className="text-sm leading-relaxed">
+                              {content.vocabulary}
+                            </MarkdownRenderer>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {content.url && (
+                      <div>
+                        <a href={content.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline break-all text-sm">
+                          {content.url}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
 
-            {/* Two-column layout: Content + Media */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-3">
-              {/* Left: Content */}
-              <div className="space-y-3">
-                <ContentBody content={content} />
-              </div>
-
-              {/* Right: Media - Image, Video1, Video2 horizontally */}
+              {/* Right: Image and Videos */}
               <div className="space-y-3">
                 <MediaDisplay
                   imageUrl={imageUrl}
@@ -128,29 +188,26 @@ const ContentPopup = ({
                   imageid={content.imageid}
                   isFullWidth={true}
                 />
-                {/* Videos arranged horizontally */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {videoEmbedUrl && (
-                    <div className="aspect-video">
-                      <iframe
-                        src={videoEmbedUrl}
-                        title={`Video 1 for ${content.title}`}
-                        className="w-full h-full rounded-lg"
-                        allowFullScreen
-                      />
-                    </div>
-                  )}
-                  {video2EmbedUrl && (
-                    <div className="aspect-video">
-                      <iframe
-                        src={video2EmbedUrl}
-                        title={`Video 2 for ${content.title}`}
-                        className="w-full h-full rounded-lg"
-                        allowFullScreen
-                      />
-                    </div>
-                  )}
-                </div>
+                {videoEmbedUrl && (
+                  <div className="aspect-video">
+                    <iframe
+                      src={videoEmbedUrl}
+                      title={`Video 1 for ${content.title}`}
+                      className="w-full h-full rounded-lg"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+                {video2EmbedUrl && (
+                  <div className="aspect-video">
+                    <iframe
+                      src={video2EmbedUrl}
+                      title={`Video 2 for ${content.title}`}
+                      className="w-full h-full rounded-lg"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
               </div>
             </div>
 
