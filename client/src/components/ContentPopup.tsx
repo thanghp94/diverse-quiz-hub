@@ -354,16 +354,17 @@ const ContentPopup = ({
           }}
           style={{ zIndex: 99999 }}
         >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('Image modal close button clicked');
+              setIsImageModalOpen(false);
+            }}
+            className="fixed top-4 right-4 text-white text-3xl bg-black bg-opacity-70 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-90 z-[100000] font-bold"
+          >
+            ×
+          </button>
           <div className="relative max-w-[95vw] max-h-[95vh]">
-            <button
-              onClick={() => {
-                console.log('Image modal close button clicked');
-                setIsImageModalOpen(false);
-              }}
-              className="absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 z-10"
-            >
-              ×
-            </button>
             <img
               src={content.imageid || ''}
               alt={content.title}
