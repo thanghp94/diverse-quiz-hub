@@ -358,8 +358,12 @@ const ContentPopup = ({
             <img
               src={content.imageid || ''}
               alt={content.title}
-              className="max-w-full max-h-full object-contain"
-              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-full object-contain cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('Image clicked in modal, closing');
+                setIsImageModalOpen(false);
+              }}
             />
           </div>
         </div>,
