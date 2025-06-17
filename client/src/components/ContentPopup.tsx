@@ -180,34 +180,38 @@ const ContentPopup = ({
               </div>
 
               {/* Right: Image and Videos */}
-              <div className="space-y-3">
-                <MediaDisplay
-                  imageUrl={imageUrl}
-                  isImageLoading={isImageLoading}
-                  title={content.title}
-                  imageid={content.imageid}
-                  isFullWidth={true}
-                />
-                {videoEmbedUrl && (
-                  <div className="aspect-video">
-                    <iframe
-                      src={videoEmbedUrl}
-                      title={`Video 1 for ${content.title}`}
-                      className="w-full h-full rounded-lg"
-                      allowFullScreen
-                    />
-                  </div>
-                )}
-                {video2EmbedUrl && (
-                  <div className="aspect-video">
-                    <iframe
-                      src={video2EmbedUrl}
-                      title={`Video 2 for ${content.title}`}
-                      className="w-full h-full rounded-lg"
-                      allowFullScreen
-                    />
-                  </div>
-                )}
+              <div className="space-y-6">
+                <div className="w-full">
+                  <img
+                    src={imageUrl || ''}
+                    alt={content.title}
+                    className="w-full h-auto max-h-64 object-contain rounded-lg"
+                    style={{ aspectRatio: 'auto' }}
+                  />
+                </div>
+                
+                <div className="space-y-4">
+                  {videoEmbedUrl && (
+                    <div className="aspect-video">
+                      <iframe
+                        src={videoEmbedUrl}
+                        title={`Video 1 for ${content.title}`}
+                        className="w-full h-full rounded-lg"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                  {video2EmbedUrl && (
+                    <div className="aspect-video">
+                      <iframe
+                        src={video2EmbedUrl}
+                        title={`Video 2 for ${content.title}`}
+                        className="w-full h-full rounded-lg"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
