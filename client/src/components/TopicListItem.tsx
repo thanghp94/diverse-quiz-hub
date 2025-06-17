@@ -91,7 +91,7 @@ const getSubtopicLabel = (parentTopic: string, index: number) => {
 };
 
 const formatDescription = (description: string) => {
-    return description.split('\n').map((line, index) => <span key={index} className="text-[#f1f1fd]">
+    return description.split('\n').map((line, index) => <span key={index} className="text-gray-700">
         {line}
         {index < description.split('\n').length - 1 && <br />}
       </span>);
@@ -300,7 +300,7 @@ const GroupedContentDisplay = ({
       {/* Display individual content cards for ungrouped content */}
       {groupedContent.ungrouped.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-white/80 text-sm font-medium">Main Content</h4>
+          <h4 className="text-gray-700 text-sm font-medium">Main Content</h4>
           <div className="grid grid-cols-2 gap-3">
             {groupedContent.ungrouped.map(content => (
               <ContentCard 
@@ -318,7 +318,7 @@ const GroupedContentDisplay = ({
       {/* Display content group cards */}
       {Object.entries(groupedContent.groups).length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-white/80 text-sm font-medium">Content Categories</h4>
+          <h4 className="text-gray-700 text-sm font-medium">Content Categories</h4>
           <div className="grid grid-cols-1 gap-3">
             {Object.entries(groupedContent.groups).map(([groupName, content]) => (
               <ContentGroupCard
@@ -527,14 +527,14 @@ const TopicContentWithMatching = ({
                 return (
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h5 className="text-white/90 font-medium">
+                      <h5 className="text-gray-900 font-medium">
                         {selectedGroup.matching.topic || selectedGroup.matching.description || 'Matching Activity Content'}
                       </h5>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setExpandedMatching(null)}
-                        className="text-white/60 hover:text-white"
+                        className="text-gray-700 hover:text-gray-900"
                       >
                         Collapse
                       </Button>
@@ -554,10 +554,10 @@ const TopicContentWithMatching = ({
                       </div>
                     ) : (
                       <div className="text-center py-4">
-                        <p className="text-white/60 text-sm">
+                        <p className="text-gray-600 text-sm">
                           No specific content items are linked to this matching activity.
                         </p>
-                        <p className="text-white/60 text-xs mt-1">
+                        <p className="text-gray-600 text-xs mt-1">
                           The activity may use content from multiple topics or external sources.
                         </p>
                       </div>
