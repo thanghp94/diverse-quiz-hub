@@ -216,17 +216,22 @@ const ContentPopup = ({
                   </div>
 
                   {content.imageid && (
-                    <div className="w-full relative">
+                    <div className="w-full">
                       <img
                         src={content.imageid}
                         alt={content.title}
-                        className="w-full h-auto rounded-lg"
+                        className={`w-full h-auto rounded-lg ${!(videoEmbedUrl || video2EmbedUrl) ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
                         style={{ 
                           aspectRatio: 'auto',
                           objectFit: 'contain',
-                          maxHeight: '400px',
-                          pointerEvents: 'none'
+                          maxHeight: '400px'
                         }}
+                        onClick={!(videoEmbedUrl || video2EmbedUrl) ? (e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Image clicked, opening modal');
+                          setIsImageModalOpen(true);
+                        } : undefined}
                         onLoad={(e) => {
                           console.log('Image loaded successfully:', content.imageid);
                           const img = e.target as HTMLImageElement;
@@ -247,34 +252,6 @@ const ContentPopup = ({
                         }}
                         onError={() => console.log('Image failed to load:', content.imageid)}
                       />
-                      {/* Clickable overlay for image when no videos are present */}
-                      {!(videoEmbedUrl || video2EmbedUrl) && (
-                        <div
-                          className="absolute inset-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-lg"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('Image clicked, opening modal');
-                            setIsImageModalOpen(true);
-                          }}
-                        />
-                      )}
-                      {/* Partial clickable areas for image when videos are present */}
-                      {(videoEmbedUrl || video2EmbedUrl) && (
-                        <>
-                          {/* Top area of image - reduced height to avoid video overlap */}
-                          <div
-                            className="absolute top-0 left-0 right-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-t-lg"
-                            style={{ height: '50%', zIndex: 5 }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              console.log('Image (top area) clicked, opening modal');
-                              setIsImageModalOpen(true);
-                            }}
-                          />
-                        </>
-                      )}
                     </div>
                   )}
                   
@@ -283,14 +260,21 @@ const ContentPopup = ({
                     <div className={`mt-4 ${videoEmbedUrl && video2EmbedUrl ? 'grid grid-cols-2 gap-3' : 'flex justify-center'}`}>
                       {videoEmbedUrl && (
                         <div 
-                          data-video-container="true"
-                          className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!video2EmbedUrl ? 'max-w-md' : ''}`}
-                          style={{ zIndex: 20, position: 'relative' }}
+                          className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md bg-black ${!video2EmbedUrl ? 'max-w-md' : ''}`}
+                          style={{ 
+                            zIndex: 100,
+                            position: 'relative',
+                            isolation: 'isolate'
+                          }}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('Video 1 clicked, opening modal with URL:', videoEmbedUrl);
-                            setModalVideoUrl(videoEmbedUrl);
+                            setModalVideoUrl(videoEmbedUrl + '?autoplay=1');
                             setIsVideoModalOpen(true);
                           }}
                         >
@@ -311,14 +295,21 @@ const ContentPopup = ({
                       )}
                       {video2EmbedUrl && (
                         <div 
-                          data-video-container="true"
-                          className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!videoEmbedUrl ? 'max-w-md' : ''}`}
-                          style={{ zIndex: 20, position: 'relative' }}
+                          className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md bg-black ${!videoEmbedUrl ? 'max-w-md' : ''}`}
+                          style={{ 
+                            zIndex: 100,
+                            position: 'relative',
+                            isolation: 'isolate'
+                          }}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('Video 2 clicked, opening modal with URL:', video2EmbedUrl);
-                            setModalVideoUrl(video2EmbedUrl);
+                            setModalVideoUrl(video2EmbedUrl + '?autoplay=1');
                             setIsVideoModalOpen(true);
                           }}
                         >
