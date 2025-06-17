@@ -152,34 +152,31 @@ const ContentPopup = ({
 
                 {/* Right: Controls, Image and Videos */}
                 <div className="space-y-4">
-                  {/* Navigation and Controls - Compact */}
-                  <div className="space-y-3">
-                    {/* Navigation Controls */}
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1">
-                        <button 
-                          onClick={handlePrevious} 
-                          disabled={currentIndex <= 0}
-                          className="px-2 py-1 text-xs border rounded disabled:opacity-50"
-                        >
-                          ← Prev
-                        </button>
-                        <span className="text-xs text-gray-600 px-2">
-                          {currentIndex + 1}/{contentList.length}
-                        </span>
-                        <button 
-                          onClick={handleNext} 
-                          disabled={currentIndex >= contentList.length - 1}
-                          className="px-2 py-1 text-xs border rounded disabled:opacity-50"
-                        >
-                          Next →
-                        </button>
-                      </div>
-                      <ContentRatingButtons contentId={content.id} />
+                  {/* Navigation and Controls - Single Line */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    {/* Left side: Navigation */}
+                    <div className="flex items-center gap-1">
+                      <button 
+                        onClick={handlePrevious} 
+                        disabled={currentIndex <= 0}
+                        className="px-2 py-1 text-xs border rounded disabled:opacity-50"
+                      >
+                        ← Prev
+                      </button>
+                      <span className="text-xs text-gray-600 px-1">
+                        {currentIndex + 1}/{contentList.length}
+                      </span>
+                      <button 
+                        onClick={handleNext} 
+                        disabled={currentIndex >= contentList.length - 1}
+                        className="px-2 py-1 text-xs border rounded disabled:opacity-50"
+                      >
+                        Next →
+                      </button>
                     </div>
 
-                    {/* Quiz Controls */}
-                    <div className="flex items-center gap-2">
+                    {/* Right side: Quiz and Rating */}
+                    <div className="flex items-center gap-1">
                       <button 
                         onClick={() => startQuiz('Easy')}
                         className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
@@ -192,6 +189,7 @@ const ContentPopup = ({
                       >
                         Hard Quiz
                       </button>
+                      <ContentRatingButtons contentId={content.id} />
                     </div>
                   </div>
 
