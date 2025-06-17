@@ -348,7 +348,9 @@ const ContentPopup = ({
       {isImageModalOpen && content?.imageid && createPortal(
         <div 
           className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4"
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
             console.log('Image modal backdrop clicked, closing');
             setIsImageModalOpen(false);
           }}
@@ -356,6 +358,7 @@ const ContentPopup = ({
         >
           <button
             onClick={(e) => {
+              e.preventDefault();
               e.stopPropagation();
               console.log('Image modal close button clicked');
               setIsImageModalOpen(false);
