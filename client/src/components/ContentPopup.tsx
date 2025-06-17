@@ -151,9 +151,30 @@ const ContentPopup = ({
                     <img
                       src={content.imageid}
                       alt={content.title}
-                      className="w-full h-auto max-h-80 object-contain rounded-lg"
-                      style={{ aspectRatio: 'auto' }}
-                      onLoad={() => console.log('Image loaded successfully:', content.imageid)}
+                      className="w-full h-auto rounded-lg"
+                      style={{ 
+                        aspectRatio: 'auto',
+                        objectFit: 'contain',
+                        maxHeight: '400px'
+                      }}
+                      onLoad={(e) => {
+                        console.log('Image loaded successfully:', content.imageid);
+                        const img = e.target as HTMLImageElement;
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        
+                        // If horizontal (landscape), fit to width
+                        if (aspectRatio > 1.2) {
+                          img.style.width = '100%';
+                          img.style.height = 'auto';
+                          img.style.maxHeight = '300px';
+                        }
+                        // If square or portrait, fit to column width
+                        else {
+                          img.style.width = '100%';
+                          img.style.height = 'auto';
+                          img.style.maxHeight = '400px';
+                        }
+                      }}
                       onError={() => console.log('Image failed to load:', content.imageid)}
                     />
                   </div>
