@@ -55,7 +55,7 @@ export const MediaDisplay = ({ imageUrl, isImageLoading, title, imageid, content
                 }} 
               /> : <div className="w-full h-full bg-gradient-to-br from-blue-600 via-orange-600 to-red-600 flex items-center justify-center text-center p-4">
                   <div className="max-w-full">
-                      <h1 className="text-white text-2xl font-semibold break-words leading-tight">{title}</h1>
+                      <h1 className="text-white text-2xl font-semibold break-words">{title}</h1>
                       <div className="text-white/70 text-sm mt-2">
                           No image available (imageid: {imageid || 'none'})
                       </div>

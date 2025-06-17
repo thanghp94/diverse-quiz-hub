@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
@@ -42,17 +41,6 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
         </Collapsible>
       </Card>}
 
-      {content.short_description && <Card>
-          <CardHeader className="pb-2">
-              <h3 className="font-semibold text-xl break-words">Description</h3>
-          </CardHeader>
-          <CardContent className="pb-2 pt-0">
-              <MarkdownRenderer className="text-base leading-relaxed">
-                  {content.short_description}
-              </MarkdownRenderer>
-          </CardContent>
-      </Card>}
-
       {(content.translation || content.vocabulary) && <Card>
           <CardHeader>
               <h3 className="font-semibold text-xl break-words">Language Support</h3>
@@ -64,7 +52,7 @@ export const ContentBody = ({ content }: ContentBodyProps) => {
                       {content.translation}
                   </MarkdownRenderer>
               </div>}
-              
+
               {content.vocabulary && <div>
                   <h4 className="font-medium text-base text-gray-600 mb-2">Vocabulary:</h4>
                   <MarkdownRenderer className="text-base leading-relaxed">
