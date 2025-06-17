@@ -87,25 +87,34 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleTheme}
+            className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </Button>
+          
           {currentUser && (
             <StreakDisplay 
               studentId={currentUser.id} 
-              className="text-gray-700 bg-gray-100 px-3 py-1 rounded-full"
+              className="text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full"
             />
           )}
           <div className="relative max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
             <Input
               type="text"
               placeholder="Search Home"
-              className="pl-10 bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:bg-white"
+              className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:bg-white dark:focus:bg-gray-700"
             />
           </div>
 
           {currentUser ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="text-gray-700 hover:bg-gray-100 flex items-center gap-2">
+                <Button variant="ghost" className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">
                     {currentUser.full_name || currentUser.first_name || currentUser.id}
@@ -127,7 +136,7 @@ const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button variant="ghost" onClick={handleLogin} className="text-gray-700 hover:bg-gray-100">
+            <Button variant="ghost" onClick={handleLogin} className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
               <User className="mr-2 h-4 w-4" />
               Sign In
             </Button>

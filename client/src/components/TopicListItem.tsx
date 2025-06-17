@@ -91,7 +91,7 @@ const getSubtopicLabel = (parentTopic: string, index: number) => {
 };
 
 const formatDescription = (description: string) => {
-    return description.split('\n').map((line, index) => <span key={index} className="text-gray-700">
+    return description.split('\n').map((line, index) => <span key={index} className="text-gray-700 dark:text-gray-300">
         {line}
         {index < description.split('\n').length - 1 && <br />}
       </span>);
@@ -112,7 +112,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
 
   return (
     <>
-      <div className="bg-white border border-gray-200 hover:bg-gray-50 transition-all duration-200 rounded-lg p-3 shadow-sm">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-lg p-3 shadow-sm">
         <div className="flex items-start justify-between gap-2">
           <div
             onClick={() => onContentClick({
@@ -131,11 +131,11 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <h4 className="text-gray-900 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                  <h4 className="text-gray-900 dark:text-white text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 bg-white border-gray-300 text-xs px-2 py-1 h-6">
+                        <Button variant="outline" size="sm" className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-xs px-2 py-1 h-6">
                           Quiz
                         </Button>
                       </DropdownMenuTrigger>
@@ -160,7 +160,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6"
+                        className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-xs px-2 py-1 h-6"
                         onClick={(e) => {
                           e.stopPropagation();
                           setVideoPopupOpen(true);
@@ -300,7 +300,7 @@ const GroupedContentDisplay = ({
       {/* Display individual content cards for ungrouped content */}
       {groupedContent.ungrouped.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-gray-700 text-sm font-medium">Main Content</h4>
+          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Main Content</h4>
           <div className="grid grid-cols-2 gap-3">
             {groupedContent.ungrouped.map(content => (
               <ContentCard 
