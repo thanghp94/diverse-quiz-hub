@@ -9,8 +9,7 @@ import Topics from "./pages/Topics";
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
-import MatchingListPage from "./pages/MatchingList";
-import MatchingActivityPage from "./pages/MatchingActivity";
+
 import DebatePage from "./pages/Debate";
 import WritingPage from "./pages/Writing";
 import ChallengeSubject from "./pages/ChallengeSubject";
@@ -36,8 +35,7 @@ const App = () => (
           <Route path="/challenge-subject" component={ChallengeSubject} />
           <Route path="/content/:id" component={Content} />
           <Route path="/leaderboard" component={Leaderboard} />
-          <Route path="/matching" component={MatchingListPage} />
-          <Route path="/matching/:id" component={MatchingActivityPage} />
+
           <Route path="/debate" component={DebatePage} />
           <Route path="/writing" component={WritingPage} />
           <Route path="/learning-journey" component={LearningJourneyPage} />
