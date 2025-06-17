@@ -36,6 +36,8 @@ const ContentPopup = ({
 }: ContentPopupProps) => {
   const [isSecondBlurbOpen, setIsSecondBlurbOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [modalVideoUrl, setModalVideoUrl] = useState<string | null>(null);
   
   const {
     quizMode,
@@ -185,23 +187,49 @@ const ContentPopup = ({
                   
                   <div className="space-y-4">
                     {videoEmbedUrl && (
-                      <div className="aspect-video">
+                      <div 
+                        className="aspect-video relative cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => {
+                          setModalVideoUrl(videoEmbedUrl);
+                          setIsVideoModalOpen(true);
+                        }}
+                      >
                         <iframe
                           src={videoEmbedUrl}
                           title={`Video 1 for ${content.title}`}
-                          className="w-full h-full rounded-lg"
+                          className="w-full h-full rounded-lg pointer-events-none"
                           allowFullScreen
                         />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 rounded-lg opacity-0 hover:opacity-100 transition-opacity">
+                          <div className="bg-white bg-opacity-90 rounded-full p-3">
+                            <svg className="w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
                       </div>
                     )}
                     {video2EmbedUrl && (
-                      <div className="aspect-video">
+                      <div 
+                        className="aspect-video relative cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => {
+                          setModalVideoUrl(video2EmbedUrl);
+                          setIsVideoModalOpen(true);
+                        }}
+                      >
                         <iframe
                           src={video2EmbedUrl}
                           title={`Video 2 for ${content.title}`}
-                          className="w-full h-full rounded-lg"
+                          className="w-full h-full rounded-lg pointer-events-none"
                           allowFullScreen
                         />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-20 rounded-lg opacity-0 hover:opacity-100 transition-opacity">
+                          <div className="bg-white bg-opacity-90 rounded-full p-3">
+                            <svg className="w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -270,6 +298,36 @@ const ContentPopup = ({
               src={content.imageid}
               alt={content.title}
               className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Full-screen Video Modal */}
+      {isVideoModalOpen && modalVideoUrl && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-95 z-50 flex items-center justify-center p-4"
+          onClick={() => {
+            setIsVideoModalOpen(false);
+            setModalVideoUrl(null);
+          }}
+        >
+          <div className="relative w-full max-w-6xl aspect-video">
+            <button
+              onClick={() => {
+                setIsVideoModalOpen(false);
+                setModalVideoUrl(null);
+              }}
+              className="absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 z-10"
+            >
+              ×
+            </button>
+            <iframe
+              src={modalVideoUrl}
+              title="Full-screen video"
+              className="w-full h-full rounded-lg"
+              allowFullScreen
               onClick={(e) => e.stopPropagation()}
             />
           </div>
