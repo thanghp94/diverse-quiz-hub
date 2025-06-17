@@ -4,8 +4,11 @@ import { Content } from "@/hooks/useContent";
 import { useEffect } from "react";
 import QuizView from "./QuizView";
 import { cn } from "@/lib/utils";
-import { ContentPopupView } from "./content-popup/ContentPopupView";
 import { MediaDisplay } from "./content-popup/MediaDisplay";
+import { VideoPlayer } from "./content-popup/VideoPlayer";
+import { ContentBody } from "./content-popup/ContentBody";
+import { PopupHeader } from "./content-popup/PopupHeader";
+import MarkdownRenderer from "./MarkdownRenderer";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
 
@@ -89,22 +92,30 @@ const ContentPopup = ({
           />
         ) : (
           <>
-            {/* Header with title, description and image */}
-            <div className="flex flex-col lg:flex-row lg:gap-4 mb-3">
-              {/* Left: Title and Description */}
-              <div className="flex-1 lg:w-1/2">
-                <DialogHeader>
-                  <DialogTitle className="text-center text-2xl font-bold text-blue-600">
-                    {content.title}
-                  </DialogTitle>
-                  <DialogDescription className="whitespace-pre-line text-lg leading-relaxed">
-                    {content.short_description || "Detailed content view."}
-                  </DialogDescription>
-                </DialogHeader>
-              </div>
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl font-bold text-blue-600">
+                {content.title}
+              </DialogTitle>
+              <DialogDescription className="whitespace-pre-line text-lg leading-relaxed">
+                {content.short_description || "Detailed content view."}
+              </DialogDescription>
+            </DialogHeader>
 
-              {/* Right: Image */}
-              <div className="flex-1 lg:w-1/2 mt-4 lg:mt-0">
+            {/* Second Short Blurb directly under DialogDescription */}
+            {content.second_short_blurb && (
+              <div className="mb-4">
+                <div className="p-4 border rounded-lg bg-muted/30">
+                  <MarkdownRenderer className="text-base leading-relaxed">
+                    {content.second_short_blurb}
+                  </MarkdownRenderer>
+                </div>
+              </div>
+            )}
+
+            {/* Two-column layout: Image + Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-3">
+              {/* Left: Image and Video */}
+              <div className="space-y-3">
                 <MediaDisplay
                   imageUrl={imageUrl}
                   isImageLoading={isImageLoading}
@@ -112,25 +123,33 @@ const ContentPopup = ({
                   imageid={content.imageid}
                   isFullWidth={true}
                 />
+                {/* Video section directly under image */}
+                <div className="mt-3">
+                  <VideoPlayer 
+                    videoEmbedUrl={videoEmbedUrl}
+                    video2EmbedUrl={video2EmbedUrl}
+                    videoData={videoData}
+                    video2Data={video2Data}
+                    compact={true}
+                  />
+                </div>
+              </div>
+
+              {/* Right: Content */}
+              <div className="space-y-3">
+                <ContentBody content={content} />
               </div>
             </div>
 
-            {/* Content below */}
-            <ContentPopupView
-                content={content}
-                contentListLength={contentList.length}
-                currentIndex={currentIndex}
-                handlePrevious={handlePrevious}
-                handleNext={handleNext}
-                startQuiz={startQuiz}
-                imageUrl={imageUrl}
-                isImageLoading={isImageLoading}
-                videoEmbedUrl={videoEmbedUrl}
-                video2EmbedUrl={video2EmbedUrl}
-                videoData={videoData}
-                video2Data={video2Data}
-                hideMediaDisplay={true}
-                onContentUpdate={onContentChange}
+            {/* Popup Header */}
+            <PopupHeader
+              contentListLength={contentList.length}
+              currentIndex={currentIndex}
+              handlePrevious={handlePrevious}
+              handleNext={handleNext}
+              startQuiz={startQuiz}
+              translation={content.translation}
+              contentId={content.id}
             />
           </>
         )}
