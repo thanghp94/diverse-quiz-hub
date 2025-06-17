@@ -262,10 +262,10 @@ const ContentPopup = ({
                       {/* Partial clickable areas for image when videos are present */}
                       {(videoEmbedUrl || video2EmbedUrl) && (
                         <>
-                          {/* Top area of image */}
+                          {/* Top area of image - reduced height to avoid video overlap */}
                           <div
                             className="absolute top-0 left-0 right-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-t-lg"
-                            style={{ height: '60%' }}
+                            style={{ height: '50%', zIndex: 2 }}
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -273,19 +273,6 @@ const ContentPopup = ({
                               setIsImageModalOpen(true);
                             }}
                           />
-                          {/* Side areas if only one video */}
-                          {(videoEmbedUrl && !video2EmbedUrl) && (
-                            <div
-                              className="absolute bottom-0 left-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all"
-                              style={{ height: '40%', width: '20%' }}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                console.log('Image (left area) clicked, opening modal');
-                                setIsImageModalOpen(true);
-                              }}
-                            />
-                          )}
                         </>
                       )}
                     </div>
@@ -298,7 +285,7 @@ const ContentPopup = ({
                         <div 
                           data-video-container="true"
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!video2EmbedUrl ? 'max-w-md' : ''}`}
-                          style={{ zIndex: 10 }}
+                          style={{ zIndex: 50, position: 'relative' }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -326,7 +313,7 @@ const ContentPopup = ({
                         <div 
                           data-video-container="true"
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!videoEmbedUrl ? 'max-w-md' : ''}`}
-                          style={{ zIndex: 10 }}
+                          style={{ zIndex: 50, position: 'relative' }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
