@@ -224,13 +224,19 @@ const ContentPopup = ({
                         style={{ 
                           aspectRatio: 'auto',
                           objectFit: 'contain',
-                          maxHeight: '400px'
+                          maxHeight: '400px',
+                          zIndex: 1
                         }}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          console.log('Image clicked, opening modal');
-                          setIsImageModalOpen(true);
+                          // Only open image modal if we're not in a video area
+                          const target = e.target as HTMLElement;
+                          const videoContainer = target.closest('[data-video-container]');
+                          if (!videoContainer) {
+                            console.log('Image clicked, opening modal');
+                            setIsImageModalOpen(true);
+                          }
                         }}
                         onLoad={(e) => {
                           console.log('Image loaded successfully:', content.imageid);
@@ -260,7 +266,9 @@ const ContentPopup = ({
                     <div className={`mt-4 ${videoEmbedUrl && video2EmbedUrl ? 'grid grid-cols-2 gap-3' : 'flex justify-center'}`}>
                       {videoEmbedUrl && (
                         <div 
+                          data-video-container="true"
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!video2EmbedUrl ? 'max-w-md' : ''}`}
+                          style={{ zIndex: 10 }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -286,7 +294,9 @@ const ContentPopup = ({
                       )}
                       {video2EmbedUrl && (
                         <div 
+                          data-video-container="true"
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!videoEmbedUrl ? 'max-w-md' : ''}`}
+                          style={{ zIndex: 10 }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
