@@ -14,12 +14,14 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Configure connection with retry logic
+// Configure connection with optimized settings
 export const pool = new Pool({ 
   connectionString: process.env.DATABASE_URL,
-  max: 10,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  max: 5,
+  idleTimeoutMillis: 20000,
+  connectionTimeoutMillis: 15000,
+  maxUses: 7500,
+  allowExitOnIdle: false,
 });
 
 export const db = drizzle({ client: pool, schema });
@@ -31,6 +33,7 @@ export async function wakeUpDatabase() {
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      // Test database connection with a simple query
       const client = await pool.connect();
       await client.query('SELECT 1');
       client.release();
@@ -41,8 +44,8 @@ export async function wakeUpDatabase() {
       console.error(`Database wake up attempt ${attempt} failed:`, error);
       
       if (attempt < maxRetries) {
-        console.log(`Retrying in ${attempt * 1000}ms...`);
-        await new Promise(resolve => setTimeout(resolve, attempt * 1000));
+        console.log(`Retrying in ${attempt * 2000}ms...`);
+        await new Promise(resolve => setTimeout(resolve, attempt * 2000));
       }
     }
   }
