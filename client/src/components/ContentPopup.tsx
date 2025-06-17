@@ -265,7 +265,7 @@ const ContentPopup = ({
                           {/* Top area of image - reduced height to avoid video overlap */}
                           <div
                             className="absolute top-0 left-0 right-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-t-lg"
-                            style={{ height: '50%', zIndex: 2 }}
+                            style={{ height: '50%', zIndex: 5 }}
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -285,7 +285,7 @@ const ContentPopup = ({
                         <div 
                           data-video-container="true"
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!video2EmbedUrl ? 'max-w-md' : ''}`}
-                          style={{ zIndex: 50, position: 'relative' }}
+                          style={{ zIndex: 20, position: 'relative' }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -313,7 +313,7 @@ const ContentPopup = ({
                         <div 
                           data-video-container="true"
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!videoEmbedUrl ? 'max-w-md' : ''}`}
-                          style={{ zIndex: 50, position: 'relative' }}
+                          style={{ zIndex: 20, position: 'relative' }}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
