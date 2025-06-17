@@ -151,7 +151,7 @@ const ContentPopup = ({
                     <img
                       src={content.imageid}
                       alt={content.title}
-                      className="w-full h-auto max-h-32 object-contain rounded-lg"
+                      className="w-full h-auto max-h-80 object-contain rounded-lg"
                       style={{ aspectRatio: 'auto' }}
                       onLoad={() => console.log('Image loaded successfully:', content.imageid)}
                       onError={() => console.log('Image failed to load:', content.imageid)}
