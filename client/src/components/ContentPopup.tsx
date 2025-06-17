@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import type { Content } from "@shared/schema";
 import { useContent } from "@/hooks/useContent";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import QuizView from "./QuizView";
 import { cn } from "@/lib/utils";
 import { MediaDisplay } from "./content-popup/MediaDisplay";
@@ -205,7 +206,12 @@ const ContentPopup = ({
                           objectFit: 'contain',
                           maxHeight: '400px'
                         }}
-                        onClick={() => setIsImageModalOpen(true)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Image clicked, opening modal');
+                          setIsImageModalOpen(true);
+                        }}
                         onLoad={(e) => {
                           console.log('Image loaded successfully:', content.imageid);
                           const img = e.target as HTMLImageElement;
@@ -323,27 +329,35 @@ const ContentPopup = ({
         </DialogContent>
       </Dialog>
 
-      {/* Full-screen Image Modal */}
-      {isImageModalOpen && content.imageid && (
+      {/* Full-screen Image Modal - Portal Rendered */}
+      {isImageModalOpen && content?.imageid && createPortal(
         <div 
-          className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsImageModalOpen(false)}
+          className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4"
+          onClick={() => {
+            console.log('Image modal backdrop clicked, closing');
+            setIsImageModalOpen(false);
+          }}
+          style={{ zIndex: 99999 }}
         >
           <div className="relative max-w-[95vw] max-h-[95vh]">
             <button
-              onClick={() => setIsImageModalOpen(false)}
+              onClick={() => {
+                console.log('Image modal close button clicked');
+                setIsImageModalOpen(false);
+              }}
               className="absolute top-4 right-4 text-white text-2xl bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 z-10"
             >
               ×
             </button>
             <img
-              src={content.imageid}
+              src={content.imageid || ''}
               alt={content.title}
               className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
             />
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Full-screen Video Modal */}
