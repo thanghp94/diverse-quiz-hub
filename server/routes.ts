@@ -104,23 +104,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Content Groups API
-  app.get("/api/content/groups", async (req, res) => {
+  app.get("/api/content-groups", async (req, res) => {
     try {
-      const groups = await storage.getContentGroups();
-      res.json(groups);
+      const contentGroups = await storage.getContentGroups();
+      res.json(contentGroups);
     } catch (error) {
       console.error('Error fetching content groups:', error);
       res.status(500).json({ error: 'Failed to fetch content groups' });
     }
   });
 
-  app.get("/api/content/group/:groupName", async (req, res) => {
+  app.get("/api/content-groups/:groupName", async (req, res) => {
     try {
-      const content = await storage.getContentByGroup(req.params.groupName);
-      res.json(content);
+      const contentGroup = await storage.getContentByGroup(req.params.groupName);
+      res.json(contentGroup);
     } catch (error) {
       console.error('Error fetching content by group:', error);
       res.status(500).json({ error: 'Failed to fetch content by group' });
+    }
+  });
+
+  app.get("/api/content-groups/topic/:topicId", async (req, res) => {
+    try {
+      const topicId = req.params.topicId;
+      
+      // Get all content for this topic
+      const allContent = await storage.getContent(topicId);
+      
+      // Group content by contentgroup field
+      const groupedContent: { [key: string]: any[] } = {};
+      const ungroupedContent: any[] = [];
+      
+      allContent.forEach(content => {
+        if (content.contentgroup && content.contentgroup.trim() !== '') {
+          if (!groupedContent[content.contentgroup]) {
+            groupedContent[content.contentgroup] = [];
+          }
+          groupedContent[content.contentgroup].push(content);
+        } else {
+          ungroupedContent.push(content);
+        }
+      });
+      
+      // Format response with group info
+      const response = {
+        groups: Object.entries(groupedContent).map(([groupName, content]) => ({
+          groupName,
+          content,
+          count: content.length
+        })),
+        ungroupedContent
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching content groups by topic:', error);
+      res.status(500).json({ error: 'Failed to fetch content groups by topic' });
+    }
+  });
+
+  // Images
+  app.get("/api/images", async (req, res) => {
+    try {
+      const images = await storage.getImages();
+      res.json(images);
+    } catch (error) {
+      console.error('Error fetching images:', error);
+      res.status(500).json({ error: 'Failed to fetch images' });
     }
   });
 
