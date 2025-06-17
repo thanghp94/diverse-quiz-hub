@@ -745,20 +745,21 @@ export class DatabaseStorage implements IStorage {
   // Live Class Assignment Methods
   async getLiveClassAssignments(): Promise<any[]> {
     return await this.executeWithRetry(async () => {
-      // Get current time in Vietnam timezone (UTC+7)
+      // Get current UTC time
       const now = new Date();
+      
+      // Calculate 3 hours from now and 3 hours ago in UTC
+      const threeHoursFromNow = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+      const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
+      
+      // Convert to Vietnam timezone for display
       const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
       
-      // Calculate 3 hours from now in Vietnam time (assignments expiring within next 3 hours)
-      const threeHoursFromNow = new Date(vietnamTime.getTime() + (3 * 60 * 60 * 1000));
+      console.log('Current UTC time:', now.toISOString());
+      console.log('Vietnam time (display):', vietnamTime.toISOString());
+      console.log('Looking for assignments between UTC:', threeHoursAgo.toISOString(), 'and', threeHoursFromNow.toISOString());
       
-      // Also get assignments that started within the last 3 hours
-      const threeHoursAgo = new Date(vietnamTime.getTime() - (3 * 60 * 60 * 1000));
-      
-      console.log('Vietnam time:', vietnamTime.toISOString());
-      console.log('Looking for assignments between:', threeHoursAgo.toISOString(), 'and', threeHoursFromNow.toISOString());
-      
-      // Query assignments that are currently active or starting soon
+      // Query assignments that are currently active or starting soon (in UTC)
       const result = await db.select()
         .from(assignment)
         .where(
@@ -767,6 +768,9 @@ export class DatabaseStorage implements IStorage {
         .orderBy(desc(assignment.expiring_date));
       
       console.log('Found live assignments:', result.length);
+      if (result.length > 0) {
+        console.log('Assignment expiring dates:', result.map(a => ({ id: a.id, expiring_date: a.expiring_date })));
+      }
       return result;
     });
   }
