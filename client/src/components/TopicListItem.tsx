@@ -122,7 +122,13 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
             className="flex-grow cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <ContentThumbnail content={content} />
+              <ContentThumbnail 
+                content={content} 
+                onClick={() => onContentClick({
+                  content,
+                  contextList: topicContent
+                })}
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
