@@ -112,9 +112,14 @@ const ContentPopup = ({
               </div>
             )}
 
-            {/* Two-column layout: Image + Content */}
+            {/* Two-column layout: Content + Media */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-3">
-              {/* Left: Image and Video */}
+              {/* Left: Content */}
+              <div className="space-y-3">
+                <ContentBody content={content} />
+              </div>
+
+              {/* Right: Media - Image, Video1, Video2 horizontally */}
               <div className="space-y-3">
                 <MediaDisplay
                   imageUrl={imageUrl}
@@ -123,19 +128,29 @@ const ContentPopup = ({
                   imageid={content.imageid}
                   isFullWidth={true}
                 />
-                {/* Video section directly under image */}
-                <VideoPlayer 
-                  videoEmbedUrl={videoEmbedUrl}
-                  video2EmbedUrl={video2EmbedUrl}
-                  videoData={videoData}
-                  video2Data={video2Data}
-                  compact={true}
-                />
-              </div>
-
-              {/* Right: Content */}
-              <div className="space-y-3">
-                <ContentBody content={content} />
+                {/* Videos arranged horizontally */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {videoEmbedUrl && (
+                    <div className="aspect-video">
+                      <iframe
+                        src={videoEmbedUrl}
+                        title={`Video 1 for ${content.title}`}
+                        className="w-full h-full rounded-lg"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                  {video2EmbedUrl && (
+                    <div className="aspect-video">
+                      <iframe
+                        src={video2EmbedUrl}
+                        title={`Video 2 for ${content.title}`}
+                        className="w-full h-full rounded-lg"
+                        allowFullScreen
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
