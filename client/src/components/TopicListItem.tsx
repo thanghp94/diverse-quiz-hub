@@ -737,7 +737,7 @@ export const TopicListItem = ({
                                     <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                              <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
+                              <ChevronDown className={cn("h-5 w-5 text-gray-600 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
                             </div>
                           </div>
                           {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
@@ -752,7 +752,7 @@ export const TopicListItem = ({
 
                                   return (
                                     <>
-                                      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                      <div className="bg-white border border-gray-200 hover:bg-gray-50 transition-all duration-200 rounded-lg p-3 shadow-sm">
                                         <div className="flex items-start justify-between gap-2">
                                           <div
                                             onClick={() => onContentClick({
@@ -771,7 +771,7 @@ export const TopicListItem = ({
                                               />
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2 mb-2">
-                                                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-center">{content.title}</h4>
+                                                  <h4 className="text-gray-900 text-base font-medium leading-tight flex-1 min-w-0 text-center">{content.title}</h4>
                                                   <div className="flex items-center gap-1 flex-shrink-0">
                                                       <ContentRatingButtons 
                                                         key={`${content.id}-rating`}
@@ -783,7 +783,7 @@ export const TopicListItem = ({
                                                         <Button 
                                                           variant="outline" 
                                                           size="sm" 
-                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                          className="text-red-700 hover:bg-red-50 hover:text-red-800 bg-red-50 border-red-200 text-xs px-2 py-1 h-6"
                                                           onClick={(e) => {
                                                             e.stopPropagation();
                                                             setVideoPopupOpen(true);
@@ -795,7 +795,7 @@ export const TopicListItem = ({
                                                       )}
                                                       <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                          <Button variant="outline" size="sm" className="text-gray-700 hover:bg-gray-100 hover:text-gray-900 bg-gray-50 border-gray-200 text-xs px-2 py-1 h-6">
                                                             Quiz
                                                           </Button>
                                                         </DropdownMenuTrigger>
@@ -821,7 +821,7 @@ export const TopicListItem = ({
                                                   <div className="flex items-center gap-2 mb-2">
                                                     <CompactContentDifficultyIndicator contentId={content.id} />
                                                   </div>
-                                                {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+                                                {content.short_description && <p className="text-gray-600 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                               </div>
                                             </div>
                                           </div>
