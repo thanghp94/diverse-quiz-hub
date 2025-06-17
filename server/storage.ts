@@ -1,6 +1,6 @@
 import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission } from "@shared/schema";
 import { db } from "./db";
-import { eq, isNull, ne, asc, sql, and, desc, inArray } from "drizzle-orm";
+import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
 
 // modify the interface with any CRUD methods
@@ -738,6 +738,61 @@ export class DatabaseStorage implements IStorage {
   async getAllAssignmentStudentTries(): Promise<any[]> {
     return await this.executeWithRetry(async () => {
       const result = await db.select().from(assignment_student_try);
+      return result;
+    });
+  }
+
+  // Live Class Assignment Methods
+  async getLiveClassAssignments(): Promise<any[]> {
+    return await this.executeWithRetry(async () => {
+      // Get current time in Vietnam timezone (UTC+7)
+      const now = new Date();
+      const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+      
+      // Calculate 3 hours ago in Vietnam time
+      const threeHoursAgo = new Date(vietnamTime.getTime() - (3 * 60 * 60 * 1000));
+      
+      // Query assignments with expiring_date within the last 3 hours
+      const result = await db.select()
+        .from(assignment)
+        .where(
+          and(
+            gte(assignment.expiring_date, threeHoursAgo.toISOString()),
+            lte(assignment.expiring_date, vietnamTime.toISOString())
+          )
+        )
+        .orderBy(desc(assignment.expiring_date));
+      
+      return result;
+    });
+  }
+
+  async getAssignmentStudentProgress(assignmentId: string): Promise<any[]> {
+    return await this.executeWithRetry(async () => {
+      // Get all student tries for this assignment with student details
+      const result = await db.select({
+        assignment_student_try: assignment_student_try,
+        student_tries: student_try,
+        user: users
+      })
+      .from(assignment_student_try)
+      .leftJoin(student_try, eq(student_try.assignment_student_try_id, assignment_student_try.id))
+      .leftJoin(users, eq(users.id, assignment_student_try.hocsinh_id))
+      .where(eq(assignment_student_try.assignmentid, assignmentId))
+      .orderBy(assignment_student_try.start_time);
+      
+      return result;
+    });
+  }
+
+  async getStudentQuizProgress(assignmentStudentTryId: string): Promise<any[]> {
+    return await this.executeWithRetry(async () => {
+      // Get detailed quiz progress for a specific assignment student try
+      const result = await db.select()
+        .from(student_try)
+        .where(eq(student_try.assignment_student_try_id, assignmentStudentTryId.toString()))
+        .orderBy(student_try.time_start);
+      
       return result;
     });
   }

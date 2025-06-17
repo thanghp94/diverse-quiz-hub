@@ -57,31 +57,43 @@ export const ContentPopupView = ({
         contentId={content.id}
       />
 
-      {!hideMediaDisplay && (
-        <MediaDisplay
-          imageUrl={imageUrl}
-          isImageLoading={isImageLoading}
-          title={content.title}
-          imageid={content.imageid}
-        />
-      )}
-      
+      {/* Two-column layout: Image + Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Left Column: Image */}
+        <div className="space-y-3">
+          {!hideMediaDisplay && (
+            <MediaDisplay
+              imageUrl={imageUrl}
+              isImageLoading={isImageLoading}
+              title={content.title}
+              imageid={content.imageid}
+              isFullWidth={true}
+            />
+          )}
+        </div>
+
+        {/* Right Column: Content */}
+        <div className="space-y-3">
+          <ContentBody content={content} />
+          
+          {/* Content Editor for authorized users */}
+          {onContentUpdate && (
+            <ContentEditor 
+              content={content} 
+              onContentUpdate={onContentUpdate}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* Video section below - two smaller windows side by side */}
       <VideoPlayer 
         videoEmbedUrl={videoEmbedUrl}
         video2EmbedUrl={video2EmbedUrl}
         videoData={videoData}
         video2Data={video2Data}
+        compact={true}
       />
-
-      {/* Content Editor for authorized users */}
-      {onContentUpdate && (
-        <ContentEditor 
-          content={content} 
-          onContentUpdate={onContentUpdate}
-        />
-      )}
-
-      <ContentBody content={content} />
     </div>
   );
 };
