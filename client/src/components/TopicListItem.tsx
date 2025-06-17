@@ -605,305 +605,302 @@ export const TopicListItem = ({
     }
 
     return (
+      <div
+        className={cn(
+          "bg-white/10 backdrop-blur-lg border-white/20 rounded-lg overflow-hidden border-b-0 transition-all duration-300",
+          isExpanded ? "md:col-span-2" : "md:col-span-1"
+        )}
+      >
         <div
           className={cn(
-            "bg-white/10 backdrop-blur-lg border-white/20 rounded-lg overflow-hidden border-b-0 transition-all duration-300",
-            isExpanded ? "md:col-span-2" : "md:col-span-1"
+            "flex items-start p-3 text-white w-full text-left cursor-pointer transition-colors hover:bg-white/5",
+            isExpanded && "bg-white/5"
           )}
+          onClick={() => onToggleTopic(topic.id)}
         >
-          <div
-            className={cn(
-              "flex items-start p-3 text-white w-full text-left cursor-pointer transition-colors hover:bg-white/5",
-              isExpanded && "bg-white/5"
-            )}
-            onClick={() => onToggleTopic(topic.id)}
-          >
-            {topicImageUrl && (
-              <img src={topicImageUrl} alt={topic.topic} className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0" />
-            )}
-            <div className="flex-grow flex items-start justify-between">
-              <div className="w-full">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <CardTitle className="text-white text-2xl font-bold">{topic.topic}</CardTitle>
+          {topicImageUrl && (
+            <img src={topicImageUrl} alt={topic.topic} className="w-16 h-16 object-cover rounded-md mr-4 flex-shrink-0" />
+          )}
+          <div className="flex-grow flex items-start justify-between">
+            <div className="w-full">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <CardTitle className="text-white text-2xl font-bold">{topic.topic}</CardTitle>
 
-                    {topic.challengesubject && (
-                      <Badge variant="outline" className="border-white/30 text-white/70 text-sm">
-                        {topic.challengesubject}
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {/* Show parent topic matching button if this is a parent topic (no parentid) */}
-                    {!topic.parentid && (
-                      <ParentTopicMatchingButton 
-                        parentTopicId={topic.id} 
-                        parentTopicName={topic.topic} 
-                        onStartTopicMatching={onStartTopicMatching} 
-                      />
-                    )}
-                    {/* Show individual topic matching button if this topic has its own activities */}
-                    {hasMatchingActivities && (
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onStartTopicMatching(topic.id, topic.topic);
-                        }}
-                      >
-                        <Shuffle className="h-5 w-5" />
-                        <span className="sr-only">Start Matching for {topic.topic}</span>
-                      </Button>
-                    )}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
-                          <HelpCircle className="h-5 w-5" />
-                          <span className="sr-only">Start Quiz for {topic.topic}</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
-                          Overview Quiz
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
-                          Easy Quiz
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
-                          Hard Quiz
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <ChevronDown className={cn("h-6 w-6 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
-                  </div>
+                  {topic.challengesubject && (
+                    <Badge variant="outline" className="border-white/30 text-white/70 text-sm">
+                      {topic.challengesubject}
+                    </Badge>
+                  )}
                 </div>
-                {topic.short_summary && (
-                  <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
-                )}
+                <div className="flex items-center gap-2">
+                  {/* Show parent topic matching button if this is a parent topic (no parentid) */}
+                  {!topic.parentid && (
+                    <ParentTopicMatchingButton 
+                      parentTopicId={topic.id} 
+                      parentTopicName={topic.topic} 
+                      onStartTopicMatching={onStartTopicMatching} 
+                    />
+                  )}
+                  {/* Show individual topic matching button if this topic has its own activities */}
+                  {hasMatchingActivities && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onStartTopicMatching(topic.id, topic.topic);
+                      }}
+                    >
+                      <Shuffle className="h-5 w-5" />
+                      <span className="sr-only">Start Matching for {topic.topic}</span>
+                    </Button>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
+                        <HelpCircle className="h-5 w-5" />
+                        <span className="sr-only">Start Quiz for {topic.topic}</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Overview', topic.topic)}>
+                        Overview Quiz
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Easy', topic.topic)}>
+                        Easy Quiz
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onStartTopicQuiz(topic.id, 'Hard', topic.topic)}>
+                        Hard Quiz
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <ChevronDown className={cn("h-6 w-6 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
+                </div>
               </div>
+              {topic.short_summary && (
+                <p className="text-white/80 text-sm font-normal">{formatDescription(topic.short_summary)}</p>
+              )}
             </div>
           </div>
+        </div>
+        {isExpanded && (
+          <div className="px-3 pb-3 pt-1">
+            <div className="space-y-1">
+              {topicContent.length > 0 && (
+                <GroupedContentDisplay 
+                  topicId={topic.id}
+                  topicContent={topicContent}
+                  onContentClick={onContentClick}
+                  onStartQuiz={onStartQuiz}
+                />
+              )}
 
-          {isExpanded && (
-            <div className="px-3 pb-3 pt-1">
-              <div className="space-y-1">
-                {topicContent.length > 0 && (
-                  <GroupedContentDisplay 
-                    topicId={topic.id}
-                    topicContent={topicContent}
-                    onContentClick={onContentClick}
-                    onStartQuiz={onStartQuiz}
-                  />
-                )}
+              {subtopics.length > 0 && (
+                <div className="mt-3">
+                  <div className="space-y-2">
+                    {subtopics.map((subtopic, index) => {
+                      const subtopicContent = getTopicContent(subtopic.id);
+                      return (
+                        <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
+                          <div 
+                            className="flex items-start justify-between cursor-pointer"
+                            onClick={() => onToggleContent(`subtopic-${subtopic.id}`)}
+                          >
+                            <div className="flex-grow">
+                              <div className="flex items-center gap-3 mb-2">
+                                <Badge className="bg-green-500/20 text-green-200 text-xs">
+                                  <BookOpen className="h-3 w-3" />
+                                </Badge>
+                                <span className="text-white/90 text-lg font-bold text-center">{subtopic.topic}</span>
 
-                {subtopics.length > 0 && (
-                  <div className="mt-3">
-                    <div className="space-y-2">
-                      {subtopics.map((subtopic, index) => {
-                        const subtopicContent = getTopicContent(subtopic.id);
-                        return (
-                          <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
-                            <div 
-                              className="flex items-start justify-between cursor-pointer"
-                              onClick={() => onToggleContent(`subtopic-${subtopic.id}`)}
-                            >
-                              <div className="flex-grow">
-                                <div className="flex items-center gap-3 mb-2">
-                                  <Badge className="bg-green-500/20 text-green-200 text-xs">
-                                    <BookOpen className="h-3 w-3" />
-                                  </Badge>
-                                  <span className="text-white/90 text-lg font-bold text-center">{subtopic.topic}</span>
-
-                                </div>
-                                {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                               </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <SubtopicMatchingButton 
-                                  topicId={subtopic.id} 
-                                  topicName={subtopic.topic}
-                                  onStartTopicMatching={onStartTopicMatching}
-                                />
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
-                                          <HelpCircle className="h-4 w-4" />
-                                          <span className="sr-only">Start Quiz for {subtopic.topic}</span>
-                                      </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-                                      <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Overview', subtopic.topic)}>Overview Quiz</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Easy', subtopic.topic)}>Easy Quiz</DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                                <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
-                              </div>
+                              {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                             </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <SubtopicMatchingButton 
+                                topicId={subtopic.id} 
+                                topicName={subtopic.topic}
+                                onStartTopicMatching={onStartTopicMatching}
+                              />
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
+                                        <HelpCircle className="h-4 w-4" />
+                                        <span className="sr-only">Start Quiz for {subtopic.topic}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Overview', subtopic.topic)}>Overview Quiz</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Easy', subtopic.topic)}>Easy Quiz</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
+                            </div>
+                          </div>
+                          {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
+                            <div className="mt-3 grid grid-cols-2 gap-3">
+                              {subtopicContent.map(content => {
+                                const SubtopicContentCard = () => {
+                                  const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
+                                  const [videoPopupOpen, setVideoPopupOpen] = useState(false);
 
-                            {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
-                              <div className="mt-3 grid grid-cols-2 gap-3">
-                                {subtopicContent.map(content => {
-                                  const SubtopicContentCard = () => {
-                                    const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
-                                    const [videoPopupOpen, setVideoPopupOpen] = useState(false);
+                                  const hasVideo1 = videoEmbedUrl && videoData;
+                                  const hasVideo2 = video2EmbedUrl && video2Data;
 
-                                    const hasVideo1 = videoEmbedUrl && videoData;
-                                    const hasVideo2 = video2EmbedUrl && video2Data;
-
-                                    return (
-                                      <>
-                                        <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
-                                          <div className="flex items-start justify-between gap-2">
-                                            <div
-                                              onClick={() => onContentClick({
-                                                content,
-                                                contextList: subtopicContent
-                                              })}
-                                              className="flex-grow cursor-pointer"
-                                            >
-                                              <div className="flex items-center gap-2">
-                                                <ContentThumbnail 
-                                                  content={content} 
-                                                  onClick={() => onContentClick({
-                                                    content,
-                                                    contextList: subtopicContent
-                                                  })}
-                                                />
-                                                <div className="flex-1 min-w-0">
-                                                  <div className="flex items-center justify-between gap-2 mb-2">
-                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
-                                                    <div className="flex items-center gap-1 flex-shrink-0">
-                                                        <ContentRatingButtons 
-                                                          key={`${content.id}-rating`}
-                                                          contentId={content.id}
-                                                          compact={true}
-                                                          studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
-                                                        />
-                                                        {(hasVideo1 || hasVideo2) && (
-                                                          <Button 
-                                                            variant="outline" 
-                                                            size="sm" 
-                                                            className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
-                                                            onClick={(e) => {
-                                                              e.stopPropagation();
-                                                              setVideoPopupOpen(true);
-                                                            }}
-                                                          >
-                                                            <Play className="h-3 w-3 mr-1" />
-                                                            Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                  return (
+                                    <>
+                                      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div
+                                            onClick={() => onContentClick({
+                                              content,
+                                              contextList: subtopicContent
+                                            })}
+                                            className="flex-grow cursor-pointer"
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <ContentThumbnail 
+                                                content={content} 
+                                                onClick={() => onContentClick({
+                                                  content,
+                                                  contextList: subtopicContent
+                                                })}
+                                              />
+                                              <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2 mb-2">
+                                                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-center">{content.title}</h4>
+                                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                                      <ContentRatingButtons 
+                                                        key={`${content.id}-rating`}
+                                                        contentId={content.id}
+                                                        compact={true}
+                                                        studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                      />
+                                                      {(hasVideo1 || hasVideo2) && (
+                                                        <Button 
+                                                          variant="outline" 
+                                                          size="sm" 
+                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setVideoPopupOpen(true);
+                                                          }}
+                                                        >
+                                                          <Play className="h-3 w-3 mr-1" />
+                                                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                        </Button>
+                                                      )}
+                                                      <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                            Quiz
                                                           </Button>
-                                                        )}
-                                                        <DropdownMenu>
-                                                          <DropdownMenuTrigger asChild>
-                                                            <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
-                                                              Quiz
-                                                            </Button>
-                                                          </DropdownMenuTrigger>
-                                                          <DropdownMenuContent>
-                                                            <DropdownMenuItem onClick={(e) => {
-                                                              e.stopPropagation();
-                                                              console.log('Easy Quiz clicked for subtopic content:', content.id, content.title);
-                                                              onStartQuiz(content, subtopicContent, 'Easy');
-                                                            }}>
-                                                              Easy Quiz
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={(e) => {
-                                                              e.stopPropagation();
-                                                              console.log('Hard Quiz clicked for subtopic content:', content.id, content.title);
-                                                              onStartQuiz(content, subtopicContent, 'Hard');
-                                                            }}>
-                                                              Hard Quiz
-                                                            </DropdownMenuItem>
-                                                          </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                      </div>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                          <DropdownMenuItem onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            console.log('Easy Quiz clicked for subtopic content:', content.id, content.title);
+                                                            onStartQuiz(content, subtopicContent, 'Easy');
+                                                          }}>
+                                                            Easy Quiz
+                                                          </DropdownMenuItem>
+                                                          <DropdownMenuItem onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            console.log('Hard Quiz clicked for subtopic content:', content.id, content.title);
+                                                            onStartQuiz(content, subtopicContent, 'Hard');
+                                                          }}>
+                                                            Hard Quiz
+                                                          </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                      </DropdownMenu>
                                                     </div>
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                      <CompactContentDifficultyIndicator contentId={content.id} />
-                                                    </div>
-                                                  {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
-                                                </div>
+                                                  </div>
+                                                  <div className="flex items-center gap-2 mb-2">
+                                                    <CompactContentDifficultyIndicator contentId={content.id} />
+                                                  </div>
+                                                {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                               </div>
                                             </div>
                                           </div>
                                         </div>
-
-                                        {/* Video Popup - Using Dialog */}
-                                        <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
-                                          <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
-                                            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
-                                              <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
-                                              <Button 
-                                                variant="ghost" 
-                                                size="sm"
-                                                onClick={() => setVideoPopupOpen(false)}
-                                                className="text-white hover:bg-white/20 flex-shrink-0"
-                                              >
-                                                ✕
-                                              </Button>
-                                            </div>
-                                            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-                                              {hasVideo1 && (
-                                                <div>
-                                                  {videoData.video_name && (
-                                                    <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
-                                                  )}
-                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                                                    <iframe 
-                                                      className="w-full h-full" 
-                                                      src={videoEmbedUrl} 
-                                                      title={videoData.video_name || 'Video 1'} 
-                                                      frameBorder="0" 
-                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                      allowFullScreen
-                                                    />
-                                                  </div>
+                                      </div>
+                                      {/* Video Popup - Using Dialog */}
+                                      <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
+                                        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+                                          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                                            <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+                                            <Button 
+                                              variant="ghost" 
+                                              size="sm"
+                                              onClick={() => setVideoPopupOpen(false)}
+                                              className="text-white hover:bg-white/20 flex-shrink-0"
+                                            >
+                                              ✕
+                                            </Button>
+                                          </div>
+                                          <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                                            {hasVideo1 && (
+                                              <div>
+                                                {videoData.video_name && (
+                                                  <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
+                                                )}
+                                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                  <iframe 
+                                                    className="w-full h-full" 
+                                                    src={videoEmbedUrl} 
+                                                    title={videoData.video_name || 'Video 1'} 
+                                                    frameBorder="0" 
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                    allowFullScreen
+                                                  />
                                                 </div>
-                                              )}
-                                              {hasVideo2 && (
-                                                <div>
-                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                                                    <iframe 
-                                                      className="w-full h-full" 
-                                                      src={video2EmbedUrl} 
-                                                      title={video2Data.video_name || 'Video 2'} 
-                                                      frameBorder="0" 
-                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                      allowFullScreen
-                                                    />
-                                                  </div>
+                                              </div>
+                                            )}
+                                            {hasVideo2 && (
+                                              <div>
+                                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                  <iframe 
+                                                    className="w-full h-full" 
+                                                    src={video2EmbedUrl} 
+                                                    title={video2Data.video_name || 'Video 2'} 
+                                                    frameBorder="0" 
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                    allowFullScreen
+                                                  />
                                                 </div>
-                                              )}
-                                            </div>
-                                          </DialogContent>
-                                        </Dialog>
-                                      </>
-                                    );
-                                  };
+                                              </div>
+                                            )}
+                                          </div>
+                                        </DialogContent>
+                                      </Dialog>
+                                    </>
+                                  );
+                                };
 
-                                  return <SubtopicContentCard key={content.id} />;
-                                })}
-                              </div>
-                            )}
-                                                    </div>
-                        );
-                      })}
-                    </div>
+                                return <SubtopicContentCard key={content.id} />;
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+              )}
 
-                {topicContent.length === 0 && subtopics.length === 0 && (
-                  <div className="text-center py-4">
-                    <p className="text-white/60 text-sm">No content available for this topic</p>
-                  </div>
-                )}
-              </div>
+              {topicContent.length === 0 && subtopics.length === 0 && (
+                <div className="text-center py-4">
+                  <p className="text-white/60 text-sm">No content available for this topic</p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      );
+          </div>
+        )}
+      </div>
+    );
 }
 
 export default TopicListItem;
