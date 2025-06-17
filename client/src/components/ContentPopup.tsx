@@ -246,21 +246,35 @@ const ContentPopup = ({
                         }}
                         onError={() => console.log('Image failed to load:', content.imageid)}
                       />
-                      {/* Always clickable image overlay - positioned above image but below videos */}
-                      <div
-                        className="absolute inset-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-lg"
-                        style={{
-                          zIndex: 10,
-                          // Reserve bottom portion for videos when they exist
-                          bottom: (videoEmbedUrl || video2EmbedUrl) ? '30%' : '0'
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log('Image overlay clicked, opening modal');
-                          setIsImageModalOpen(true);
-                        }}
-                      />
+                      {/* Image overlay - only when no videos are present */}
+                      {!(videoEmbedUrl || video2EmbedUrl) && (
+                        <div
+                          className="absolute inset-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-lg"
+                          style={{ zIndex: 10 }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Image overlay clicked, opening modal');
+                            setIsImageModalOpen(true);
+                          }}
+                        />
+                      )}
+                      {/* Partial image overlay - only top portion when videos are present */}
+                      {(videoEmbedUrl || video2EmbedUrl) && (
+                        <div
+                          className="absolute top-0 left-0 right-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-t-lg"
+                          style={{ 
+                            zIndex: 10,
+                            height: '60%'
+                          }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Image overlay (top portion) clicked, opening modal');
+                            setIsImageModalOpen(true);
+                          }}
+                        />
+                      )}
                     </div>
                   )}
                   
@@ -271,7 +285,7 @@ const ContentPopup = ({
                         <div 
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md bg-black ${!video2EmbedUrl ? 'max-w-md' : ''}`}
                           style={{ 
-                            zIndex: 100,
+                            zIndex: 1000,
                             position: 'relative',
                             isolation: 'isolate'
                           }}
@@ -286,8 +300,10 @@ const ContentPopup = ({
                             const autoplayUrl = videoEmbedUrl.includes('?') 
                               ? videoEmbedUrl + '&autoplay=1' 
                               : videoEmbedUrl + '?autoplay=1';
+                            console.log('Setting video modal URL to:', autoplayUrl);
                             setModalVideoUrl(autoplayUrl);
                             setIsVideoModalOpen(true);
+                            console.log('Video modal state set to open');
                           }}
                         >
                           <iframe
@@ -309,7 +325,7 @@ const ContentPopup = ({
                         <div 
                           className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md bg-black ${!videoEmbedUrl ? 'max-w-md' : ''}`}
                           style={{ 
-                            zIndex: 100,
+                            zIndex: 1000,
                             position: 'relative',
                             isolation: 'isolate'
                           }}
@@ -324,8 +340,10 @@ const ContentPopup = ({
                             const autoplayUrl = video2EmbedUrl.includes('?') 
                               ? video2EmbedUrl + '&autoplay=1' 
                               : video2EmbedUrl + '?autoplay=1';
+                            console.log('Setting video modal URL to:', autoplayUrl);
                             setModalVideoUrl(autoplayUrl);
                             setIsVideoModalOpen(true);
+                            console.log('Video modal state set to open');
                           }}
                         >
                           <iframe
