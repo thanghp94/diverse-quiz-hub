@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Content } from "@/hooks/useContent";
+import type { Content } from "@shared/schema";
+import { useContent } from "@/hooks/useContent";
 import { useEffect, useState } from "react";
 import QuizView from "./QuizView";
 import { cn } from "@/lib/utils";
@@ -311,7 +312,6 @@ const ContentPopup = ({
                     </button>
                     {isEditorOpen && (
                       <div className="mt-3">
-                        {/* @ts-ignore */}
                         <ContentEditor content={content} onContentUpdate={onContentChange} />
                       </div>
                     )}

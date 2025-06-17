@@ -40,7 +40,13 @@ app.use((req, res, next) => {
 (async () => {
   // Wake up database on startup (non-blocking)
   console.log('Waking up database...');
-  wakeUpDatabase().catch(error => {
+  wakeUpDatabase().then(success => {
+    if (success) {
+      console.log('Database connection established successfully');
+    } else {
+      console.log('Database connection failed, but server will continue running');
+    }
+  }).catch(error => {
     console.error('Database wake up failed, but continuing server startup:', error);
   });
   

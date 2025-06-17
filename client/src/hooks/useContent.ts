@@ -1,37 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
-
-export interface Content {
-  id: string;
-  topicid?: string;
-  imageid?: string;
-  videoid?: string;
-  videoid2?: string;
-  challengesubject?: string[];
-  parentid?: string;
-  prompt?: string;
-  information?: string;
-  title: string;
-  short_blurb?: string;
-  second_short_blurb?: string;
-  mindmap?: string;
-  mindmapurl?: string;
-  translation?: string;
-  vocabulary?: string;
-  classdone?: string;
-  studentseen?: string;
-  show?: string;
-  showtranslation?: string;
-  showstudent?: string;
-  order?: string; // Changed from number to string to match database
-  contentgroup?: string;
-  typeoftaking?: string;
-  short_description?: string;
-  url?: string;
-  header?: string;
-  update?: string;
-  imagelink?: string;
-}
+import type { Content } from "@shared/schema";
 
 export const useContent = (topicId?: string) => {
   return useQuery({
