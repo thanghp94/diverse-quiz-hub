@@ -30,7 +30,7 @@ export const PopupHeader = ({
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2"> {/* Changed from space-y-4 to space-y-2 */}
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg border">
           <div className="flex items-center gap-2">
               <Button onClick={handlePrevious} disabled={currentIndex <= 0} size="sm">
@@ -86,29 +86,9 @@ export const PopupHeader = ({
                       </Card>
                   </PopoverContent>
               </Popover>
-              
-              {/* Added Quiz Rating Buttons in the same flex container */}
-              <div className="flex gap-2 justify-end">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hover:bg-green-50 hover:border-green-300 hover:text-green-700"
-                  onClick={() => console.log('Easy button clicked')}
-                >
-                  👍 Easy
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hover:bg-red-50 hover:border-red-300 hover:text-red-700"
-                  onClick={() => console.log('Hard button clicked')}
-                >
-                  👎 Hard
-                </Button>
-              </div>
           </div>
       </div>
-
+      
       {/* Content Rating Section */}
       <div className="px-4">
         <ContentRatingButtons

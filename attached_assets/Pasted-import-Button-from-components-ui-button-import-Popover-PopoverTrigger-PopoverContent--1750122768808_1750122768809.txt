@@ -30,7 +30,7 @@ export const PopupHeader = ({
   const [isTranslationPopoverOpen, setIsTranslationPopoverOpen] = useState(false);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg border">
           <div className="flex items-center gap-2">
               <Button onClick={handlePrevious} disabled={currentIndex <= 0} size="sm">
@@ -108,9 +108,9 @@ export const PopupHeader = ({
               </div>
           </div>
       </div>
-
+      
       {/* Content Rating Section */}
-      <div className="px-4">
+      <div className="px-4 mt-4">
         <ContentRatingButtons
           contentId={contentId}
           studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'anonymous'}
