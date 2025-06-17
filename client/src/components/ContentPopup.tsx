@@ -181,14 +181,13 @@ const ContentPopup = ({
 
               {/* Right: Image and Videos */}
               <div className="space-y-6">
-                <div className="w-full">
-                  <img
-                    src={imageUrl || ''}
-                    alt={content.title}
-                    className="w-full h-auto max-h-64 object-contain rounded-lg"
-                    style={{ aspectRatio: 'auto' }}
-                  />
-                </div>
+                <MediaDisplay
+                  imageUrl={imageUrl}
+                  isImageLoading={isImageLoading}
+                  title={content.title}
+                  imageid={content.imageid}
+                  isFullWidth={true}
+                />
                 
                 <div className="space-y-4">
                   {videoEmbedUrl && (
