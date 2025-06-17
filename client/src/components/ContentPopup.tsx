@@ -62,10 +62,10 @@ const ContentPopup = ({
   } = useContentMedia(content);
 
   useEffect(() => {
-    if (isOpen && startQuizDirectly && !quizMode) {
-      startQuiz();
+    if (isOpen && startQuizDirectly && !quizMode && quizLevel) {
+      startQuiz(quizLevel);
     }
-  }, [isOpen, startQuizDirectly, quizMode, startQuiz]);
+  }, [isOpen, startQuizDirectly, quizMode, startQuiz, quizLevel]);
 
   // Reset modal states when popup opens/closes or content changes
   useEffect(() => {
