@@ -371,10 +371,25 @@ const ContentPopup = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('Image modal close button clicked');
+              console.log('Image modal X button clicked - closing modal');
               setIsImageModalOpen(false);
             }}
-            className="fixed top-4 right-4 text-white text-3xl bg-black bg-opacity-70 rounded-full w-12 h-12 flex items-center justify-center hover:bg-opacity-90 z-[100000] font-bold"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Image modal X button mouse down');
+            }}
+            onMouseUp={() => {
+              console.log('Image modal X button mouse up');
+            }}
+            className="fixed top-4 right-4 text-white text-3xl bg-red-600 hover:bg-red-700 rounded-full w-12 h-12 flex items-center justify-center z-[100001] font-bold cursor-pointer"
+            style={{ 
+              position: 'fixed',
+              top: '16px',
+              right: '16px',
+              zIndex: 100001,
+              pointerEvents: 'all'
+            }}
           >
             ×
           </button>
