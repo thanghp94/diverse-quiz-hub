@@ -748,8 +748,7 @@ export class DatabaseStorage implements IStorage {
       // Get current UTC time
       const now = new Date();
       
-      // Calculate 3 hours from now and 3 hours ago in UTC
-      const threeHoursFromNow = new Date(now.getTime() + (3 * 60 * 60 * 1000));
+      // Calculate 3 hours ago in UTC (assignments created within last 3 hours)
       const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
       
       // Convert to Vietnam timezone for display
@@ -757,19 +756,19 @@ export class DatabaseStorage implements IStorage {
       
       console.log('Current UTC time:', now.toISOString());
       console.log('Vietnam time (display):', vietnamTime.toISOString());
-      console.log('Looking for assignments between UTC:', threeHoursAgo.toISOString(), 'and', threeHoursFromNow.toISOString());
+      console.log('Looking for assignments created after UTC:', threeHoursAgo.toISOString());
       
-      // Query assignments that are currently active or starting soon (in UTC)
+      // Query assignments that were created within the last 3 hours
       const result = await db.select()
         .from(assignment)
         .where(
-          sql`${assignment.expiring_date} >= ${threeHoursAgo.toISOString()} AND ${assignment.expiring_date} <= ${threeHoursFromNow.toISOString()}`
+          sql`${assignment.created_at} >= ${threeHoursAgo.toISOString()}`
         )
-        .orderBy(desc(assignment.expiring_date));
+        .orderBy(desc(assignment.created_at));
       
       console.log('Found live assignments:', result.length);
       if (result.length > 0) {
-        console.log('Assignment expiring dates:', result.map(a => ({ id: a.id, expiring_date: a.expiring_date })));
+        console.log('Assignment creation dates:', result.map(a => ({ id: a.id, assignmentname: a.assignmentname, created_at: a.created_at })));
       }
       return result;
     });
