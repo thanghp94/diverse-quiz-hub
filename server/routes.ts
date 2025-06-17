@@ -685,6 +685,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Live Class Assignment API
+  app.get("/api/live-assignments", async (req, res) => {
+    try {
+      const liveAssignments = await storage.getLiveClassAssignments();
+      res.json(liveAssignments);
+    } catch (error) {
+      console.error('Error fetching live class assignments:', error);
+      res.status(500).json({ error: 'Failed to fetch live class assignments' });
+    }
+  });
+
+  app.get("/api/assignments/:assignmentId/progress", async (req, res) => {
+    try {
+      const progress = await storage.getAssignmentStudentProgress(req.params.assignmentId);
+      res.json(progress);
+    } catch (error) {
+      console.error('Error fetching assignment student progress:', error);
+      res.status(500).json({ error: 'Failed to fetch assignment student progress' });
+    }
+  });
+
+  app.get("/api/assignment-student-try/:tryId/quiz-progress", async (req, res) => {
+    try {
+      const quizProgress = await storage.getStudentQuizProgress(req.params.tryId);
+      res.json(quizProgress);
+    } catch (error) {
+      console.error('Error fetching student quiz progress:', error);
+      res.status(500).json({ error: 'Failed to fetch student quiz progress' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

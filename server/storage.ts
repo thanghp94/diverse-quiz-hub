@@ -756,10 +756,7 @@ export class DatabaseStorage implements IStorage {
       const result = await db.select()
         .from(assignment)
         .where(
-          and(
-            gte(assignment.expiring_date, threeHoursAgo.toISOString()),
-            lte(assignment.expiring_date, vietnamTime.toISOString())
-          )
+          sql`${assignment.expiring_date} >= ${threeHoursAgo.toISOString()} AND ${assignment.expiring_date} <= ${vietnamTime.toISOString()}`
         )
         .orderBy(desc(assignment.expiring_date));
       
