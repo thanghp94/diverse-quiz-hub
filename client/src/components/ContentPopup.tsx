@@ -137,7 +137,7 @@ const ContentPopup = ({
 
                   {/* Short Blurb directly under title */}
                   {content.short_blurb && (
-                    <div className="space-y-0">
+                    <div className="mb-2">
                       <MarkdownRenderer className="text-base leading-relaxed">
                         {content.short_blurb}
                       </MarkdownRenderer>
