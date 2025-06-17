@@ -11,7 +11,7 @@ import type { Content } from '@shared/schema';
 
 interface ContentEditorProps {
   content: Content;
-  onContentUpdate: (updatedContent: Content) => void;
+  onContentUpdate?: (updatedContent: Content) => void;
 }
 
 export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) {
@@ -45,7 +45,9 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
     },
     onSuccess: (updatedContent) => {
       queryClient.invalidateQueries({ queryKey: ['/api/content'] });
-      onContentUpdate(updatedContent);
+      if (onContentUpdate) {
+        onContentUpdate(updatedContent);
+      }
       setIsEditing(false);
       toast({
         title: 'Success',

@@ -38,9 +38,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Wake up database on startup
+  // Wake up database on startup (non-blocking)
   console.log('Waking up database...');
-  await wakeUpDatabase();
+  wakeUpDatabase().catch(error => {
+    console.error('Database wake up failed, but continuing server startup:', error);
+  });
   
   const server = await registerRoutes(app);
 
