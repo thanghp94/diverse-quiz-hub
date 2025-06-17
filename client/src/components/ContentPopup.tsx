@@ -138,7 +138,7 @@ const ContentPopup = ({
                   {/* Short Blurb directly under title */}
                   {content.short_blurb && (
                     <div className="space-y-0">
-                      <MarkdownRenderer className="text-base leading-tight">
+                      <MarkdownRenderer className="text-base leading-relaxed">
                         {content.short_blurb}
                       </MarkdownRenderer>
                     </div>
@@ -163,7 +163,7 @@ const ContentPopup = ({
                       </button>
                       {isSecondBlurbOpen && (
                         <div className="px-3 pb-2 border-t border-gray-100">
-                          <MarkdownRenderer className="text-base leading-tight">
+                          <MarkdownRenderer className="text-base leading-relaxed">
                             {content.second_short_blurb}
                           </MarkdownRenderer>
                         </div>
