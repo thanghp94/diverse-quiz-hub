@@ -44,7 +44,28 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
       return response.json();
     },
     onSuccess: (updatedContent) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/content'] });
+      // Invalidate all content-related queries using the correct cache keys
+      queryClient.invalidateQueries({ queryKey: ['content'] });
+      queryClient.invalidateQueries({ queryKey: ['bowl-challenge-topics'] });
+      queryClient.invalidateQueries({ queryKey: ['all-topics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/content-groups'] });
+      
+      // Update the specific content item in cache
+      queryClient.setQueryData(['content', content.id], updatedContent);
+      
+      // Update content in all topic-based caches
+      queryClient.setQueriesData(
+        { queryKey: ['content'] },
+        (oldData: any) => {
+          if (Array.isArray(oldData)) {
+            return oldData.map(item => 
+              item.id === content.id ? updatedContent : item
+            );
+          }
+          return oldData;
+        }
+      );
+      
       if (onContentUpdate) {
         onContentUpdate(updatedContent);
       }
