@@ -201,13 +201,13 @@ const ContentPopup = ({
                     {/* Right side: Quiz and Rating */}
                     <div className="flex items-center gap-1">
                       <button 
-                        onClick={() => startQuiz('Easy')}
+                        onClick={() => startQuiz('easy')}
                         className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
                       >
                         Easy Quiz
                       </button>
                       <button 
-                        onClick={() => startQuiz('Hard')}
+                        onClick={() => startQuiz('hard')}
                         className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200"
                       >
                         Hard Quiz

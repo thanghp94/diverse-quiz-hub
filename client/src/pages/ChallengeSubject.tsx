@@ -54,7 +54,7 @@ const ChallengeSubject = () => {
   const [expandedSubjectId, setExpandedSubjectId] = useState<string | null>(null);
   const [topicQuizInfo, setTopicQuizInfo] = useState<{
     topicId: string;
-    level: 'Overview' | 'Easy' | 'Hard';
+    level: 'overview' | 'easy' | 'hard';
     topicName: string;
   } | null>(null);
   const [topicMatchingInfo, setTopicMatchingInfo] = useState<{
@@ -278,10 +278,11 @@ const ChallengeSubject = () => {
 
       {topicMatchingInfo && (
         <MatchingListPopup
+          isOpen={!!topicMatchingInfo}
           topicId={topicMatchingInfo.topicId}
           topicName={topicMatchingInfo.topicName}
           onClose={closeTopicMatching}
-          onSelectActivity={handleMatchingActivitySelect}
+          onSelectMatching={handleMatchingActivitySelect}
         />
       )}
 
