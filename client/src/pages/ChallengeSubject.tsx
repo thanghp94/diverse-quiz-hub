@@ -143,7 +143,8 @@ const ChallengeSubject = () => {
   }, [findImageUrl]);
 
   const handleStartTopicQuiz = useCallback((topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => {
-    setTopicQuizInfo({ topicId, level, topicName });
+    const dbLevel = level.toLowerCase() as 'overview' | 'easy' | 'hard';
+    setTopicQuizInfo({ topicId, level: dbLevel, topicName });
   }, []);
 
   const closeTopicQuiz = useCallback(() => {
@@ -270,7 +271,7 @@ const ChallengeSubject = () => {
       {topicQuizInfo && (
         <TopicQuizRunner
           topicId={topicQuizInfo.topicId}
-          level={topicQuizInfo.level}
+          level={topicQuizInfo.level === 'overview' ? 'Overview' : topicQuizInfo.level === 'easy' ? 'Easy' : 'Hard'}
           topicName={topicQuizInfo.topicName}
           onClose={closeTopicQuiz}
         />
@@ -288,8 +289,8 @@ const ChallengeSubject = () => {
 
       {selectedMatchingActivity && (
         <MatchingActivityPopup
+          isOpen={!!selectedMatchingActivity}
           matchingId={selectedMatchingActivity.matchingId}
-          title={selectedMatchingActivity.matchingTitle}
           onClose={closeMatchingActivity}
         />
       )}

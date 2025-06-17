@@ -30,7 +30,7 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
             // Fetch questions for this topic
             const url = level === 'Overview' 
                 ? `/api/questions?topicId=${topicId}`
-                : `/api/questions?topicId=${topicId}&level=${level}`;
+                : `/api/questions?topicId=${topicId}&level=${level.toLowerCase()}`;
             
             const response = await fetch(url);
             if (!response.ok) {
