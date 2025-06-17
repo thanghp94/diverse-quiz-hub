@@ -7,6 +7,7 @@ import { MediaDisplay } from "./content-popup/MediaDisplay";
 import { VideoPlayer } from "./content-popup/VideoPlayer";
 import { ContentBody } from "./content-popup/ContentBody";
 import { ContentRatingButtons } from "./ContentRatingButtons";
+import { ContentEditor } from "./ContentEditor";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
@@ -275,6 +276,11 @@ const ContentPopup = ({
                   </button>
                   <ContentRatingButtons contentId={content.id} />
                 </div>
+              </div>
+
+              {/* Content Editor - Admin Only */}
+              <div className="mt-6 pt-4 border-t">
+                <ContentEditor content={content} onContentUpdate={onContentChange} />
               </div>
             </>
           )}
