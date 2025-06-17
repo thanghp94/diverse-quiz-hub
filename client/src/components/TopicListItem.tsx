@@ -96,6 +96,96 @@ const formatDescription = (description: string) => {
       </span>);
 };
 
+// Shared ContentCard component
+const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: { 
+  content: Content; 
+  topicContent: Content[];
+  onContentClick: (info: { content: Content; contextList: Content[] }) => void;
+  onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
+}) => {
+  const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
+  const [videoPopupOpen, setVideoPopupOpen] = useState(false);
+
+  const hasVideo1 = videoEmbedUrl && videoData;
+  const hasVideo2 = video2EmbedUrl && video2Data;
+
+  return (
+    <>
+      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+        <div className="flex items-start justify-between gap-2">
+          <div
+            onClick={() => onContentClick({
+              content,
+              contextList: topicContent
+            })}
+            className="flex-grow cursor-pointer"
+          >
+            <div className="flex items-center gap-2">
+              <ContentThumbnail content={content} />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                          Quiz
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Easy Quiz clicked for content:', content.id, content.title);
+                          onStartQuiz(content, topicContent, 'Easy');
+                        }}>
+                          Easy Quiz
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Hard Quiz clicked for content:', content.id, content.title);
+                          onStartQuiz(content, topicContent, 'Hard');
+                        }}>
+                          Hard Quiz
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                    {(hasVideo1 || hasVideo2) && (
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setVideoPopupOpen(true);
+                        }}
+                      >
+                        Video
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Video popup */}
+      {videoPopupOpen && (
+        <VideoPopup
+          isOpen={videoPopupOpen}
+          onClose={() => setVideoPopupOpen(false)}
+          content={content}
+          videoData={videoData}
+          video2Data={video2Data}
+          videoEmbedUrl={videoEmbedUrl}
+          video2EmbedUrl={video2EmbedUrl}
+        />
+      )}
+    </>
+  );
+};
+
 // Component to display content organized by contentgroup
 const GroupedContentDisplay = ({ 
   topicId, 
@@ -162,7 +252,13 @@ const GroupedContentDisplay = ({
           <h4 className="text-white/80 text-sm font-medium">Main Content</h4>
           <div className="grid grid-cols-2 gap-3">
             {groupedContent.ungrouped.map(content => (
-              <ContentCard key={content.id} content={content} />
+              <ContentCard 
+                key={content.id} 
+                content={content} 
+                topicContent={topicContent}
+                onContentClick={onContentClick}
+                onStartQuiz={onStartQuiz}
+              />
             ))}
           </div>
         </div>
