@@ -255,12 +255,12 @@ const ContentPopup = ({
                     </div>
                   )}
                   
-                  {/* Videos Section - Two smaller videos side by side */}
+                  {/* Videos Section - Center single video, side-by-side for two videos */}
                   {(videoEmbedUrl || video2EmbedUrl) && (
-                    <div className="grid grid-cols-2 gap-3 mt-4">
+                    <div className={`mt-4 ${videoEmbedUrl && video2EmbedUrl ? 'grid grid-cols-2 gap-3' : 'flex justify-center'}`}>
                       {videoEmbedUrl && (
                         <div 
-                          className="aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md"
+                          className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!video2EmbedUrl ? 'max-w-md' : ''}`}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -286,7 +286,7 @@ const ContentPopup = ({
                       )}
                       {video2EmbedUrl && (
                         <div 
-                          className="aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md"
+                          className={`aspect-video relative cursor-pointer hover:opacity-90 transition-opacity border rounded-lg overflow-hidden shadow-md ${!videoEmbedUrl ? 'max-w-md' : ''}`}
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
