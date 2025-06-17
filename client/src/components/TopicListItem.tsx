@@ -91,7 +91,7 @@ const getSubtopicLabel = (parentTopic: string, index: number) => {
 };
 
 const formatDescription = (description: string) => {
-    return description.split('\n').map((line, index) => <span key={index}>
+    return description.split('\n').map((line, index) => <span key={index} className="text-[#f1f1fd]">
         {line}
         {index < description.split('\n').length - 1 && <br />}
       </span>);
