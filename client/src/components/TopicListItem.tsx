@@ -96,7 +96,112 @@ const formatDescription = (description: string) => {
       </span>);
 };
 
-// Component to organize content by matching activities
+// Component to display content organized by contentgroup
+const GroupedContentDisplay = ({ 
+  topicId, 
+  topicContent, 
+  onContentClick, 
+  onStartQuiz 
+}: {
+  topicId: string;
+  topicContent: Content[];
+  onContentClick: (info: { content: Content; contextList: Content[] }) => void;
+  onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
+}) => {
+  const [selectedContentGroup, setSelectedContentGroup] = useState<{
+    groupName: string;
+    content: Content[];
+  } | null>(null);
+
+  // Group content by contentgroup field
+  const groupedContent = React.useMemo(() => {
+    const groups: { [key: string]: Content[] } = {};
+    const ungrouped: Content[] = [];
+    
+    topicContent.forEach(content => {
+      if (content.contentgroup && content.contentgroup.trim() !== '') {
+        if (!groups[content.contentgroup]) {
+          groups[content.contentgroup] = [];
+        }
+        groups[content.contentgroup].push(content);
+      } else {
+        ungrouped.push(content);
+      }
+    });
+    
+    return { groups, ungrouped };
+  }, [topicContent]);
+
+  const handleContentGroupClick = (groupName: string, content: Content[]) => {
+    setSelectedContentGroup({ groupName, content });
+  };
+
+  const handleGroupContentClick = (content: Content, contextList: Content[]) => {
+    setSelectedContentGroup(null);
+    onContentClick({ content, contextList });
+  };
+
+  const getGroupDescription = (groupName: string): string => {
+    switch (groupName.toLowerCase()) {
+      case 'return of kings':
+        return 'Real kings in history that was not in power but due to some unexpected event, return to the throne and how they deal with their kingdom afterward';
+      case 'returns of characters':
+        return 'Some characters in books, movies that also had to hide away but return through their bravery or unexpected events.';
+      case 'speech by famous people':
+        return 'Notable speeches delivered by influential historical figures.';
+      default:
+        return `Content related to ${groupName}`;
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Display individual content cards for ungrouped content */}
+      {groupedContent.ungrouped.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-white/80 text-sm font-medium">Main Content</h4>
+          <div className="grid grid-cols-2 gap-3">
+            {groupedContent.ungrouped.map(content => (
+              <ContentCard key={content.id} content={content} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Display content group cards */}
+      {Object.entries(groupedContent.groups).length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-white/80 text-sm font-medium">Content Categories</h4>
+          <div className="grid grid-cols-1 gap-3">
+            {Object.entries(groupedContent.groups).map(([groupName, content]) => (
+              <ContentGroupCard
+                key={groupName}
+                groupName={groupName}
+                description={getGroupDescription(groupName)}
+                contentCount={content.length}
+                onClick={() => handleContentGroupClick(groupName, content)}
+                className="w-full"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Content Group Popup */}
+      {selectedContentGroup && (
+        <ContentGroupPopup
+          isOpen={true}
+          onClose={() => setSelectedContentGroup(null)}
+          groupName={selectedContentGroup.groupName}
+          content={selectedContentGroup.content}
+          onContentClick={handleGroupContentClick}
+        />
+      )}
+    </div>
+  );
+};
+
+// Component to organize content by matching activities (kept for compatibility)
 const TopicContentWithMatching = ({ 
   topicId, 
   topicContent, 
@@ -558,7 +663,7 @@ export const TopicListItem = ({
             <div className="px-3 pb-3 pt-1">
               <div className="space-y-1">
                 {topicContent.length > 0 && (
-                  <TopicContentWithMatching 
+                  <GroupedContentDisplay 
                     topicId={topic.id}
                     topicContent={topicContent}
                     onContentClick={onContentClick}
