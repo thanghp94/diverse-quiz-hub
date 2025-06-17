@@ -112,5 +112,28 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Ensure all major elements use theme-aware colors */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground;
+  }
+
+  p, span, div {
+    @apply text-foreground;
+  }
+
+  /* Override any hardcoded colors that might interfere */
+  .theme-text {
+    @apply text-foreground;
+  }
+
+  .theme-bg {
+    @apply bg-background;
+  }
+
+  .theme-card {
+    @apply bg-card text-card-foreground;
   }
 }
