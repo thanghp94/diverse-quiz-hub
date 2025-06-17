@@ -142,52 +142,22 @@ const ContentPopup = ({
                     )}
                   </div>
                 )}
-
-                {/* Additional content (translation, vocabulary, external links) */}
-                {(content.translation || content.vocabulary || content.url) && (
-                  <div className="space-y-3 pt-2 border-t border-gray-200">
-                    {(content.translation || content.vocabulary) && (
-                      <div>
-                        <h3 className="font-semibold text-lg mb-2">Language Support</h3>
-                        {content.translation && (
-                          <div className="mb-3">
-                            <h4 className="font-medium text-base text-gray-600 mb-1">Translation:</h4>
-                            <MarkdownRenderer className="text-sm leading-relaxed">
-                              {content.translation}
-                            </MarkdownRenderer>
-                          </div>
-                        )}
-                        {content.vocabulary && (
-                          <div>
-                            <h4 className="font-medium text-base text-gray-600 mb-1">Vocabulary:</h4>
-                            <MarkdownRenderer className="text-sm leading-relaxed">
-                              {content.vocabulary}
-                            </MarkdownRenderer>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    {content.url && (
-                      <div>
-                        <a href={content.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline break-all text-sm">
-                          {content.url}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               {/* Right: Image and Videos */}
               <div className="space-y-6">
-                <MediaDisplay
-                  imageUrl={imageUrl}
-                  isImageLoading={isImageLoading}
-                  title={content.title}
-                  imageid={content.imageid}
-                  isFullWidth={true}
-                />
+                {content.imageid && (
+                  <div className="w-full">
+                    <img
+                      src={content.imageid}
+                      alt={content.title}
+                      className="w-full h-auto max-h-32 object-contain rounded-lg"
+                      style={{ aspectRatio: 'auto' }}
+                      onLoad={() => console.log('Image loaded successfully:', content.imageid)}
+                      onError={() => console.log('Image failed to load:', content.imageid)}
+                    />
+                  </div>
+                )}
                 
                 <div className="space-y-4">
                   {videoEmbedUrl && (

@@ -15,9 +15,7 @@ import WritingPage from "./pages/Writing";
 import ChallengeSubject from "./pages/ChallengeSubject";
 import Login from "./pages/Login";
 import { DemoPage } from "./pages/DemoPage";
-import LearningJourneyPage from "./pages/LearningJourneyPage";
 import AssignmentPage from "./pages/AssignmentPage";
-import { ContentGroupsPage } from "./pages/ContentGroupsPage";
 import LiveClass from "./pages/LiveClass";
 
 const queryClient = new QueryClient();
@@ -38,9 +36,7 @@ const App = () => (
 
           <Route path="/debate" component={DebatePage} />
           <Route path="/writing" component={WritingPage} />
-          <Route path="/learning-journey" component={LearningJourneyPage} />
           <Route path="/assignments" component={AssignmentPage} />
-          <Route path="/content-groups" component={ContentGroupsPage} />
           <Route path="/live-class" component={LiveClass} />
           <Route path="/demo" component={DemoPage} />
           <Route component={NotFound} />
