@@ -99,7 +99,7 @@ const ContentPopup = ({
               {/* Left: Title, Description, Short Blurb, Second Short Blurb */}
               <div className="space-y-4">
                 <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-blue-600 text-center">
+                  <DialogTitle className="text-2xl font-bold text-blue-600">
                     {content.title}
                   </DialogTitle>
                   <DialogDescription className="whitespace-pre-line text-lg leading-relaxed">
@@ -181,18 +181,13 @@ const ContentPopup = ({
 
               {/* Right: Image and Videos */}
               <div className="space-y-6">
-                {content.imageid && (
-                  <div className="w-full">
-                    <img
-                      src={content.imageid}
-                      alt={content.title}
-                      className="w-full h-auto max-h-64 object-contain rounded-lg"
-                      style={{ aspectRatio: 'auto' }}
-                      onLoad={() => console.log('Image loaded successfully:', content.imageid)}
-                      onError={() => console.log('Image failed to load:', content.imageid)}
-                    />
-                  </div>
-                )}
+                <MediaDisplay
+                  imageUrl={imageUrl}
+                  isImageLoading={isImageLoading}
+                  title={content.title}
+                  imageid={content.imageid}
+                  isFullWidth={true}
+                />
                 
                 <div className="space-y-4">
                   {videoEmbedUrl && (
