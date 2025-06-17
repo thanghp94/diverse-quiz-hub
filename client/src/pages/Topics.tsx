@@ -35,7 +35,7 @@ const Topics = () => {
     content: Content;
     contextList: Content[];
     imageUrl: string | null;
-    quizLevel?: 'Easy' | 'Hard' | null;
+    quizLevel?: 'easy' | 'hard' | null;
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
@@ -156,11 +156,13 @@ const Topics = () => {
   };
   const handleStartQuiz = (content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => {
     console.log('Starting content quiz for:', content.title, 'Level:', level);
+    // Convert level to database format (lowercase)
+    const dbLevel = level?.toLowerCase() as 'easy' | 'hard' | undefined;
     setSelectedContentInfo({
       content,
       contextList,
       imageUrl: findImageUrl(content),
-      quizLevel: level,
+      quizLevel: dbLevel,
     });
     setQuizContentId(content.id);
   };

@@ -50,7 +50,7 @@ const ChallengeSubject = () => {
     imageUrl: string | null;
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
-  const [contentQuizLevel, setContentQuizLevel] = useState<'Easy' | 'Hard' | null>(null);
+  const [contentQuizLevel, setContentQuizLevel] = useState<'easy' | 'hard' | null>(null);
   const [expandedSubjectId, setExpandedSubjectId] = useState<string | null>(null);
   const [topicQuizInfo, setTopicQuizInfo] = useState<{
     topicId: string;
@@ -136,7 +136,9 @@ const ChallengeSubject = () => {
   const handleStartQuiz = useCallback((content: Content, contextList: Content[], level: 'Easy' | 'Hard') => {
     const imageUrl = findImageUrl(content);
     setQuizContentId(content.id);
-    setContentQuizLevel(level);
+    // Convert level to database format (lowercase)
+    const dbLevel = level.toLowerCase() as 'easy' | 'hard';
+    setContentQuizLevel(dbLevel);
     setSelectedContentInfo({ content, contextList, imageUrl });
   }, [findImageUrl]);
 

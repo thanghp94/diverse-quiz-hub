@@ -22,7 +22,7 @@ interface ContentPopupProps {
   contentList: Content[];
   onContentChange: (newContent: Content) => void;
   startQuizDirectly?: boolean;
-  quizLevel?: 'Easy' | 'Hard' | null;
+  quizLevel?: 'easy' | 'hard' | null;
   imageUrl: string | null | undefined;
   isImageLoading: boolean;
 }

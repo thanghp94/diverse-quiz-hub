@@ -6,7 +6,7 @@ interface UseQuizProps {
   content: Content | null;
   onClose: () => void;
   startQuizDirectly?: boolean;
-  level?: 'Easy' | 'Hard' | null;
+  level?: 'easy' | 'hard' | null;
 }
 
 export const useQuiz = ({ content, onClose, startQuizDirectly = false, level }: UseQuizProps) => {
@@ -16,7 +16,7 @@ export const useQuiz = ({ content, onClose, startQuizDirectly = false, level }: 
   const [questionIds, setQuestionIds] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const startQuiz = useCallback(async (level?: 'Easy' | 'Hard') => {
+  const startQuiz = useCallback(async (level?: 'easy' | 'hard') => {
     if (!content) return;
 
     // Fetch questions for this content
