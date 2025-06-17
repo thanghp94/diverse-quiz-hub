@@ -318,7 +318,7 @@ const GroupedContentDisplay = ({
       {/* Display content group cards */}
       {Object.entries(groupedContent.groups).length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-gray-700 text-sm font-medium">Content Categories</h4>
+          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Content Categories</h4>
           <div className="grid grid-cols-1 gap-3">
             {Object.entries(groupedContent.groups).map(([groupName, content]) => (
               <ContentGroupCard
@@ -466,7 +466,7 @@ const TopicContentWithMatching = ({
       {/* Ungrouped content at the top */}
       {organizedContent.ungrouped.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-gray-700 text-sm font-medium">Content</h4>
+          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Content</h4>
           <div className="grid grid-cols-2 gap-3">
             {organizedContent.ungrouped.map(content => (
               <ContentCard 
@@ -484,7 +484,7 @@ const TopicContentWithMatching = ({
       {/* Matching activity section */}
       {organizedContent.grouped.length > 0 && (
         <div className="space-y-4">
-          <h4 className="text-gray-700 text-sm font-medium">Matching Activities</h4>
+          <h4 className="text-gray-700 dark:text-gray-300 text-sm font-medium">Matching Activities</h4>
 
           {/* Matching activity cards in 2-column layout */}
           <div className="grid grid-cols-2 gap-3">
@@ -492,23 +492,23 @@ const TopicContentWithMatching = ({
               <div
                 key={matching.id}
                 className={cn(
-                  "cursor-pointer bg-blue-50 border border-blue-200 hover:bg-blue-100 transition-all duration-200 rounded-lg p-3 shadow-sm",
-                  expandedMatching === matching.id && "ring-2 ring-blue-300"
+                  "cursor-pointer bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-all duration-200 rounded-lg p-3 shadow-sm",
+                  expandedMatching === matching.id && "ring-2 ring-blue-300 dark:ring-blue-600"
                 )}
                 onClick={() => setExpandedMatching(expandedMatching === matching.id ? null : matching.id)}
               >
                 <div className="flex flex-col items-center text-center gap-2">
-                  <div className="bg-blue-100 p-2 rounded-lg border border-blue-200">
-                    <Shuffle className="h-5 w-5 text-blue-600" />
+                  <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-lg border border-blue-200 dark:border-blue-700">
+                    <Shuffle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-gray-900 text-sm font-medium leading-tight">
+                    <h4 className="text-gray-900 dark:text-white text-sm font-medium leading-tight">
                       {matching.topic || matching.description || matching.subject || 'Matching Activity'}
                     </h4>
-                    <p className="text-gray-600 text-xs mt-1">
+                    <p className="text-gray-600 dark:text-gray-400 text-xs mt-1">
                       {content.length > 0 ? `${content.length} content items` : 'Click to start'}
                     </p>
-                    <Badge variant="outline" className="border-blue-300 text-blue-700 text-xs mt-2">
+                    <Badge variant="outline" className="border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-400 text-xs mt-2">
                       Matching
                     </Badge>
                   </div>
