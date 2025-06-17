@@ -216,22 +216,16 @@ const ContentPopup = ({
                   </div>
 
                   {content.imageid && (
-                    <div className="w-full">
+                    <div className="w-full relative">
                       <img
                         src={content.imageid}
                         alt={content.title}
-                        className={`w-full h-auto rounded-lg ${!(videoEmbedUrl || video2EmbedUrl) ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+                        className="w-full h-auto rounded-lg"
                         style={{ 
                           aspectRatio: 'auto',
                           objectFit: 'contain',
                           maxHeight: '400px'
                         }}
-                        onClick={!(videoEmbedUrl || video2EmbedUrl) ? (e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          console.log('Image clicked, opening modal');
-                          setIsImageModalOpen(true);
-                        } : undefined}
                         onLoad={(e) => {
                           console.log('Image loaded successfully:', content.imageid);
                           const img = e.target as HTMLImageElement;
@@ -251,6 +245,21 @@ const ContentPopup = ({
                           }
                         }}
                         onError={() => console.log('Image failed to load:', content.imageid)}
+                      />
+                      {/* Always clickable image overlay - positioned above image but below videos */}
+                      <div
+                        className="absolute inset-0 cursor-pointer hover:bg-black hover:bg-opacity-5 transition-all rounded-lg"
+                        style={{
+                          zIndex: 10,
+                          // Reserve bottom portion for videos when they exist
+                          bottom: (videoEmbedUrl || video2EmbedUrl) ? '30%' : '0'
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Image overlay clicked, opening modal');
+                          setIsImageModalOpen(true);
+                        }}
                       />
                     </div>
                   )}
@@ -274,7 +283,10 @@ const ContentPopup = ({
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('Video 1 clicked, opening modal with URL:', videoEmbedUrl);
-                            setModalVideoUrl(videoEmbedUrl + '?autoplay=1');
+                            const autoplayUrl = videoEmbedUrl.includes('?') 
+                              ? videoEmbedUrl + '&autoplay=1' 
+                              : videoEmbedUrl + '?autoplay=1';
+                            setModalVideoUrl(autoplayUrl);
                             setIsVideoModalOpen(true);
                           }}
                         >
@@ -309,7 +321,10 @@ const ContentPopup = ({
                             e.preventDefault();
                             e.stopPropagation();
                             console.log('Video 2 clicked, opening modal with URL:', video2EmbedUrl);
-                            setModalVideoUrl(video2EmbedUrl + '?autoplay=1');
+                            const autoplayUrl = video2EmbedUrl.includes('?') 
+                              ? video2EmbedUrl + '&autoplay=1' 
+                              : video2EmbedUrl + '?autoplay=1';
+                            setModalVideoUrl(autoplayUrl);
                             setIsVideoModalOpen(true);
                           }}
                         >
