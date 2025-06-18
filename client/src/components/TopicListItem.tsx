@@ -859,11 +859,11 @@ const TopicListItem = ({
                                           </div>
                                         </div>
 
-                                        {/* Inline Grouped Content Expansion - Full Width */}
+                                        {/* Inline Grouped Content Expansion - 2 Column Layout */}
                                         {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
                                           <div className="mt-4 pt-4 border-t border-purple-400/30">
                                             <h5 className="text-purple-200 text-base font-medium mb-4">Related Content:</h5>
-                                            <div className="grid grid-cols-1 gap-3">
+                                            <div className="grid grid-cols-2 gap-4">
                                                   {groupedContent.map((groupItem) => (
                                                     <div key={groupItem.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
                                                       <div className="flex items-start gap-3">
