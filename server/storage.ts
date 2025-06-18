@@ -1030,11 +1030,10 @@ export class DatabaseStorage implements IStorage {
 
   async updateStudentTryContent(): Promise<void> {
     return this.executeWithRetry(async () => {
-      // Get the last cron job run
-      const cronJob = await this.getCronJob('daily_student_tracking');
-      const lastRun = cronJob?.last_run || new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago if no previous run
+      // Simple approach: get student tries from last 24 hours
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
       
-      // Get all student tries since last run
+      // Get all student tries since yesterday
       const result = await db.execute(sql`
         SELECT DISTINCT
           st.hocsinh_id,
@@ -1042,63 +1041,43 @@ export class DatabaseStorage implements IStorage {
           STRING_AGG(st.question_id, ', ' ORDER BY st.question_id) as question_ids
         FROM student_try st
         INNER JOIN question q ON q.id = st.question_id
-        WHERE st.time_start::timestamp > ${lastRun.toISOString()}
+        WHERE st.time_start > ${yesterday.toISOString()}
         AND q.contentid IS NOT NULL
         GROUP BY st.hocsinh_id, q.contentid
       `);
 
+      console.log(`Processing ${result.rows.length} student-content combinations for question tracking`);
+
       // Update or create student_try_content records
       for (const row of result.rows) {
-        const existingRecord = await db.select().from(student_try_content)
-          .where(and(
-            eq(student_try_content.hocsinh_id, row.hocsinh_id),
-            eq(student_try_content.contentid, row.contentid)
-          ));
+        try {
+          const existingRecord = await db.execute(sql`
+            SELECT * FROM student_try_content 
+            WHERE hocsinh_id = ${row.hocsinh_id} AND contentid = ${row.contentid}
+          `);
 
-        if (existingRecord.length > 0) {
-          // Append new question IDs to existing record
-          const currentQuestionIds = existingRecord[0].update || '';
-          const newQuestionIds = currentQuestionIds 
-            ? `${currentQuestionIds}, ${row.question_ids}`
-            : row.question_ids;
+          if (existingRecord.rows.length > 0) {
+            // Append new question IDs to existing record
+            const currentQuestionIds = existingRecord.rows[0].update || '';
+            const newQuestionIds = currentQuestionIds 
+              ? `${currentQuestionIds}, ${row.question_ids}`
+              : row.question_ids;
 
-          await db.update(student_try_content)
-            .set({ 
-              update: newQuestionIds,
-              time_end: new Date().toISOString()
-            })
-            .where(and(
-              eq(student_try_content.hocsinh_id, row.hocsinh_id),
-              eq(student_try_content.contentid, row.contentid)
-            ));
-        } else {
-          // Create new record
-          await db.insert(student_try_content).values({
-            id: crypto.randomUUID(),
-            contentid: row.contentid,
-            hocsinh_id: row.hocsinh_id,
-            student_try_id: crypto.randomUUID(),
-            time_start: new Date().toISOString(),
-            time_end: new Date().toISOString(),
-            update: row.question_ids
-          });
+            await db.execute(sql`
+              UPDATE student_try_content 
+              SET update = ${newQuestionIds}, time_end = ${new Date().toISOString()}
+              WHERE hocsinh_id = ${row.hocsinh_id} AND contentid = ${row.contentid}
+            `);
+          } else {
+            // Create new record
+            await db.execute(sql`
+              INSERT INTO student_try_content (id, contentid, hocsinh_id, student_try_id, time_start, time_end, update)
+              VALUES (${crypto.randomUUID()}, ${row.contentid}, ${row.hocsinh_id}, ${crypto.randomUUID()}, ${new Date().toISOString()}, ${new Date().toISOString()}, ${row.question_ids})
+            `);
+          }
+        } catch (error) {
+          console.error(`Error updating record for student ${row.hocsinh_id}, content ${row.contentid}:`, error);
         }
-      }
-
-      // Update cron job record
-      const now = new Date();
-      const nextRun = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Next day
-
-      if (cronJob) {
-        await this.updateCronJob('daily_student_tracking', now, nextRun);
-      } else {
-        await this.createCronJob({
-          id: crypto.randomUUID(),
-          job_name: 'daily_student_tracking',
-          last_run: now,
-          next_run: nextRun,
-          status: 'active'
-        });
       }
 
       console.log(`Updated student try content tracking for ${result.rows.length} records`);

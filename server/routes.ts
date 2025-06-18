@@ -820,6 +820,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cron Job API
+  app.post("/api/cron/update-student-tracking", async (req, res) => {
+    try {
+      await storage.updateStudentTryContent();
+      res.json({ message: 'Student tracking updated successfully' });
+    } catch (error) {
+      console.error('Error updating student tracking:', error);
+      res.status(500).json({ error: 'Failed to update student tracking' });
+    }
+  });
+
   // Assignments API (general assignments, not live class)
   app.get("/api/assignments", async (req, res) => {
     try {
