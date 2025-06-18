@@ -149,7 +149,7 @@ const ContentPopup = ({
                     <div className="mb-2">
                       <MarkdownRenderer 
                         className="text-base leading-relaxed"
-                        translationDictionary={content.translation_dictionary as Record<string, string> | null | undefined}
+                        translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
                       >
                         {content.short_blurb}
                       </MarkdownRenderer>
@@ -177,7 +177,7 @@ const ContentPopup = ({
                         <div className="px-3 pb-2 border-t border-gray-100">
                           <MarkdownRenderer 
                             className="text-base leading-relaxed"
-                            translationDictionary={content.translation_dictionary as Record<string, string> | null | undefined}
+                            translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
                           >
                             {content.second_short_blurb}
                           </MarkdownRenderer>
