@@ -1085,7 +1085,7 @@ const TopicListItem = ({
                                                 />
                                                 <div className="flex-1 min-w-0">
                                                   <div className="flex items-center justify-between gap-2 mb-2">
-                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-left">{content.title}</h4>
+                                                    <h4 className="text-base font-medium leading-tight flex-1 min-w-0 text-left" style={{ color: '#ffff78e6' }}>{content.title}</h4>
                                                     <div className="flex items-center gap-1 flex-shrink-0">
                                                       <ContentRatingButtons 
                                                         key={`${content.id}-rating`}
@@ -1166,7 +1166,8 @@ const TopicListItem = ({
                                                         <div className="flex-1 min-w-0">
                                                           <div className="flex items-center justify-between gap-2 mb-2">
                                                             <h4 
-                                                              className="text-white/90 text-sm font-medium leading-tight flex-1 min-w-0 cursor-pointer hover:text-white"
+                                                              className="text-sm font-medium leading-tight flex-1 min-w-0 cursor-pointer hover:text-white"
+                                                              style={{ color: '#ffff78e6' }}
                                                               onClick={() => onContentClick({
                                                                 content: groupItem,
                                                                 contextList: [...subtopicContent]
