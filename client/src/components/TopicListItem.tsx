@@ -142,8 +142,7 @@ const PersonalNoteContent: React.FC<{ contentId: string; studentId: string; onCl
   );
 };
 
-const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact = false }) => {
-  const [isNoteOpen, setIsNoteOpen] = useState(false);
+const NoteButton: React.FC<NoteButtonProps & { onOpenNote: () => void }> = ({ contentId, studentId, compact = false, onOpenNote }) => {
 
   // Check if there's an existing note for visual indication
   const { data: existingRating } = useQuery<{ rating: string; personal_note?: string } | null>({
@@ -194,35 +193,12 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
             globalClickBlocked = false;
           }, 100);
           
-          setIsNoteOpen(true);
+          onOpenNote();
         }}
       >
         <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
         {hasNote && <span className="ml-1 text-xs">*</span>}
       </Button>
-      
-      <Dialog open={isNoteOpen} onOpenChange={setIsNoteOpen}>
-        <DialogContent className="max-w-md p-0 bg-white border-gray-300">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
-            <h3 className="text-gray-900 text-lg font-medium">Personal Note</h3>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setIsNoteOpen(false)}
-              className="text-gray-500 hover:bg-gray-200 flex-shrink-0"
-            >
-              ✕
-            </Button>
-          </div>
-          <div className="p-6">
-            <PersonalNoteContent 
-              contentId={contentId}
-              studentId={studentId}
-              onClose={() => setIsNoteOpen(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
@@ -1077,6 +1053,8 @@ const TopicListItem = ({
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
                                   const [selectedGroupVideo, setSelectedGroupVideo] = useState<Content | null>(null);
+                                  const [noteDialogOpen, setNoteDialogOpen] = useState(false);
+                                  const [noteDialogContentId, setNoteDialogContentId] = useState<string>('');
 
                                   const hasVideo1 = videoEmbedUrl && videoData;
                                   const hasVideo2 = video2EmbedUrl && video2Data;
@@ -1194,6 +1172,10 @@ const TopicListItem = ({
                                                         contentId={content.id}
                                                         studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
                                                         compact={true}
+                                                        onOpenNote={() => {
+                                                          setNoteDialogContentId(content.id);
+                                                          setNoteDialogOpen(true);
+                                                        }}
                                                       />
                                                       {(hasVideo1 || hasVideo2) && (
                                                         <Button 
@@ -1293,6 +1275,10 @@ const TopicListItem = ({
                                                                 contentId={groupItem.id}
                                                                 studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
                                                                 compact={true}
+                                                                onOpenNote={() => {
+                                                                  setNoteDialogContentId(groupItem.id);
+                                                                  setNoteDialogOpen(true);
+                                                                }}
                                                               />
                                                               {((groupItem.videoid && groupItem.videoid.trim()) || (groupItem.videoid2 && groupItem.videoid2.trim())) && (
                                                                 <Button 
