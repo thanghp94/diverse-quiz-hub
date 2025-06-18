@@ -36,7 +36,9 @@ const NewTopicsPage = () => {
   });
 
   // Fetch all content
-  const { allContent } = useContent();
+  const { data: allContent = [] } = useQuery<any[]>({
+    queryKey: ['/api/content'],
+  });
 
   const handleTopicClick = (topicId: string) => {
     setExpandedTopic(expandedTopic === topicId ? null : topicId);
@@ -47,9 +49,9 @@ const NewTopicsPage = () => {
     return topics.filter(topic => topic.parentid === parentId);
   };
 
-  const getTopicContent = (topicId: string): Content[] => {
-    if (!allContent) return [];
-    return allContent.filter(content => content.topicid === topicId);
+  const getTopicContent = (topicId: string): any[] => {
+    if (!Array.isArray(allContent)) return [];
+    return allContent.filter((content: any) => content.topicid === topicId);
   };
 
   const getTopicColor = (index: number) => {
@@ -83,6 +85,7 @@ const NewTopicsPage = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <LeaderboardPanel />
             <Button variant="ghost" size="sm">
               <User className="h-4 w-4" />
             </Button>
@@ -102,20 +105,34 @@ const NewTopicsPage = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Poppins</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Bowl & Challenge Topics</h1>
         </div>
+
+        {/* Loading State */}
+        {topicsLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading topics...</p>
+            </div>
+          </div>
+        )}
 
         {/* Topics Grid */}
         <div className="space-y-4">
-          {mockTopics.map((topic, index) => {
+          {topics?.filter(topic => topic.showstudent).map((topic, index) => {
             const isExpanded = expandedTopic === topic.id;
+            const subtopics = getSubtopics(topic.id);
+            const topicContent = getTopicContent(topic.id);
+            const colors = getTopicColor(index);
             
             return (
               <div key={topic.id} className="w-full">
                 <Card 
                   className={cn(
                     "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
-                    topic.color,
+                    colors.bg,
+                    colors.border,
                     isExpanded && "shadow-lg"
                   )}
                   onClick={() => handleTopicClick(topic.id)}
@@ -124,20 +141,20 @@ const NewTopicsPage = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className={cn("text-xl font-semibold", topic.textColor)}>
-                            {topic.title}
+                          <h3 className={cn("text-xl font-semibold", colors.text)}>
+                            {topic.topic}
                           </h3>
                           <Badge variant="outline" className="text-xs">
                             <Star className="h-3 w-3 mr-1" />
                           </Badge>
                         </div>
                         <p className="text-gray-600 text-sm mb-3">
-                          {topic.description}
+                          {topic.short_summary || 'Explore this comprehensive learning topic'}
                         </p>
                       </div>
                       
                       <div className="flex items-center gap-3">
-                        {topic.quiz && <QuizButton />}
+                        <QuizButton />
                         <ChevronDown 
                           className={cn(
                             "h-5 w-5 text-gray-400 transition-transform duration-200",
@@ -154,32 +171,55 @@ const NewTopicsPage = () => {
                   <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
                     <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
                       <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                        {topic.title} - Subtopics
+                        {topic.topic} - Content & Subtopics
                       </h4>
                       
-                      {/* Two Column Grid for Subtopics */}
+                      {/* Two Column Grid for Content and Subtopics */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {topic.subtopics.map((subtopic) => (
+                        {/* Topic Content */}
+                        {topicContent.slice(0, 4).map((content) => (
+                          <Card key={content.id} className="border border-gray-200 hover:shadow-sm transition-shadow">
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <h5 className="font-medium text-gray-900 mb-1">
+                                    {content.title || `Content ${content.id.slice(0, 8)}`}
+                                  </h5>
+                                  <p className="text-sm text-gray-600">
+                                    {content.short_description || 'Learning content available'}
+                                  </p>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 ml-4">
+                                  <QuizButton variant="primary" />
+                                  <Button variant="ghost" size="sm">
+                                    <HelpCircle className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm">
+                                    <ArrowUpRight className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                        
+                        {/* Subtopics */}
+                        {subtopics.map((subtopic) => (
                           <Card key={subtopic.id} className="border border-gray-200 hover:shadow-sm transition-shadow">
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex-1">
                                   <h5 className="font-medium text-gray-900 mb-1">
-                                    {subtopic.title}
+                                    {subtopic.topic}
                                   </h5>
                                   <p className="text-sm text-gray-600">
-                                    Detailed content about {subtopic.title.toLowerCase()}
+                                    {subtopic.short_summary || 'Subtopic content available'}
                                   </p>
                                 </div>
                                 
                                 <div className="flex items-center gap-2 ml-4">
-                                  {subtopic.hasQuiz ? (
-                                    <QuizButton variant="primary" />
-                                  ) : (
-                                    <Button variant="outline" size="sm" className="rounded-full px-4 py-1 text-sm">
-                                      Copins
-                                    </Button>
-                                  )}
+                                  <QuizButton variant="secondary" />
                                   <Button variant="ghost" size="sm">
                                     <HelpCircle className="h-4 w-4" />
                                   </Button>
