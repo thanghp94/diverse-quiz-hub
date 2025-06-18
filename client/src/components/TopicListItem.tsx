@@ -844,7 +844,7 @@ const TopicListItem = ({
                                                         className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6 mr-1"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
-                                                          onStartTopicMatching(content.parentid, content.title || 'Group Match');
+                                                          onStartTopicMatching(content.parentid!, content.title || 'Group Match');
                                                         }}
                                                       >
                                                         <Shuffle className="h-3 w-3 mr-1" />
@@ -934,6 +934,7 @@ const TopicListItem = ({
                                                       <div className="flex items-start gap-3">
                                                         <LocalContentThumbnail 
                                                           content={groupItem} 
+                                                          isGroupCard={true}
                                                           onClick={() => onContentClick({
                                                             content: groupItem,
                                                             contextList: [...subtopicContent]
