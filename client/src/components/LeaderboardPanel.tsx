@@ -33,7 +33,7 @@ export const LeaderboardPanel = () => {
   });
   
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardData>({
-    queryKey: ['/api/leaderboard'],
+    queryKey: ['/api/leaderboards'],
     refetchInterval: 30000,
   });
 
@@ -142,6 +142,7 @@ export const LeaderboardPanel = () => {
             <Trophy className="h-6 w-6 text-yellow-400" />
             Quiz Leaderboard
           </DialogTitle>
+
         </DialogHeader>
         
         <div className="space-y-4">
