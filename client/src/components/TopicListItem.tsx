@@ -70,10 +70,10 @@ const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { cont
     return null;
   }
 
-  // For group card thumbnails in the gallery, use smaller landscape sizing
+  // For group card thumbnails in the gallery, use fixed sizing
   if (isGroupCard) {
     return (
-      <div className="w-16 h-10 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+      <div className="w-6 h-7 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
         <img 
           src={imageUrl} 
           alt={content.title} 
@@ -879,11 +879,11 @@ const TopicListItem = ({
                                                 onClick={() => setIsGroupExpanded(!isGroupExpanded)}
                                               >
                                                 {/* Title with action buttons for group cards */}
-                                                <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center justify-center gap-2 mb-3">
                                                   <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-center">
                                                     <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
                                                   </div>
-                                                  <div className="flex flex-col gap-1">
+                                                  <div className="flex flex-col gap-1 ml-2">
                                                     <Button 
                                                       variant="outline" 
                                                       size="sm" 
@@ -918,15 +918,26 @@ const TopicListItem = ({
                                                   <div className="mb-3 flex justify-center">
                                                     <div className="flex flex-wrap gap-2 justify-center">
                                                       {groupedContent.map((groupItem) => (
-                                                        <LocalContentThumbnail 
-                                                          key={`thumb-${groupItem.id}`}
-                                                          content={groupItem} 
-                                                          isGroupCard={true}
-                                                          onClick={() => onContentClick({
-                                                            content: groupItem,
-                                                            contextList: [...subtopicContent]
-                                                          })}
-                                                        />
+                                                        <div key={`thumb-${groupItem.id}`} className="w-6 h-7 rounded-md overflow-hidden flex-shrink-0">
+                                                          <LocalContentThumbnail 
+                                                            content={groupItem} 
+                                                            isGroupCard={true}
+                                                            onClick={(e) => {
+                                                              e.stopPropagation();
+                                                              // Show image in dialog instead of content popup
+                                                              if (groupItem.imageid) {
+                                                                const imageDialog = document.createElement('div');
+                                                                imageDialog.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+                                                                imageDialog.onclick = () => document.body.removeChild(imageDialog);
+                                                                const img = document.createElement('img');
+                                                                img.src = groupItem.imageid;
+                                                                img.className = 'max-w-[90vw] max-h-[90vh] object-contain';
+                                                                imageDialog.appendChild(img);
+                                                                document.body.appendChild(imageDialog);
+                                                              }
+                                                            }}
+                                                          />
+                                                        </div>
                                                       ))}
                                                     </div>
                                                   </div>
