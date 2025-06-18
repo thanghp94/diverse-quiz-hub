@@ -39,19 +39,28 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
   const effectiveMatchingType = currentQuizPhase || (hasSequentialMatching ? 'picture-title' : question.type);
 
-  // Reset state when phase changes for sequential matching
+  // Reset state when phase changes for sequential matching or when question changes
   useEffect(() => {
-    if (hasSequentialMatching && currentQuizPhase) {
-      console.log('Resetting state for phase change:', currentQuizPhase);
-      setMatches({});
-      setShowResults(false);
-      setIsSubmitted(false);
-      setIsSubmitting(false);
-      setCorrectMatches({});
-      setDraggedItem(null);
-      dragCounter.current = 0;
-    }
-  }, [currentQuizPhase, hasSequentialMatching]);
+    console.log('State reset triggered:', { 
+      hasSequentialMatching, 
+      currentQuizPhase, 
+      questionId: question.id 
+    });
+    
+    // Reset all state when:
+    // 1. Phase changes in sequential matching
+    // 2. Question changes (different question.id)
+    // 3. Component first loads
+    setMatches({});
+    setShowResults(false);
+    setIsSubmitted(false);
+    setIsSubmitting(false);
+    setCorrectMatches({});
+    setDraggedItem(null);
+    dragCounter.current = 0;
+    
+    console.log('State reset completed for phase:', currentQuizPhase);
+  }, [currentQuizPhase, hasSequentialMatching, question.id]);
   
   // Filter pairs based on current phase
   const allPairs = question.pairs || [];

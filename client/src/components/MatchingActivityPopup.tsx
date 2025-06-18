@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { X, Loader2 } from 'lucide-react';
 import Matching from '@/components/quiz/Matching';
@@ -318,11 +318,16 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
     
     const score = totalPairs > 0 ? Math.round((correctCount / totalPairs) * 100) : 0;
     
+    // For sequential matching, don't auto-advance - let user click "Continue"
+    const matchingTypes = (activity?.type || '').split(', ');
+    const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
+    
     // Check if there are more questions to complete
     const isLastQuestion = currentQuestionIndex >= questions.length - 1;
+    const isFirstPhaseOfSequential = hasSequentialMatching && currentQuizPhase === 'picture-title';
     
-    if (isLastQuestion) {
-      // Save the attempt with final scoring details
+    if (isLastQuestion && !isFirstPhaseOfSequential) {
+      // Only complete if it's truly the last activity
       if (trackerRef.current && currentAttemptId) {
         trackerRef.current.completeAttempt(answer, score, 100);
       }
@@ -339,8 +344,18 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
       setTimeout(() => {
         onClose();
       }, 2000);
+    } else if (isFirstPhaseOfSequential) {
+      // For first phase of sequential matching, show feedback but don't auto-advance
+      // The user must click "Continue to Title-Description Matching" button
+      toast({
+        title: isCorrect ? 'Phase 1 Complete!' : 'Phase 1 Done!',
+        description: isCorrect 
+          ? `Perfect! You got all ${totalPairs} matches correct. Click continue for the next phase.`
+          : `You got ${correctCount} out of ${totalPairs} matches correct (${score}%). Click continue for the next phase.`,
+        variant: isCorrect ? 'default' : 'destructive',
+      });
     } else {
-      // Move to next question
+      // Move to next question (for non-sequential multi-question activities)
       setCurrentQuestionIndex(prev => prev + 1);
       toast({
         title: 'Question Complete!',
@@ -366,6 +381,9 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
           <DialogTitle className="text-xl font-bold">
             {activity?.description || 'Matching Activity'}
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Interactive matching activity with drag and drop functionality
+          </DialogDescription>
           <Button
             variant="ghost"
             size="icon"
