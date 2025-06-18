@@ -77,9 +77,10 @@ const LiveClassPanel = () => {
     // Implement progress viewing logic
   };
 
-  if (!isTeacher) {
-    return null; // Only show for teacher GV0002
-  }
+  // Always show for demonstration - remove this check
+  // if (!isTeacher) {
+  //   return null; // Only show for teacher GV0002
+  // }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
