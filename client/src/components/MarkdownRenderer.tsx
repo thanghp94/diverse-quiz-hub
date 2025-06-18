@@ -87,11 +87,6 @@ export const MarkdownRenderer = ({
                 : "bg-gray-800 border-gray-600 text-white"
             }`}
           >
-            <div className={`font-medium text-sm uppercase tracking-wide mb-2 ${
-              tooltipStyle === "light" ? "text-gray-600" : "text-gray-400"
-            }`}>
-              VIETNAMESE
-            </div>
             <div className={`font-semibold text-lg ${
               tooltipStyle === "light" ? "text-gray-900" : "text-white"
             }`}>
