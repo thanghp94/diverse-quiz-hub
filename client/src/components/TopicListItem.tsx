@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription, D
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { ChevronDown, ChevronUp, BookOpen, Play, HelpCircle, Shuffle, FileText } from "lucide-react";
+import { ChevronDown, ChevronUp, BookOpen, Play, HelpCircle, Shuffle, FileText, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -111,7 +111,7 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
   const hasNote = existingRating?.personal_note && existingRating.personal_note.trim() !== '';
 
   return (
-    <Dialog open={isNoteOpen} onOpenChange={setIsNoteOpen}>
+    <>
       <Button 
         variant="outline" 
         size={compact ? "sm" : "default"}
@@ -129,38 +129,66 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
         {hasNote && <span className="ml-1 text-xs">*</span>}
       </Button>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Personal Note</DialogTitle>
-          <DialogDescription>
-            Add your personal notes about this content. Only you can see these notes.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="note-text">Your Note</Label>
-            <Textarea
-              id="note-text"
-              value={noteText}
-              onChange={(e) => setNoteText(e.target.value)}
-              placeholder="Write your personal note here..."
-              className="min-h-[100px] mt-2"
-            />
+      
+      {/* Custom dialog with higher z-index for personal notes */}
+      {isNoteOpen && (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/80"
+            onClick={() => setIsNoteOpen(false)}
+          />
+          
+          {/* Dialog content */}
+          <div className="relative z-[10001] bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
+            {/* Close button */}
+            <button
+              onClick={() => setIsNoteOpen(false)}
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </button>
+            
+            {/* Header */}
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold leading-none tracking-tight">Personal Note</h2>
+              <p className="text-sm text-muted-foreground mt-2">
+                Add your personal notes about this content. Only you can see these notes.
+              </p>
+            </div>
+            
+            {/* Content */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="note-text">Your Note</Label>
+                <Textarea
+                  id="note-text"
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="Write your personal note here..."
+                  className="min-h-[100px] mt-2"
+                />
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6">
+              <Button variant="outline" onClick={() => setIsNoteOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSaveNote} 
+                disabled={isLoading || saveNoteMutation.isPending}
+                className="mb-2 sm:mb-0"
+              >
+                {isLoading || saveNoteMutation.isPending ? "Saving..." : "Save Note"}
+              </Button>
+            </div>
           </div>
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setIsNoteOpen(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSaveNote} 
-            disabled={isLoading || saveNoteMutation.isPending}
-          >
-            {isLoading || saveNoteMutation.isPending ? "Saving..." : "Save Note"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      )}
+    </>
   );
 };
 
