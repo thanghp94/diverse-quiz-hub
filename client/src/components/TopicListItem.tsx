@@ -793,19 +793,30 @@ const TopicListItem = ({
                           </div>
                           {subtopicContent.length > 0 && isExpanded && (
                             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {subtopicContent
-                                .sort((a, b) => {
-                                  const orderA = parseInt(a.order || '999999');
-                                  const orderB = parseInt(b.order || '999999');
-                                  return orderA - orderB;
-                                })
-                                .filter(content => {
-                                  // Hide content that belongs to a group (will be shown in group expansion)
+                              {(() => {
+                                // Filter out content that belongs to groups (will be shown in group expansion)
+                                const displayableContent = subtopicContent.filter(content => {
                                   const belongsToGroup = subtopicContent.some(item => 
                                     item.prompt === "groupcard" && content.contentgroup === item.id && content.id !== item.id
                                   );
                                   return !belongsToGroup;
-                                })
+                                });
+                                
+                                // Sort displayable content preserving proper order with stable sort
+                                const sortedContent = displayableContent.sort((a, b) => {
+                                  const orderA = (a.order && a.order !== '') ? parseInt(a.order) : 999999;
+                                  const orderB = (b.order && b.order !== '') ? parseInt(b.order) : 999999;
+                                  
+                                  if (orderA !== orderB) {
+                                    return orderA - orderB;
+                                  }
+                                  
+                                  // For items with same order (or both NULL), use title for stable sort
+                                  return (a.title || '').localeCompare(b.title || '');
+                                });
+                                
+                                return sortedContent;
+                              })()
                                 .map(content => {
                                 const SubtopicContentCard = () => {
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
