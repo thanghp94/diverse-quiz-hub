@@ -6,10 +6,9 @@ interface ContentThumbnailGalleryProps {
   onThumbnailClick?: (content: any) => void;
 }
 
-const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { 
+const GalleryThumbnail = ({ content, onClick }: { 
   content: any, 
-  onClick?: () => void, 
-  isGroupCard?: boolean 
+  onClick?: () => void
 }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
 
@@ -18,25 +17,12 @@ const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: {
     return null;
   }
 
-  // For group card thumbnails in the gallery, use fixed sizing
-  if (isGroupCard) {
-    return (
-      <div className="w-24 h-28 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
-        <img 
-          src={imageUrl} 
-          alt={content.title} 
-          className="w-full h-full object-contain bg-white/10"
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+    <div className="w-24 h-28 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
       <img 
         src={imageUrl} 
         alt={content.title} 
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain bg-white/10"
       />
     </div>
   );
@@ -76,9 +62,8 @@ export const ContentThumbnailGallery = ({
       <div className="flex flex-wrap gap-2 justify-center w-full">
         {groupedContent.map((groupItem) => (
           <div key={`thumb-${groupItem.id}`} className="flex-shrink-0">
-            <LocalContentThumbnail 
+            <GalleryThumbnail 
               content={groupItem} 
-              isGroupCard={true}
               onClick={() => handleThumbnailClick(groupItem, {} as React.MouseEvent)}
             />
           </div>
