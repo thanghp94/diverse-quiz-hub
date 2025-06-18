@@ -585,7 +585,7 @@ const TopicContentWithMatching = ({
   );
 };
 
-export const TopicListItem = ({
+const TopicListItem = ({
     topic,
     subtopics,
     topicContent,
@@ -1011,6 +1011,7 @@ export const TopicListItem = ({
         )}
       </div>
     );
-}
+};
 
+export { TopicListItem };
 export default TopicListItem;
