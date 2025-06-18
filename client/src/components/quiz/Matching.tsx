@@ -12,9 +12,11 @@ interface MatchingProps {
   studentTryId?: string;
   onNextActivity?: () => void;
   onGoBack?: () => void;
+  currentQuizPhase?: 'picture-title' | 'title-description';
+  onNextPhase?: () => void;
 }
 
-const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }: MatchingProps) => {
+const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, currentQuizPhase, onNextPhase }: MatchingProps) => {
   const [matches, setMatches] = useState<{[key: string]: string}>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,15 +27,37 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const leftItems = question.pairs?.map(pair => pair.left) || [];
-  const rightItems = question.pairs?.map(pair => pair.right) || [];
-  // Keep right items in consistent order instead of shuffling
-  const fixedRightItems = [...rightItems];
-
   // Check if any items are images
   const isImageItem = (item: string) => {
     return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
   };
+
+  // Check if this is a sequential matching quiz (has both picture-title and title-description)
+  const matchingTypes = (question.type || '').split(', ');
+  const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
+  const effectiveMatchingType = currentQuizPhase || (hasSequentialMatching ? 'picture-title' : question.type);
+  
+  // Filter pairs based on current phase
+  const allPairs = question.pairs || [];
+  const filteredPairs = hasSequentialMatching && currentQuizPhase 
+    ? allPairs.filter(pair => {
+        const isImageLeft = isImageItem(pair.left);
+        const isImageRight = isImageItem(pair.right);
+        
+        if (currentQuizPhase === 'picture-title') {
+          // Show pairs where either left or right is an image
+          return isImageLeft || isImageRight;
+        } else {
+          // Show pairs where both are text (title-description)
+          return !isImageLeft && !isImageRight;
+        }
+      })
+    : allPairs;
+
+  const leftItems = filteredPairs.map(pair => pair.left);
+  const rightItems = filteredPairs.map(pair => pair.right);
+  // Keep right items in consistent order instead of shuffling
+  const fixedRightItems = [...rightItems];
 
   // Get text styling based on matching type and word count
   const getTextStyling = (text: string) => {

@@ -812,7 +812,9 @@ const TopicListItem = ({
                                   }
                                   
                                   // For items with same order (or both NULL), use title for stable sort
-                                  return (a.title || '').localeCompare(b.title || '');
+                                  const titleA = (a.title || '').toLowerCase();
+                                  const titleB = (b.title || '').toLowerCase();
+                                  return titleA.localeCompare(titleB);
                                 });
                                 
                                 return sortedContent;
