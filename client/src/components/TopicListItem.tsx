@@ -71,13 +71,12 @@ const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { cont
   }
 
   return (
-    <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
-      <img 
-        src={imageUrl} 
-        alt={content.title} 
-        className={`w-full h-full ${isGroupCard ? 'object-center object-cover' : 'object-cover'}`}
-      />
-    </div>
+    <img 
+      src={imageUrl} 
+      alt={content.title} 
+      className="w-full h-full object-contain bg-gray-800 rounded-md cursor-pointer hover:opacity-80 transition-opacity"
+      onClick={onClick}
+    />
   );
 };
 
@@ -869,38 +868,31 @@ const TopicListItem = ({
                                               >
                                                 <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
                                               </div>
-                                              {groupedContent.length > 0 && (
-                                                <Badge className="ml-2 bg-yellow-500/20 text-yellow-200 text-xs">
-                                                  {groupedContent.length} items
-                                                </Badge>
-                                              )}
                                             </div>
 
                                             {/* Image Gallery and Action Buttons Row */}
-                                            <div className="flex items-center justify-between gap-4">
+                                            <div className="flex items-start justify-between gap-4">
                                               {/* Thumbnail Gallery */}
                                               <div className="flex-1">
                                                 {groupedContent.length > 0 && (
                                                   <div className="flex flex-wrap gap-2">
                                                     {groupedContent.map((groupItem) => (
-                                                      <div key={`thumb-${groupItem.id}`} className="w-16 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                        <div className="w-full h-full object-cover object-center">
-                                                          <LocalContentThumbnail 
-                                                            content={groupItem} 
-                                                            onClick={() => onContentClick({
-                                                              content: groupItem,
-                                                              contextList: [...subtopicContent]
-                                                            })}
-                                                          />
-                                                        </div>
+                                                      <div key={`thumb-${groupItem.id}`} className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity bg-gray-800">
+                                                        <LocalContentThumbnail 
+                                                          content={groupItem} 
+                                                          onClick={() => onContentClick({
+                                                            content: groupItem,
+                                                            contextList: [...subtopicContent]
+                                                          })}
+                                                        />
                                                       </div>
                                                     ))}
                                                   </div>
                                                 )}
                                               </div>
 
-                                              {/* Action Buttons */}
-                                              <div className="flex items-center gap-1 flex-shrink-0">
+                                              {/* Action Buttons - Stacked Vertically */}
+                                              <div className="flex flex-col gap-1 flex-shrink-0">
                                                 {content.parentid && (
                                                   <Button 
                                                     variant="outline" 
@@ -915,29 +907,13 @@ const TopicListItem = ({
                                                     Match
                                                   </Button>
                                                 )}
-                                                <ContentRatingButtons 
-                                                  key={`${content.id}-rating`}
-                                                  contentId={content.id}
-                                                  compact={true}
-                                                  studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
-                                                />
-                                                {(hasVideo1 || hasVideo2) && (
-                                                  <Button 
-                                                    variant="outline" 
-                                                    size="sm" 
-                                                    className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      setVideoPopupOpen(true);
-                                                    }}
-                                                  >
-                                                    <Play className="h-3 w-3 mr-1" />
-                                                    Video{(hasVideo1 && hasVideo2) ? 's' : ''}
-                                                  </Button>
-                                                )}
                                                 <DropdownMenu>
                                                   <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                    <Button 
+                                                      variant="outline" 
+                                                      size="sm" 
+                                                      className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6"
+                                                    >
                                                       Quiz
                                                     </Button>
                                                   </DropdownMenuTrigger>
@@ -956,6 +932,20 @@ const TopicListItem = ({
                                                     </DropdownMenuItem>
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
+                                                {(hasVideo1 || hasVideo2) && (
+                                                  <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setVideoPopupOpen(true);
+                                                    }}
+                                                  >
+                                                    <Play className="h-3 w-3 mr-1" />
+                                                    Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                  </Button>
+                                                )}
                                               </div>
                                             </div>
 
