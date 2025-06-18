@@ -1231,7 +1231,16 @@ const TopicListItem = ({
                                                   <div className="flex items-center gap-2 mb-2">
                                                     <CompactContentDifficultyIndicator contentId={content.id} />
                                                   </div>
-                                                  {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+                                                  {content.short_description && (
+                                                    <div className="text-white/60 text-sm leading-relaxed">
+                                                      <MarkdownRenderer 
+                                                        className="text-sm leading-relaxed"
+                                                        translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
+                                                      >
+                                                        {content.short_description}
+                                                      </MarkdownRenderer>
+                                                    </div>
+                                                  )}
                                                 </div>
                                               </div>
                                             )}
