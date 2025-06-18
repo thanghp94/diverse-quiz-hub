@@ -1179,7 +1179,10 @@ const TopicListItem = ({
                                             <h5 className="text-purple-200 text-base font-medium mb-3">Related Content:</h5>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                   {groupedContent.map((groupItem) => (
-                                                    <div key={groupItem.id} className="bg-white/5 border border-white/20 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                                    <div key={groupItem.id} className={cn(
+                                                      "bg-white/5 border border-white/20 hover:bg-white/10 transition-all duration-200 rounded-lg p-3",
+                                                      activeContentId === groupItem.id && "ring-4 ring-yellow-400/80 bg-yellow-500/20 border-yellow-400/70 shadow-lg shadow-yellow-400/20"
+                                                    )}>
                                                       <div className="flex items-start gap-3">
                                                         <LocalContentThumbnail 
                                                           content={groupItem} 
