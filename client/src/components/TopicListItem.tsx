@@ -847,21 +847,26 @@ const TopicListItem = ({
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
                                   
-                                  // Use openContent state to track group expansion
-                                  const groupExpansionKey = `group-${content.id}`;
-                                  const isGroupExpanded = openContent.includes(groupExpansionKey);
-                                  
-                                  console.log('Group card render:', content.title, 'Key:', groupExpansionKey, 'isExpanded:', isGroupExpanded, 'openContent:', openContent);
-                                  const toggleGroupExpanded = () => {
-                                    console.log('Group card clicked:', content.title, 'Key:', groupExpansionKey, 'Current state:', isGroupExpanded);
-                                    onToggleContent(groupExpansionKey);
-                                  };
-
                                   const hasVideo1 = videoEmbedUrl && videoData;
                                   const hasVideo2 = video2EmbedUrl && video2Data;
 
                                   // Check if this content is a group card and find related content
                                   const isGroupCard = content.prompt === "groupcard";
+                                  console.log('Content check:', content.title, 'prompt:', content.prompt, 'isGroupCard:', isGroupCard);
+                                  
+                                  // Use openContent state to track group expansion
+                                  const groupExpansionKey = `group-${content.id}`;
+                                  const isGroupExpanded = openContent.includes(groupExpansionKey);
+                                  
+                                  const toggleGroupExpanded = () => {
+                                    console.log('Group card clicked:', content.title, 'Key:', groupExpansionKey, 'Current state:', isGroupExpanded);
+                                    onToggleContent(groupExpansionKey);
+                                  };
+                                  
+                                  if (isGroupCard) {
+                                    console.log('Rendering group card:', content.title, 'Key:', groupExpansionKey, 'isExpanded:', isGroupExpanded);
+                                  }
+                                  
                                   const groupedContent = isGroupCard ? 
                                     subtopicContent
                                       .filter(item => item.contentgroup === content.id && item.id !== content.id)
@@ -894,8 +899,10 @@ const TopicListItem = ({
                                                   className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
                                                   onClick={(e) => {
                                                     e.stopPropagation();
+                                                    console.log('Group card title clicked!', content.title);
                                                     toggleGroupExpanded();
                                                   }}
+                                                  onMouseDown={() => console.log('Group card mousedown:', content.title)}
                                                 >
                                                   <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
                                                 </div>
