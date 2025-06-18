@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { ChevronDown, BookOpen, Play, HelpCircle, Shuffle } from "lucide-react";
+import { ChevronDown, ChevronUp, BookOpen, Play, HelpCircle, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
