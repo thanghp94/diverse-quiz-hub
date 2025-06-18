@@ -9,6 +9,35 @@ import { useContentImage } from "@/hooks/useContentImage";
 import { CompactContentDifficultyIndicator } from "@/components/ContentDifficultyIndicator";
 import { ContentRatingButtons } from "@/components/ContentRatingButtons";
 
+// Thumbnail component for gallery images
+interface ThumbnailImageProps {
+  content: Content;
+  onContentClick: (info: { content: Content; contextList: Content[] }) => void;
+  contextList: Content[];
+}
+
+const ThumbnailImageComponent: React.FC<ThumbnailImageProps> = ({ content, onContentClick, contextList }) => {
+  const { data: thumbUrl } = useContentImage(content.imageid);
+  
+  if (!thumbUrl) return null;
+  
+  return (
+    <div 
+      className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+      onClick={(e) => {
+        e.stopPropagation();
+        onContentClick({ content, contextList });
+      }}
+    >
+      <img 
+        src={thumbUrl} 
+        alt={content.title || 'Content'} 
+        className="w-full h-full object-cover"
+      />
+    </div>
+  );
+};
+
 interface GroupedContentCardProps {
   groupContent: Content; // The main content item where prompt = "groupcard"
   groupedContent: Content[]; // Related content items where contentgroup = groupContent.id
@@ -154,8 +183,6 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
           </div>
         )}
 
-
-
         {/* Grouped Content - Collapsible */}
         {isExpanded && groupedContent.length > 0 && (
           <div className="space-y-2 pl-4 border-l-2 border-purple-400/30">
@@ -169,18 +196,6 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
                 contextList={[groupContent, ...groupedContent]}
               />
             ))}
-          </div>
-        )}
-
-        {/* Summary Footer */}
-        {!isExpanded && groupedContent.length > 0 && (
-          <div className="flex items-center justify-between pt-2 border-t border-white/10">
-            <span className="text-white/60 text-xs">
-              +{groupedContent.length} more items in this group
-            </span>
-            <span className="text-white/60 text-xs">
-              Click to expand
-            </span>
           </div>
         )}
       </CardContent>
@@ -256,35 +271,6 @@ const NestedContentCard: React.FC<NestedContentCardProps> = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
-
-// Thumbnail component for gallery images
-interface ThumbnailImageProps {
-  content: Content;
-  onContentClick: (info: { content: Content; contextList: Content[] }) => void;
-  contextList: Content[];
-}
-
-const ThumbnailImageComponent: React.FC<ThumbnailImageProps> = ({ content, onContentClick, contextList }) => {
-  const { data: thumbUrl } = useContentImage(content.imageid);
-  
-  if (!thumbUrl) return null;
-  
-  return (
-    <div 
-      className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-      onClick={(e) => {
-        e.stopPropagation();
-        onContentClick({ content, contextList });
-      }}
-    >
-      <img 
-        src={thumbUrl} 
-        alt={content.title || 'Content'} 
-        className="w-full h-full object-cover"
-      />
-    </div>
   );
 };
 
