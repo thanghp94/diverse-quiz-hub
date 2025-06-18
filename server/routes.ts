@@ -400,6 +400,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Personal Content API
+  app.get("/api/personal-content/:studentId", async (req, res) => {
+    try {
+      const personalContent = await storage.getPersonalContent(req.params.studentId);
+      res.json(personalContent);
+    } catch (error) {
+      console.error('Error fetching personal content:', error);
+      res.status(500).json({ error: 'Failed to fetch personal content' });
+    }
+  });
+
   // Content Ratings API
   app.post("/api/content-ratings", async (req, res) => {
     try {

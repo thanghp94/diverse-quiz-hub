@@ -103,11 +103,10 @@ export const AssignmentPanel = () => {
         <Button 
           variant="outline" 
           size="sm"
-          className="bg-purple-600/12 border-purple-400/30 text-white/60 hover:bg-purple-600/30 hover:text-white transition-all duration-300 group"
+          className="bg-purple-600/12 border-purple-400/30 text-white/60 hover:bg-purple-600/30 hover:text-white transition-all duration-300 h-8 w-8 p-0"
           title="Assignments"
         >
           <FileText className="h-4 w-4" />
-          <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">Assignments</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-700">

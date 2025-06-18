@@ -131,14 +131,15 @@ const LiveClassPanel = () => {
           <Button 
             variant="outline" 
             size="sm"
-            className="bg-gradient-to-r from-green-600/12 to-blue-600/12 border-green-400/18 text-white/60 hover:from-green-600/30 hover:to-blue-600/30 hover:border-green-400/50 hover:text-white backdrop-blur-sm shadow-lg transition-all duration-300 group"
+            className="bg-gradient-to-r from-green-600/12 to-blue-600/12 border-green-400/18 text-white/60 hover:from-green-600/30 hover:to-blue-600/30 hover:border-green-400/50 hover:text-white backdrop-blur-sm shadow-lg transition-all duration-300 h-8 w-8 p-0"
             title="Homework"
           >
             <Video className="h-4 w-4" />
-            <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">Homework</span>
-            <Badge className="ml-1 bg-green-500/20 text-green-200 text-xs">
-              {isLoading ? '...' : (liveAssignments as LiveAssignment[]).length}
-            </Badge>
+            {(liveAssignments as LiveAssignment[]).length > 0 && (
+              <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                {isLoading ? '...' : (liveAssignments as LiveAssignment[]).length}
+              </div>
+            )}
           </Button>
         </DialogTrigger>
       

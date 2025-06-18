@@ -106,6 +106,9 @@ export interface IStorage {
 
   // Content Progress
   getContentProgress(studentId: string): Promise<any[]>;
+  
+  // Personal Content
+  getPersonalContent(studentId: string): Promise<any[]>;
 
   // Cron Jobs
   getCronJob(jobName: string): Promise<CronJob | undefined>;
@@ -965,6 +968,37 @@ export class DatabaseStorage implements IStorage {
         total_tries: parseInt(row.total_tries),
         correct_answers: parseInt(row.correct_answers),
         accuracy: parseFloat(row.accuracy_percentage) || 0
+      }));
+    });
+  }
+
+  async getPersonalContent(studentId: string): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.execute(sql`
+        SELECT 
+          cr.id,
+          cr.content_id as "contentId",
+          c.title,
+          COALESCE(t.topic, 'Unknown Topic') as topic,
+          cr.personal_note,
+          cr.rating as difficulty_rating,
+          cr.updated_at
+        FROM content_ratings cr
+        JOIN content c ON cr.content_id = c.id
+        LEFT JOIN topic t ON c.topicid = t.id
+        WHERE cr.student_id = ${studentId}
+          AND (cr.personal_note IS NOT NULL AND cr.personal_note != '' OR cr.rating IS NOT NULL)
+        ORDER BY cr.updated_at DESC
+      `);
+      
+      return result.rows.map((row: any) => ({
+        id: row.id,
+        contentId: row.contentId,
+        title: row.title || 'Untitled Content',
+        topic: row.topic,
+        personal_note: row.personal_note,
+        difficulty_rating: row.difficulty_rating,
+        updated_at: row.updated_at
       }));
     });
   }
