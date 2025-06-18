@@ -21,6 +21,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [correctMatches, setCorrectMatches] = useState<{[key: string]: boolean}>({});
   const [startTime] = useState(new Date());
   const dragCounter = useRef(0);
@@ -64,6 +65,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     if (hasSequentialMatching && currentQuizPhase) {
       setMatches({});
       setIsSubmitted(false);
+      setShowResults(false);
       setCorrectMatches({});
     }
   }, [currentQuizPhase, hasSequentialMatching]);
@@ -159,7 +161,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     }
   };
 
-  const handleSubmit = async () => {
+  const handleCheckResults = async () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
@@ -182,6 +184,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
     // Set correctness state for visual feedback
     setCorrectMatches(newCorrectMatches);
+    setShowResults(true);
     setIsSubmitted(true);
 
     // Save attempt to database
@@ -229,13 +232,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             >
               {leftItems.filter(item => isImageItem(item)).map(item => {
                 const isUsed = Object.keys(matches).includes(item);
-                const isCorrect = isSubmitted && correctMatches[item];
-                const isIncorrect = isSubmitted && correctMatches[item] === false;
+                const isCorrect = showResults && correctMatches[item];
+                const isIncorrect = showResults && correctMatches[item] === false;
 
                 return (
                   <div
                     key={item}
-                    draggable={!isUsed && !isSubmitted}
+                    draggable={!isUsed && !showResults}
                     onDragStart={(e) => handleDragStart(e, item)}
                     className={`relative p-2 rounded-xl text-black transition-all duration-300 border-3 flex items-center justify-center shadow-lg transform hover:scale-105 ${
                       isCorrect 
