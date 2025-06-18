@@ -61,7 +61,7 @@ const getContentIcon = (content: any) => {
 };
 
 // Local content thumbnail component for specific layout needs
-const LocalContentThumbnail = ({ content, onClick }: { content: any, onClick?: () => void }) => {
+const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { content: any, onClick?: () => void, isGroupCard?: boolean }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
 
   // Only show thumbnail if there's an imageid
@@ -74,7 +74,7 @@ const LocalContentThumbnail = ({ content, onClick }: { content: any, onClick?: (
       <img 
         src={imageUrl} 
         alt={content.title} 
-        className="w-full h-full object-cover"
+        className={`w-full h-full ${isGroupCard ? 'object-center object-cover' : 'object-cover'}`}
       />
     </div>
   );
@@ -794,8 +794,8 @@ const TopicListItem = ({
                                     <>
                                       <div className={cn(
                                         "bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3",
-                                        isGroupCard && "bg-gradient-to-br from-purple-600/25 via-blue-600/25 to-indigo-600/25 border-purple-400/40 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400/60 transform hover:scale-[1.02]",
-                                        isGroupCard && isGroupExpanded && "col-span-2 ring-2 ring-purple-400/30"
+                                        isGroupCard && "bg-gradient-to-br from-yellow-600/25 via-orange-600/25 to-amber-600/25 border-yellow-400/60 shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 hover:border-yellow-400/80 transform hover:scale-[1.02]",
+                                        isGroupCard && isGroupExpanded && "col-span-2 ring-2 ring-yellow-400/40"
                                       )}>
                                         <div className="flex items-start justify-between gap-2">
                                           <div
@@ -814,6 +814,7 @@ const TopicListItem = ({
                                             <div className="flex items-center gap-2">
                                               <LocalContentThumbnail 
                                                 content={content} 
+                                                isGroupCard={isGroupCard}
                                                 onClick={() => onContentClick({
                                                   content,
                                                   contextList: subtopicContent
@@ -821,12 +822,34 @@ const TopicListItem = ({
                                               />
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2 mb-2">
-                                                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                                                  {isGroupCard ? (
+                                                    <div className="flex items-center gap-2 flex-1">
+                                                      <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200">
+                                                        <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
+                                                      </div>
+                                                      {groupedContent.length > 0 && (
+                                                        <Badge className="bg-yellow-500/20 text-yellow-200 text-xs">
+                                                          {groupedContent.length} items
+                                                        </Badge>
+                                                      )}
+                                                    </div>
+                                                  ) : (
+                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                                                  )}
                                                   <div className="flex items-center gap-1 flex-shrink-0">
-                                                    {isGroupCard && groupedContent.length > 0 && (
-                                                      <Badge className="bg-purple-500/20 text-purple-200 text-xs mr-1">
-                                                        {groupedContent.length} items
-                                                      </Badge>
+                                                    {isGroupCard && content.parentid && (
+                                                      <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6 mr-1"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          onStartTopicMatching(content.parentid, content.title || 'Group Match');
+                                                        }}
+                                                      >
+                                                        <Shuffle className="h-3 w-3 mr-1" />
+                                                        Match
+                                                      </Button>
                                                     )}
                                                     <ContentRatingButtons 
                                                       key={`${content.id}-rating`}
