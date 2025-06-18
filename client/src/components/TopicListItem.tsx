@@ -1056,7 +1056,7 @@ const TopicListItem = ({
                                                       <div className="flex items-start gap-3">
                                                         <LocalContentThumbnail 
                                                           content={groupItem} 
-                                                          isGroupCard={true}
+                                                          isGroupCard={false}
                                                           onClick={() => onContentClick({
                                                             content: groupItem,
                                                             contextList: [...subtopicContent]
