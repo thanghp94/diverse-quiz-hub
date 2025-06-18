@@ -850,7 +850,10 @@ const TopicListItem = ({
                                   // Use openContent state to track group expansion
                                   const groupExpansionKey = `group-${content.id}`;
                                   const isGroupExpanded = openContent.includes(groupExpansionKey);
+                                  
+                                  console.log('Group card render:', content.title, 'Key:', groupExpansionKey, 'isExpanded:', isGroupExpanded, 'openContent:', openContent);
                                   const toggleGroupExpanded = () => {
+                                    console.log('Group card clicked:', content.title, 'Key:', groupExpansionKey, 'Current state:', isGroupExpanded);
                                     onToggleContent(groupExpansionKey);
                                   };
 
@@ -889,7 +892,10 @@ const TopicListItem = ({
                                               <div className="flex-1 text-center">
                                                 <div 
                                                   className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
-                                                  onClick={toggleGroupExpanded}
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleGroupExpanded();
+                                                  }}
                                                 >
                                                   <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
                                                 </div>
