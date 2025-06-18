@@ -44,9 +44,11 @@ def fetch_content_rows(conn):
     try:
         cursor = conn.cursor()
         query = """
-        SELECT id, content_text 
+        SELECT id, information 
         FROM public.content 
         WHERE translation_dictionary IS NULL 
+        AND information IS NOT NULL 
+        AND information != ''
         LIMIT 5
         """
         cursor.execute(query)
@@ -133,9 +135,19 @@ def main():
                 print(f"Failed to get response from OpenAI for content ID {content_id}")
                 continue
             
-            # Parse JSON response
+            # Parse JSON response - clean up markdown formatting if present
             try:
-                translation_dict = json.loads(ai_response)
+                # Remove markdown code block formatting if present
+                cleaned_response = ai_response.strip()
+                if cleaned_response.startswith('```json'):
+                    cleaned_response = cleaned_response[7:]  # Remove ```json
+                if cleaned_response.startswith('```'):
+                    cleaned_response = cleaned_response[3:]   # Remove ```
+                if cleaned_response.endswith('```'):
+                    cleaned_response = cleaned_response[:-3]  # Remove trailing ```
+                cleaned_response = cleaned_response.strip()
+                
+                translation_dict = json.loads(cleaned_response)
                 
                 # Validate that it's a dictionary
                 if not isinstance(translation_dict, dict):
