@@ -255,23 +255,32 @@ const GroupedContentDisplay = ({
     content: Content[];
   } | null>(null);
 
-  // Group content by contentgroup field
-  const groupedContent = React.useMemo(() => {
-    const groups: { [key: string]: Content[] } = {};
-    const ungrouped: Content[] = [];
+  // Organize content according to specifications:
+  // 1. Content with prompt != "groupcard" and blank contentgroup shows on top
+  // 2. Content with prompt = "groupcard" becomes group headers
+  // 3. Content with contentgroup = groupContent.id becomes related items
+  const organizedContent = React.useMemo(() => {
+    const ungroupedContent: Content[] = [];
+    const groupCards: Content[] = [];
+    const groupedContentMap: { [groupId: string]: Content[] } = {};
     
     topicContent.forEach(content => {
-      if (content.contentgroup && content.contentgroup.trim() !== '') {
-        if (!groups[content.contentgroup]) {
-          groups[content.contentgroup] = [];
-        }
-        groups[content.contentgroup].push(content);
+      if (content.prompt === "groupcard") {
+        // This is a group header card
+        groupCards.push(content);
+      } else if (!content.contentgroup || content.contentgroup.trim() === '') {
+        // This is ungrouped content (shows on top)
+        ungroupedContent.push(content);
       } else {
-        ungrouped.push(content);
+        // This content belongs to a group
+        if (!groupedContentMap[content.contentgroup]) {
+          groupedContentMap[content.contentgroup] = [];
+        }
+        groupedContentMap[content.contentgroup].push(content);
       }
     });
     
-    return { groups, ungrouped };
+    return { ungroupedContent, groupCards, groupedContentMap };
   }, [topicContent]);
 
   const handleContentGroupClick = (groupName: string, content: Content[]) => {
@@ -298,12 +307,12 @@ const GroupedContentDisplay = ({
 
   return (
     <div className="space-y-4">
-      {/* Display individual content cards for ungrouped content */}
-      {groupedContent.ungrouped.length > 0 && (
+      {/* Display ungrouped content first (content with blank contentgroup and prompt != "groupcard") */}
+      {organizedContent.ungroupedContent.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-white/80 text-sm font-medium">Main Content</h4>
+          <h4 className="text-white/80 text-sm font-medium">Individual Content</h4>
           <div className="grid grid-cols-2 gap-3">
-            {groupedContent.ungrouped.map(content => (
+            {organizedContent.ungroupedContent.map((content: Content) => (
               <ContentCard 
                 key={content.id} 
                 content={content} 
@@ -316,21 +325,23 @@ const GroupedContentDisplay = ({
         </div>
       )}
 
-      {/* Display content group cards */}
-      {Object.entries(groupedContent.groups).length > 0 && (
+      {/* Display grouped content cards (content with prompt = "groupcard" and their related items) */}
+      {organizedContent.groupCards.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-white/80 text-sm font-medium">Content Categories</h4>
-          <div className="grid grid-cols-1 gap-3">
-            {Object.entries(groupedContent.groups).map(([groupName, content]) => (
-              <ContentGroupCard
-                key={groupName}
-                groupName={groupName}
-                description={getGroupDescription(groupName)}
-                contentCount={content.length}
-                onClick={() => handleContentGroupClick(groupName, content)}
-                className="w-full"
-              />
-            ))}
+          <h4 className="text-white/80 text-sm font-medium">Grouped Content</h4>
+          <div className="space-y-4">
+            {organizedContent.groupCards.map((groupContent: Content) => {
+              const relatedContent: Content[] = organizedContent.groupedContentMap[groupContent.id] || [];
+              return (
+                <GroupedContentCard
+                  key={groupContent.id}
+                  groupContent={groupContent}
+                  groupedContent={relatedContent}
+                  onContentClick={onContentClick}
+                  onStartQuiz={onStartQuiz}
+                />
+              );
+            })}
           </div>
         </div>
       )}
