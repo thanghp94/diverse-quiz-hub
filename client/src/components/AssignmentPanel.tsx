@@ -41,17 +41,22 @@ export const AssignmentPanel = () => {
     
     const now = new Date();
     
+    // First filter by "Challenge" subject
+    const challengeAssignments = assignmentsData.filter((assignment: Assignment) => 
+      assignment.subject === 'Challenge'
+    );
+    
     switch (activeFilter) {
       case 'active':
-        return assignmentsData.filter((assignment: Assignment) => 
+        return challengeAssignments.filter((assignment: Assignment) => 
           new Date(assignment.expiring_date) > now
         );
       case 'expired':
-        return assignmentsData.filter((assignment: Assignment) => 
+        return challengeAssignments.filter((assignment: Assignment) => 
           new Date(assignment.expiring_date) <= now
         );
       default:
-        return assignmentsData;
+        return challengeAssignments;
     }
   };
 
@@ -178,28 +183,13 @@ export const AssignmentPanel = () => {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-white font-semibold text-lg">{assignment.assignmentname}</h3>
-                          {getStatusBadge(assignment)}
-                        </div>
-                        <p className="text-gray-300 text-sm mb-3 line-clamp-2">
-                          {assignment.description || 'No description available'}
-                        </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-400">
-                          <div className="flex items-center gap-1">
-                            <FileText className="h-3 w-3" />
-                            <span>{assignment.category}</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-white font-semibold text-lg">{assignment.assignmentname}</h3>
+                            {getStatusBadge(assignment)}
                           </div>
-                          <div className="flex items-center gap-1">
-                            <User className="h-3 w-3" />
-                            <span>{assignment.subject}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
+                          <div className="flex items-center gap-3 text-xs text-gray-400">
                             <span>{assignment.noofquestion} questions</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
                             <span>Due: {formatDate(assignment.expiring_date)}</span>
                           </div>
                         </div>

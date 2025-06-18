@@ -964,17 +964,20 @@ export class DatabaseStorage implements IStorage {
         SELECT DISTINCT
           c.id,
           c.topicid,
-          COALESCE(t.topic, c.topic, 'Unknown Topic') as topic,
+          COALESCE(t.topic, 'Unknown Topic') as topic,
           c.title,
           cr.rating as difficulty_rating,
           (SELECT COUNT(*) FROM question q WHERE q.contentid = c.id) as question_count,
           MAX(st.update) as completed_at,
-          c.parentid
+          c.parentid,
+          COUNT(CASE WHEN cr.rating = 'ok' THEN 1 END) as ok_count,
+          COUNT(CASE WHEN cr.rating = 'really_bad' THEN 1 END) as really_bad_count
         FROM content c
         LEFT JOIN topic t ON c.topicid = t.id
         LEFT JOIN content_ratings cr ON cr.content_id = c.id AND cr.student_id = ${studentId}
-        INNER JOIN student_try st ON st.contentid = c.id AND st.hocsinh_id = ${studentId}
-        GROUP BY c.id, c.topicid, t.topic, c.topic, c.title, cr.rating, c.parentid
+        LEFT JOIN question q ON q.contentid = c.id
+        LEFT JOIN student_try st ON st.question_id = q.id AND st.hocsinh_id = ${studentId}
+        GROUP BY c.id, c.topicid, t.topic, c.title, cr.rating, c.parentid
         ORDER BY c.title
       `);
       
@@ -986,7 +989,9 @@ export class DatabaseStorage implements IStorage {
         difficulty_rating: row.difficulty_rating,
         question_count: parseInt(row.question_count) || 0,
         completed_at: row.completed_at,
-        parentid: row.parentid
+        parentid: row.parentid,
+        ok_count: parseInt(row.ok_count) || 0,
+        really_bad_count: parseInt(row.really_bad_count) || 0
       }));
     });
   }
