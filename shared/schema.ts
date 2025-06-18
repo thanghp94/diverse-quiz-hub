@@ -72,6 +72,7 @@ export const content = pgTable("content", {
   header: text("header"),
   update: text("update"),
   imagelink: text("imagelink"),
+  translation_dictionary: jsonb("translation_dictionary"),
 });
 
 export const images = pgTable("image", {

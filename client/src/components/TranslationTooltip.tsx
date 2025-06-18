@@ -1,28 +1,23 @@
-
-import React from "react";
-import ReactMarkdown from "react-markdown";
+import React, { useState, useRef, useEffect } from 'react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
-/**
- * MarkdownRenderer
- * Wraps ReactMarkdown with Tailwind `prose` classes for beautiful formatting.
- * Supports translation tooltips when translationDictionary is provided.
- */
-export const MarkdownRenderer = ({
-  children,
-  className = "",
-  translationDictionary,
-}: {
+interface TranslationTooltipProps {
   children: string;
-  className?: string;
   translationDictionary?: Record<string, string> | null;
-}) => {
-  // Function to add translation tooltips to text
-  const addTranslationTooltips = (text: string): React.ReactNode => {
-    if (!translationDictionary || Object.keys(translationDictionary).length === 0) {
-      return text;
-    }
+  className?: string;
+}
 
+const TranslationTooltip: React.FC<TranslationTooltipProps> = ({ 
+  children, 
+  translationDictionary, 
+  className = "" 
+}) => {
+  if (!translationDictionary || Object.keys(translationDictionary).length === 0) {
+    return <span className={className}>{children}</span>;
+  }
+
+  // Function to replace matched terms with tooltips
+  const processTextWithTooltips = (text: string): React.ReactNode[] => {
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
     
@@ -34,13 +29,13 @@ export const MarkdownRenderer = ({
     
     sortedKeys.forEach(key => {
       const regex = new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
-      let match: RegExpExecArray | null;
+      let match;
       
       while ((match = regex.exec(text)) !== null) {
         // Check if this match overlaps with existing matches
         const overlaps = matches.some(existing => 
-          (match!.index >= existing.start && match!.index < existing.end) ||
-          (match!.index + match![0].length > existing.start && match!.index + match![0].length <= existing.end)
+          (match.index >= existing.start && match.index < existing.end) ||
+          (match.index + match[0].length > existing.start && match.index + match[0].length <= existing.end)
         );
         
         if (!overlaps) {
@@ -66,7 +61,7 @@ export const MarkdownRenderer = ({
       
       // Add the tooltip for this match
       elements.push(
-        <HoverCard key={`tooltip-${match.start}-${index}`} openDelay={200} closeDelay={100}>
+        <HoverCard key={`tooltip-${index}`} openDelay={200} closeDelay={100}>
           <HoverCardTrigger asChild>
             <span className="cursor-help underline decoration-dotted decoration-blue-400 hover:decoration-solid hover:bg-blue-50 rounded px-0.5 transition-all duration-200">
               {match.key}
@@ -74,7 +69,7 @@ export const MarkdownRenderer = ({
           </HoverCardTrigger>
           <HoverCardContent 
             side="top" 
-            className="w-auto max-w-xs bg-slate-900 text-white border-slate-700 text-sm p-2 rounded-md shadow-lg z-50"
+            className="w-auto max-w-xs bg-slate-900 text-white border-slate-700 text-sm p-2 rounded-md shadow-lg"
           >
             <div className="font-medium text-blue-200 text-xs uppercase tracking-wide mb-1">
               Vietnamese
@@ -97,21 +92,11 @@ export const MarkdownRenderer = ({
     return elements.length > 0 ? elements : [text];
   };
 
-  // If translations are available, process the text first
-  if (translationDictionary && Object.keys(translationDictionary).length > 0) {
-    return (
-      <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-1 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-1 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
-        {addTranslationTooltips(children)}
-      </div>
-    );
-  }
-
-  // Fallback to regular markdown rendering
   return (
-    <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-1 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-1 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
-      <ReactMarkdown>{children}</ReactMarkdown>
-    </div>
+    <span className={className}>
+      {processTextWithTooltips(children)}
+    </span>
   );
 };
 
-export default MarkdownRenderer;
+export default TranslationTooltip;
