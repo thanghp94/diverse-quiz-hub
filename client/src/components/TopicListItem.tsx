@@ -814,7 +814,8 @@ const TopicListItem = ({
       <div
         className={cn(
           "bg-white/10 backdrop-blur-lg border-white/20 rounded-lg overflow-hidden border-b-0 transition-all duration-300",
-          isExpanded ? "md:col-span-2" : "md:col-span-1"
+          isExpanded ? "md:col-span-2" : "md:col-span-1",
+          isActive && "ring-2 ring-yellow-400/50 bg-yellow-500/10 border-yellow-400/30"
         )}
       >
         <div
