@@ -70,12 +70,25 @@ const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { cont
     return null;
   }
 
+  // For group card thumbnails in the gallery, use different sizing and fit
+  if (isGroupCard) {
+    return (
+      <div className="w-full h-full rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+        <img 
+          src={imageUrl} 
+          alt={content.title} 
+          className="w-full h-full object-contain bg-white/10"
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
       <img 
         src={imageUrl} 
         alt={content.title} 
-        className={`w-full h-full ${isGroupCard ? 'object-center object-cover' : 'object-cover'}`}
+        className="w-full h-full object-cover"
       />
     </div>
   );
@@ -866,15 +879,15 @@ const TopicListItem = ({
                                                 onClick={() => setIsGroupExpanded(!isGroupExpanded)}
                                               >
                                                 {/* Title with action buttons for group cards */}
-                                                <div className="flex items-center justify-between gap-2 mb-3">
-                                                  <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-center flex-1">
+                                                <div className="flex items-center justify-center gap-2 mb-3">
+                                                  <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-center">
                                                     <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
                                                   </div>
                                                   <div className="flex flex-col gap-1 ml-2">
                                                     <Button 
                                                       variant="outline" 
                                                       size="sm" 
-                                                      className="text-gray-300 hover:bg-gray-600/50 bg-gray-700/50 border-gray-600 text-xs px-2 py-1 h-6"
+                                                      className="text-yellow-200 hover:bg-yellow-500/30 bg-yellow-500/20 border-yellow-400/40 text-xs px-2 py-0.5 h-5"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         onStartQuiz(content, subtopicContent, 'Easy');
@@ -887,7 +900,7 @@ const TopicListItem = ({
                                                       <Button 
                                                         variant="outline" 
                                                         size="sm" 
-                                                        className="text-gray-300 hover:bg-gray-600/50 bg-gray-700/50 border-gray-600 text-xs px-2 py-1 h-6"
+                                                        className="text-yellow-200 hover:bg-yellow-500/30 bg-yellow-500/20 border-yellow-400/40 text-xs px-2 py-0.5 h-5"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           onStartGroupMatching(content.parentid!, content.title || 'Group Match');
@@ -902,13 +915,14 @@ const TopicListItem = ({
                                                 
                                                 {/* Thumbnail Gallery for Group Cards - moved under title */}
                                                 {groupedContent.length > 0 && (
-                                                  <div className="mb-3">
-                                                    <div className="flex flex-wrap gap-2">
+                                                  <div className="mb-3 flex justify-center">
+                                                    <div className="flex flex-wrap gap-2 justify-center">
                                                       {groupedContent.map((groupItem) => (
-                                                        <div key={`thumb-${groupItem.id}`} className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                          <div className="w-full h-full object-cover object-center">
+                                                        <div key={`thumb-${groupItem.id}`} className="w-16 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                                                          <div className="w-full h-full">
                                                             <LocalContentThumbnail 
                                                               content={groupItem} 
+                                                              isGroupCard={true}
                                                               onClick={() => onContentClick({
                                                                 content: groupItem,
                                                                 contextList: [...subtopicContent]
@@ -923,7 +937,7 @@ const TopicListItem = ({
                                                 
                                                 {/* Description at bottom for group cards */}
                                                 {content.short_description && (
-                                                  <p className="text-white/60 text-sm leading-relaxed mt-2">{formatDescription(content.short_description)}</p>
+                                                  <p className="text-white/60 text-sm leading-relaxed mt-2 text-center">{formatDescription(content.short_description)}</p>
                                                 )}
                                               </div>
                                             ) : (
