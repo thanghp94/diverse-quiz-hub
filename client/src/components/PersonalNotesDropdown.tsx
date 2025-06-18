@@ -9,12 +9,14 @@ interface PersonalNotesDropdownProps {
   contentId: string;
   studentId: string;
   compact?: boolean;
+  onContentClick?: (contentId: string) => void;
 }
 
 export const PersonalNotesDropdown: React.FC<PersonalNotesDropdownProps> = ({ 
   contentId, 
   studentId, 
-  compact = false 
+  compact = false,
+  onContentClick
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 

@@ -14,6 +14,7 @@ import { LeaderboardPanel } from "@/components/LeaderboardPanel";
 import { ContentProgressPanel } from "@/components/ContentProgressPanel";
 import { AssignmentPanel } from "@/components/AssignmentPanel";
 import LiveClassPanel from "@/components/LiveClassPanel";
+import { PersonalContentPanel } from "@/components/PersonalContentPanel";
 import { useLocation } from "wouter";
 
 interface Topic {
@@ -264,6 +265,7 @@ const Topics = () => {
                   <LiveClassPanel />
                   <ContentProgressPanel />
                   <AssignmentPanel />
+                  <PersonalContentPanel onContentClick={handleContentClick} />
                   <LeaderboardPanel />
                 </div>
               </div>

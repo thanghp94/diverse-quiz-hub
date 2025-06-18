@@ -18,7 +18,7 @@ interface PersonalNote {
 }
 
 interface PersonalContentPanelProps {
-  onContentClick?: (contentId: string) => void;
+  onContentClick?: (info: { content: any; contextList: any[]; }) => void;
 }
 
 export const PersonalContentPanel = ({ onContentClick }: PersonalContentPanelProps) => {
@@ -72,9 +72,23 @@ export const PersonalContentPanel = ({ onContentClick }: PersonalContentPanelPro
     });
   };
 
-  const handleContentClick = (contentId: string) => {
+  const handleContentClick = async (contentId: string) => {
     if (onContentClick) {
-      onContentClick(contentId);
+      // Fetch the content details to create proper content object
+      try {
+        const response = await fetch('/api/content');
+        const allContent = await response.json();
+        const content = allContent.find((c: any) => c.id === contentId);
+        
+        if (content) {
+          onContentClick({ 
+            content, 
+            contextList: allContent.filter((c: any) => c.topicid === content.topicid)
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch content details:', error);
+      }
     }
   };
 
