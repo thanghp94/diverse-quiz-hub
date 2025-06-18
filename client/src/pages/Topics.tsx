@@ -193,6 +193,10 @@ const Topics = () => {
     setSelectedMatchingActivity(null);
   }, []);
 
+  const handleStartGroupMatching = (matchingId: string, matchingTitle: string) => {
+    setSelectedMatchingActivity({ matchingId, matchingTitle });
+  };
+
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
     return allTopics.filter(topic => topic.parentid === parentId).sort((a, b) => a.topic.localeCompare(b.topic));
