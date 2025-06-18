@@ -4,6 +4,7 @@ import { useContentImage } from '@/hooks/useContentImage';
 interface ContentThumbnailGalleryProps {
   groupedContent: any[];
   onThumbnailClick?: (content: any) => void;
+  onContentClick?: (info: { content: any; contextList: any[] }) => void;
 }
 
 const GalleryThumbnail = ({ content, onClick }: { 
@@ -30,11 +31,22 @@ const GalleryThumbnail = ({ content, onClick }: {
 
 export const ContentThumbnailGallery = ({ 
   groupedContent, 
-  onThumbnailClick 
+  onThumbnailClick,
+  onContentClick 
 }: ContentThumbnailGalleryProps) => {
   const handleThumbnailClick = (groupItem: any, e: React.MouseEvent) => {
     e.stopPropagation();
     
+    // Priority 1: Use onContentClick if provided (opens content popup like ContentCard)
+    if (onContentClick) {
+      onContentClick({
+        content: groupItem,
+        contextList: groupedContent
+      });
+      return;
+    }
+    
+    // Priority 2: Use onThumbnailClick if provided
     if (onThumbnailClick) {
       onThumbnailClick(groupItem);
       return;

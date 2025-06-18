@@ -917,6 +917,7 @@ const TopicListItem = ({
                                                 {/* Thumbnail Gallery for Group Cards - moved under title */}
                                                 <ContentThumbnailGallery 
                                                   groupedContent={groupedContent}
+                                                  onContentClick={onContentClick}
                                                 />
                                                 
                                                 {/* Description at bottom for group cards */}
