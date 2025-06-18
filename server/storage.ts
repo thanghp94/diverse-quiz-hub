@@ -964,21 +964,17 @@ export class DatabaseStorage implements IStorage {
         SELECT DISTINCT
           c.id,
           c.topicid,
-          t.topic,
+          COALESCE(t.topic, c.topic, 'Unknown Topic') as topic,
           c.title,
           cr.rating as difficulty_rating,
-          (SELECT COUNT(*) FROM questions q WHERE q.contentid = c.id) as question_count,
-          lp.completed_at,
+          (SELECT COUNT(*) FROM question q WHERE q.contentid = c.id) as question_count,
+          MAX(st.update) as completed_at,
           c.parentid
         FROM content c
-        LEFT JOIN topics t ON c.topicid = t.id
+        LEFT JOIN topic t ON c.topicid = t.id
         LEFT JOIN content_ratings cr ON cr.content_id = c.id AND cr.student_id = ${studentId}
-        LEFT JOIN learning_progress lp ON lp.content_id = c.id AND lp.student_id = ${studentId}
-        WHERE EXISTS (
-          SELECT 1 FROM student_try st 
-          WHERE st.hocsinh_id = ${studentId} 
-          AND st.contentid = c.id
-        )
+        INNER JOIN student_try st ON st.contentid = c.id AND st.hocsinh_id = ${studentId}
+        GROUP BY c.id, c.topicid, t.topic, c.topic, c.title, cr.rating, c.parentid
         ORDER BY c.title
       `);
       
