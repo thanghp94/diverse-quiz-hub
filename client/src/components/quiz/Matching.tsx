@@ -41,7 +41,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
   // Reset state when phase changes for sequential matching
   useEffect(() => {
-    if (hasSequentialMatching && currentQuizPhase) {
+    if (hasSequentialMatching) {
       console.log('Resetting state for phase change:', currentQuizPhase);
       setMatches({});
       setShowResults(false);
@@ -75,33 +75,25 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   // Keep right items in consistent order instead of shuffling
   const fixedRightItems = [...rightItems];
 
-  // Reset matches when phase changes in sequential matching
-  useEffect(() => {
-    if (hasSequentialMatching && currentQuizPhase) {
-      setMatches({});
-      setIsSubmitted(false);
-      setShowResults(false);
-      setCorrectMatches({});
-    }
-  }, [currentQuizPhase, hasSequentialMatching]);
+
 
   // Get text styling based on matching type and word count
   const getTextStyling = (text: string) => {
     const wordCount = text.split(/\s+/).length;
     
-    if (effectiveMatchingType === 'picture-title' || effectiveMatchingType?.includes('picture-title')) {
+    if (effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description')) {
+      // For title-description: smaller text, left aligned for second row
+      return {
+        fontSize: wordCount > 30 ? 'text-xs' : wordCount > 20 ? 'text-sm' : 'text-base',
+        alignment: 'text-left',
+        weight: 'font-medium'
+      };
+    } else if (effectiveMatchingType === 'picture-title' || effectiveMatchingType?.includes('picture-title')) {
       // For picture-title: bigger text, center aligned
       return {
         fontSize: wordCount > 15 ? 'text-lg' : wordCount > 10 ? 'text-xl' : 'text-2xl',
         alignment: 'text-center',
         weight: 'font-bold'
-      };
-    } else if (effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description')) {
-      // For title-description: smaller text, left aligned
-      return {
-        fontSize: wordCount > 30 ? 'text-xs' : wordCount > 20 ? 'text-sm' : 'text-base',
-        alignment: 'text-left',
-        weight: 'font-medium'
       };
     }
     

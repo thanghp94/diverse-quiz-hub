@@ -34,12 +34,14 @@ export const LeaderboardPanel = () => {
   
   const { data: studentTriesData, isLoading: isLoadingTries } = useQuery({
     queryKey: ['/api/student-tries-leaderboard'],
+    queryFn: () => fetch('/api/student-tries-leaderboard').then(res => res.json()),
     refetchInterval: 30000,
     enabled: true,
   });
   
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardData>({
     queryKey: ['/api/leaderboards'],
+    queryFn: () => fetch('/api/leaderboards').then(res => res.json()),
     refetchInterval: 30000,
     enabled: true,
   });
