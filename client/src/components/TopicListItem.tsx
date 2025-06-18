@@ -60,8 +60,8 @@ const getContentIcon = (content: any) => {
     return <BookOpen className="h-3 w-3" />;
 };
 
-// Component for content item thumbnail
-const ContentThumbnail = ({ content, onClick }: { content: any, onClick?: () => void }) => {
+// Local content thumbnail component for specific layout needs
+const LocalContentThumbnail = ({ content, onClick }: { content: any, onClick?: () => void }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
 
   // Only show thumbnail if there's an imageid
@@ -884,7 +884,7 @@ const TopicListItem = ({
                                             <div className="flex flex-wrap gap-2">
                                               {groupedContent.map((groupItem) => (
                                                 <div key={`thumb-${groupItem.id}`} className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                  <ContentThumbnail 
+                                                  <LocalContentThumbnail 
                                                     content={groupItem} 
                                                     onClick={() => onContentClick({
                                                       content: groupItem,

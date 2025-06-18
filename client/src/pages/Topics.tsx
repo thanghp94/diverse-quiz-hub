@@ -248,9 +248,15 @@ const Topics = () => {
       <div className="p-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6">
-              <h1 className="text-3xl font-bold text-white mb-3">
-                {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
-              </h1>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex-1"></div>
+                <h1 className="text-3xl font-bold text-white">
+                  {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
+                </h1>
+                <div className="flex-1 flex justify-end">
+                  <LeaderboardPanel />
+                </div>
+              </div>
               {activeTab && (
                 <p className="text-lg text-white/80">
                   Select a topic below to start your {activeTab.replace('-', ' ')} quiz
