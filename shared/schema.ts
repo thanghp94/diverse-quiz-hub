@@ -226,6 +226,7 @@ export const content_ratings = pgTable("content_ratings", {
   student_id: text("student_id").notNull(),
   content_id: text("content_id").notNull(),
   rating: text("rating").notNull(), // "really_bad", "normal", "ok"
+  personal_note: text("personal_note"), // Student's personal notes about the content
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });

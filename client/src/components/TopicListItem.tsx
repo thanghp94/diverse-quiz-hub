@@ -3,9 +3,11 @@ import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { ChevronDown, ChevronUp, BookOpen, Play, HelpCircle, Shuffle } from "lucide-react";
+import { ChevronDown, ChevronUp, BookOpen, Play, HelpCircle, Shuffle, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -19,7 +21,131 @@ import { ContentRatingButtons } from "@/components/ContentRatingButtons";
 import { ContentGroupCard, ContentGroupPopup } from "@/components/ContentGroupCard";
 import { GroupedContentCard } from "@/components/GroupedContentCard";
 import { ContentThumbnailGallery } from "@/components/ContentThumbnailGallery";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+
+// Note Button Component
+interface NoteButtonProps {
+  contentId: string;
+  studentId: string;
+  compact?: boolean;
+}
+
+const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact = false }) => {
+  const [isNoteOpen, setIsNoteOpen] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Fetch existing note
+  const { data: existingRating } = useQuery({
+    queryKey: ['/api/content-ratings', studentId, contentId],
+    enabled: isNoteOpen
+  });
+
+  // Update note text when dialog opens and data is loaded
+  React.useEffect(() => {
+    if (isNoteOpen && existingRating) {
+      setNoteText(existingRating.personal_note || '');
+    }
+  }, [isNoteOpen, existingRating]);
+
+  // Save note mutation
+  const saveNoteMutation = useMutation({
+    mutationFn: async (note: string) => {
+      const response = await fetch(`/api/content-ratings/${studentId}/${contentId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          personal_note: note
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save note');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Note saved",
+        description: "Your personal note has been saved successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/content-ratings', studentId, contentId] });
+      setIsNoteOpen(false);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save note. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleSaveNote = () => {
+    setIsLoading(true);
+    saveNoteMutation.mutate(noteText);
+    setIsLoading(false);
+  };
+
+  const hasNote = existingRating?.personal_note && existingRating.personal_note.trim() !== '';
+
+  return (
+    <Dialog open={isNoteOpen} onOpenChange={setIsNoteOpen}>
+      <DialogTrigger asChild>
+        <Button 
+          variant="outline" 
+          size={compact ? "sm" : "default"}
+          className={cn(
+            "text-blue-600 hover:bg-blue-500/20 hover:text-blue-600 bg-blue-500/10 border-blue-400/50",
+            compact ? "text-xs px-2 py-1 h-6" : "text-sm px-3 py-2",
+            hasNote && "bg-blue-500/20 border-blue-400/70"
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <FileText className={cn("mr-1", compact ? "h-3 w-3" : "h-4 w-4")} />
+          Note{hasNote ? "*" : ""}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Personal Note</DialogTitle>
+          <DialogDescription>
+            Add your personal notes about this content. Only you can see these notes.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="note-text">Your Note</Label>
+            <Textarea
+              id="note-text"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Write your personal note here..."
+              className="min-h-[100px] mt-2"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setIsNoteOpen(false)}>
+            Cancel
+          </Button>
+          <Button 
+            onClick={handleSaveNote} 
+            disabled={isLoading || saveNoteMutation.isPending}
+          >
+            {isLoading || saveNoteMutation.isPending ? "Saving..." : "Save Note"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 interface Topic {
   id: string;
@@ -951,6 +1077,11 @@ const TopicListItem = ({
                                                         contentId={content.id}
                                                         compact={true}
                                                         studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                      />
+                                                      <NoteButton
+                                                        contentId={content.id}
+                                                        studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                        compact={true}
                                                       />
                                                       {(hasVideo1 || hasVideo2) && (
                                                         <Button 
