@@ -133,7 +133,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-left">{content.title}</h4>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -283,6 +283,15 @@ const GroupedContentDisplay = ({
       }
     });
     
+    // Sort by order field to ensure proper display sequence
+    ungroupedContent.sort((a, b) => (a.order || 0) - (b.order || 0));
+    groupCards.sort((a, b) => (a.order || 0) - (b.order || 0));
+    
+    // Sort grouped content within each group
+    Object.keys(groupedContentMap).forEach(groupId => {
+      groupedContentMap[groupId].sort((a, b) => (a.order || 0) - (b.order || 0));
+    });
+    
     return { ungroupedContent, groupCards, groupedContentMap };
   }, [topicContent]);
 
@@ -314,7 +323,7 @@ const GroupedContentDisplay = ({
       {organizedContent.ungroupedContent.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-white/80 text-sm font-medium">Individual Content</h4>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {organizedContent.ungroupedContent.map((content: Content) => (
               <ContentCard 
                 key={content.id} 
@@ -839,7 +848,7 @@ const TopicListItem = ({
                                                       )}
                                                     </div>
                                                   ) : (
-                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-left">{content.title}</h4>
                                                   )}
                                                   <div className="flex items-center gap-1 flex-shrink-0">
                                                     {isGroupCard && content.parentid && (
