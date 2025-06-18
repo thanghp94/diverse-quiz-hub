@@ -33,11 +33,16 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
   };
 
-  // Check if this is a sequential matching quiz (has both picture-title and title-description)
-  const matchingTypes = (question.type || '').split(', ');
-  const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
+  // Check if this is a sequential matching quiz - look for both types in question id
+  const questionIdStr = String(question.id);
+  const hasSequentialMatching = questionIdStr.includes('picture-title') || questionIdStr.includes('title-description');
+  const isSequentialPictureTitle = questionIdStr.includes('picture-title');
+  const isSequentialTitleDescription = questionIdStr.includes('title-description');
+  
+  // Determine the current phase based on question ID if not explicitly set
+  const inferredPhase = isSequentialPictureTitle ? 'picture-title' : isSequentialTitleDescription ? 'title-description' : null;
 
-  const effectiveMatchingType = currentQuizPhase || (hasSequentialMatching ? 'picture-title' : question.type);
+  const effectiveMatchingType = currentQuizPhase || inferredPhase || question.type;
 
   // Reset state when phase changes for sequential matching or when question changes
   useEffect(() => {
@@ -300,14 +305,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                             alt="Matching item" 
                             className="max-w-full max-h-36 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
                             onError={(e) => {
-                              // Hide broken image and show fallback with clickable link
-                              e.currentTarget.style.display = 'none';
-                              const parent = e.currentTarget.parentElement;
-                              if (parent) {
-                                parent.innerHTML = `<div class="text-xs text-center p-2 bg-gray-100 rounded border">
-                                  <div class="mb-1 font-medium">Image failed to load</div>
-                                  <a href="${item}" target="_blank" class="text-blue-600 hover:text-blue-800 underline break-all">${item}</a>
-                                </div>`;
+                              const img = e.currentTarget as HTMLImageElement;
+                              img.style.display = 'none';
+                              const parent = img.parentElement?.parentElement;
+                              if (parent && !parent.querySelector('.fallback-content')) {
+                                const fallbackDiv = document.createElement('div');
+                                fallbackDiv.className = 'fallback-content text-xs text-center p-2 bg-gray-100 rounded border h-full flex flex-col justify-center';
+                                fallbackDiv.innerHTML = `
+                                  <div class="mb-1 font-medium text-gray-800">Image unavailable</div>
+                                  <div class="text-gray-600 break-all text-[10px] leading-tight">${item.substring(0, 50)}...</div>
+                                `;
+                                parent.appendChild(fallbackDiv);
                               }
                             }}
                           />
@@ -418,14 +426,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                               alt="Matching target" 
                               className="w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
                               onError={(e) => {
-                                // Hide broken image and show fallback with clickable link
-                                e.currentTarget.style.display = 'none';
-                                const parent = e.currentTarget.parentElement;
-                                if (parent) {
-                                  parent.innerHTML = `<div class="text-xs text-center p-2 bg-gray-100 rounded border">
-                                    <div class="mb-1 font-medium">Image failed to load</div>
-                                    <a href="${item}" target="_blank" class="text-blue-600 hover:text-blue-800 underline break-all">${item}</a>
-                                  </div>`;
+                                const img = e.currentTarget as HTMLImageElement;
+                                img.style.display = 'none';
+                                const parent = img.parentElement?.parentElement;
+                                if (parent && !parent.querySelector('.fallback-content')) {
+                                  const fallbackDiv = document.createElement('div');
+                                  fallbackDiv.className = 'fallback-content text-xs text-center p-2 bg-gray-100 rounded border h-full flex flex-col justify-center';
+                                  fallbackDiv.innerHTML = `
+                                    <div class="mb-1 font-medium text-gray-800">Image unavailable</div>
+                                    <div class="text-gray-600 break-all text-[10px] leading-tight">${item.substring(0, 50)}...</div>
+                                  `;
+                                  parent.appendChild(fallbackDiv);
                                 }
                               }}
                             />

@@ -292,6 +292,8 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
     const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
     
     if (hasSequentialMatching && currentQuizPhase === 'picture-title') {
+      // Move to the next question (title-description phase) 
+      setCurrentQuestionIndex(prev => prev + 1);
       setCurrentQuizPhase('title-description');
       toast({
         title: 'Phase 1 Complete!',
