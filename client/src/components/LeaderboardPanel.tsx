@@ -25,11 +25,16 @@ interface LeaderboardData {
 }
 
 export const LeaderboardPanel = () => {
-  const [activeTab, setActiveTab] = useState<'streak' | 'today' | 'weekly'>('today');
+  const [activeTab, setActiveTab] = useState<'tries' | 'streak' | 'today' | 'weekly'>('tries');
   
-  const { data: leaderboardData, isLoading } = useQuery({
+  const { data: studentTriesData, isLoading: isLoadingTries } = useQuery({
     queryKey: ['/api/student-tries-leaderboard'],
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
+  });
+  
+  const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardData>({
+    queryKey: ['/api/leaderboard'],
+    refetchInterval: 30000,
   });
 
   const getRankIcon = (rank: number) => {
@@ -52,6 +57,10 @@ export const LeaderboardPanel = () => {
   };
 
   const getCurrentLeaderboard = () => {
+    if (activeTab === 'tries') {
+      return studentTriesData || [];
+    }
+    
     if (!leaderboardData) return [];
     
     switch (activeTab) {
@@ -65,6 +74,8 @@ export const LeaderboardPanel = () => {
         return [];
     }
   };
+
+  const isLoading = activeTab === 'tries' ? isLoadingTries : isLoadingLeaderboard;
 
   const getTabIcon = (tab: string) => {
     switch (tab) {
@@ -129,6 +140,7 @@ export const LeaderboardPanel = () => {
           {/* Tab Selection */}
           <div className="flex flex-wrap gap-2">
             {[
+              { key: 'tries', label: 'Student Tries', icon: 'tries' },
               { key: 'today', label: 'Today', icon: 'today' },
               { key: 'weekly', label: 'Weekly', icon: 'weekly' },
               { key: 'streak', label: 'Best Streak', icon: 'streak' }
@@ -154,6 +166,7 @@ export const LeaderboardPanel = () => {
           <Card className="bg-white/5 border-white/10">
             <CardHeader className="pb-3">
               <CardTitle className="text-white text-lg">
+                {activeTab === 'tries' && 'Student Quiz Attempts'}
                 {activeTab === 'streak' && 'Best Streaks'}
                 {activeTab === 'today' && "Today's Quiz Champions"}
                 {activeTab === 'weekly' && 'Weekly Quiz Leaders'}
