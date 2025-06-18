@@ -759,6 +759,7 @@ export const TopicListItem = ({
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
                                   const [isGroupExpanded, setIsGroupExpanded] = useState(false);
+                                  const [isFullScreenGroup, setIsFullScreenGroup] = useState(false);
 
                                   const hasVideo1 = videoEmbedUrl && videoData;
                                   const hasVideo2 = video2EmbedUrl && video2Data;
@@ -782,10 +783,16 @@ export const TopicListItem = ({
                                       )}>
                                         <div className="flex items-start justify-between gap-2">
                                           <div
-                                            onClick={() => onContentClick({
-                                              content,
-                                              contextList: subtopicContent
-                                            })}
+                                            onClick={() => {
+                                              if (isGroupCard) {
+                                                setIsFullScreenGroup(true);
+                                              } else {
+                                                onContentClick({
+                                                  content,
+                                                  contextList: subtopicContent
+                                                });
+                                              }
+                                            }}
                                             className="flex-grow cursor-pointer"
                                           >
                                             <div className="flex items-center gap-2">
@@ -878,47 +885,354 @@ export const TopicListItem = ({
                                         {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
                                           <div className="mt-3 pt-3 border-t border-purple-400/30">
                                             <h5 className="text-purple-200 text-sm font-medium mb-2">Related Content:</h5>
-                                            <div className="space-y-2">
-                                              {groupedContent.map((groupItem) => (
-                                                <div 
-                                                  key={groupItem.id} 
-                                                  className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-md p-2 cursor-pointer"
-                                                  onClick={() => onContentClick({
-                                                    content: groupItem,
-                                                    contextList: [...subtopicContent]
-                                                  })}
-                                                >
-                                                  <div className="flex items-center gap-2">
-                                                    <ContentThumbnail 
-                                                      content={groupItem} 
-                                                      onClick={() => onContentClick({
-                                                        content: groupItem,
-                                                        contextList: [...subtopicContent]
-                                                      })}
-                                                    />
-                                                    <div className="flex-1 min-w-0">
-                                                      <h6 className="text-white text-sm font-medium line-clamp-1">
-                                                        {groupItem.title}
-                                                      </h6>
-                                                      {groupItem.short_description && (
-                                                        <p className="text-white/60 text-xs line-clamp-2 mt-1">
-                                                          {groupItem.short_description}
-                                                        </p>
-                                                      )}
-                                                      <div className="flex items-center gap-2 mt-1">
-                                                        <Badge className={cn("text-xs", getContentTypeColor(groupItem))}>
-                                                          {getContentIcon(groupItem)}
-                                                        </Badge>
-                                                        <CompactContentDifficultyIndicator contentId={groupItem.id} />
+                                            <div className="grid grid-cols-2 gap-3">
+                                              {groupedContent.map((groupItem) => {
+                                                const GroupItemCard = () => {
+                                                  const { videoData: groupVideoData, video2Data: groupVideo2Data, videoEmbedUrl: groupVideoEmbedUrl, video2EmbedUrl: groupVideo2EmbedUrl } = useContentMedia(groupItem);
+                                                  const [groupVideoPopupOpen, setGroupVideoPopupOpen] = useState(false);
+
+                                                  const hasGroupVideo1 = groupVideoEmbedUrl && groupVideoData;
+                                                  const hasGroupVideo2 = groupVideo2EmbedUrl && groupVideo2Data;
+
+                                                  return (
+                                                    <>
+                                                      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                          <div
+                                                            onClick={() => onContentClick({
+                                                              content: groupItem,
+                                                              contextList: [...subtopicContent]
+                                                            })}
+                                                            className="flex-grow cursor-pointer"
+                                                          >
+                                                            <div className="flex items-center gap-2">
+                                                              <ContentThumbnail 
+                                                                content={groupItem} 
+                                                                onClick={() => onContentClick({
+                                                                  content: groupItem,
+                                                                  contextList: [...subtopicContent]
+                                                                })}
+                                                              />
+                                                              <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center justify-between gap-2 mb-2">
+                                                                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-center">{groupItem.title}</h4>
+                                                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                                                      <ContentRatingButtons 
+                                                                        key={`${groupItem.id}-rating`}
+                                                                        contentId={groupItem.id}
+                                                                        compact={true}
+                                                                        studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                                      />
+                                                                      {(hasGroupVideo1 || hasGroupVideo2) && (
+                                                                        <Button 
+                                                                          variant="outline" 
+                                                                          size="sm" 
+                                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                                          onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setGroupVideoPopupOpen(true);
+                                                                          }}
+                                                                        >
+                                                                          <Play className="h-3 w-3 mr-1" />
+                                                                          Video{(hasGroupVideo1 && hasGroupVideo2) ? 's' : ''}
+                                                                        </Button>
+                                                                      )}
+                                                                      <DropdownMenu>
+                                                                        <DropdownMenuTrigger asChild>
+                                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                                            Quiz
+                                                                          </Button>
+                                                                        </DropdownMenuTrigger>
+                                                                        <DropdownMenuContent>
+                                                                          <DropdownMenuItem onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            onStartQuiz(groupItem, subtopicContent, 'Easy');
+                                                                          }}>
+                                                                            Easy Quiz
+                                                                          </DropdownMenuItem>
+                                                                          <DropdownMenuItem onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            onStartQuiz(groupItem, subtopicContent, 'Hard');
+                                                                          }}>
+                                                                            Hard Quiz
+                                                                          </DropdownMenuItem>
+                                                                        </DropdownMenuContent>
+                                                                      </DropdownMenu>
+                                                                    </div>
+                                                                  </div>
+                                                                  <div className="flex items-center gap-2 mb-2">
+                                                                    <CompactContentDifficultyIndicator contentId={groupItem.id} />
+                                                                  </div>
+                                                                {groupItem.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(groupItem.short_description)}</p>}
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                        </div>
                                                       </div>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              ))}
+                                                      {/* Video Popup for Group Item */}
+                                                      <Dialog open={groupVideoPopupOpen} onOpenChange={setGroupVideoPopupOpen}>
+                                                        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+                                                          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                                                            <h3 className="text-white text-lg font-medium truncate mr-4">{groupItem.title}</h3>
+                                                            <Button 
+                                                              variant="ghost" 
+                                                              size="sm"
+                                                              onClick={() => setGroupVideoPopupOpen(false)}
+                                                              className="text-white hover:bg-white/20 flex-shrink-0"
+                                                            >
+                                                              ✕
+                                                            </Button>
+                                                          </div>
+                                                          <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                                                            {hasGroupVideo1 && (
+                                                              <div>
+                                                                {groupVideoData.video_name && (
+                                                                  <h4 className="text-white font-medium mb-3 text-base">{groupVideoData.video_name}</h4>
+                                                                )}
+                                                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                                  <iframe 
+                                                                    className="w-full h-full" 
+                                                                    src={groupVideoEmbedUrl} 
+                                                                    title={groupVideoData.video_name || 'Video 1'} 
+                                                                    frameBorder="0" 
+                                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                                    allowFullScreen
+                                                                  />
+                                                                </div>
+                                                              </div>
+                                                            )}
+                                                            {hasGroupVideo2 && (
+                                                              <div>
+                                                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                                  <iframe 
+                                                                    className="w-full h-full" 
+                                                                    src={groupVideo2EmbedUrl} 
+                                                                    title={groupVideo2Data.video_name || 'Video 2'} 
+                                                                    frameBorder="0" 
+                                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                                    allowFullScreen
+                                                                  />
+                                                                </div>
+                                                              </div>
+                                                            )}
+                                                          </div>
+                                                        </DialogContent>
+                                                      </Dialog>
+                                                    </>
+                                                  );
+                                                };
+
+                                                return <GroupItemCard key={groupItem.id} />;
+                                              })}
                                             </div>
                                           </div>
                                         )}
                                       </div>
+
+                                      {/* Full-Screen Group Card Dialog */}
+                                      {isGroupCard && (
+                                        <Dialog open={isFullScreenGroup} onOpenChange={setIsFullScreenGroup}>
+                                          <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 border-purple-500/30">
+                                            <div className="flex flex-col h-full">
+                                              {/* Header */}
+                                              <div className="flex items-center justify-between p-6 border-b border-purple-400/30 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20">
+                                                <div className="flex items-center gap-4">
+                                                  <ContentThumbnail 
+                                                    content={content} 
+                                                    onClick={() => {}}
+                                                  />
+                                                  <div>
+                                                    <h2 className="text-white text-2xl font-bold">{content.title}</h2>
+                                                    {content.short_description && (
+                                                      <p className="text-purple-200 text-lg mt-1">{content.short_description}</p>
+                                                    )}
+                                                    <div className="flex items-center gap-3 mt-2">
+                                                      <Badge className="bg-purple-500/20 text-purple-200">
+                                                        {groupedContent.length} related items
+                                                      </Badge>
+                                                      <CompactContentDifficultyIndicator contentId={content.id} />
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                  <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="text-purple-200 border-purple-400/50 hover:bg-purple-500/20"
+                                                    onClick={() => onStartTopicQuiz(content.topicid || '', 'Overview', content.title)}
+                                                  >
+                                                    Group Quiz
+                                                  </Button>
+                                                  <Button 
+                                                    variant="ghost" 
+                                                    size="sm"
+                                                    onClick={() => setIsFullScreenGroup(false)}
+                                                    className="text-white hover:bg-white/20"
+                                                  >
+                                                    ✕
+                                                  </Button>
+                                                </div>
+                                              </div>
+
+                                              {/* Content Grid */}
+                                              <div className="flex-1 overflow-y-auto p-6">
+                                                <div className="grid grid-cols-2 gap-6">
+                                                  {groupedContent.map((groupItem) => {
+                                                    const FullScreenGroupItemCard = () => {
+                                                      const { videoData: fsGroupVideoData, video2Data: fsGroupVideo2Data, videoEmbedUrl: fsGroupVideoEmbedUrl, video2EmbedUrl: fsGroupVideo2EmbedUrl } = useContentMedia(groupItem);
+                                                      const [fsGroupVideoPopupOpen, setFsGroupVideoPopupOpen] = useState(false);
+
+                                                      const hasFsGroupVideo1 = fsGroupVideoEmbedUrl && fsGroupVideoData;
+                                                      const hasFsGroupVideo2 = fsGroupVideo2EmbedUrl && fsGroupVideo2Data;
+
+                                                      return (
+                                                        <>
+                                                          <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-4">
+                                                            <div className="flex items-start justify-between gap-3">
+                                                              <div
+                                                                onClick={() => {
+                                                                  setIsFullScreenGroup(false);
+                                                                  onContentClick({
+                                                                    content: groupItem,
+                                                                    contextList: [...subtopicContent]
+                                                                  });
+                                                                }}
+                                                                className="flex-grow cursor-pointer"
+                                                              >
+                                                                <div className="flex items-center gap-3">
+                                                                  <ContentThumbnail 
+                                                                    content={groupItem} 
+                                                                    onClick={() => {
+                                                                      setIsFullScreenGroup(false);
+                                                                      onContentClick({
+                                                                        content: groupItem,
+                                                                        contextList: [...subtopicContent]
+                                                                      });
+                                                                    }}
+                                                                  />
+                                                                  <div className="flex-1 min-w-0">
+                                                                    <div className="flex items-center justify-between gap-3 mb-3">
+                                                                      <h4 className="text-white/90 text-lg font-medium leading-tight flex-1 min-w-0">{groupItem.title}</h4>
+                                                                      <div className="flex items-center gap-2 flex-shrink-0">
+                                                                          <ContentRatingButtons 
+                                                                            key={`${groupItem.id}-fs-rating`}
+                                                                            contentId={groupItem.id}
+                                                                            compact={true}
+                                                                            studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                                          />
+                                                                          {(hasFsGroupVideo1 || hasFsGroupVideo2) && (
+                                                                            <Button 
+                                                                              variant="outline" 
+                                                                              size="sm" 
+                                                                              className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-7"
+                                                                              onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setFsGroupVideoPopupOpen(true);
+                                                                              }}
+                                                                            >
+                                                                              <Play className="h-3 w-3 mr-1" />
+                                                                              Video{(hasFsGroupVideo1 && hasFsGroupVideo2) ? 's' : ''}
+                                                                            </Button>
+                                                                          )}
+                                                                          <DropdownMenu>
+                                                                            <DropdownMenuTrigger asChild>
+                                                                              <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-7">
+                                                                                Quiz
+                                                                              </Button>
+                                                                            </DropdownMenuTrigger>
+                                                                            <DropdownMenuContent>
+                                                                              <DropdownMenuItem onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setIsFullScreenGroup(false);
+                                                                                onStartQuiz(groupItem, subtopicContent, 'Easy');
+                                                                              }}>
+                                                                                Easy Quiz
+                                                                              </DropdownMenuItem>
+                                                                              <DropdownMenuItem onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                setIsFullScreenGroup(false);
+                                                                                onStartQuiz(groupItem, subtopicContent, 'Hard');
+                                                                              }}>
+                                                                                Hard Quiz
+                                                                              </DropdownMenuItem>
+                                                                            </DropdownMenuContent>
+                                                                          </DropdownMenu>
+                                                                        </div>
+                                                                      </div>
+                                                                      <div className="flex items-center gap-3 mb-3">
+                                                                        <CompactContentDifficultyIndicator contentId={groupItem.id} />
+                                                                        <Badge className={cn("text-xs", getContentTypeColor(groupItem))}>
+                                                                          {getContentIcon(groupItem)}
+                                                                        </Badge>
+                                                                      </div>
+                                                                    {groupItem.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(groupItem.short_description)}</p>}
+                                                                  </div>
+                                                                </div>
+                                                              </div>
+                                                            </div>
+                                                          </div>
+                                                          {/* Video Popup for Full Screen Group Item */}
+                                                          <Dialog open={fsGroupVideoPopupOpen} onOpenChange={setFsGroupVideoPopupOpen}>
+                                                            <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+                                                              <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                                                                <h3 className="text-white text-lg font-medium truncate mr-4">{groupItem.title}</h3>
+                                                                <Button 
+                                                                  variant="ghost" 
+                                                                  size="sm"
+                                                                  onClick={() => setFsGroupVideoPopupOpen(false)}
+                                                                  className="text-white hover:bg-white/20 flex-shrink-0"
+                                                                >
+                                                                  ✕
+                                                                </Button>
+                                                              </div>
+                                                              <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                                                                {hasFsGroupVideo1 && (
+                                                                  <div>
+                                                                    {fsGroupVideoData.video_name && (
+                                                                      <h4 className="text-white font-medium mb-3 text-base">{fsGroupVideoData.video_name}</h4>
+                                                                    )}
+                                                                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                                      <iframe 
+                                                                        className="w-full h-full" 
+                                                                        src={fsGroupVideoEmbedUrl} 
+                                                                        title={fsGroupVideoData.video_name || 'Video 1'} 
+                                                                        frameBorder="0" 
+                                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                                        allowFullScreen
+                                                                      />
+                                                                    </div>
+                                                                  </div>
+                                                                )}
+                                                                {hasFsGroupVideo2 && (
+                                                                  <div>
+                                                                    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                                      <iframe 
+                                                                        className="w-full h-full" 
+                                                                        src={fsGroupVideo2EmbedUrl} 
+                                                                        title={fsGroupVideo2Data.video_name || 'Video 2'} 
+                                                                        frameBorder="0" 
+                                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                                        allowFullScreen
+                                                                      />
+                                                                    </div>
+                                                                  </div>
+                                                                )}
+                                                              </div>
+                                                            </DialogContent>
+                                                          </Dialog>
+                                                        </>
+                                                      );
+                                                    };
+
+                                                    return <FullScreenGroupItemCard key={groupItem.id} />;
+                                                  })}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
+                                      )}
+
                                       {/* Video Popup - Using Dialog */}
                                       <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
                                         <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
