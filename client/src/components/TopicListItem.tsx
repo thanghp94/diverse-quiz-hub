@@ -1082,14 +1082,16 @@ const TopicListItem = ({
                                                   <div className="w-[42px]"></div>
                                                 </div>
                                                 
-                                                {/* Thumbnail Gallery for Group Cards - moved under title */}
-                                                <ContentThumbnailGallery 
-                                                  groupedContent={groupedContent}
-                                                  onContentClick={onContentClick}
-                                                />
+                                                {/* Thumbnail Gallery for Group Cards - hidden when expanded */}
+                                                {!isGroupExpanded && (
+                                                  <ContentThumbnailGallery 
+                                                    groupedContent={groupedContent}
+                                                    onContentClick={onContentClick}
+                                                  />
+                                                )}
                                                 
-                                                {/* Description at bottom for group cards */}
-                                                {content.short_description && (
+                                                {/* Description at bottom for group cards - hidden when expanded */}
+                                                {!isGroupExpanded && content.short_description && (
                                                   <p className="text-white/60 text-sm leading-relaxed mt-2 text-center">{formatDescription(content.short_description)}</p>
                                                 )}
                                               </div>
@@ -1176,7 +1178,6 @@ const TopicListItem = ({
                                         {/* Inline Grouped Content Expansion - Responsive Layout */}
                                         {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
                                           <div className="mt-3 pt-3 border-t border-purple-400/30">
-                                            <h5 className="text-purple-200 text-base font-medium mb-3">Related Content:</h5>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                   {groupedContent.map((groupItem) => (
                                                     <div key={groupItem.id} className={cn(
