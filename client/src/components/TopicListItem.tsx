@@ -900,7 +900,10 @@ const TopicListItem = ({
                                                     className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-yellow-200 text-base font-medium leading-tight"
                                                     onClick={() => {
                                                       console.log('CLICK DETECTED!', content.title);
-                                                      toggleGroupExpanded();
+                                                      console.log('onToggleContent function:', typeof onToggleContent);
+                                                      console.log('Group expansion key:', groupExpansionKey);
+                                                      console.log('Current openContent:', openContent);
+                                                      onToggleContent(groupExpansionKey);
                                                     }}
                                                   >
                                                     {content.title}
