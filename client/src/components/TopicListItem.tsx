@@ -896,16 +896,15 @@ const TopicListItem = ({
                                               {/* Title Section - Centered */}
                                               <div className="flex-1 text-center">
                                                 <button 
-                                                  className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
-                                                  onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    console.log('Group card title clicked!', content.title);
+                                                  className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-yellow-200 text-base font-medium leading-tight relative z-50"
+                                                  onClick={() => {
+                                                    console.log('CLICK DETECTED!', content.title);
                                                     toggleGroupExpanded();
                                                   }}
-                                                  type="button"
+                                                  onMouseEnter={() => console.log('Mouse entered button:', content.title)}
+                                                  style={{ pointerEvents: 'all' }}
                                                 >
-                                                  <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
+                                                  {content.title}
                                                 </button>
                                               </div>
 
