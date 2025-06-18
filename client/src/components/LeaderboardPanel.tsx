@@ -35,11 +35,13 @@ export const LeaderboardPanel = () => {
   const { data: studentTriesData, isLoading: isLoadingTries } = useQuery({
     queryKey: ['/api/student-tries-leaderboard'],
     refetchInterval: 30000,
+    enabled: true,
   });
   
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardData>({
     queryKey: ['/api/leaderboards'],
     refetchInterval: 30000,
+    enabled: true,
   });
 
   console.log('Student tries data:', studentTriesData);
