@@ -200,6 +200,7 @@ interface TopicListItemProps {
     onStartGroupMatching: (matchingId: string, matchingTitle: string) => void;
     onToggleGroupCard: (groupCardId: string) => void;
     isGroupCardExpanded: (groupCardId: string) => boolean;
+    activeContentId: string | null;
 }
 
 const getContentIcon = (content: any) => {
@@ -798,7 +799,8 @@ const TopicListItem = ({
     onStartTopicMatching,
     onStartGroupMatching,
     onToggleGroupCard,
-    isGroupCardExpanded
+    isGroupCardExpanded,
+    activeContentId
 }: TopicListItemProps) => {
     const { hasMatchingActivities } = useTopicMatching(topic.id);
 

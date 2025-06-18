@@ -59,6 +59,7 @@ const Topics = () => {
     matchingTitle: string;
   } | null>(null);
   const [expandedGroupCards, setExpandedGroupCards] = useState<Set<string>>(new Set());
+  const [activeContentId, setActiveContentId] = useState<string | null>(null);
 
   // Helper functions for group card expansion
   const handleToggleGroupCard = useCallback((groupCardId: string) => {
@@ -173,6 +174,7 @@ const Topics = () => {
     }
   };
   const handleContentClick = (info: { content: Content; contextList: Content[] }) => {
+    setActiveContentId(info.content.id);
     setSelectedContentInfo({
       content: info.content,
       contextList: info.contextList,
@@ -323,6 +325,7 @@ const Topics = () => {
                     onStartGroupMatching={handleStartGroupMatching}
                     onToggleGroupCard={handleToggleGroupCard}
                     isGroupCardExpanded={isGroupCardExpanded}
+                    activeContentId={activeContentId}
                   />
                 );
               })}
