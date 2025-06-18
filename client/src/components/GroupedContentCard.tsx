@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +9,7 @@ import { Content } from "@/hooks/useContent";
 import { useContentImage } from "@/hooks/useContentImage";
 import { CompactContentDifficultyIndicator } from "@/components/ContentDifficultyIndicator";
 import { ContentRatingButtons } from "@/components/ContentRatingButtons";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // Thumbnail component for gallery images
 interface ThumbnailImageProps {
@@ -70,18 +72,6 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
     onContentClick({ content, contextList: [groupContent, ...groupedContent] });
   };
 
-  const getContentIcon = (content: Content) => {
-    if (content.videoid || content.videoid2) return <Play className="h-3 w-3" />;
-    if (content.url) return <BookOpen className="h-3 w-3" />;
-    return <BookOpen className="h-3 w-3" />;
-  };
-
-  const getContentTypeColor = (content: Content) => {
-    if (content.videoid || content.videoid2) return 'bg-red-500/20 text-red-200';
-    if (content.url) return 'bg-blue-500/20 text-blue-200';
-    return 'bg-green-500/20 text-green-200';
-  };
-
   return (
     <Card 
       className={cn(
@@ -90,46 +80,67 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
       )}
     >
       <CardContent className="p-4">
-        {/* Group Header */}
-        <div 
-          className="flex items-center cursor-pointer mb-3"
-          onClick={toggleExpanded}
-        >
-          <div className="flex-shrink-0">
-            <Folder className="h-5 w-5 text-purple-300" />
+        {/* Group Header with title, buttons, and expand/collapse */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <Folder className="h-5 w-5 text-purple-300" />
+            </div>
+            
+            {/* Main thumbnail - showing full picture with object-contain */}
+            {groupImageUrl && (
+              <div 
+                className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={handleGroupContentClick}
+              >
+                <img 
+                  src={groupImageUrl} 
+                  alt={groupContent.title || 'Group content'} 
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            )}
           </div>
           
-          {/* Main thumbnail - larger and showing full picture */}
-          {groupImageUrl && (
-            <div className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0 mx-3">
-              <img 
-                src={groupImageUrl} 
-                alt={groupContent.title || 'Group content'} 
-                className="w-full h-full object-contain"
-              />
-            </div>
-          )}
-          
-          <div className="flex-1 min-w-0 text-center">
-            <h3 className="text-white font-semibold text-lg line-clamp-1">
+          {/* Centered Title */}
+          <div className="flex-1 text-center mx-4">
+            <h3 
+              className="text-white font-semibold text-lg line-clamp-1 cursor-pointer hover:text-white/90"
+              onClick={handleGroupContentClick}
+            >
               {groupContent.title || groupContent.short_description || 'Grouped Content'}
             </h3>
           </div>
 
-          {/* Quiz and Match buttons - compact and stacked */}
+          {/* Quiz and Match buttons - compact and stacked vertically */}
           <div className="flex flex-col gap-1 mr-3">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-6 px-2 text-xs bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStartQuiz(groupContent, [groupContent, ...groupedContent], 'Easy');
-              }}
-            >
-              <HelpCircle className="h-3 w-3 mr-1" />
-              Quiz
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-6 px-2 text-xs bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <HelpCircle className="h-3 w-3 mr-1" />
+                  Quiz
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onStartQuiz(groupContent, [groupContent, ...groupedContent], 'Easy');
+                }}>
+                  Easy Quiz
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onStartQuiz(groupContent, [groupContent, ...groupedContent], 'Hard');
+                }}>
+                  Hard Quiz
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               size="sm"
               variant="outline"
@@ -144,16 +155,24 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
-            {isExpanded ? (
-              <ChevronDown className="h-5 w-5 text-white/70" />
-            ) : (
-              <ChevronRight className="h-5 w-5 text-white/70" />
-            )}
+          {/* Expand/Collapse button */}
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleExpanded}
+              className="p-1 h-8 w-8 text-white/70 hover:text-white hover:bg-white/20"
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-5 w-5" />
+              ) : (
+                <ChevronRight className="h-5 w-5" />
+              )}
+            </Button>
           </div>
         </div>
 
-        {/* Thumbnail Gallery */}
+        {/* Thumbnail Gallery - moved under title */}
         {groupedContent.length > 0 && (
           <div className="mb-3">
             <div className="flex flex-wrap gap-2 justify-center">
@@ -174,9 +193,9 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
           </div>
         )}
 
-        {/* Short Description */}
+        {/* Short Description - moved to bottom */}
         {groupContent.short_description && (
-          <div className="mb-3 text-center">
+          <div className="text-center">
             <p className="text-white/70 text-sm">
               {groupContent.short_description}
             </p>
@@ -185,7 +204,7 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
 
         {/* Grouped Content - Collapsible */}
         {isExpanded && groupedContent.length > 0 && (
-          <div className="space-y-2 pl-4 border-l-2 border-purple-400/30">
+          <div className="mt-4 space-y-2 pl-4 border-l-2 border-purple-400/30">
             <h5 className="text-white/80 font-medium text-sm mb-2">Related Content:</h5>
             {groupedContent.map((content) => (
               <NestedContentCard
