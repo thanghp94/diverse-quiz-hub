@@ -342,10 +342,7 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
         variant: isCorrect ? 'default' : 'destructive',
       });
       
-      // Close popup after completion
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      // Don't auto-close - let user manually close the popup
     } else if (isFirstPhaseOfSequential) {
       // For first phase of sequential matching, show feedback but don't auto-advance
       // The user must click "Continue to Title-Description Matching" button
