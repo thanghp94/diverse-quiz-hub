@@ -911,7 +911,7 @@ const TopicListItem = ({
                       const isExpanded = openContent.includes(`subtopic-${subtopic.id}`);
                       return (
                         <div key={subtopic.id} className={cn(
-                          "bg-white/5 border border-white/10 rounded-lg p-2 transition-all duration-200",
+                          "bg-white/5 border border-white/20 rounded-lg p-2 transition-all duration-200",
                           isExpanded && "md:col-span-2" // Full width when expanded
                         )}>
                           <div 
@@ -1009,7 +1009,7 @@ const TopicListItem = ({
                                   return (
                                     <>
                                       <div className={cn(
-                                        "bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3 relative",
+                                        "bg-white/5 border border-white/20 hover:bg-white/10 transition-all duration-200 rounded-lg p-3 relative",
                                         isGroupCard && "bg-gradient-to-br from-yellow-600/25 via-orange-600/25 to-amber-600/25 border-yellow-400/60 shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 hover:border-yellow-400/80 transform hover:scale-[1.02] z-10",
                                         isGroupCard && isGroupExpanded && "col-span-2 ring-2 ring-yellow-400/40 z-20",
                                         !isGroupCard && "z-5"
@@ -1153,7 +1153,7 @@ const TopicListItem = ({
                                             <h5 className="text-purple-200 text-base font-medium mb-3">Related Content:</h5>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                   {groupedContent.map((groupItem) => (
-                                                    <div key={groupItem.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                                    <div key={groupItem.id} className="bg-white/5 border border-white/20 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
                                                       <div className="flex items-start gap-3">
                                                         <LocalContentThumbnail 
                                                           content={groupItem} 
