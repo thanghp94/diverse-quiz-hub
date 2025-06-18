@@ -1403,6 +1403,30 @@ const TopicListItem = ({
                                             </div>
                                           </DialogContent>
                                         </Dialog>
+
+                                        {/* Personal Note Dialog */}
+                                        <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
+                                          <DialogContent className="max-w-md p-0 bg-white border-gray-300">
+                                            <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+                                              <h3 className="text-gray-900 text-lg font-medium">Personal Note</h3>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => setNoteDialogOpen(false)}
+                                                className="text-gray-500 hover:bg-gray-200 flex-shrink-0"
+                                              >
+                                                ✕
+                                              </Button>
+                                            </div>
+                                            <div className="p-6">
+                                              <PersonalNoteContent 
+                                                contentId={noteDialogContentId}
+                                                studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                onClose={() => setNoteDialogOpen(false)}
+                                              />
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
                                       </div>
                                     </>
                                   );
