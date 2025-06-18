@@ -17,7 +17,7 @@ export const MarkdownRenderer = ({
   className?: string;
   translationDictionary?: Record<string, string> | null;
 }) => {
-  // Function to add translation tooltips to text
+  // Function to add translation tooltips to text nodes
   const addTranslationTooltips = (text: string): React.ReactNode => {
     if (!translationDictionary || Object.keys(translationDictionary).length === 0) {
       return text;
@@ -97,19 +97,75 @@ export const MarkdownRenderer = ({
     return elements.length > 0 ? elements : [text];
   };
 
-  // If translations are available, process the text first
-  if (translationDictionary && Object.keys(translationDictionary).length > 0) {
-    return (
-      <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-1 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-1 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
-        {addTranslationTooltips(children)}
-      </div>
-    );
-  }
+  // Custom components that process text nodes for translation tooltips
+  const components = React.useMemo(() => {
+    if (!translationDictionary || Object.keys(translationDictionary).length === 0) {
+      return {};
+    }
 
-  // Fallback to regular markdown rendering
+    return {
+      // Handle text nodes in various markdown elements
+      p: ({ children, ...props }: any) => (
+        <p {...props}>
+          {React.Children.map(children, (child) => 
+            typeof child === 'string' ? addTranslationTooltips(child) : child
+          )}
+        </p>
+      ),
+      li: ({ children, ...props }: any) => (
+        <li {...props}>
+          {React.Children.map(children, (child) => 
+            typeof child === 'string' ? addTranslationTooltips(child) : child
+          )}
+        </li>
+      ),
+      h1: ({ children, ...props }: any) => (
+        <h1 {...props}>
+          {React.Children.map(children, (child) => 
+            typeof child === 'string' ? addTranslationTooltips(child) : child
+          )}
+        </h1>
+      ),
+      h2: ({ children, ...props }: any) => (
+        <h2 {...props}>
+          {React.Children.map(children, (child) => 
+            typeof child === 'string' ? addTranslationTooltips(child) : child
+          )}
+        </h2>
+      ),
+      h3: ({ children, ...props }: any) => (
+        <h3 {...props}>
+          {React.Children.map(children, (child) => 
+            typeof child === 'string' ? addTranslationTooltips(child) : child
+          )}
+        </h3>
+      ),
+      strong: ({ children, ...props }: any) => (
+        <strong {...props}>
+          {React.Children.map(children, (child) => 
+            typeof child === 'string' ? addTranslationTooltips(child) : child
+          )}
+        </strong>
+      ),
+      em: ({ children, ...props }: any) => (
+        <em {...props}>
+          {React.Children.map(children, (child) => 
+            typeof child === 'string' ? addTranslationTooltips(child) : child
+          )}
+        </em>
+      ),
+      // Handle plain text nodes
+      text: ({ children, ...props }: any) => (
+        <span {...props}>
+          {typeof children === 'string' ? addTranslationTooltips(children) : children}
+        </span>
+      )
+    };
+  }, [translationDictionary]);
+
   return (
     <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-1 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-1 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
-      <ReactMarkdown>{children}</ReactMarkdown>
+      <ReactMarkdown components={components}>{children}</ReactMarkdown>
     </div>
   );
 };
