@@ -393,11 +393,15 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async updateContentRating(studentId: string, contentId: string, rating: string): Promise<ContentRating> {
+  async updateContentRating(studentId: string, contentId: string, rating?: string, personalNote?: string): Promise<ContentRating> {
     const existing = await this.getContentRating(studentId, contentId);
     if (existing) {
+      const updateData: any = { updated_at: new Date() };
+      if (rating !== undefined) updateData.rating = rating;
+      if (personalNote !== undefined) updateData.personal_note = personalNote;
+      
       const result = await db.update(content_ratings)
-        .set({ rating, updated_at: new Date() })
+        .set(updateData)
         .where(and(
           eq(content_ratings.student_id, studentId),
           eq(content_ratings.content_id, contentId)
@@ -409,7 +413,8 @@ export class DatabaseStorage implements IStorage {
         id: crypto.randomUUID(),
         student_id: studentId,
         content_id: contentId,
-        rating
+        rating: rating || 'normal',
+        personal_note: personalNote
       });
     }
   }

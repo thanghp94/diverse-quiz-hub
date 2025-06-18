@@ -426,17 +426,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/content-ratings/:studentId/:contentId", async (req, res) => {
     try {
-      const rating = await storage.updateContentRating(req.params.studentId, req.params.contentId, req.body.rating);
+      const { rating, personal_note } = req.body;
+      const result = await storage.updateContentRating(req.params.studentId, req.params.contentId, rating, personal_note);
       
-      // Record daily activity and update streak
-      try {
-        await storage.recordDailyActivity(req.params.studentId, 10);
-        await storage.updateStudentStreak(req.params.studentId);
-      } catch (activityError) {
-        console.log('Failed to record activity/streak:', activityError);
+      // Record daily activity and update streak only if rating is provided
+      if (rating) {
+        try {
+          await storage.recordDailyActivity(req.params.studentId, 10);
+          await storage.updateStudentStreak(req.params.studentId);
+        } catch (activityError) {
+          console.log('Failed to record activity/streak:', activityError);
+        }
       }
       
-      res.json(rating);
+      res.json(result);
     } catch (error) {
       console.error('Error updating content rating:', error);
       res.status(500).json({ error: 'Failed to update content rating' });

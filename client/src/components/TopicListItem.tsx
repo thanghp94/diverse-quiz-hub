@@ -39,8 +39,23 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
   const queryClient = useQueryClient();
 
   // Fetch existing note
-  const { data: existingRating } = useQuery({
+  const { data: existingRating } = useQuery<{ rating: string; personal_note?: string } | null>({
     queryKey: ['/api/content-ratings', studentId, contentId],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/content-ratings/${studentId}/${contentId}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            return null;
+          }
+          throw new Error('Failed to fetch rating');
+        }
+        return response.json();
+      } catch (error) {
+        console.error('Error fetching rating:', error);
+        return null;
+      }
+    },
     enabled: isNoteOpen
   });
 
@@ -1165,6 +1180,11 @@ const TopicListItem = ({
                                                                 contentId={groupItem.id}
                                                                 compact={true}
                                                                 studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                              />
+                                                              <NoteButton
+                                                                contentId={groupItem.id}
+                                                                studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                                compact={true}
                                                               />
                                                               {((groupItem.videoid && groupItem.videoid.trim()) || (groupItem.videoid2 && groupItem.videoid2.trim())) && (
                                                                 <Button 
