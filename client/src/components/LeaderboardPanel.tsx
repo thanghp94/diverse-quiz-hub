@@ -1,146 +1,213 @@
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Flame, Target, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, Medal, Award, Star, TrendingUp, Calendar, Zap } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
-export const LeaderboardPanel = () => {
-  const { data: leaderboards, isLoading } = useQuery({
-    queryKey: ['/api/leaderboards'],
+interface LeaderboardData {
+  bestStreak: Array<{
+    student_id: string;
+    longest_streak: number;
+    full_name: string;
+  }>;
+  todayQuizzes: Array<{
+    student_id: string;
+    today_count: number;
+    full_name: string;
+  }>;
+  weeklyQuizzes: Array<{
+    student_id: string;
+    weekly_count: number;
+    full_name: string;
+  }>;
+}
+
+const LeaderboardPanel = () => {
+  const [activeTab, setActiveTab] = useState<'streak' | 'today' | 'weekly'>('today');
+  
+  const { data: leaderboardData, isLoading } = useQuery<LeaderboardData>({
+    queryKey: ['/api/leaderboard'],
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-yellow-500" />
-            Leaderboards
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-12 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return <Trophy className="h-5 w-5 text-yellow-400" />;
+      case 2:
+        return <Medal className="h-5 w-5 text-gray-300" />;
+      case 3:
+        return <Award className="h-5 w-5 text-amber-500" />;
+      default:
+        return <span className="text-sm font-bold text-white/70">#{rank}</span>;
+    }
+  };
 
-  const LeaderboardList = ({ 
-    data, 
-    title, 
-    icon, 
-    valueKey, 
-    valueLabel 
-  }: { 
-    data: any[], 
-    title: string, 
-    icon: React.ReactNode, 
-    valueKey: string, 
-    valueLabel: string 
-  }) => (
-    <div className="space-y-3">
-      <h3 className="font-semibold text-lg flex items-center gap-2">
-        {icon}
-        {title}
-      </h3>
-      {data?.length > 0 ? (
-        <div className="space-y-2">
-          {data.slice(0, 10).map((entry, index) => (
-            <div 
-              key={entry.student_id} 
-              className={`flex items-center justify-between p-3 rounded-lg ${
-                index === 0 ? 'bg-yellow-50 border-yellow-200 border' :
-                index === 1 ? 'bg-gray-50 border-gray-200 border' :
-                index === 2 ? 'bg-orange-50 border-orange-200 border' :
-                'bg-white border border-gray-100'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                  index === 0 ? 'bg-yellow-500 text-white' :
-                  index === 1 ? 'bg-gray-400 text-white' :
-                  index === 2 ? 'bg-orange-500 text-white' :
-                  'bg-gray-200 text-gray-600'
-                }`}>
-                  {index + 1}
-                </span>
-                <span className="font-medium">
-                  {entry.full_name || `Student ${entry.student_id.slice(0, 8)}`}
-                </span>
-              </div>
-              <span className="font-bold text-sm">
-                {entry[valueKey]} {valueLabel}
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-gray-500 text-center py-4">No data available</p>
-      )}
-    </div>
-  );
+  const getRankBadgeColor = (rank: number) => {
+    if (rank <= 3) return "bg-gradient-to-r from-yellow-400 to-orange-500 text-black";
+    if (rank <= 5) return "bg-gradient-to-r from-blue-400 to-blue-600 text-white";
+    return "bg-white/10 text-white";
+  };
+
+  const getCurrentLeaderboard = () => {
+    if (!leaderboardData) return [];
+    
+    switch (activeTab) {
+      case 'streak':
+        return leaderboardData.bestStreak || [];
+      case 'today':
+        return leaderboardData.todayQuizzes || [];
+      case 'weekly':
+        return leaderboardData.weeklyQuizzes || [];
+      default:
+        return [];
+    }
+  };
+
+  const getTabIcon = (tab: string) => {
+    switch (tab) {
+      case 'streak':
+        return <Zap className="h-4 w-4" />;
+      case 'today':
+        return <Calendar className="h-4 w-4" />;
+      case 'weekly':
+        return <TrendingUp className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
+
+  const getValueLabel = (tab: string) => {
+    switch (tab) {
+      case 'streak':
+        return 'streak';
+      case 'today':
+        return 'today';
+      case 'weekly':
+        return 'this week';
+      default:
+        return '';
+    }
+  };
+
+  const getValue = (item: any, tab: string) => {
+    switch (tab) {
+      case 'streak':
+        return item.longest_streak || 0;
+      case 'today':
+        return item.today_count || 0;
+      case 'weekly':
+        return item.weekly_count || 0;
+      default:
+        return 0;
+    }
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-500" />
-          Leaderboards
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="points" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="points" className="text-xs">Total Points</TabsTrigger>
-            <TabsTrigger value="streak" className="text-xs">Best Streak</TabsTrigger>
-            <TabsTrigger value="today" className="text-xs">Today</TabsTrigger>
-            <TabsTrigger value="weekly" className="text-xs">This Week</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="points" className="mt-4">
-            <LeaderboardList
-              data={(leaderboards as any)?.totalPoints || []}
-              title="Total Points"
-              icon={<Trophy className="w-4 h-4 text-yellow-500" />}
-              valueKey="total_points"
-              valueLabel="pts"
-            />
-          </TabsContent>
-          
-          <TabsContent value="streak" className="mt-4">
-            <LeaderboardList
-              data={(leaderboards as any)?.bestStreak || []}
-              title="Best Streak"
-              icon={<Flame className="w-4 h-4 text-orange-500" />}
-              valueKey="longest_streak"
-              valueLabel="days"
-            />
-          </TabsContent>
-          
-          <TabsContent value="today" className="mt-4">
-            <LeaderboardList
-              data={(leaderboards as any)?.todayQuizzes || []}
-              title="Most Active Today"
-              icon={<Target className="w-4 h-4 text-blue-500" />}
-              valueKey="today_count"
-              valueLabel="activities"
-            />
-          </TabsContent>
-          
-          <TabsContent value="weekly" className="mt-4">
-            <LeaderboardList
-              data={(leaderboards as any)?.weeklyQuizzes || []}
-              title="Most Active This Week"
-              icon={<Calendar className="w-4 h-4 text-green-500" />}
-              valueKey="weekly_count"
-              valueLabel="activities"
-            />
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+        >
+          <Trophy className="h-4 w-4 mr-2" />
+          Leaderboard
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-700">
+        <DialogHeader>
+          <DialogTitle className="text-white flex items-center gap-2">
+            <Trophy className="h-6 w-6 text-yellow-400" />
+            Quiz Leaderboard
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          {/* Tab Selection */}
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: 'today', label: 'Today', icon: 'today' },
+              { key: 'weekly', label: 'Weekly', icon: 'weekly' },
+              { key: 'streak', label: 'Best Streak', icon: 'streak' }
+            ].map((tab) => (
+              <Button
+                key={tab.key}
+                variant={activeTab === tab.key ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`flex items-center gap-2 ${
+                  activeTab === tab.key 
+                    ? "bg-purple-600 text-white" 
+                    : "bg-white/10 border-white/20 text-white hover:bg-white/20"
+                }`}
+              >
+                {getTabIcon(tab.key)}
+                {tab.label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Leaderboard Content */}
+          <Card className="bg-white/5 border-white/10">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-white text-lg">
+                {activeTab === 'streak' && 'Best Streaks'}
+                {activeTab === 'today' && "Today's Quiz Champions"}
+                {activeTab === 'weekly' && 'Weekly Quiz Leaders'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="text-white/60">Loading leaderboard...</div>
+                </div>
+              ) : getCurrentLeaderboard().length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-white/60">No data available</div>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {getCurrentLeaderboard().slice(0, 10).map((item, index) => {
+                    const rank = index + 1;
+                    const value = getValue(item, activeTab);
+                    
+                    return (
+                      <div
+                        key={`${activeTab}-${item.student_id}-${rank}`}
+                        className={`flex items-center justify-between p-3 rounded-lg ${
+                          rank <= 3 ? "bg-gradient-to-r from-purple-600/20 to-blue-600/20" : "bg-white/5"
+                        } border border-white/10`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-8">
+                            {getRankIcon(rank)}
+                          </div>
+                          <div>
+                            <div className="text-white font-medium">
+                              {item.full_name || 'Anonymous'}
+                            </div>
+                            <div className="text-white/60 text-sm">
+                              {value} {getValueLabel(activeTab)}
+                            </div>
+                          </div>
+                        </div>
+                        <Badge className={getRankBadgeColor(rank)}>
+                          {value}
+                        </Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
+
+export default LeaderboardPanel;

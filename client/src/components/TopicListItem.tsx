@@ -753,8 +753,21 @@ const TopicListItem = ({
                             </div>
                           </div>
                           {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
-                            <div className="mt-3 grid grid-cols-2 gap-3">
-                              {subtopicContent.map(content => {
+                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                              {subtopicContent
+                                .sort((a, b) => {
+                                  const orderA = parseInt(a.order || '999999');
+                                  const orderB = parseInt(b.order || '999999');
+                                  return orderA - orderB;
+                                })
+                                .filter(content => {
+                                  // Hide content that belongs to a group (will be shown in group expansion)
+                                  const belongsToGroup = subtopicContent.some(item => 
+                                    item.prompt === "groupcard" && content.contentgroup === item.id && content.id !== item.id
+                                  );
+                                  return !belongsToGroup;
+                                })
+                                .map(content => {
                                 const SubtopicContentCard = () => {
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
@@ -766,7 +779,13 @@ const TopicListItem = ({
                                   // Check if this content is a group card and find related content
                                   const isGroupCard = content.prompt === "groupcard";
                                   const groupedContent = isGroupCard ? 
-                                    subtopicContent.filter(item => item.contentgroup === content.id && item.id !== content.id) : 
+                                    subtopicContent
+                                      .filter(item => item.contentgroup === content.id && item.id !== content.id)
+                                      .sort((a, b) => {
+                                        const orderA = parseInt(a.order || '999999');
+                                        const orderB = parseInt(b.order || '999999');
+                                        return orderA - orderB;
+                                      }) : 
                                     [];
 
                                   return (
@@ -859,11 +878,30 @@ const TopicListItem = ({
                                           </div>
                                         </div>
 
-                                        {/* Inline Grouped Content Expansion - 2 Column Layout */}
+                                        {/* Thumbnail Gallery for Group Cards */}
+                                        {isGroupCard && groupedContent.length > 0 && (
+                                          <div className="mt-3 pt-3 border-t border-purple-400/20">
+                                            <div className="flex flex-wrap gap-2">
+                                              {groupedContent.map((groupItem) => (
+                                                <div key={`thumb-${groupItem.id}`} className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                                                  <ContentThumbnail 
+                                                    content={groupItem} 
+                                                    onClick={() => onContentClick({
+                                                      content: groupItem,
+                                                      contextList: [...subtopicContent]
+                                                    })}
+                                                  />
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Inline Grouped Content Expansion - Responsive Layout */}
                                         {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
                                           <div className="mt-4 pt-4 border-t border-purple-400/30">
                                             <h5 className="text-purple-200 text-base font-medium mb-4">Related Content:</h5>
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                   {groupedContent.map((groupItem) => (
                                                     <div key={groupItem.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
                                                       <div className="flex items-start gap-3">

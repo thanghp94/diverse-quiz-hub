@@ -10,6 +10,7 @@ import TopicQuizRunner from "@/components/TopicQuizRunner";
 import TopicMatchingPopup from "@/components/TopicMatchingPopup";
 import MatchingListPopup from "@/components/MatchingListPopup";
 import { MatchingActivityPopup } from "@/components/MatchingActivityPopup";
+import LeaderboardPanel from "@/components/LeaderboardPanel";
 import { useLocation } from "wouter";
 
 interface Topic {
