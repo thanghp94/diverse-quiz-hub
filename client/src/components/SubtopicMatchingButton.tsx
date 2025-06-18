@@ -24,7 +24,7 @@ export const SubtopicMatchingButton = ({
     <Button 
       variant="ghost" 
       size="icon" 
-      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8"
+      className="text-white/70 hover:bg-white/20 hover:text-white h-6 w-6"
       onClick={(e) => {
         e.stopPropagation();
         onStartTopicMatching(topicId, topicName);

@@ -915,17 +915,16 @@ const TopicListItem = ({
                           isExpanded && "md:col-span-2" // Full width when expanded
                         )}>
                           <div 
-                            className="flex items-start justify-between cursor-pointer"
+                            className="flex items-center justify-between cursor-pointer py-1"
                             onClick={() => onToggleContent(`subtopic-${subtopic.id}`)}
                           >
                             <div className="flex-grow">
-                              <div className="flex items-center gap-3 mb-2">
-
-                                <span className="text-white/90 text-lg font-bold text-center">{subtopic.topic}</span>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-white/90 text-base font-bold text-center">{subtopic.topic}</span>
                               </div>
-                              {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
+                              {subtopic.short_summary && <p className="text-white/60 text-xs ml-4">{formatDescription(subtopic.short_summary)}</p>}
                             </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex items-center gap-1 flex-shrink-0">
                               <SubtopicMatchingButton 
                                 topicId={subtopic.id} 
                                 topicName={subtopic.topic}
@@ -933,7 +932,7 @@ const TopicListItem = ({
                               />
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white" onClick={(e) => e.stopPropagation()}>
+                                    <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-6 w-6" onClick={(e) => e.stopPropagation()}>
                                         <HelpCircle className="h-4 w-4" />
                                         <span className="sr-only">Start Quiz for {subtopic.topic}</span>
                                     </Button>
@@ -944,7 +943,7 @@ const TopicListItem = ({
                                     <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                              <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", isExpanded && "rotate-180")} />
+                              <ChevronDown className={cn("h-4 w-4 text-white/80 transition-transform duration-200", isExpanded && "rotate-180")} />
                             </div>
                           </div>
                           {subtopicContent.length > 0 && isExpanded && (
