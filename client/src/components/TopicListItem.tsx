@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
+import { PersonalNoteDialog } from './PersonalNoteDialog';
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,10 +35,6 @@ interface NoteButtonProps {
 
 const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact = false }) => {
   const [isNoteOpen, setIsNoteOpen] = useState(false);
-  const [noteText, setNoteText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   // Fetch existing note
   const { data: existingRating } = useQuery<{ rating: string; personal_note?: string } | null>({
@@ -128,7 +125,10 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          setIsNoteOpen(true);
+          // Add a small delay to ensure event propagation is fully stopped
+          setTimeout(() => {
+            setIsNoteOpen(true);
+          }, 10);
         }}
       >
         <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
