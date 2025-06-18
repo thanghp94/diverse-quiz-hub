@@ -894,26 +894,18 @@ const TopicListItem = ({
                                               <div className="flex-shrink-0 w-12"></div>
 
                                               {/* Title Section - Centered */}
-                                              <div className="flex-1 text-center">
-                                                <div className="flex flex-col items-center gap-2">
-                                                  <button 
-                                                    className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-yellow-200 text-base font-medium leading-tight"
-                                                    onClick={() => {
-                                                      console.log('CLICK DETECTED!', content.title);
-                                                      console.log('onToggleContent function:', typeof onToggleContent);
-                                                      console.log('Group expansion key:', groupExpansionKey);
-                                                      console.log('Current openContent:', openContent);
-                                                      onToggleContent(groupExpansionKey);
-                                                    }}
-                                                  >
-                                                    {content.title}
-                                                  </button>
-                                                  <button 
-                                                    className="bg-red-500 text-white px-2 py-1 text-xs rounded"
-                                                    onClick={() => console.log('TEST BUTTON CLICKED!')}
-                                                  >
-                                                    TEST
-                                                  </button>
+                                              <div 
+                                                className="flex-1 text-center cursor-pointer"
+                                                onClick={() => {
+                                                  console.log('DIV CLICK DETECTED!', content.title);
+                                                  console.log('onToggleContent function:', typeof onToggleContent);
+                                                  console.log('Group expansion key:', groupExpansionKey);
+                                                  console.log('Current openContent:', openContent);
+                                                  onToggleContent(groupExpansionKey);
+                                                }}
+                                              >
+                                                <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 hover:bg-yellow-500/30 transition-all duration-200 text-yellow-200 text-base font-medium leading-tight">
+                                                  {content.title}
                                                 </div>
                                               </div>
 
