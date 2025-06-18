@@ -12,7 +12,12 @@ interface LiveAssignment {
   description: string;
   type: string;
   created_at: string;
-  assignmentid: string;
+  topicid: string;
+  contentid: string | null;
+  noofquestion: number;
+  category: string;
+  subject: string;
+  testtype: string;
 }
 
 const LiveClassPanel = () => {
@@ -53,6 +58,65 @@ const LiveClassPanel = () => {
   const handleJoinClass = (assignment: LiveAssignment) => {
     setSelectedAssignment(assignment);
     console.log('Joining live class:', assignment.assignmentname);
+  };
+
+  const handleStartQuiz = async (assignment: LiveAssignment) => {
+    try {
+      console.log('Starting quiz for assignment:', assignment.id);
+      
+      // Create assignment_student_try
+      const tryResponse = await fetch('/api/assignment-student-tries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          hocsinh_id: 'GV0002', // Current user ID
+          assignmentid: assignment.id,
+          typeoftaking: 'live_class',
+        }),
+      });
+
+      if (!tryResponse.ok) {
+        throw new Error('Failed to create assignment student try');
+      }
+
+      const assignmentTry = await tryResponse.json();
+      console.log('Assignment try created:', assignmentTry);
+
+      // Fetch questions for the assignment topic
+      let questionsResponse;
+      if (assignment.topicid) {
+        questionsResponse = await fetch(`/api/questions?topicId=${assignment.topicid}&level=easy`);
+      } else {
+        // Fallback to general questions
+        questionsResponse = await fetch('/api/questions?level=easy');
+      }
+
+      if (!questionsResponse.ok) {
+        throw new Error('Failed to fetch questions');
+      }
+
+      const questions = await questionsResponse.json();
+      console.log('Questions fetched:', questions.length);
+
+      if (questions.length === 0) {
+        alert('No questions available for this assignment');
+        return;
+      }
+
+      // Close the dialog and navigate to quiz
+      setIsOpen(false);
+      setSelectedAssignment(null);
+      
+      // Here you would typically navigate to a quiz page or open a quiz component
+      // For now, we'll just show an alert confirming the quiz is ready
+      alert(`Quiz started! ${questions.length} questions loaded for: ${assignment.assignmentname}`);
+      
+    } catch (error) {
+      console.error('Error starting quiz:', error);
+      alert('Failed to start quiz. Please try again.');
+    }
   };
 
   return (
@@ -147,6 +211,7 @@ const LiveClassPanel = () => {
                 variant="default" 
                 size="sm"
                 className="bg-blue-600 hover:bg-blue-700"
+                onClick={() => handleStartQuiz(selectedAssignment)}
               >
                 <Play className="h-4 w-4 mr-1" />
                 Start Quiz
