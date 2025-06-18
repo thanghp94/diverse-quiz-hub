@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Video, Clock, Users, Play } from 'lucide-react';
 
@@ -19,20 +19,14 @@ const LiveClassPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<LiveAssignment | null>(null);
 
-  // Check if user is teacher (GV0002) - default to teacher for demonstration
-  const currentUserStr = localStorage.getItem('currentUser');
-  const currentUser = currentUserStr ? JSON.parse(currentUserStr) : { id: 'GV0002' };
-  const isTeacher = currentUser.id === 'GV0002';
-
   // Fetch real live class assignments from API
-  const { data: liveAssignments = [], isLoading } = useQuery({
+  const { data: liveAssignments = [], isLoading } = useQuery<LiveAssignment[]>({
     queryKey: ['/api/assignments/live-class'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
-    // Convert to Vietnam timezone (UTC+7)
     const vietnamTime = new Date(date.getTime() + (7 * 60 * 60 * 1000));
     return vietnamTime.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
@@ -60,32 +54,6 @@ const LiveClassPanel = () => {
     console.log('Joining live class:', assignment.assignmentname);
   };
 
-  if (isLoading) {
-    return (
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogTrigger asChild>
-          <Button 
-            variant="outline" 
-            className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-400/30 text-white hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50 backdrop-blur-sm shadow-lg transition-all duration-300"
-          >
-            <Video className="h-4 w-4 mr-2" />
-            Live Class
-            <Badge className="ml-2 bg-blue-500/20 text-blue-200">Loading...</Badge>
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-4xl max-h-[80vh] bg-gray-900 border-gray-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
-              <Video className="h-6 w-6 text-blue-400" />
-              Live Classes
-            </DialogTitle>
-          </DialogHeader>
-          <div className="text-center py-8">Loading live classes...</div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -96,7 +64,7 @@ const LiveClassPanel = () => {
           <Video className="h-4 w-4 mr-2" />
           Live Class
           <Badge className="ml-2 bg-blue-500/20 text-blue-200">
-            {liveAssignments.length}
+            {isLoading ? 'Loading...' : (liveAssignments as LiveAssignment[]).length}
           </Badge>
         </Button>
       </DialogTrigger>
@@ -107,20 +75,22 @@ const LiveClassPanel = () => {
             <Video className="h-6 w-6 text-blue-400" />
             Live Classes
             <Badge variant="outline" className="text-blue-200 border-blue-400">
-              {liveAssignments.length} Available
+              {(liveAssignments as LiveAssignment[]).length} Available
             </Badge>
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 max-h-[60vh] overflow-y-auto">
-          {liveAssignments.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8">Loading live classes...</div>
+          ) : (liveAssignments as LiveAssignment[]).length === 0 ? (
             <div className="text-center py-8 text-gray-400">
               <Video className="h-16 w-16 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">No Live Classes Available</h3>
               <p className="text-sm">No live class assignments found within the last 3 hours.</p>
             </div>
           ) : (
-            liveAssignments.map((assignment: LiveAssignment) => (
+            (liveAssignments as LiveAssignment[]).map((assignment: LiveAssignment) => (
               <Card 
                 key={assignment.id} 
                 className="bg-gray-800/50 border-gray-600 hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
