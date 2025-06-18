@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { PersonalNoteDialog } from './PersonalNoteDialog';
+
+// Global state for blocking content clicks when note button is clicked
+let globalClickBlocked = false;
+let globalClickBlockTimeout: NodeJS.Timeout | null = null;
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +79,16 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
+          
+          // Block all content clicks globally for a brief moment
+          globalClickBlocked = true;
+          if (globalClickBlockTimeout) {
+            clearTimeout(globalClickBlockTimeout);
+          }
+          globalClickBlockTimeout = setTimeout(() => {
+            globalClickBlocked = false;
+          }, 100);
+          
           setIsNoteOpen(true);
         }}
       >
@@ -206,19 +220,25 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
       <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
         <div className="flex items-start justify-between gap-2">
           <div
-            onClick={() => onContentClick({
-              content,
-              contextList: topicContent
-            })}
+            onClick={() => {
+              if (globalClickBlocked) return;
+              onContentClick({
+                content,
+                contextList: topicContent
+              });
+            }}
             className="flex-grow cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <LocalContentThumbnail 
                 content={content} 
-                onClick={() => onContentClick({
-                  content,
-                  contextList: topicContent
-                })}
+                onClick={() => {
+                  if (globalClickBlocked) return;
+                  onContentClick({
+                    content,
+                    contextList: topicContent
+                  });
+                }}
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-2">
