@@ -294,12 +294,12 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-left">{content.title}</h4>
+                  <h4 className="text-base font-medium leading-tight flex-1 min-w-0 text-left" style={{ color: '#ffff78e6' }}>{content.title}</h4>
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-1 py-0.5 h-5 opacity-60 hover:opacity-80">
-                          Quiz
+                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-1 py-0.5 h-5 opacity-60 hover:opacity-80" title="Quiz">
+                          <HelpCircle className="h-3 w-3" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent>
@@ -323,13 +323,14 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6"
+                        className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-1 py-0.5 h-5"
                         onClick={(e) => {
                           e.stopPropagation();
                           setVideoPopupOpen(true);
                         }}
+                        title={(hasVideo1 && hasVideo2) ? '2 Videos' : 'Video'}
                       >
-                        {(hasVideo1 && hasVideo2) ? '2 Videos' : 'Video'}
+                        <Play className="h-3 w-3" />
                       </Button>
                     )}
                   </div>
@@ -909,6 +910,7 @@ const TopicListItem = ({
                   onContentClick={onContentClick}
                   onStartQuiz={onStartQuiz}
                   onStartGroupMatching={onStartGroupMatching}
+                  activeContentId={activeContentId}
                 />
               )}
 
@@ -1022,7 +1024,8 @@ const TopicListItem = ({
                                         "bg-white/5 border border-white/20 hover:bg-white/10 transition-all duration-200 rounded-lg p-3 relative",
                                         isGroupCard && "bg-gradient-to-br from-yellow-600/25 via-orange-600/25 to-amber-600/25 border-yellow-400/60 shadow-lg shadow-yellow-500/10 hover:shadow-yellow-500/20 hover:border-yellow-400/80 transform hover:scale-[1.02] z-10",
                                         isGroupCard && isGroupExpanded && "col-span-2 ring-2 ring-yellow-400/40 z-20",
-                                        !isGroupCard && "z-5"
+                                        !isGroupCard && "z-5",
+                                        activeContentId === content.id && "ring-4 ring-yellow-400/80 bg-yellow-500/20 border-yellow-400/70 shadow-lg shadow-yellow-400/20"
                                       )}>
                                         <div className="flex items-start justify-between gap-2">
                                           <div className="flex-grow cursor-pointer">
@@ -1032,38 +1035,44 @@ const TopicListItem = ({
                                                 onClick={() => onToggleGroupCard(content.id)}
                                               >
                                                 {/* Title with action buttons for group cards */}
-                                                <div className="flex items-center justify-center gap-2 mb-3">
-                                                  <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-center">
-                                                    <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
-                                                  </div>
-                                                  <div className="flex flex-col gap-1 ml-2">
-                                                    <Button 
-                                                      variant="outline" 
-                                                      size="sm" 
-                                                      className="text-yellow-200 hover:bg-yellow-500/30 bg-yellow-500/20 border-yellow-400/40 text-xs px-2 py-0.5 h-5"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onStartQuiz(content, subtopicContent, 'Easy');
-                                                      }}
-                                                    >
-                                                      <HelpCircle className="h-3 w-3 mr-1" />
-                                                      Quiz
-                                                    </Button>
+                                                <div className="flex items-center justify-between gap-2 mb-3">
+                                                  {/* Buttons on far left */}
+                                                  <div className="flex items-center gap-1">
                                                     {content.parentid && (
                                                       <Button 
                                                         variant="outline" 
                                                         size="sm" 
-                                                        className="text-yellow-200 hover:bg-yellow-500/30 bg-yellow-500/20 border-yellow-400/40 text-xs px-2 py-0.5 h-5"
+                                                        className="text-yellow-200 hover:bg-yellow-500/30 bg-yellow-500/20 border-yellow-400/40 text-xs px-1 py-0.5 h-5"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           onStartGroupMatching(content.parentid!, content.title || 'Group Match');
                                                         }}
+                                                        title="Match"
                                                       >
-                                                        <Shuffle className="h-3 w-3 mr-1" />
-                                                        Match
+                                                        <Shuffle className="h-3 w-3" />
                                                       </Button>
                                                     )}
+                                                    <Button 
+                                                      variant="outline" 
+                                                      size="sm" 
+                                                      className="text-yellow-200 hover:bg-yellow-500/30 bg-yellow-500/20 border-yellow-400/40 text-xs px-1 py-0.5 h-5"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        onStartQuiz(content, subtopicContent, 'Easy');
+                                                      }}
+                                                      title="Quiz"
+                                                    >
+                                                      <HelpCircle className="h-3 w-3" />
+                                                    </Button>
                                                   </div>
+                                                  
+                                                  {/* Centered title */}
+                                                  <div className="flex-1 text-center">
+                                                    <h4 className="text-base font-medium leading-tight" style={{ color: '#ffff78e6' }}>{content.title}</h4>
+                                                  </div>
+                                                  
+                                                  {/* Empty div for balance */}
+                                                  <div className="w-[42px]"></div>
                                                 </div>
                                                 
                                                 {/* Thumbnail Gallery for Group Cards - moved under title */}
