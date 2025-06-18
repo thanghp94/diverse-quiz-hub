@@ -129,7 +129,7 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
         {hasNote && <span className="ml-1 text-xs">*</span>}
       </Button>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md z-[9999]">
         <DialogHeader>
           <DialogTitle>Personal Note</DialogTitle>
           <DialogDescription>
