@@ -43,6 +43,14 @@ const ContentPopup = ({
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [modalVideoUrl, setModalVideoUrl] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+
+  // Type guard for translation dictionary
+  const isValidTranslationDictionary = (dict: unknown): dict is Record<string, string> => {
+    return dict !== null && 
+           typeof dict === 'object' && 
+           !Array.isArray(dict) &&
+           Object.values(dict as Record<string, unknown>).every(val => typeof val === 'string');
+  };
   
   const {
     quizMode,
@@ -139,7 +147,10 @@ const ContentPopup = ({
                   {/* Short Blurb directly under title */}
                   {content.short_blurb && (
                     <div className="mb-2">
-                      <MarkdownRenderer className="text-base leading-relaxed">
+                      <MarkdownRenderer 
+                        className="text-base leading-relaxed"
+                        translationDictionary={content.translation_dictionary as Record<string, string> | null | undefined}
+                      >
                         {content.short_blurb}
                       </MarkdownRenderer>
                     </div>
@@ -164,7 +175,10 @@ const ContentPopup = ({
                       </button>
                       {isSecondBlurbOpen && (
                         <div className="px-3 pb-2 border-t border-gray-100">
-                          <MarkdownRenderer className="text-base leading-relaxed">
+                          <MarkdownRenderer 
+                            className="text-base leading-relaxed"
+                            translationDictionary={content.translation_dictionary as Record<string, string> | null | undefined}
+                          >
                             {content.second_short_blurb}
                           </MarkdownRenderer>
                         </div>
