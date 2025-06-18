@@ -186,6 +186,7 @@ interface TopicListItemProps {
     topicContent: Content[];
     allImages: Image[] | undefined;
     isExpanded: boolean;
+    isActive: boolean;
     openContent: string[];
     onToggleTopic: (topicId: string) => void;
     onToggleContent: (contentKey: string) => void;
@@ -782,6 +783,7 @@ const TopicListItem = ({
     topicContent,
     allImages,
     isExpanded,
+    isActive,
     openContent,
     onToggleTopic,
     onToggleContent,

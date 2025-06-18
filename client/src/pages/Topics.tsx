@@ -44,6 +44,7 @@ const Topics = () => {
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
+  const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   const [topicQuizInfo, setTopicQuizInfo] = useState<{
     topicId: string;
     level: 'Overview' | 'Easy' | 'Hard';
@@ -133,6 +134,7 @@ const Topics = () => {
 
   const handleToggleTopic = (topicId: string) => {
     setExpandedTopicId(currentId => (currentId === topicId ? null : topicId));
+    setActiveTopicId(topicId);
   };
 
   const toggleContent = (contentKey: string) => {
@@ -290,6 +292,7 @@ const Topics = () => {
                     topicContent={topicContent}
                     allImages={allImages}
                     isExpanded={isExpanded}
+                    isActive={activeTopicId === topic.id}
                     openContent={openContent}
                     onToggleTopic={handleToggleTopic}
                     onToggleContent={toggleContent}
