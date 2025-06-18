@@ -254,7 +254,7 @@ const Topics = () => {
                   {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
                 </h1>
                 <div className="flex-1 flex justify-end">
-                  {/* Leaderboard temporarily disabled */}
+                  <LeaderboardPanel />
                 </div>
               </div>
               {activeTab && (
