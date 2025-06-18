@@ -2,12 +2,7 @@ import React from 'react';
 import { useContentImage } from '@/hooks/useContentImage';
 
 interface ContentThumbnailGalleryProps {
-  groupedContent: Array<{
-    id: string;
-    imageid?: string;
-    title?: string;
-    [key: string]: any;
-  }>;
+  groupedContent: any[];
   onThumbnailClick?: (content: any) => void;
 }
 
@@ -77,10 +72,10 @@ export const ContentThumbnailGallery = ({
   }
 
   return (
-    <div className="mb-3 flex justify-center">
-      <div className="flex flex-wrap gap-2 justify-center">
+    <div className="mb-3 w-full">
+      <div className="flex flex-wrap gap-2 justify-center w-full">
         {groupedContent.map((groupItem) => (
-          <div key={`thumb-${groupItem.id}`} className="w-6 h-7 rounded-md overflow-hidden flex-shrink-0">
+          <div key={`thumb-${groupItem.id}`} className="w-12 h-8 sm:w-16 sm:h-10 md:w-20 md:h-12 rounded-md overflow-hidden flex-shrink-0">
             <LocalContentThumbnail 
               content={groupItem} 
               isGroupCard={true}
