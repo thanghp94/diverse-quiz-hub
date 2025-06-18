@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Edit, Save, X, Video } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Edit, Save, X, Video, ArrowUp, ArrowDown, Layers } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Content } from '@shared/schema';
 
@@ -22,6 +23,12 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
     imageid: content.imageid || '',
     videoid: content.videoid || '',
     videoid2: content.videoid2 || '',
+    title: content.title || '',
+    prompt: content.prompt || '',
+    information: content.information || '',
+    topicid: content.topicid || '',
+    challengesubject: Array.isArray(content.challengesubject) ? content.challengesubject.join(', ') : (content.challengesubject || ''),
+    parentid: content.parentid || '',
   });
 
   const { toast } = useToast();
@@ -95,6 +102,12 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
       imageid: content.imageid || '',
       videoid: content.videoid || '',
       videoid2: content.videoid2 || '',
+      title: content.title || '',
+      prompt: content.prompt || '',
+      information: content.information || '',
+      topicid: content.topicid || '',
+      challengesubject: Array.isArray(content.challengesubject) ? content.challengesubject.join(', ') : (content.challengesubject || ''),
+      parentid: content.parentid || '',
     });
     setIsEditing(false);
   };
@@ -153,6 +166,82 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {/* Content Management Section */}
+        <div className="space-y-4 border-b pb-4">
+          <div className="flex items-center gap-2">
+            <Layers className="h-5 w-5 text-blue-600" />
+            <Label className="text-base font-medium">Content Management</Label>
+          </div>
+          
+          {/* Title */}
+          <div className="space-y-2">
+            <Label htmlFor="title">Title</Label>
+            {isEditing ? (
+              <Input
+                id="title"
+                value={editData.title}
+                onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Enter content title..."
+              />
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                {content.title || 'No title'}
+              </div>
+            )}
+          </div>
+
+          {/* Topic ID */}
+          <div className="space-y-2">
+            <Label htmlFor="topicid">Topic ID</Label>
+            {isEditing ? (
+              <Input
+                id="topicid"
+                value={editData.topicid}
+                onChange={(e) => setEditData(prev => ({ ...prev, topicid: e.target.value }))}
+                placeholder="Enter topic ID..."
+              />
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                {content.topicid || 'No topic ID'}
+              </div>
+            )}
+          </div>
+
+          {/* Challenge Subject (Content Group) */}
+          <div className="space-y-2">
+            <Label htmlFor="challengesubject">Content Group / Challenge Subject</Label>
+            {isEditing ? (
+              <Input
+                id="challengesubject"
+                value={editData.challengesubject}
+                onChange={(e) => setEditData(prev => ({ ...prev, challengesubject: e.target.value }))}
+                placeholder="Enter challenge subjects (comma separated)..."
+              />
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                {Array.isArray(content.challengesubject) ? content.challengesubject.join(', ') : (content.challengesubject || 'No challenge subject')}
+              </div>
+            )}
+          </div>
+
+          {/* Parent ID (for ordering/hierarchy) */}
+          <div className="space-y-2">
+            <Label htmlFor="parentid">Parent ID (Order/Hierarchy)</Label>
+            {isEditing ? (
+              <Input
+                id="parentid"
+                value={editData.parentid}
+                onChange={(e) => setEditData(prev => ({ ...prev, parentid: e.target.value }))}
+                placeholder="Enter parent ID for hierarchy..."
+              />
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                {content.parentid || 'No parent ID (root level)'}
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Short Description */}
         <div className="space-y-2">
           <Label htmlFor="short_description">Short Description</Label>

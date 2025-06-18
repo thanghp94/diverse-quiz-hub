@@ -277,7 +277,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
             <Card className="border-gray-200 shadow-lg h-full">
                 <CardHeader className="pb-6">
                     <div className="flex justify-between items-center mb-4">
-                        <CardTitle className="text-xl">Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
+                        <CardTitle className="text-lg font-semibold text-gray-800">Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
                         <div className="flex items-center gap-4">
                             {/* Question Number System */}
                             <div className="flex items-center gap-1">
@@ -308,25 +308,22 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                             </div>
                             
                             {/* Progress Bar */}
-                            <div className="bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
-                                <div className="text-sm text-gray-600 font-medium mb-1">Progress</div>
+                            <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+                                <div className="text-xs text-gray-600 font-medium mb-1">Progress</div>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-20 bg-gray-200 rounded-full h-2 relative overflow-hidden">
+                                    <div className="w-16 bg-gray-200 rounded-full h-1.5 flex overflow-hidden">
                                         <div 
-                                            className="bg-green-500 rounded-full h-2 transition-all duration-300 absolute left-0"
+                                            className="bg-green-500 h-1.5 transition-all duration-300"
                                             style={{ width: `${(correctAnswersCount / totalQuestions) * 100}%` }}
                                         />
                                         <div 
-                                            className="bg-red-500 rounded-full h-2 transition-all duration-300 absolute"
-                                            style={{ 
-                                                left: `${(correctAnswersCount / totalQuestions) * 100}%`,
-                                                width: `${(incorrectAnswersCount / totalQuestions) * 100}%` 
-                                            }}
+                                            className="bg-red-500 h-1.5 transition-all duration-300"
+                                            style={{ width: `${(incorrectAnswersCount / totalQuestions) * 100}%` }}
                                         />
                                     </div>
-                                    <span className="text-green-600 font-bold text-sm">{correctPercentage}%</span>
-                                    <span className="text-gray-400">|</span>
-                                    <span className="text-red-600 font-bold text-sm">{incorrectPercentage}%</span>
+                                    <span className="text-green-600 font-bold text-xs">{correctPercentage}%</span>
+                                    <span className="text-gray-400 text-xs">|</span>
+                                    <span className="text-red-600 font-bold text-xs">{incorrectPercentage}%</span>
                                 </div>
                             </div>
                         </div>
@@ -393,12 +390,12 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
 
                     {/* Correct Answer Feedback - Above Content */}
                     {showFeedback && (
-                        <div className={`mt-6 p-4 rounded-lg flex items-center gap-3 ${
+                        <div className={`mt-6 p-4 rounded-lg flex items-start gap-4 ${
                             isCorrect 
                                 ? 'bg-green-50 border border-green-200' 
                                 : 'bg-red-50 border border-red-200'
                         }`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                                 isCorrect ? 'bg-green-500' : 'bg-red-500'
                             }`}>
                                 {isCorrect ? (
@@ -424,6 +421,19 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                                     <div className="text-green-700 text-sm mt-1">+100 points added to your score</div>
                                 )}
                             </div>
+                            {/* Content Image Preview */}
+                            {linkedContent && linkedContent.imageid && (
+                                <div className="flex-shrink-0">
+                                    <img
+                                        src={linkedContent.imageid}
+                                        alt={linkedContent.title}
+                                        className="w-16 h-16 object-cover rounded-lg border border-gray-200"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -434,16 +444,20 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                                 variant="outline" 
                                 onClick={handleShowContent} 
                                 disabled={isContentLoading}
-                                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                className="bg-purple-500 text-white border-0 hover:bg-purple-600 px-6 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200"
                             >
-                                {isContentLoading ? 'Loading...' : (showContent ? 'Hide Content' : '📚 Show Content')}
+                                {isContentLoading ? 'Loading...' : (showContent ? 'Hide Content' : 'Show Content')}
                             </Button>
                             
                             <Button 
                                 onClick={handleNext}
-                                className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
                             >
-                                {currentQuestionIndex < questionIds.length - 1 ? 'Next ➡️' : 'Finish Quiz 🎉'}
+                                {currentQuestionIndex < questionIds.length - 1 ? (
+                                    <>Next <span>→</span></>
+                                ) : (
+                                    'Finish Quiz'
+                                )}
                             </Button>
                         </div>
                     )}
