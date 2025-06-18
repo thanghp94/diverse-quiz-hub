@@ -72,7 +72,11 @@ export const MarkdownRenderer = ({
       elements.push(
         <HoverCard key={`tooltip-${match.start}-${index}`} openDelay={200} closeDelay={100}>
           <HoverCardTrigger asChild>
-            <span className="cursor-help underline decoration-dotted decoration-blue-400 hover:decoration-solid hover:bg-blue-50 rounded px-0.5 transition-all duration-200">
+            <span className={`cursor-help underline decoration-dotted transition-all duration-200 rounded px-0.5 ${
+              tooltipStyle === "light" 
+                ? "decoration-blue-400 hover:decoration-solid hover:bg-blue-50" 
+                : "decoration-yellow-400 hover:decoration-solid hover:bg-yellow-400/20"
+            }`}>
               {match.key}
             </span>
           </HoverCardTrigger>
