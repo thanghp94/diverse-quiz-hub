@@ -226,6 +226,7 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [currentQuizPhase, setCurrentQuizPhase] = useState<'picture-title' | 'title-description' | null>(null);
   const trackerRef = useRef<MatchingActivityTrackerRef>(null);
 
   // Get current user from localStorage
@@ -246,6 +247,16 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
         .then(generatedQuestions => {
           setQuestions(generatedQuestions);
           setCurrentQuestionIndex(0);
+          
+          // Determine initial quiz phase for sequential matching
+          const matchingTypes = (activity.type || '').split(', ');
+          const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
+          
+          if (hasSequentialMatching) {
+            setCurrentQuizPhase('picture-title');
+          } else {
+            setCurrentQuizPhase(null);
+          }
         })
         .catch(error => {
           console.error('Error generating questions:', error);
@@ -267,12 +278,26 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
       setQuestions([]);
       setCurrentQuestionIndex(0);
       setCurrentAttemptId(null);
+      setCurrentQuizPhase(null);
     }
   }, [isOpen]);
 
   const handleAttemptStart = (attemptId: string) => {
     setCurrentAttemptId(attemptId);
     console.log('Attempt started:', attemptId);
+  };
+
+  const handleNextPhase = () => {
+    const matchingTypes = (activity?.type || '').split(', ');
+    const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
+    
+    if (hasSequentialMatching && currentQuizPhase === 'picture-title') {
+      setCurrentQuizPhase('title-description');
+      toast({
+        title: 'Phase 1 Complete!',
+        description: 'Now starting title-description matching phase',
+      });
+    }
   };
 
   const handleAnswer = (answer: any, isCorrect: boolean) => {

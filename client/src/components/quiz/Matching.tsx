@@ -62,16 +62,15 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   // Get text styling based on matching type and word count
   const getTextStyling = (text: string) => {
     const wordCount = text.split(/\s+/).length;
-    const matchingType = question.type || '';
     
-    if (matchingType.includes('picture-title')) {
+    if (effectiveMatchingType === 'picture-title' || effectiveMatchingType?.includes('picture-title')) {
       // For picture-title: bigger text, center aligned
       return {
         fontSize: wordCount > 15 ? 'text-lg' : wordCount > 10 ? 'text-xl' : 'text-2xl',
         alignment: 'text-center',
         weight: 'font-bold'
       };
-    } else if (matchingType.includes('title-description')) {
+    } else if (effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description')) {
       // For title-description: smaller text, left aligned
       return {
         fontSize: wordCount > 30 ? 'text-xs' : wordCount > 20 ? 'text-sm' : 'text-base',
@@ -157,10 +156,10 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     setIsSubmitting(true);
 
     let correctCount = 0;
-    const correctPairs = question.pairs || [];
+    const relevantPairs = filteredPairs; // Use filtered pairs for current phase
     const newCorrectMatches: {[key: string]: boolean} = {};
 
-    correctPairs.forEach(pair => {
+    relevantPairs.forEach(pair => {
       const isMatchCorrect = matches[pair.left] === pair.right;
       newCorrectMatches[pair.left] = isMatchCorrect;
       if (isMatchCorrect) {
@@ -168,7 +167,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       }
     });
 
-    const totalPairs = correctPairs.length;
+    const totalPairs = relevantPairs.length;
     const score = Math.round((correctCount / totalPairs) * 100);
     const isCorrect = correctCount === totalPairs;
 
