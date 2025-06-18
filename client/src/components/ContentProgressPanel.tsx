@@ -34,8 +34,12 @@ export const ContentProgressPanel = () => {
 
   const getFilteredData = () => {
     if (!progressData) return [];
-    if (activeFilter === 'all') return progressData;
-    return progressData.filter((item: ContentProgress) => item.difficulty_rating === activeFilter);
+    
+    // First filter out content without valid topics
+    const validProgressData = progressData.filter((item: ContentProgress) => item.topic && item.topic.trim() !== '');
+    
+    if (activeFilter === 'all') return validProgressData;
+    return validProgressData.filter((item: ContentProgress) => item.difficulty_rating === activeFilter);
   };
 
   const getDifficultyColor = (rating: string | null) => {
@@ -59,25 +63,31 @@ export const ContentProgressPanel = () => {
   const getStats = () => {
     if (!progressData) return { total: 0, easy: 0, normal: 0, hard: 0, unrated: 0 };
     
+    // Only count content with valid topics
+    const validProgressData = progressData.filter((item: ContentProgress) => item.topic && item.topic.trim() !== '');
+    
     return {
-      total: progressData.length,
-      easy: progressData.filter((item: ContentProgress) => item.difficulty_rating === 'easy').length,
-      normal: progressData.filter((item: ContentProgress) => item.difficulty_rating === 'normal').length,
-      hard: progressData.filter((item: ContentProgress) => item.difficulty_rating === 'hard').length,
-      unrated: progressData.filter((item: ContentProgress) => item.difficulty_rating === null).length,
+      total: validProgressData.length,
+      easy: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'easy').length,
+      normal: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'normal').length,
+      hard: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'hard').length,
+      unrated: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === null).length,
     };
   };
 
   const filteredData = getFilteredData();
   const stats = getStats();
 
-  // Group by topic
+  // Group by topic - only include content with valid topics
   const groupedData = filteredData.reduce((acc: any, item: ContentProgress) => {
-    const topicKey = item.topic || 'Other';
-    if (!acc[topicKey]) {
-      acc[topicKey] = [];
+    // Only include items that have a valid topic (not null, undefined, or empty)
+    if (item.topic && item.topic.trim() !== '') {
+      const topicKey = item.topic;
+      if (!acc[topicKey]) {
+        acc[topicKey] = [];
+      }
+      acc[topicKey].push(item);
     }
-    acc[topicKey].push(item);
     return acc;
   }, {});
 
