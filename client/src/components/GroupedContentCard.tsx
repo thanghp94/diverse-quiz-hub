@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronRight, BookOpen, Play, Folder } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronRight, BookOpen, Play, Folder, HelpCircle, Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Content } from "@/hooks/useContent";
 import { useContentImage } from "@/hooks/useContentImage";
@@ -62,30 +63,56 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
       <CardContent className="p-4">
         {/* Group Header */}
         <div 
-          className="flex items-center gap-3 cursor-pointer mb-3"
+          className="flex items-center cursor-pointer mb-3"
           onClick={toggleExpanded}
         >
           <div className="flex-shrink-0">
             <Folder className="h-5 w-5 text-purple-300" />
           </div>
           
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Badge className="bg-purple-500/30 text-purple-200 text-xs">
-                <Folder className="h-3 w-3 mr-1" />
-                Group ({groupedContent.length + 1} items)
-              </Badge>
+          {/* Main thumbnail - larger and showing full picture */}
+          {groupImageUrl && (
+            <div className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0 mx-3">
+              <img 
+                src={groupImageUrl} 
+                alt={groupContent.title || 'Group content'} 
+                className="w-full h-full object-contain"
+              />
             </div>
-            
+          )}
+          
+          <div className="flex-1 min-w-0 text-center">
             <h3 className="text-white font-semibold text-lg line-clamp-1">
               {groupContent.title || groupContent.short_description || 'Grouped Content'}
             </h3>
-            
-            {groupContent.short_blurb && (
-              <p className="text-white/70 text-sm line-clamp-2 mt-1">
-                {groupContent.short_blurb}
-              </p>
-            )}
+          </div>
+
+          {/* Quiz and Match buttons - compact and stacked */}
+          <div className="flex flex-col gap-1 mr-3">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 px-2 text-xs bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStartQuiz(groupContent, [groupContent, ...groupedContent], 'Easy');
+              }}
+            >
+              <HelpCircle className="h-3 w-3 mr-1" />
+              Quiz
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 px-2 text-xs bg-gray-700/50 border-gray-600 text-gray-300 hover:bg-gray-600/50"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Add match functionality here
+              }}
+            >
+              <Shuffle className="h-3 w-3 mr-1" />
+              Match
+            </Button>
           </div>
 
           <div className="flex items-center gap-2">
@@ -97,52 +124,37 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
           </div>
         </div>
 
-        {/* Main Group Content - Always Visible */}
-        <div className="mb-3">
-          <Card 
-            className="bg-white/10 border-white/20 hover:bg-white/15 cursor-pointer transition-all duration-200"
-            onClick={handleGroupContentClick}
-          >
-            <CardContent className="p-3">
-              <div className="flex items-center gap-3">
-                {groupImageUrl && (
-                  <div className="w-16 h-20 rounded-md overflow-hidden flex-shrink-0">
-                    <img 
-                      src={groupImageUrl} 
-                      alt={groupContent.title || 'Group content'} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className={cn("text-xs", getContentTypeColor(groupContent))}>
-                      {getContentIcon(groupContent)}
-                    </Badge>
-                    <Badge className="bg-purple-500/20 text-purple-200 text-xs">
-                      Main
-                    </Badge>
-                  </div>
-                  
-                  <h4 className="text-white font-medium text-sm mb-1 line-clamp-2">
-                    {groupContent.title || groupContent.short_description || 'Untitled Content'}
-                  </h4>
-                  
-                  <div className="flex items-center gap-2 mt-2">
-                    <CompactContentDifficultyIndicator contentId={groupContent.id} />
-                    <div className="scale-75">
-                      <ContentRatingButtons 
-                        contentId={groupContent.id} 
-                        compact={true}
-                      />
-                    </div>
-                  </div>
+        {/* Thumbnail Gallery */}
+        {groupedContent.length > 0 && (
+          <div className="mb-3">
+            <div className="flex flex-wrap gap-2 justify-center">
+              {groupedContent.slice(0, 8).map((content) => (
+                <ThumbnailImageComponent 
+                  key={content.id}
+                  content={content}
+                  onContentClick={onContentClick}
+                  contextList={[groupContent, ...groupedContent]}
+                />
+              ))}
+              {groupedContent.length > 8 && (
+                <div className="w-12 h-12 rounded-md bg-white/10 flex items-center justify-center text-white/60 text-xs">
+                  +{groupedContent.length - 8}
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Short Description */}
+        {groupContent.short_description && (
+          <div className="mb-3 text-center">
+            <p className="text-white/70 text-sm">
+              {groupContent.short_description}
+            </p>
+          </div>
+        )}
+
+
 
         {/* Grouped Content - Collapsible */}
         {isExpanded && groupedContent.length > 0 && (
@@ -244,6 +256,35 @@ const NestedContentCard: React.FC<NestedContentCardProps> = ({
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+// Thumbnail component for gallery images
+interface ThumbnailImageProps {
+  content: Content;
+  onContentClick: (info: { content: Content; contextList: Content[] }) => void;
+  contextList: Content[];
+}
+
+const ThumbnailImageComponent: React.FC<ThumbnailImageProps> = ({ content, onContentClick, contextList }) => {
+  const { data: thumbUrl } = useContentImage(content.imageid);
+  
+  if (!thumbUrl) return null;
+  
+  return (
+    <div 
+      className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+      onClick={(e) => {
+        e.stopPropagation();
+        onContentClick({ content, contextList });
+      }}
+    >
+      <img 
+        src={thumbUrl} 
+        alt={content.title || 'Content'} 
+        className="w-full h-full object-cover"
+      />
+    </div>
   );
 };
 
