@@ -876,7 +876,20 @@ const TopicListItem = ({
                                           <div className="flex flex-col">
                                             {/* Title and Action Buttons Row */}
                                             <div className="flex items-center justify-between gap-4 mb-4">
-                                              {/* Action Buttons - Left */}
+                                              {/* Empty space for balance */}
+                                              <div className="flex-shrink-0 w-12"></div>
+
+                                              {/* Title Section - Centered */}
+                                              <div className="flex-1 text-center">
+                                                <div 
+                                                  className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
+                                                  onClick={() => setIsGroupExpanded(!isGroupExpanded)}
+                                                >
+                                                  <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
+                                                </div>
+                                              </div>
+
+                                              {/* Action Buttons - Right */}
                                               <div className="flex flex-col gap-0.5 flex-shrink-0">
                                                 {content.parentid && (
                                                   <Button 
@@ -918,19 +931,6 @@ const TopicListItem = ({
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
                                               </div>
-
-                                              {/* Title Section - Centered */}
-                                              <div className="flex-1 text-center">
-                                                <div 
-                                                  className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
-                                                  onClick={() => setIsGroupExpanded(!isGroupExpanded)}
-                                                >
-                                                  <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
-                                                </div>
-                                              </div>
-
-                                              {/* Empty space for balance */}
-                                              <div className="flex-shrink-0 w-12"></div>
                                             </div>
 
                                             {/* Image Gallery Row */}
