@@ -44,11 +44,11 @@ def fetch_content_rows(conn):
     try:
         cursor = conn.cursor()
         query = """
-        SELECT id, information 
+        SELECT id, short_blurb 
         FROM public.content 
         WHERE translation_dictionary IS NULL 
-        AND information IS NOT NULL 
-        AND information != ''
+        AND short_blurb IS NOT NULL 
+        AND short_blurb != ''
         LIMIT 5
         """
         cursor.execute(query)
