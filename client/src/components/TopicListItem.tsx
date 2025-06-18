@@ -407,13 +407,15 @@ const GroupedContentDisplay = ({
   topicContent, 
   onContentClick, 
   onStartQuiz,
-  onStartGroupMatching 
+  onStartGroupMatching,
+  activeContentId 
 }: {
   topicId: string;
   topicContent: Content[];
   onContentClick: (info: { content: Content; contextList: Content[] }) => void;
   onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
   onStartGroupMatching: (matchingId: string, matchingTitle: string) => void;
+  activeContentId: string | null;
 }) => {
   const [selectedContentGroup, setSelectedContentGroup] = useState<{
     groupName: string;
@@ -510,13 +512,17 @@ const GroupedContentDisplay = ({
           <h4 className="text-white/80 text-sm font-medium">Individual Content</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {organizedContent.ungroupedContent.map((content: Content) => (
-              <ContentCard 
-                key={content.id} 
-                content={content} 
-                topicContent={topicContent}
-                onContentClick={onContentClick}
-                onStartQuiz={onStartQuiz}
-              />
+              <div key={content.id} className={cn(
+                "transition-all duration-200 rounded-lg",
+                activeContentId === content.id && "ring-4 ring-yellow-400/80 bg-yellow-500/20 shadow-lg shadow-yellow-400/20"
+              )}>
+                <ContentCard 
+                  content={content} 
+                  topicContent={topicContent}
+                  onContentClick={onContentClick}
+                  onStartQuiz={onStartQuiz}
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -536,6 +542,7 @@ const GroupedContentDisplay = ({
                   groupedContent={relatedContent}
                   onContentClick={onContentClick}
                   onStartQuiz={onStartQuiz}
+                  activeContentId={activeContentId}
                 />
               );
             })}

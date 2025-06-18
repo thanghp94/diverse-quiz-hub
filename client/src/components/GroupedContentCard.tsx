@@ -46,6 +46,7 @@ interface GroupedContentCardProps {
   onContentClick: (info: { content: Content; contextList: Content[] }) => void;
   onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
   className?: string;
+  activeContentId?: string | null;
 }
 
 export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
@@ -53,7 +54,8 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
   groupedContent,
   onContentClick,
   onStartQuiz,
-  className
+  className,
+  activeContentId
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: groupImageUrl } = useContentImage(groupContent.imageid);
@@ -76,6 +78,7 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
     <Card 
       className={cn(
         "bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20 border-purple-400/30 hover:from-purple-600/30 hover:via-blue-600/30 hover:to-indigo-600/30 transition-all duration-200 backdrop-blur-sm",
+        activeContentId === groupContent.id && "ring-4 ring-yellow-400/80 bg-yellow-500/20 border-yellow-400/70 shadow-lg shadow-yellow-400/20",
         className
       )}
     >
@@ -205,15 +208,18 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
         {/* Grouped Content - Collapsible */}
         {isExpanded && groupedContent.length > 0 && (
           <div className="mt-4 space-y-2 pl-4 border-l-2 border-purple-400/30">
-            <h5 className="text-white/80 font-medium text-sm mb-2">Related Content:</h5>
             {groupedContent.map((content) => (
-              <NestedContentCard
-                key={content.id}
-                content={content}
-                onClick={(e) => handleNestedContentClick(content, e)}
-                onStartQuiz={onStartQuiz}
-                contextList={[groupContent, ...groupedContent]}
-              />
+              <div key={content.id} className={cn(
+                "transition-all duration-200 rounded-lg",
+                activeContentId === content.id && "ring-4 ring-yellow-400/80 bg-yellow-500/20 shadow-lg shadow-yellow-400/20"
+              )}>
+                <NestedContentCard
+                  content={content}
+                  onClick={(e) => handleNestedContentClick(content, e)}
+                  onStartQuiz={onStartQuiz}
+                  contextList={[groupContent, ...groupedContent]}
+                />
+              </div>
             ))}
           </div>
         )}
