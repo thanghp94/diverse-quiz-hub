@@ -895,17 +895,23 @@ const TopicListItem = ({
 
                                               {/* Title Section - Centered */}
                                               <div className="flex-1 text-center">
-                                                <button 
-                                                  className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-yellow-200 text-base font-medium leading-tight relative z-50"
-                                                  onClick={() => {
-                                                    console.log('CLICK DETECTED!', content.title);
-                                                    toggleGroupExpanded();
-                                                  }}
-                                                  onMouseEnter={() => console.log('Mouse entered button:', content.title)}
-                                                  style={{ pointerEvents: 'all' }}
-                                                >
-                                                  {content.title}
-                                                </button>
+                                                <div className="flex flex-col items-center gap-2">
+                                                  <button 
+                                                    className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-yellow-200 text-base font-medium leading-tight"
+                                                    onClick={() => {
+                                                      console.log('CLICK DETECTED!', content.title);
+                                                      toggleGroupExpanded();
+                                                    }}
+                                                  >
+                                                    {content.title}
+                                                  </button>
+                                                  <button 
+                                                    className="bg-red-500 text-white px-2 py-1 text-xs rounded"
+                                                    onClick={() => console.log('TEST BUTTON CLICKED!')}
+                                                  >
+                                                    TEST
+                                                  </button>
+                                                </div>
                                               </div>
 
                                               {/* Action Buttons - Right */}
