@@ -42,6 +42,10 @@ export const LeaderboardPanel = () => {
     refetchInterval: 30000,
   });
 
+  console.log('Student tries data:', studentTriesData);
+  console.log('Leaderboard data:', leaderboardData);
+  console.log('Active tab:', activeTab);
+
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -61,8 +65,6 @@ export const LeaderboardPanel = () => {
     return "bg-white/10 text-white";
   };
 
-  const isLoading = activeTab === 'tries' ? isLoadingTries : isLoadingLeaderboard;
-
   const getCurrentLeaderboard = () => {
     if (activeTab === 'tries') {
       return Array.isArray(studentTriesData) ? studentTriesData : [];
@@ -81,6 +83,12 @@ export const LeaderboardPanel = () => {
         return [];
     }
   };
+
+  const isLoading = activeTab === 'tries' ? isLoadingTries : isLoadingLeaderboard;
+  const currentData = getCurrentLeaderboard();
+  
+  console.log('Current data for tab', activeTab, ':', currentData);
+  console.log('Is loading:', isLoading);
 
   const getTabIcon = (tab: string) => {
     switch (tab) {

@@ -42,12 +42,14 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   // Reset state when phase changes for sequential matching
   useEffect(() => {
     if (hasSequentialMatching && currentQuizPhase) {
+      console.log('Resetting state for phase change:', currentQuizPhase);
       setMatches({});
       setShowResults(false);
       setIsSubmitted(false);
       setIsSubmitting(false);
       setCorrectMatches({});
       setDraggedItem(null);
+      dragCounter.current = 0;
     }
   }, [currentQuizPhase, hasSequentialMatching]);
   
