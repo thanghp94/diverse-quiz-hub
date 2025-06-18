@@ -983,6 +983,7 @@ export class DatabaseStorage implements IStorage {
         LEFT JOIN content_ratings cr ON cr.content_id = c.id AND cr.student_id = ${studentId}
         LEFT JOIN question q ON q.contentid = c.id
         LEFT JOIN student_try st ON st.question_id = q.id AND st.hocsinh_id = ${studentId}
+        WHERE c.challengesubject && ARRAY['Art', 'Music', 'Literature', 'Social Studies', 'Science and Technology', 'Media', 'History', 'Special Areas']
         GROUP BY c.id, c.topicid, t.topic, c.title, cr.rating, c.parentid
         ORDER BY c.title
       `);
