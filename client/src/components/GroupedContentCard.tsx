@@ -108,9 +108,9 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
           {/* Centered Title */}
           <div className="flex-1 text-center mx-4">
             <h3 
-              className="text-white font-semibold text-lg line-clamp-1 cursor-pointer hover:text-white/90"
+              className="font-semibold text-lg line-clamp-1 cursor-pointer hover:opacity-90"
               onClick={handleGroupContentClick}
-              style={{ color: 'white !important' }}
+              style={{ color: 'white !important', textDecoration: 'none' }}
             >
               {groupContent.title || groupContent.short_description || 'Grouped Content'}
             </h3>
