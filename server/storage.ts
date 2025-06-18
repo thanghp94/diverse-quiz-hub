@@ -103,6 +103,13 @@ export interface IStorage {
   getStudentLearningProgress(studentId: string): Promise<any[]>;
   createLearningProgress(progress: any): Promise<any>;
   updateLearningProgress(id: string, updates: any): Promise<any>;
+
+  // Content Progress
+  getContentProgress(studentId: string): Promise<any[]>;
+  
+  // Leaderboards
+  getStudentTriesLeaderboard(): Promise<any[]>;
+  getLeaderboards(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {

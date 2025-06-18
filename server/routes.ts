@@ -809,6 +809,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Content Progress API
+  app.get("/api/content-progress/:studentId", async (req, res) => {
+    try {
+      const progress = await storage.getContentProgress(req.params.studentId);
+      res.json(progress);
+    } catch (error) {
+      console.error('Error fetching content progress:', error);
+      res.status(500).json({ error: 'Failed to fetch content progress' });
+    }
+  });
+
+  // Assignments API (general assignments, not live class)
+  app.get("/api/assignments", async (req, res) => {
+    try {
+      const assignments = await storage.getAllAssignments();
+      res.json(assignments);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+      res.status(500).json({ error: 'Failed to fetch assignments' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
