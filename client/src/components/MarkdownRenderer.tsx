@@ -74,12 +74,12 @@ export const MarkdownRenderer = ({
           </HoverCardTrigger>
           <HoverCardContent 
             side="top" 
-            className="w-auto max-w-sm bg-white text-black border-gray-300 text-base p-4 rounded-lg shadow-xl z-50"
+            className="w-auto max-w-sm bg-white border-gray-300 text-lg p-4 rounded-lg shadow-xl z-50"
           >
             <div className="font-medium text-gray-600 text-sm uppercase tracking-wide mb-2">
-              Vietnamese
+              VIETNAMESE
             </div>
-            <div className="text-black font-medium text-base">
+            <div className="text-gray-900 font-semibold text-lg">
               {match.translation}
             </div>
           </HoverCardContent>
