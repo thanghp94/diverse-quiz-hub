@@ -17,6 +17,7 @@ import { ParentTopicMatchingButton } from "@/components/ParentTopicMatchingButto
 import { CompactContentDifficultyIndicator } from "@/components/ContentDifficultyIndicator";
 import { ContentRatingButtons } from "@/components/ContentRatingButtons";
 import { ContentGroupCard, ContentGroupPopup } from "@/components/ContentGroupCard";
+import { GroupedContentCard } from "@/components/GroupedContentCard";
 import { useQuery } from "@tanstack/react-query";
 
 interface Topic {
