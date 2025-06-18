@@ -110,6 +110,7 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
             <h3 
               className="text-white font-semibold text-lg line-clamp-1 cursor-pointer hover:text-white/90"
               onClick={handleGroupContentClick}
+              style={{ color: 'white' }}
             >
               {groupContent.title || groupContent.short_description || 'Grouped Content'}
             </h3>
