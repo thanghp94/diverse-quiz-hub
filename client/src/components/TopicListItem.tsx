@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -120,6 +121,10 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
           compact ? "px-2 py-1 h-6" : "px-2 py-2",
           hasNote && "bg-white/10 border-white/70"
         )}
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        }}
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -130,8 +135,8 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         {hasNote && <span className="ml-1 text-xs">*</span>}
       </Button>
       
-      {/* Custom dialog with higher z-index for personal notes */}
-      {isNoteOpen && (
+      {/* Personal note dialog rendered as portal to document.body */}
+      {isNoteOpen && createPortal(
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
           {/* Backdrop */}
           <div 
@@ -186,7 +191,8 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
               </Button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
@@ -1236,7 +1242,12 @@ const TopicListItem = ({
                                                             >
                                                               {groupItem.title}
                                                             </h4>
-                                                            <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                            <div 
+                                                              className="flex items-center gap-1 flex-shrink-0" 
+                                                              onPointerDown={(e) => e.stopPropagation()}
+                                                              onClick={(e) => e.stopPropagation()}
+                                                              onMouseDown={(e) => e.stopPropagation()}
+                                                            >
                                                               <ContentRatingButtons 
                                                                 key={`${groupItem.id}-inline-rating`}
                                                                 contentId={groupItem.id}
