@@ -21,7 +21,7 @@ const TopicDropdown = ({ value, onChange }: { value: string | null; onChange: (v
         <SelectValue placeholder="Select a topic..." />
       </SelectTrigger>
       <SelectContent>
-        {topics?.map((topic: any) => (
+        {(topics as any[])?.map((topic: any) => (
           <SelectItem key={topic.id} value={topic.id}>
             {topic.topic}
           </SelectItem>
@@ -130,6 +130,7 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
       topicid: content.topicid || '',
       challengesubject: Array.isArray(content.challengesubject) ? content.challengesubject.join(', ') : (content.challengesubject || ''),
       parentid: content.parentid || '',
+      contentgroup: content.contentgroup || '',
     });
     setIsEditing(false);
   };

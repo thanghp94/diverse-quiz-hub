@@ -20,8 +20,9 @@ const LiveClassPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<LiveClass | null>(null);
 
-  // Check if user is teacher (GV0002)
-  const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{"id":"GV0002"}');
+  // Check if user is teacher (GV0002) - default to teacher for demonstration
+  const currentUserStr = localStorage.getItem('currentUser');
+  const currentUser = currentUserStr ? JSON.parse(currentUserStr) : { id: 'GV0002' };
   const isTeacher = currentUser.id === 'GV0002';
 
   // Mock live classes data - replace with real API call
