@@ -443,6 +443,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Student tries leaderboard
+  app.get("/api/student-tries-leaderboard", async (req, res) => {
+    try {
+      const leaderboard = await storage.getStudentTriesLeaderboard();
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    }
+  });
+
   app.get("/api/content-ratings/stats/:contentId", async (req, res) => {
     try {
       const stats = await storage.getContentRatingStats(req.params.contentId);

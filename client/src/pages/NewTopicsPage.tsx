@@ -120,7 +120,7 @@ const NewTopicsPage = () => {
 
         {/* Topics Grid - Two Column Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {topics?.filter(topic => !topic.parentid).map((topic, index) => {
+          {topics?.filter(topic => !topic.parentid && topic.topic !== "0. Introductory Questions").map((topic, index) => {
             const isExpanded = expandedTopic === topic.id;
             const subtopics = getSubtopics(topic.id);
             const topicContent = getTopicContent(topic.id);

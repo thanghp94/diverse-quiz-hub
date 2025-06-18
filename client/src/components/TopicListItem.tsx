@@ -888,13 +888,15 @@ const TopicListItem = ({
                                             <div className="flex flex-wrap gap-2">
                                               {groupedContent.map((groupItem) => (
                                                 <div key={`thumb-${groupItem.id}`} className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                  <LocalContentThumbnail 
-                                                    content={groupItem} 
-                                                    onClick={() => onContentClick({
-                                                      content: groupItem,
-                                                      contextList: [...subtopicContent]
-                                                    })}
-                                                  />
+                                                  <div className="w-full h-full object-cover object-center">
+                                                    <LocalContentThumbnail 
+                                                      content={groupItem} 
+                                                      onClick={() => onContentClick({
+                                                        content: groupItem,
+                                                        contextList: [...subtopicContent]
+                                                      })}
+                                                    />
+                                                  </div>
                                                 </div>
                                               ))}
                                             </div>

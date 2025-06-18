@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +9,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Edit, Save, X, Video, ArrowUp, ArrowDown, Layers } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Content } from '@shared/schema';
+
+const TopicDropdown = ({ value, onChange }: { value: string | null; onChange: (value: string) => void }) => {
+  const { data: topics } = useQuery({
+    queryKey: ['/api/topics'],
+  });
+
+  return (
+    <Select value={value || ''} onValueChange={onChange}>
+      <SelectTrigger>
+        <SelectValue placeholder="Select a topic..." />
+      </SelectTrigger>
+      <SelectContent>
+        {topics?.map((topic: any) => (
+          <SelectItem key={topic.id} value={topic.id}>
+            {topic.topic}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
 
 interface ContentEditorProps {
   content: Content;
@@ -29,6 +50,7 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
     topicid: content.topicid || '',
     challengesubject: Array.isArray(content.challengesubject) ? content.challengesubject.join(', ') : (content.challengesubject || ''),
     parentid: content.parentid || '',
+    contentgroup: content.contentgroup || '',
   });
 
   const { toast } = useToast();
@@ -190,19 +212,34 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
             )}
           </div>
 
-          {/* Topic ID */}
+          {/* Topic ID with Dropdown */}
           <div className="space-y-2">
-            <Label htmlFor="topicid">Topic ID</Label>
+            <Label htmlFor="topicid">Topic</Label>
             {isEditing ? (
-              <Input
-                id="topicid"
+              <TopicDropdown
                 value={editData.topicid}
-                onChange={(e) => setEditData(prev => ({ ...prev, topicid: e.target.value }))}
-                placeholder="Enter topic ID..."
+                onChange={(value) => setEditData(prev => ({ ...prev, topicid: value }))}
               />
             ) : (
               <div className="p-3 bg-gray-50 rounded-lg text-sm">
                 {content.topicid || 'No topic ID'}
+              </div>
+            )}
+          </div>
+
+          {/* Content Group Field */}
+          <div className="space-y-2">
+            <Label htmlFor="contentgroup">Content Group</Label>
+            {isEditing ? (
+              <Input
+                id="contentgroup"
+                value={editData.contentgroup}
+                onChange={(e) => setEditData(prev => ({ ...prev, contentgroup: e.target.value }))}
+                placeholder="Enter content group ID to link with..."
+              />
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                {content.contentgroup || 'No content group'}
               </div>
             )}
           </div>
