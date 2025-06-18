@@ -21,7 +21,8 @@ const LiveClassPanel = () => {
 
   // Fetch real live class assignments from API
   const { data: liveAssignments = [], isLoading } = useQuery<LiveAssignment[]>({
-    queryKey: ['/api/assignments/live-class'],
+    queryKey: ['/api/live-assignments'],
+    queryFn: () => fetch('/api/live-assignments').then(res => res.json()),
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
@@ -59,35 +60,36 @@ const LiveClassPanel = () => {
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-400/30 text-white hover:from-blue-600/30 hover:to-purple-600/30 hover:border-blue-400/50 backdrop-blur-sm shadow-lg transition-all duration-300"
+          size="sm"
+          className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border-green-400/30 text-white hover:from-green-600/30 hover:to-blue-600/30 hover:border-green-400/50 backdrop-blur-sm shadow-lg transition-all duration-300"
         >
-          <Video className="h-4 w-4 mr-2" />
-          Live Class
-          <Badge className="ml-2 bg-blue-500/20 text-blue-200">
-            {isLoading ? 'Loading...' : (liveAssignments as LiveAssignment[]).length}
+          <Video className="h-4 w-4 mr-1" />
+          Homework
+          <Badge className="ml-1 bg-green-500/20 text-green-200 text-xs">
+            {isLoading ? '...' : (liveAssignments as LiveAssignment[]).length}
           </Badge>
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-4xl max-h-[80vh] bg-gray-900 border-gray-700 text-white">
+      <DialogContent className="max-w-3xl max-h-[70vh] bg-gray-900 border-gray-700 text-white">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
-            <Video className="h-6 w-6 text-blue-400" />
-            Live Classes
-            <Badge variant="outline" className="text-blue-200 border-blue-400">
-              {(liveAssignments as LiveAssignment[]).length} Available
+            <Video className="h-5 w-5 text-green-400" />
+            Available Homework
+            <Badge variant="outline" className="text-green-200 border-green-400">
+              {(liveAssignments as LiveAssignment[]).length} Active
             </Badge>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 max-h-[60vh] overflow-y-auto">
+        <div className="space-y-3 max-h-[50vh] overflow-y-auto">
           {isLoading ? (
-            <div className="text-center py-8">Loading live classes...</div>
+            <div className="text-center py-6">Loading homework assignments...</div>
           ) : (liveAssignments as LiveAssignment[]).length === 0 ? (
-            <div className="text-center py-8 text-gray-400">
-              <Video className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No Live Classes Available</h3>
-              <p className="text-sm">No live class assignments found within the last 3 hours.</p>
+            <div className="text-center py-6 text-gray-400">
+              <Video className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <h3 className="text-base font-medium mb-2">No Active Homework</h3>
+              <p className="text-sm">No homework assignments created within the last 3 hours.</p>
             </div>
           ) : (
             (liveAssignments as LiveAssignment[]).map((assignment: LiveAssignment) => (
@@ -96,37 +98,37 @@ const LiveClassPanel = () => {
                 className="bg-gray-800/50 border-gray-600 hover:bg-gray-700/50 transition-all duration-200 cursor-pointer"
                 onClick={() => handleJoinClass(assignment)}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-white">{assignment.assignmentname}</h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-base font-semibold text-white">{assignment.assignmentname}</h3>
                         {getStatusBadge(assignment)}
                       </div>
-                      <p className="text-gray-300 text-sm mb-3">{assignment.description || 'Live class session'}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
+                      <p className="text-gray-300 text-sm mb-2 line-clamp-2">{assignment.description || 'Homework assignment available for students'}</p>
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
                         <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          Created: {formatTime(assignment.created_at)}
+                          <Clock className="h-3 w-3" />
+                          {formatTime(assignment.created_at)}
                         </div>
                         <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          Assignment ID: {assignment.assignmentid}
+                          <Users className="h-3 w-3" />
+                          Students can join
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
+                    <div className="flex items-center gap-2 ml-3">
                       <Button 
                         variant="outline" 
                         size="sm"
-                        className="bg-blue-600/20 border-blue-400/50 text-blue-200 hover:bg-blue-600/30"
+                        className="bg-green-600/20 border-green-400/50 text-green-200 hover:bg-green-600/30"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleJoinClass(assignment);
                         }}
                       >
-                        <Play className="h-4 w-4 mr-1" />
-                        Join
+                        <Play className="h-3 w-3 mr-1" />
+                        Start
                       </Button>
                     </div>
                   </div>
