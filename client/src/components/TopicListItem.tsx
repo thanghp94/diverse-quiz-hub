@@ -1035,48 +1035,43 @@ export const TopicListItem = ({
                                           <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 border-purple-500/30">
                                             <div className="flex flex-col h-full">
                                               {/* Header */}
-                                              <div className="flex items-center justify-between p-6 border-b border-purple-400/30 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20">
-                                                <div className="flex items-center gap-4">
+                                              <div className="flex items-center justify-between p-4 border-b border-purple-400/30 bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20">
+                                                <div className="flex items-center gap-3">
                                                   <ContentThumbnail 
                                                     content={content} 
                                                     onClick={() => {}}
                                                   />
                                                   <div>
-                                                    <h2 className="text-white text-2xl font-bold">{content.title}</h2>
-                                                    {content.short_description && (
-                                                      <p className="text-purple-200 text-lg mt-1">{content.short_description}</p>
-                                                    )}
-                                                    <div className="flex items-center gap-3 mt-2">
-                                                      <Badge className="bg-purple-500/20 text-purple-200">
-                                                        {groupedContent.length} related items
+                                                    <h2 className="text-white text-xl font-bold">{content.title}</h2>
+                                                    <div className="flex items-center gap-3 mt-1">
+                                                      <Badge className="bg-purple-500/20 text-purple-200 text-sm">
+                                                        {groupedContent.length} items
                                                       </Badge>
-                                                      <CompactContentDifficultyIndicator contentId={content.id} />
+                                                      <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6"
+                                                        onClick={() => onStartTopicQuiz(content.topicid || '', 'Overview', content.title)}
+                                                      >
+                                                        Quiz
+                                                      </Button>
                                                     </div>
                                                   </div>
                                                 </div>
-                                                <div className="flex items-center gap-3">
-                                                  <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="text-purple-200 border-purple-400/50 hover:bg-purple-500/20"
-                                                    onClick={() => onStartTopicQuiz(content.topicid || '', 'Overview', content.title)}
-                                                  >
-                                                    Group Quiz
-                                                  </Button>
-                                                  <Button 
-                                                    variant="ghost" 
-                                                    size="sm"
-                                                    onClick={() => setIsFullScreenGroup(false)}
-                                                    className="text-white hover:bg-white/20"
-                                                  >
-                                                    ✕
-                                                  </Button>
-                                                </div>
+                                                <Button 
+                                                  variant="ghost" 
+                                                  size="sm"
+                                                  onClick={() => setIsFullScreenGroup(false)}
+                                                  className="text-white hover:bg-white/20"
+                                                >
+                                                  ✕
+                                                </Button>
                                               </div>
 
-                                              {/* Content Grid */}
-                                              <div className="flex-1 overflow-y-auto p-6">
-                                                <div className="grid grid-cols-2 gap-6">
+                                              {/* Related Content */}
+                                              <div className="flex-1 overflow-y-auto p-4">
+                                                <h3 className="text-purple-200 text-sm font-medium mb-3">Related Content:</h3>
+                                                <div className="space-y-3">
                                                   {groupedContent.map((groupItem) => {
                                                     const FullScreenGroupItemCard = () => {
                                                       const { videoData: fsGroupVideoData, video2Data: fsGroupVideo2Data, videoEmbedUrl: fsGroupVideoEmbedUrl, video2EmbedUrl: fsGroupVideo2EmbedUrl } = useContentMedia(groupItem);
@@ -1087,9 +1082,10 @@ export const TopicListItem = ({
 
                                                       return (
                                                         <>
-                                                          <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-4">
-                                                            <div className="flex items-start justify-between gap-3">
-                                                              <div
+                                                          <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                                            <div className="flex items-start gap-3">
+                                                              <ContentThumbnail 
+                                                                content={groupItem} 
                                                                 onClick={() => {
                                                                   setIsFullScreenGroup(false);
                                                                   onContentClick({
@@ -1097,11 +1093,11 @@ export const TopicListItem = ({
                                                                     contextList: [...subtopicContent]
                                                                   });
                                                                 }}
-                                                                className="flex-grow cursor-pointer"
-                                                              >
-                                                                <div className="flex items-center gap-3">
-                                                                  <ContentThumbnail 
-                                                                    content={groupItem} 
+                                                              />
+                                                              <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center justify-between gap-2 mb-2">
+                                                                  <h4 
+                                                                    className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 cursor-pointer hover:text-white"
                                                                     onClick={() => {
                                                                       setIsFullScreenGroup(false);
                                                                       onContentClick({
@@ -1109,65 +1105,66 @@ export const TopicListItem = ({
                                                                         contextList: [...subtopicContent]
                                                                       });
                                                                     }}
-                                                                  />
-                                                                  <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-center justify-between gap-3 mb-3">
-                                                                      <h4 className="text-white/90 text-lg font-medium leading-tight flex-1 min-w-0">{groupItem.title}</h4>
-                                                                      <div className="flex items-center gap-2 flex-shrink-0">
-                                                                          <ContentRatingButtons 
-                                                                            key={`${groupItem.id}-fs-rating`}
-                                                                            contentId={groupItem.id}
-                                                                            compact={true}
-                                                                            studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
-                                                                          />
-                                                                          {(hasFsGroupVideo1 || hasFsGroupVideo2) && (
-                                                                            <Button 
-                                                                              variant="outline" 
-                                                                              size="sm" 
-                                                                              className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-7"
-                                                                              onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setFsGroupVideoPopupOpen(true);
-                                                                              }}
-                                                                            >
-                                                                              <Play className="h-3 w-3 mr-1" />
-                                                                              Video{(hasFsGroupVideo1 && hasFsGroupVideo2) ? 's' : ''}
-                                                                            </Button>
-                                                                          )}
-                                                                          <DropdownMenu>
-                                                                            <DropdownMenuTrigger asChild>
-                                                                              <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-7">
-                                                                                Quiz
-                                                                              </Button>
-                                                                            </DropdownMenuTrigger>
-                                                                            <DropdownMenuContent>
-                                                                              <DropdownMenuItem onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setIsFullScreenGroup(false);
-                                                                                onStartQuiz(groupItem, subtopicContent, 'Easy');
-                                                                              }}>
-                                                                                Easy Quiz
-                                                                              </DropdownMenuItem>
-                                                                              <DropdownMenuItem onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                setIsFullScreenGroup(false);
-                                                                                onStartQuiz(groupItem, subtopicContent, 'Hard');
-                                                                              }}>
-                                                                                Hard Quiz
-                                                                              </DropdownMenuItem>
-                                                                            </DropdownMenuContent>
-                                                                          </DropdownMenu>
-                                                                        </div>
-                                                                      </div>
-                                                                      <div className="flex items-center gap-3 mb-3">
-                                                                        <CompactContentDifficultyIndicator contentId={groupItem.id} />
-                                                                        <Badge className={cn("text-xs", getContentTypeColor(groupItem))}>
-                                                                          {getContentIcon(groupItem)}
-                                                                        </Badge>
-                                                                      </div>
-                                                                    {groupItem.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(groupItem.short_description)}</p>}
+                                                                  >
+                                                                    {groupItem.title}
+                                                                  </h4>
+                                                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                                                    <ContentRatingButtons 
+                                                                      key={`${groupItem.id}-fs-rating`}
+                                                                      contentId={groupItem.id}
+                                                                      compact={true}
+                                                                      studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                                    />
+                                                                    {(hasFsGroupVideo1 || hasFsGroupVideo2) && (
+                                                                      <Button 
+                                                                        variant="outline" 
+                                                                        size="sm" 
+                                                                        className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                                        onClick={(e) => {
+                                                                          e.stopPropagation();
+                                                                          setFsGroupVideoPopupOpen(true);
+                                                                        }}
+                                                                      >
+                                                                        <Play className="h-3 w-3 mr-1" />
+                                                                        Video{(hasFsGroupVideo1 && hasFsGroupVideo2) ? 's' : ''}
+                                                                      </Button>
+                                                                    )}
+                                                                    <DropdownMenu>
+                                                                      <DropdownMenuTrigger asChild>
+                                                                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                                          Quiz
+                                                                        </Button>
+                                                                      </DropdownMenuTrigger>
+                                                                      <DropdownMenuContent>
+                                                                        <DropdownMenuItem onClick={(e) => {
+                                                                          e.stopPropagation();
+                                                                          setIsFullScreenGroup(false);
+                                                                          onStartQuiz(groupItem, subtopicContent, 'Easy');
+                                                                        }}>
+                                                                          Easy Quiz
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem onClick={(e) => {
+                                                                          e.stopPropagation();
+                                                                          setIsFullScreenGroup(false);
+                                                                          onStartQuiz(groupItem, subtopicContent, 'Hard');
+                                                                        }}>
+                                                                          Hard Quiz
+                                                                        </DropdownMenuItem>
+                                                                      </DropdownMenuContent>
+                                                                    </DropdownMenu>
                                                                   </div>
                                                                 </div>
+                                                                <div className="flex items-center gap-2 mb-2">
+                                                                  <CompactContentDifficultyIndicator contentId={groupItem.id} />
+                                                                  <Badge className={cn("text-xs", getContentTypeColor(groupItem))}>
+                                                                    {getContentIcon(groupItem)}
+                                                                  </Badge>
+                                                                </div>
+                                                                {groupItem.short_description && (
+                                                                  <p className="text-white/60 text-sm leading-relaxed">
+                                                                    {formatDescription(groupItem.short_description)}
+                                                                  </p>
+                                                                )}
                                                               </div>
                                                             </div>
                                                           </div>
