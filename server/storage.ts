@@ -1,4 +1,4 @@
-import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress } from "@shared/schema";
+import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, cron_jobs, student_try_content, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress, type CronJob, type InsertCronJob } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
@@ -106,6 +106,12 @@ export interface IStorage {
 
   // Content Progress
   getContentProgress(studentId: string): Promise<any[]>;
+
+  // Cron Jobs
+  getCronJob(jobName: string): Promise<CronJob | undefined>;
+  createCronJob(job: InsertCronJob): Promise<CronJob>;
+  updateCronJob(jobName: string, lastRun: Date, nextRun: Date): Promise<CronJob>;
+  updateStudentTryContent(): Promise<void>;
   
   // Leaderboards
   getStudentTriesLeaderboard(): Promise<any[]>;
@@ -993,6 +999,109 @@ export class DatabaseStorage implements IStorage {
         ok_count: parseInt(row.ok_count) || 0,
         really_bad_count: parseInt(row.really_bad_count) || 0
       }));
+    });
+  }
+
+  // Cron Jobs
+  async getCronJob(jobName: string): Promise<CronJob | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(cron_jobs)
+        .where(eq(cron_jobs.job_name, jobName));
+      return result[0] || undefined;
+    });
+  }
+
+  async createCronJob(job: InsertCronJob): Promise<CronJob> {
+    return this.executeWithRetry(async () => {
+      const result = await db.insert(cron_jobs).values(job).returning();
+      return result[0];
+    });
+  }
+
+  async updateCronJob(jobName: string, lastRun: Date, nextRun: Date): Promise<CronJob> {
+    return this.executeWithRetry(async () => {
+      const result = await db.update(cron_jobs)
+        .set({ last_run: lastRun, next_run: nextRun })
+        .where(eq(cron_jobs.job_name, jobName))
+        .returning();
+      return result[0];
+    });
+  }
+
+  async updateStudentTryContent(): Promise<void> {
+    return this.executeWithRetry(async () => {
+      // Get the last cron job run
+      const cronJob = await this.getCronJob('daily_student_tracking');
+      const lastRun = cronJob?.last_run || new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago if no previous run
+      
+      // Get all student tries since last run
+      const result = await db.execute(sql`
+        SELECT DISTINCT
+          st.hocsinh_id,
+          q.contentid,
+          STRING_AGG(st.question_id, ', ' ORDER BY st.question_id) as question_ids
+        FROM student_try st
+        INNER JOIN question q ON q.id = st.question_id
+        WHERE st.time_start::timestamp > ${lastRun.toISOString()}
+        AND q.contentid IS NOT NULL
+        GROUP BY st.hocsinh_id, q.contentid
+      `);
+
+      // Update or create student_try_content records
+      for (const row of result.rows) {
+        const existingRecord = await db.select().from(student_try_content)
+          .where(and(
+            eq(student_try_content.hocsinh_id, row.hocsinh_id),
+            eq(student_try_content.contentid, row.contentid)
+          ));
+
+        if (existingRecord.length > 0) {
+          // Append new question IDs to existing record
+          const currentQuestionIds = existingRecord[0].update || '';
+          const newQuestionIds = currentQuestionIds 
+            ? `${currentQuestionIds}, ${row.question_ids}`
+            : row.question_ids;
+
+          await db.update(student_try_content)
+            .set({ 
+              update: newQuestionIds,
+              time_end: new Date().toISOString()
+            })
+            .where(and(
+              eq(student_try_content.hocsinh_id, row.hocsinh_id),
+              eq(student_try_content.contentid, row.contentid)
+            ));
+        } else {
+          // Create new record
+          await db.insert(student_try_content).values({
+            id: crypto.randomUUID(),
+            contentid: row.contentid,
+            hocsinh_id: row.hocsinh_id,
+            student_try_id: crypto.randomUUID(),
+            time_start: new Date().toISOString(),
+            time_end: new Date().toISOString(),
+            update: row.question_ids
+          });
+        }
+      }
+
+      // Update cron job record
+      const now = new Date();
+      const nextRun = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Next day
+
+      if (cronJob) {
+        await this.updateCronJob('daily_student_tracking', now, nextRun);
+      } else {
+        await this.createCronJob({
+          id: crypto.randomUUID(),
+          job_name: 'daily_student_tracking',
+          last_run: now,
+          next_run: nextRun,
+          status: 'active'
+        });
+      }
+
+      console.log(`Updated student try content tracking for ${result.rows.length} records`);
     });
   }
 }

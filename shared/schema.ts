@@ -299,6 +299,16 @@ export const learning_progress = pgTable("learning_progress", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
+// Cron job tracking
+export const cron_jobs = pgTable("cron_jobs", {
+  id: text("id").primaryKey(),
+  job_name: text("job_name").notNull(),
+  last_run: timestamp("last_run"),
+  next_run: timestamp("next_run"),
+  status: text("status").default("active"), // active, paused, error
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const insertTopicSchema = createInsertSchema(topics);
 export const insertContentSchema = createInsertSchema(content);
@@ -313,6 +323,7 @@ export const insertDailyActivitySchema = createInsertSchema(daily_activities);
 export const insertWritingPromptSchema = createInsertSchema(writing_prompts);
 export const insertWritingSubmissionSchema = createInsertSchema(writing_submissions);
 export const insertLearningProgressSchema = createInsertSchema(learning_progress);
+export const insertCronJobSchema = createInsertSchema(cron_jobs);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -336,3 +347,5 @@ export type WritingSubmission = typeof writing_submissions.$inferSelect;
 export type InsertWritingSubmission = z.infer<typeof insertWritingSubmissionSchema>;
 export type LearningProgress = typeof learning_progress.$inferSelect;
 export type InsertLearningProgress = z.infer<typeof insertLearningProgressSchema>;
+export type CronJob = typeof cron_jobs.$inferSelect;
+export type InsertCronJob = z.infer<typeof insertCronJobSchema>;
