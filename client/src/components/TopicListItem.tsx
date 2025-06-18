@@ -859,14 +859,11 @@ const TopicListItem = ({
                                           </div>
                                         </div>
 
-                                        {/* Inline Grouped Content Expansion */}
+                                        {/* Inline Grouped Content Expansion - Full Width */}
                                         {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
                                           <div className="mt-4 pt-4 border-t border-purple-400/30">
-                                            <div className="grid grid-cols-2 gap-6">
-                                              <div></div>
-                                              <div>
-                                                <h5 className="text-purple-200 text-base font-medium mb-4">Related Content:</h5>
-                                                <div className="space-y-3">
+                                            <h5 className="text-purple-200 text-base font-medium mb-4">Related Content:</h5>
+                                            <div className="grid grid-cols-1 gap-3">
                                                   {groupedContent.map((groupItem) => (
                                                     <div key={groupItem.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
                                                       <div className="flex items-start gap-3">
@@ -930,62 +927,60 @@ const TopicListItem = ({
                                                       </div>
                                                     </div>
                                                   ))}
-                                                </div>
-                                              </div>
                                             </div>
                                           </div>
                                         )}
-                                      </div>
 
-                                      {/* Video Popup */}
-                                      <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
-                                        <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
-                                          <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
-                                            <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
-                                            <Button 
-                                              variant="ghost" 
-                                              size="sm"
-                                              onClick={() => setVideoPopupOpen(false)}
-                                              className="text-white hover:bg-white/20 flex-shrink-0"
-                                            >
-                                              ✕
-                                            </Button>
-                                          </div>
-                                          <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-                                            {hasVideo1 && (
-                                              <div>
-                                                {videoData.video_name && (
-                                                  <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
-                                                )}
-                                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                                                  <iframe 
-                                                    className="w-full h-full" 
-                                                    src={videoEmbedUrl} 
-                                                    title={videoData.video_name || 'Video 1'} 
-                                                    frameBorder="0" 
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                    allowFullScreen
-                                                  />
+                                        {/* Video Popup */}
+                                        <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
+                                          <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+                                            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                                              <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => setVideoPopupOpen(false)}
+                                                className="text-white hover:bg-white/20 flex-shrink-0"
+                                              >
+                                                ✕
+                                              </Button>
+                                            </div>
+                                            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                                              {hasVideo1 && (
+                                                <div>
+                                                  {videoData.video_name && (
+                                                    <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
+                                                  )}
+                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                    <iframe 
+                                                      className="w-full h-full" 
+                                                      src={videoEmbedUrl} 
+                                                      title={videoData.video_name || 'Video 1'} 
+                                                      frameBorder="0" 
+                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                      allowFullScreen
+                                                    />
+                                                  </div>
                                                 </div>
-                                              </div>
-                                            )}
-                                            {hasVideo2 && (
-                                              <div>
-                                                <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                                                  <iframe 
-                                                    className="w-full h-full" 
-                                                    src={video2EmbedUrl} 
-                                                    title={video2Data.video_name || 'Video 2'} 
-                                                    frameBorder="0" 
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                    allowFullScreen
-                                                  />
+                                              )}
+                                              {hasVideo2 && (
+                                                <div>
+                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                    <iframe 
+                                                      className="w-full h-full" 
+                                                      src={video2EmbedUrl} 
+                                                      title={video2Data.video_name || 'Video 2'} 
+                                                      frameBorder="0" 
+                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                      allowFullScreen
+                                                    />
+                                                  </div>
                                                 </div>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </DialogContent>
-                                      </Dialog>
+                                              )}
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
+                                      </div>
                                     </>
                                   );
                                 };
