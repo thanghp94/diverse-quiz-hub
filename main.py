@@ -54,7 +54,7 @@ def fetch_content_rows(conn, field_choice='short_blurb'):
         WHERE translation_dictionary IS NULL 
         AND {field_name} IS NOT NULL 
         AND {field_name} != ''
-        LIMIT 50
+        LIMIT 300
         """
         cursor.execute(query)
         rows = cursor.fetchall()
