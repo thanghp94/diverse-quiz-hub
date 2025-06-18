@@ -122,6 +122,7 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         )}
         onClick={(e) => {
           e.stopPropagation();
+          e.preventDefault();
           setIsNoteOpen(true);
         }}
       >
@@ -197,6 +198,8 @@ interface TopicListItemProps {
     onStartTopicQuiz: (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => void;
     onStartTopicMatching: (topicId: string, topicName: string) => void;
     onStartGroupMatching: (matchingId: string, matchingTitle: string) => void;
+    onToggleGroupCard: (groupCardId: string) => void;
+    isGroupCardExpanded: (groupCardId: string) => boolean;
 }
 
 const getContentIcon = (content: any) => {
@@ -793,7 +796,9 @@ const TopicListItem = ({
     getTopicContent,
     onStartTopicQuiz,
     onStartTopicMatching,
-    onStartGroupMatching
+    onStartGroupMatching,
+    onToggleGroupCard,
+    isGroupCardExpanded
 }: TopicListItemProps) => {
     const { hasMatchingActivities } = useTopicMatching(topic.id);
 

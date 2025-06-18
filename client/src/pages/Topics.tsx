@@ -58,6 +58,24 @@ const Topics = () => {
     matchingId: string;
     matchingTitle: string;
   } | null>(null);
+  const [expandedGroupCards, setExpandedGroupCards] = useState<Set<string>>(new Set());
+
+  // Helper functions for group card expansion
+  const handleToggleGroupCard = useCallback((groupCardId: string) => {
+    setExpandedGroupCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupCardId)) {
+        newSet.delete(groupCardId);
+      } else {
+        newSet.add(groupCardId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const isGroupCardExpanded = useCallback((groupCardId: string) => {
+    return expandedGroupCards.has(groupCardId);
+  }, [expandedGroupCards]);
 
   // Parse URL parameters
   const urlParams = new URLSearchParams(location.split('?')[1] || '');
@@ -303,6 +321,8 @@ const Topics = () => {
                     onStartTopicQuiz={handleStartTopicQuiz}
                     onStartTopicMatching={handleStartTopicMatching}
                     onStartGroupMatching={handleStartGroupMatching}
+                    onToggleGroupCard={handleToggleGroupCard}
+                    isGroupCardExpanded={isGroupCardExpanded}
                   />
                 );
               })}
