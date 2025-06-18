@@ -274,7 +274,7 @@ const Topics = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
               {topics?.map(topic => {
                 const subtopics = getSubtopics(topic.id);
                 const topicContent = getTopicContent(topic.id);

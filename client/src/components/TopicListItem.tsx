@@ -903,9 +903,9 @@ const TopicListItem = ({
               )}
 
               {subtopics.length > 0 && (
-                <div className="mt-3">
+                <div className="mt-2">
                   {/* Two-column responsive layout for subtopics */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {subtopics.map((subtopic, index) => {
                       const subtopicContent = getTopicContent(subtopic.id);
                       const isExpanded = openContent.includes(`subtopic-${subtopic.id}`);
@@ -947,7 +947,7 @@ const TopicListItem = ({
                             </div>
                           </div>
                           {subtopicContent.length > 0 && isExpanded && (
-                            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
                               {(() => {
                                 // Filter out content that belongs to groups (will be shown in group expansion)
                                 const displayableContent = subtopicContent.filter(content => {
@@ -1149,9 +1149,9 @@ const TopicListItem = ({
 
                                         {/* Inline Grouped Content Expansion - Responsive Layout */}
                                         {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
-                                          <div className="mt-4 pt-4 border-t border-purple-400/30">
-                                            <h5 className="text-purple-200 text-base font-medium mb-4">Related Content:</h5>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div className="mt-3 pt-3 border-t border-purple-400/30">
+                                            <h5 className="text-purple-200 text-base font-medium mb-3">Related Content:</h5>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                   {groupedContent.map((groupItem) => (
                                                     <div key={groupItem.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
                                                       <div className="flex items-start gap-3">
