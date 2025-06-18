@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Video, Clock, Users, Play } from 'lucide-react';
+import QuizDialog from './QuizDialog';
 
 interface LiveAssignment {
   id: string;
