@@ -340,7 +340,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </DialogContent>
                       </Dialog>
                     ) : (
-                      <div className="font-medium text-xl leading-tight whitespace-pre-line text-left">{item}</div>
+                      <div className="font-medium text-sm leading-relaxed whitespace-pre-line text-left min-h-[120px] flex items-center">{item}</div>
                     )}
                     {matchedLeft && (
                       <div className={`flex items-center gap-1 text-xs mt-1 p-1 rounded border ${

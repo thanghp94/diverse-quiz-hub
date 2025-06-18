@@ -276,10 +276,12 @@ const GroupedContentDisplay = ({
         // This is a group header card - always goes to group cards
         allGroupCards.push(content);
       } else if (!content.contentgroup || content.contentgroup.trim() === '') {
-        // This is ungrouped content - always goes to ungrouped
-        allUngroupedContent.push(content);
+        // This is ungrouped content - only add if it's not a groupcard
+        if (content.prompt !== "groupcard") {
+          allUngroupedContent.push(content);
+        }
       } else {
-        // This content belongs to a group
+        // This content belongs to a group - exclude from ungrouped
         if (!groupedContentMap[content.contentgroup]) {
           groupedContentMap[content.contentgroup] = [];
         }
