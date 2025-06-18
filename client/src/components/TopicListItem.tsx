@@ -727,9 +727,7 @@ const TopicListItem = ({
                           >
                             <div className="flex-grow">
                               <div className="flex items-center gap-3 mb-2">
-                                <Badge className="bg-green-500/20 text-green-200 text-xs">
-                                  <BookOpen className="h-3 w-3" />
-                                </Badge>
+
                                 <span className="text-white/90 text-lg font-bold text-center">{subtopic.topic}</span>
                               </div>
                               {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
@@ -796,8 +794,8 @@ const TopicListItem = ({
                                     <>
                                       <div className={cn(
                                         "bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3",
-                                        isGroupCard && "bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20 border-purple-400/30",
-                                        isGroupCard && isGroupExpanded && "col-span-2"
+                                        isGroupCard && "bg-gradient-to-br from-purple-600/25 via-blue-600/25 to-indigo-600/25 border-purple-400/40 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400/60 transform hover:scale-[1.02]",
+                                        isGroupCard && isGroupExpanded && "col-span-2 ring-2 ring-purple-400/30"
                                       )}>
                                         <div className="flex items-start justify-between gap-2">
                                           <div

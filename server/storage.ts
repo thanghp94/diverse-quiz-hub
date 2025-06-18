@@ -85,6 +85,7 @@ export interface IStorage {
   createAssignment(assignment: any): Promise<any>;
   getAssignmentById(id: string): Promise<any>;
   getAllAssignments(): Promise<any[]>;
+  getLiveClassAssignments(): Promise<any[]>;
   duplicateAssignment(id: string, newType: string): Promise<any>;
 
   // Assignment Student Tries

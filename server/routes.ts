@@ -600,6 +600,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Live Class Assignments API
+  app.get("/api/assignments/live-class", async (req, res) => {
+    try {
+      const liveClassAssignments = await storage.getLiveClassAssignments();
+      res.json(liveClassAssignments);
+    } catch (error) {
+      console.error('Error fetching live class assignments:', error);
+      res.status(500).json({ error: 'Failed to fetch live class assignments' });
+    }
+  });
+
   app.post("/api/assignments", async (req, res) => {
     try {
       const assignment = await storage.createAssignment(req.body);
