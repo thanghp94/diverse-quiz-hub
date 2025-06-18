@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router, Route, Switch } from "wouter";
 import Index from "./pages/Index";
 import Topics from "./pages/Topics";
-import NewTopicsPage from "./pages/NewTopicsPage";
+
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
@@ -31,7 +31,7 @@ const App = () => (
           <Route path="/login" component={Login} />
           <Route path="/" component={Topics} />
           <Route path="/topics" component={Topics} />
-          <Route path="/new-topics" component={NewTopicsPage} />
+
           <Route path="/challenge-subject" component={ChallengeSubject} />
           <Route path="/content/:id" component={Content} />
           <Route path="/leaderboard" component={Leaderboard} />
