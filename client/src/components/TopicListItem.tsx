@@ -1150,6 +1150,8 @@ const TopicListItem = ({
                                                     <MarkdownRenderer 
                                                       className="text-sm leading-relaxed"
                                                       translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
+                                                      textColor="text-white/60"
+                                                      tooltipStyle="light"
                                                     >
                                                       {content.short_description}
                                                     </MarkdownRenderer>
@@ -1236,6 +1238,8 @@ const TopicListItem = ({
                                                       <MarkdownRenderer 
                                                         className="text-sm leading-relaxed"
                                                         translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
+                                                        textColor="text-white/60"
+                                                        tooltipStyle="light"
                                                       >
                                                         {content.short_description}
                                                       </MarkdownRenderer>
@@ -1349,6 +1353,8 @@ const TopicListItem = ({
                                                               <MarkdownRenderer 
                                                                 className="text-xs leading-relaxed"
                                                                 translationDictionary={isValidTranslationDictionary(groupItem.translation_dictionary) ? groupItem.translation_dictionary : null}
+                                                                textColor="text-white/60"
+                                                                tooltipStyle="light"
                                                               >
                                                                 {groupItem.short_description}
                                                               </MarkdownRenderer>

@@ -13,11 +13,13 @@ export const MarkdownRenderer = ({
   className = "",
   translationDictionary,
   textColor = "",
+  tooltipStyle = "dark", // "dark" for white background with dark text, "light" for dark background with light text
 }: {
   children: string;
   className?: string;
   translationDictionary?: Record<string, string> | null;
   textColor?: string;
+  tooltipStyle?: "dark" | "light";
 }) => {
   // Function to add translation tooltips to text nodes
   const addTranslationTooltips = (text: string): React.ReactNode => {
@@ -76,12 +78,20 @@ export const MarkdownRenderer = ({
           </HoverCardTrigger>
           <HoverCardContent 
             side="top" 
-            className="w-auto max-w-sm bg-white border-gray-300 text-lg p-4 rounded-lg shadow-xl z-50"
+            className={`w-auto max-w-sm text-lg p-4 rounded-lg shadow-xl z-50 ${
+              tooltipStyle === "dark" 
+                ? "bg-white border-gray-300 text-gray-900" 
+                : "bg-gray-800 border-gray-600 text-white"
+            }`}
           >
-            <div className="text-gray-900 font-medium text-sm uppercase tracking-wide mb-2">
+            <div className={`font-medium text-sm uppercase tracking-wide mb-2 ${
+              tooltipStyle === "dark" ? "text-gray-600" : "text-gray-300"
+            }`}>
               VIETNAMESE
             </div>
-            <div className="text-gray-900 font-semibold text-lg">
+            <div className={`font-semibold text-lg ${
+              tooltipStyle === "dark" ? "text-gray-900" : "text-white"
+            }`}>
               {match.translation}
             </div>
           </HoverCardContent>

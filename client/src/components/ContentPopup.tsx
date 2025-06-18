@@ -150,6 +150,7 @@ const ContentPopup = ({
                       <MarkdownRenderer 
                         className="text-base leading-relaxed"
                         translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
+                        tooltipStyle="dark"
                       >
                         {content.short_blurb}
                       </MarkdownRenderer>
