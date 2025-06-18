@@ -70,10 +70,10 @@ const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { cont
     return null;
   }
 
-  // For group card thumbnails in the gallery, use same sizing but different fit
+  // For group card thumbnails in the gallery, use smaller landscape sizing
   if (isGroupCard) {
     return (
-      <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+      <div className="w-16 h-10 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
         <img 
           src={imageUrl} 
           alt={content.title} 
@@ -879,11 +879,11 @@ const TopicListItem = ({
                                                 onClick={() => setIsGroupExpanded(!isGroupExpanded)}
                                               >
                                                 {/* Title with action buttons for group cards */}
-                                                <div className="flex items-center justify-center gap-2 mb-3">
+                                                <div className="flex items-center justify-between mb-3">
                                                   <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200 text-center">
                                                     <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
                                                   </div>
-                                                  <div className="flex flex-col gap-1 ml-2">
+                                                  <div className="flex flex-col gap-1">
                                                     <Button 
                                                       variant="outline" 
                                                       size="sm" 
