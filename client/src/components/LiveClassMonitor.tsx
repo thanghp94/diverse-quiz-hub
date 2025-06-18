@@ -59,12 +59,14 @@ export const LiveClassMonitor = () => {
   // Fetch live assignments within 3 hours
   const { data: liveAssignments = [], isLoading: assignmentsLoading, refetch: refetchAssignments } = useQuery({
     queryKey: ['/api/live-assignments'],
+    queryFn: () => fetch('/api/live-assignments').then(res => res.json()),
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Fetch student progress for selected assignment
-  const { data: studentProgress = [], isLoading: progressLoading } = useQuery({
+  const { data: studentProgress = [], isLoading: progressLoading } = useQuery<StudentProgress[]>({
     queryKey: ['/api/assignments', selectedAssignment?.id, 'progress'],
+    queryFn: () => fetch(`/api/assignments/${selectedAssignment?.id}/progress`).then(res => res.json()),
     enabled: !!selectedAssignment,
     refetchInterval: 10000, // Refresh every 10 seconds
   });

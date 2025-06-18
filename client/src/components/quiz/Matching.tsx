@@ -510,14 +510,32 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
               Continue to Title-Description Matching →
             </span>
           </Button>
+        ) : hasSequentialMatching && currentQuizPhase === 'title-description' && isSubmitted ? (
+          <Button
+            onClick={onNextActivity}
+            className="w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-2 border-green-400 hover:scale-105 hover:shadow-xl"
+            variant="default"
+          >
+            <span className="flex items-center gap-2">
+              Next Activity →
+            </span>
+          </Button>
+        ) : isSubmitted && !hasSequentialMatching ? (
+          <Button
+            onClick={onNextActivity}
+            className="w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-2 border-green-400 hover:scale-105 hover:shadow-xl"
+            variant="default"
+          >
+            <span className="flex items-center gap-2">
+              Next →
+            </span>
+          </Button>
         ) : (
           <Button
             onClick={handleCheckResults}
             disabled={!isComplete || isSubmitting}
             className={`w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
-              isSubmitted 
-                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-2 border-green-400" 
-                : isComplete
+              isComplete
                 ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
                 : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
             }`}
@@ -527,10 +545,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
               <span className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 Submitting...
-              </span>
-            ) : isSubmitted ? (
-              <span className="flex items-center gap-2">
-                ✓ Completed
               </span>
             ) : (
               'Check Results'
