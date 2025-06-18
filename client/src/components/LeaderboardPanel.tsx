@@ -7,6 +7,11 @@ import { Trophy, Medal, Award, Star, TrendingUp, Calendar, Zap } from "lucide-re
 import { useQuery } from "@tanstack/react-query";
 
 interface LeaderboardData {
+  totalPoints: Array<{
+    student_id: string;
+    total_points: string;
+    full_name: string;
+  }>;
   bestStreak: Array<{
     student_id: string;
     longest_streak: number;
@@ -19,7 +24,7 @@ interface LeaderboardData {
   }>;
   weeklyQuizzes: Array<{
     student_id: string;
-    weekly_count: number;
+    weekly_count: string;
     full_name: string;
   }>;
 }
@@ -101,7 +106,7 @@ export const LeaderboardPanel = () => {
       case 'today':
         return item.today_count || 0;
       case 'weekly':
-        return item.weekly_count || 0;
+        return parseInt(item.weekly_count) || 0;
       default:
         return 0;
     }
