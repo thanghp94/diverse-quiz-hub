@@ -846,27 +846,13 @@ const TopicListItem = ({
                                 const SubtopicContentCard = () => {
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
-                                  
+                                  const [isGroupExpanded, setIsGroupExpanded] = useState(false);
+
                                   const hasVideo1 = videoEmbedUrl && videoData;
                                   const hasVideo2 = video2EmbedUrl && video2Data;
 
                                   // Check if this content is a group card and find related content
                                   const isGroupCard = content.prompt === "groupcard";
-                                  console.log('Content check:', content.title, 'prompt:', content.prompt, 'isGroupCard:', isGroupCard);
-                                  
-                                  // Use openContent state to track group expansion
-                                  const groupExpansionKey = `group-${content.id}`;
-                                  const isGroupExpanded = openContent.includes(groupExpansionKey);
-                                  
-                                  const toggleGroupExpanded = () => {
-                                    console.log('Group card clicked:', content.title, 'Key:', groupExpansionKey, 'Current state:', isGroupExpanded);
-                                    onToggleContent(groupExpansionKey);
-                                  };
-                                  
-                                  if (isGroupCard) {
-                                    console.log('Rendering group card:', content.title, 'Key:', groupExpansionKey, 'isExpanded:', isGroupExpanded);
-                                  }
-                                  
                                   const groupedContent = isGroupCard ? 
                                     subtopicContent
                                       .filter(item => item.contentgroup === content.id && item.id !== content.id)
@@ -890,26 +876,7 @@ const TopicListItem = ({
                                           <div className="flex flex-col">
                                             {/* Title and Action Buttons Row */}
                                             <div className="flex items-center justify-between gap-4 mb-4">
-                                              {/* Empty space for balance */}
-                                              <div className="flex-shrink-0 w-12"></div>
-
-                                              {/* Title Section - Centered */}
-                                              <div 
-                                                className="flex-1 text-center cursor-pointer"
-                                                onClick={() => {
-                                                  console.log('DIV CLICK DETECTED!', content.title);
-                                                  console.log('onToggleContent function:', typeof onToggleContent);
-                                                  console.log('Group expansion key:', groupExpansionKey);
-                                                  console.log('Current openContent:', openContent);
-                                                  onToggleContent(groupExpansionKey);
-                                                }}
-                                              >
-                                                <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 hover:bg-yellow-500/30 transition-all duration-200 text-yellow-200 text-base font-medium leading-tight">
-                                                  {content.title}
-                                                </div>
-                                              </div>
-
-                                              {/* Action Buttons - Right */}
+                                              {/* Action Buttons - Left */}
                                               <div className="flex flex-col gap-0.5 flex-shrink-0">
                                                 {content.parentid && (
                                                   <Button 
@@ -951,6 +918,19 @@ const TopicListItem = ({
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
                                               </div>
+
+                                              {/* Title Section - Centered */}
+                                              <div className="flex-1 text-center">
+                                                <div 
+                                                  className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
+                                                  onClick={() => setIsGroupExpanded(!isGroupExpanded)}
+                                                >
+                                                  <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
+                                                </div>
+                                              </div>
+
+                                              {/* Empty space for balance */}
+                                              <div className="flex-shrink-0 w-12"></div>
                                             </div>
 
                                             {/* Image Gallery Row */}
@@ -1070,7 +1050,7 @@ const TopicListItem = ({
                                                       <div className="flex items-start gap-3">
                                                         <LocalContentThumbnail 
                                                           content={groupItem} 
-                                                          isGroupCard={false}
+                                                          isGroupCard={true}
                                                           onClick={() => onContentClick({
                                                             content: groupItem,
                                                             contextList: [...subtopicContent]
