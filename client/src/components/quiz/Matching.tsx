@@ -35,6 +35,35 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
     return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
   };
 
+  // Get text styling based on matching type and word count
+  const getTextStyling = (text: string) => {
+    const wordCount = text.split(/\s+/).length;
+    const matchingType = question.type || '';
+    
+    if (matchingType.includes('picture-title')) {
+      // For picture-title: bigger text, center aligned
+      return {
+        fontSize: wordCount > 15 ? 'text-lg' : wordCount > 10 ? 'text-xl' : 'text-2xl',
+        alignment: 'text-center',
+        weight: 'font-bold'
+      };
+    } else if (matchingType.includes('title-description')) {
+      // For title-description: smaller text, left aligned
+      return {
+        fontSize: wordCount > 30 ? 'text-xs' : wordCount > 20 ? 'text-sm' : 'text-base',
+        alignment: 'text-left',
+        weight: 'font-medium'
+      };
+    }
+    
+    // Default styling
+    return {
+      fontSize: 'text-base',
+      alignment: 'text-left',
+      weight: 'font-medium'
+    };
+  };
+
   const handleDragStart = (e: React.DragEvent, item: string) => {
     setDraggedItem(item);
     e.dataTransfer.effectAllowed = "move";
@@ -269,7 +298,14 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </svg>
                       </div>
                     )}
-                    <span className="text-center text-xs font-medium leading-tight whitespace-pre-line text-center">{item}</span>
+                    {(() => {
+                      const styling = getTextStyling(item);
+                      return (
+                        <span className={`${styling.weight} ${styling.fontSize} leading-tight whitespace-pre-line ${styling.alignment}`}>
+                          {item}
+                        </span>
+                      );
+                    })()}
                   </div>
                 );
               })}
@@ -342,7 +378,14 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </DialogContent>
                       </Dialog>
                     ) : (
-                      <div className="font-medium text-base leading-tight whitespace-pre-line text-left">{item}</div>
+                      (() => {
+                        const styling = getTextStyling(item);
+                        return (
+                          <div className={`${styling.weight} ${styling.fontSize} leading-tight whitespace-pre-line ${styling.alignment}`}>
+                            {item}
+                          </div>
+                        );
+                      })()
                     )}
                     {matchedLeft && (
                       <div className={`flex items-center gap-1 text-xs mt-1 p-1 rounded border ${
