@@ -112,25 +112,22 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
 
   return (
     <Dialog open={isNoteOpen} onOpenChange={setIsNoteOpen}>
-      <DialogTrigger asChild>
-        <div>
-          <Button 
-            variant="outline" 
-            size={compact ? "sm" : "default"}
-            className={cn(
-              "text-white hover:bg-white/20 hover:text-white bg-transparent border-white/50",
-              compact ? "px-2 py-1 h-6" : "px-2 py-2",
-              hasNote && "bg-white/10 border-white/70"
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-          >
-            <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
-            {hasNote && <span className="ml-1 text-xs">*</span>}
-          </Button>
-        </div>
-      </DialogTrigger>
+      <Button 
+        variant="outline" 
+        size={compact ? "sm" : "default"}
+        className={cn(
+          "text-white hover:bg-white/20 hover:text-white bg-transparent border-white/50",
+          compact ? "px-2 py-1 h-6" : "px-2 py-2",
+          hasNote && "bg-white/10 border-white/70"
+        )}
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsNoteOpen(true);
+        }}
+      >
+        <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
+        {hasNote && <span className="ml-1 text-xs">*</span>}
+      </Button>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Personal Note</DialogTitle>
@@ -840,7 +837,7 @@ const TopicListItem = ({
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   {/* Show parent topic matching button if this is a parent topic (no parentid) */}
                   {!topic.parentid && (
                     <ParentTopicMatchingButton 
@@ -854,20 +851,20 @@ const TopicListItem = ({
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0"
+                      className="text-white/70 hover:bg-white/20 hover:text-white h-6 w-6 flex-shrink-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         onStartTopicMatching(topic.id, topic.topic);
                       }}
                     >
-                      <Shuffle className="h-5 w-5" />
+                      <Shuffle className="h-4 w-4" />
                       <span className="sr-only">Start Matching for {topic.topic}</span>
                     </Button>
                   )}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-8 w-8 flex-shrink-0">
-                        <HelpCircle className="h-5 w-5" />
+                      <Button variant="ghost" size="icon" className="text-white/70 hover:bg-white/20 hover:text-white h-6 w-6 flex-shrink-0">
+                        <HelpCircle className="h-4 w-4" />
                         <span className="sr-only">Start Quiz for {topic.topic}</span>
                       </Button>
                     </DropdownMenuTrigger>
@@ -883,7 +880,7 @@ const TopicListItem = ({
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
-                  <ChevronDown className={cn("h-6 w-6 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
+                  <ChevronDown className={cn("h-5 w-5 text-white/80 shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
                 </div>
               </div>
               {topic.short_summary && (
