@@ -81,7 +81,11 @@ export const MarkdownRenderer = ({
           </HoverCardTrigger>
           <HoverCardContent 
             side="top" 
-            className="w-auto max-w-sm text-lg py-1 px-2 rounded-lg shadow-xl z-50 bg-white border-gray-200 text-gray-900"
+            className={`w-auto max-w-sm text-lg py-1 px-2 rounded-lg shadow-xl z-50 ${
+              tooltipStyle === "light" 
+                ? "bg-white border-gray-200 text-gray-900" 
+                : "bg-gray-800 border-gray-600 text-white"
+            }`}
           >
             <div className={`font-medium text-sm uppercase tracking-wide mb-2 ${
               tooltipStyle === "light" ? "text-gray-600" : "text-gray-400"
