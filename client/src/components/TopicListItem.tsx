@@ -848,6 +848,7 @@ const TopicListItem = ({
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
                                   const [isGroupExpanded, setIsGroupExpanded] = useState(false);
+                                  const [selectedGroupVideo, setSelectedGroupVideo] = useState<Content | null>(null);
 
                                   const hasVideo1 = videoEmbedUrl && videoData;
                                   const hasVideo2 = video2EmbedUrl && video2Data;
@@ -1034,6 +1035,21 @@ const TopicListItem = ({
                                                                 compact={true}
                                                                 studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
                                                               />
+                                                              {((groupItem.videoid && groupItem.videoid.trim()) || (groupItem.videoid2 && groupItem.videoid2.trim())) && (
+                                                                <Button 
+                                                                  variant="outline" 
+                                                                  size="sm" 
+                                                                  className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-1 py-0.5 h-5"
+                                                                  onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setVideoPopupOpen(true);
+                                                                    setSelectedGroupVideo(groupItem);
+                                                                  }}
+                                                                >
+                                                                  <Play className="h-2 w-2 mr-0.5" />
+                                                                  Video{((groupItem.videoid && groupItem.videoid.trim()) && (groupItem.videoid2 && groupItem.videoid2.trim())) ? 's' : ''}
+                                                                </Button>
+                                                              )}
                                                               <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
                                                                   <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-1 py-0.5 h-5">

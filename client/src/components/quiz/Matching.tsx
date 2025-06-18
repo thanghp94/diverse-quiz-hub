@@ -198,7 +198,10 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     relevantPairs.forEach(pair => {
       const userMatch = matches[pair.left];
       const correctMatch = pair.right;
-      const isMatchCorrect = userMatch === correctMatch;
+      // Normalize strings for comparison - trim whitespace and compare case-insensitively
+      const normalizedUserMatch = userMatch?.trim().toLowerCase();
+      const normalizedCorrectMatch = correctMatch?.trim().toLowerCase();
+      const isMatchCorrect = normalizedUserMatch === normalizedCorrectMatch;
       
       console.log(`Checking: "${pair.left}" -> user: "${userMatch}" vs correct: "${correctMatch}" = ${isMatchCorrect}`);
       
