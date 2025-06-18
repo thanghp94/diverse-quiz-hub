@@ -957,6 +957,43 @@ export class DatabaseStorage implements IStorage {
       }));
     });
   }
+
+  async getContentProgress(studentId: string): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.execute(sql`
+        SELECT DISTINCT
+          c.id,
+          c.topicid,
+          t.topic,
+          c.title,
+          cr.rating as difficulty_rating,
+          (SELECT COUNT(*) FROM questions q WHERE q.contentid = c.id) as question_count,
+          lp.completed_at,
+          c.parentid
+        FROM content c
+        LEFT JOIN topics t ON c.topicid = t.id
+        LEFT JOIN content_ratings cr ON cr.content_id = c.id AND cr.student_id = ${studentId}
+        LEFT JOIN learning_progress lp ON lp.content_id = c.id AND lp.student_id = ${studentId}
+        WHERE EXISTS (
+          SELECT 1 FROM student_try st 
+          WHERE st.hocsinh_id = ${studentId} 
+          AND st.contentid = c.id
+        )
+        ORDER BY c.title
+      `);
+      
+      return result.rows.map((row: any) => ({
+        id: row.id,
+        topicid: row.topicid,
+        topic: row.topic,
+        title: row.title,
+        difficulty_rating: row.difficulty_rating,
+        question_count: parseInt(row.question_count) || 0,
+        completed_at: row.completed_at,
+        parentid: row.parentid
+      }));
+    });
+  }
 }
 
 export const storage = new DatabaseStorage();

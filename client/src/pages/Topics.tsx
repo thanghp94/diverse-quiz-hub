@@ -11,6 +11,8 @@ import TopicMatchingPopup from "@/components/TopicMatchingPopup";
 import MatchingListPopup from "@/components/MatchingListPopup";
 import { MatchingActivityPopup } from "@/components/MatchingActivityPopup";
 import { LeaderboardPanel } from "@/components/LeaderboardPanel";
+import { ContentProgressPanel } from "@/components/ContentProgressPanel";
+import { AssignmentPanel } from "@/components/AssignmentPanel";
 import LiveClassPanel from "@/components/LiveClassPanel";
 import { useLocation } from "wouter";
 
@@ -260,6 +262,8 @@ const Topics = () => {
                 </h1>
                 <div className="flex-1 flex justify-end gap-3">
                   <LiveClassPanel />
+                  <ContentProgressPanel />
+                  <AssignmentPanel />
                   <LeaderboardPanel />
                 </div>
               </div>
