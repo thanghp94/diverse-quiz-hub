@@ -820,7 +820,7 @@ const TopicListItem = ({
         className={cn(
           "bg-white/10 backdrop-blur-lg border-white/20 rounded-lg overflow-hidden border-b-0 transition-all duration-300",
           isExpanded ? "md:col-span-2" : "md:col-span-1",
-          isActive && "ring-2 ring-yellow-400/50 bg-yellow-500/10 border-yellow-400/30"
+          isActive && "ring-4 ring-yellow-400/80 bg-yellow-500/20 border-yellow-400/70 shadow-lg shadow-yellow-400/20"
         )}
       >
         <div
@@ -996,7 +996,6 @@ const TopicListItem = ({
                                 const SubtopicContentCard = () => {
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
-                                  const [isGroupExpanded, setIsGroupExpanded] = useState(false);
                                   const [selectedGroupVideo, setSelectedGroupVideo] = useState<Content | null>(null);
 
                                   const hasVideo1 = videoEmbedUrl && videoData;
@@ -1004,6 +1003,7 @@ const TopicListItem = ({
 
                                   // Check if this content is a group card and find related content
                                   const isGroupCard = content.prompt === "groupcard";
+                                  const isGroupExpanded = isGroupCard ? isGroupCardExpanded(content.id) : false;
                                   const groupedContent = isGroupCard ? 
                                     subtopicContent
                                       .filter(item => item.contentgroup === content.id && item.id !== content.id)
@@ -1027,7 +1027,7 @@ const TopicListItem = ({
                                             {isGroupCard ? (
                                               <div 
                                                 className="w-full"
-                                                onClick={() => setIsGroupExpanded(!isGroupExpanded)}
+                                                onClick={() => onToggleGroupCard(content.id)}
                                               >
                                                 {/* Title with action buttons for group cards */}
                                                 <div className="flex items-center justify-center gap-2 mb-3">
