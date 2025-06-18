@@ -784,4 +784,271 @@ const TopicListItem = ({
                                     subtopicContent
                                       .filter(item => item.contentgroup === content.id && item.id !== content.id)
                                       .sort((a, b) => {
-                                        const orderA = parseInt(a.order
+                                        const orderA = parseInt(a.order || '999999');
+                                        const orderB = parseInt(b.order || '999999');
+                                        return orderA - orderB;
+                                      }) : 
+                                    [];
+
+                                  return (
+                                    <>
+                                      <div className={cn(
+                                        "bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3",
+                                        isGroupCard && "bg-gradient-to-br from-purple-600/25 via-blue-600/25 to-indigo-600/25 border-purple-400/40 shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 hover:border-purple-400/60 transform hover:scale-[1.02]",
+                                        isGroupCard && isGroupExpanded && "col-span-2 ring-2 ring-purple-400/30"
+                                      )}>
+                                        <div className="flex items-start justify-between gap-2">
+                                          <div
+                                            onClick={() => {
+                                              if (isGroupCard) {
+                                                setIsGroupExpanded(!isGroupExpanded);
+                                              } else {
+                                                onContentClick({
+                                                  content,
+                                                  contextList: subtopicContent
+                                                });
+                                              }
+                                            }}
+                                            className="flex-grow cursor-pointer"
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <LocalContentThumbnail 
+                                                content={content} 
+                                                onClick={() => onContentClick({
+                                                  content,
+                                                  contextList: subtopicContent
+                                                })}
+                                              />
+                                              <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2 mb-2">
+                                                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                                    {isGroupCard && groupedContent.length > 0 && (
+                                                      <Badge className="bg-purple-500/20 text-purple-200 text-xs mr-1">
+                                                        {groupedContent.length} items
+                                                      </Badge>
+                                                    )}
+                                                    <ContentRatingButtons 
+                                                      key={`${content.id}-rating`}
+                                                      contentId={content.id}
+                                                      compact={true}
+                                                      studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                    />
+                                                    {(hasVideo1 || hasVideo2) && (
+                                                      <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          setVideoPopupOpen(true);
+                                                        }}
+                                                      >
+                                                        <Play className="h-3 w-3 mr-1" />
+                                                        Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                      </Button>
+                                                    )}
+                                                    <DropdownMenu>
+                                                      <DropdownMenuTrigger asChild>
+                                                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                          Quiz
+                                                        </Button>
+                                                      </DropdownMenuTrigger>
+                                                      <DropdownMenuContent>
+                                                        <DropdownMenuItem onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          onStartQuiz(content, subtopicContent, 'Easy');
+                                                        }}>
+                                                          Easy Quiz
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          onStartQuiz(content, subtopicContent, 'Hard');
+                                                        }}>
+                                                          Hard Quiz
+                                                        </DropdownMenuItem>
+                                                      </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                  </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 mb-2">
+                                                  <CompactContentDifficultyIndicator contentId={content.id} />
+                                                </div>
+                                                {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Thumbnail Gallery for Group Cards */}
+                                        {isGroupCard && groupedContent.length > 0 && (
+                                          <div className="mt-3 pt-3 border-t border-purple-400/20">
+                                            <div className="flex flex-wrap gap-2">
+                                              {groupedContent.map((groupItem) => (
+                                                <div key={`thumb-${groupItem.id}`} className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                                                  <div className="w-full h-full object-cover object-center">
+                                                    <LocalContentThumbnail 
+                                                      content={groupItem} 
+                                                      onClick={() => onContentClick({
+                                                        content: groupItem,
+                                                        contextList: [...subtopicContent]
+                                                      })}
+                                                    />
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Inline Grouped Content Expansion - Responsive Layout */}
+                                        {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
+                                          <div className="mt-4 pt-4 border-t border-purple-400/30">
+                                            <h5 className="text-purple-200 text-base font-medium mb-4">Related Content:</h5>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                  {groupedContent.map((groupItem) => (
+                                                    <div key={groupItem.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                                      <div className="flex items-start gap-3">
+                                                        <LocalContentThumbnail 
+                                                          content={groupItem} 
+                                                          onClick={() => onContentClick({
+                                                            content: groupItem,
+                                                            contextList: [...subtopicContent]
+                                                          })}
+                                                        />
+                                                        <div className="flex-1 min-w-0">
+                                                          <div className="flex items-center justify-between gap-2 mb-2">
+                                                            <h4 
+                                                              className="text-white/90 text-sm font-medium leading-tight flex-1 min-w-0 cursor-pointer hover:text-white"
+                                                              onClick={() => onContentClick({
+                                                                content: groupItem,
+                                                                contextList: [...subtopicContent]
+                                                              })}
+                                                            >
+                                                              {groupItem.title}
+                                                            </h4>
+                                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                              <ContentRatingButtons 
+                                                                key={`${groupItem.id}-inline-rating`}
+                                                                contentId={groupItem.id}
+                                                                compact={true}
+                                                                studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                              />
+                                                              <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                  <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-1 py-0.5 h-5">
+                                                                    Quiz
+                                                                  </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent>
+                                                                  <DropdownMenuItem onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onStartQuiz(groupItem, subtopicContent, 'Easy');
+                                                                  }}>
+                                                                    Easy Quiz
+                                                                  </DropdownMenuItem>
+                                                                  <DropdownMenuItem onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    onStartQuiz(groupItem, subtopicContent, 'Hard');
+                                                                  }}>
+                                                                    Hard Quiz
+                                                                  </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                              </DropdownMenu>
+                                                            </div>
+                                                          </div>
+                                                          <div className="flex items-center gap-2 mb-2">
+                                                            <CompactContentDifficultyIndicator contentId={groupItem.id} />
+                                                          </div>
+                                                          {groupItem.short_description && (
+                                                            <p className="text-white/60 text-xs leading-relaxed">
+                                                              {formatDescription(groupItem.short_description)}
+                                                            </p>
+                                                          )}
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                            </div>
+                                          </div>
+                                        )}
+
+                                        {/* Video Popup */}
+                                        <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
+                                          <DialogContent className="max-w-5xl max-h-[90vh] p-0 bg-gray-900 border-gray-700">
+                                            <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+                                              <h3 className="text-white text-lg font-medium truncate mr-4">{content.title}</h3>
+                                              <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => setVideoPopupOpen(false)}
+                                                className="text-white hover:bg-white/20 flex-shrink-0"
+                                              >
+                                                ✕
+                                              </Button>
+                                            </div>
+                                            <div className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+                                              {hasVideo1 && (
+                                                <div>
+                                                  {videoData.video_name && (
+                                                    <h4 className="text-white font-medium mb-3 text-base">{videoData.video_name}</h4>
+                                                  )}
+                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                    <iframe 
+                                                      className="w-full h-full" 
+                                                      src={videoEmbedUrl} 
+                                                      title={videoData.video_name || 'Video 1'} 
+                                                      frameBorder="0" 
+                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                      allowFullScreen
+                                                    />
+                                                  </div>
+                                                </div>
+                                              )}
+                                              {hasVideo2 && (
+                                                <div>
+                                                  <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                                                    <iframe 
+                                                      className="w-full h-full" 
+                                                      src={video2EmbedUrl} 
+                                                      title={video2Data.video_name || 'Video 2'} 
+                                                      frameBorder="0" 
+                                                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                      allowFullScreen
+                                                    />
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </DialogContent>
+                                        </Dialog>
+                                      </div>
+                                    </>
+                                  );
+                                };
+
+                                return <SubtopicContentCard key={content.id} />;
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {topicContent.length === 0 && subtopics.length === 0 && (
+                <div className="text-center py-4">
+                  <p className="text-white/60 text-sm">No content available for this topic</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+};
+
+export { TopicListItem };
+export default TopicListItem;
