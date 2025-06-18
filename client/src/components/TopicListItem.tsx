@@ -244,12 +244,14 @@ const GroupedContentDisplay = ({
   topicId, 
   topicContent, 
   onContentClick, 
-  onStartQuiz 
+  onStartQuiz,
+  onStartGroupMatching 
 }: {
   topicId: string;
   topicContent: Content[];
   onContentClick: (info: { content: Content; contextList: Content[] }) => void;
   onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
+  onStartGroupMatching: (matchingId: string, matchingTitle: string) => void;
 }) => {
   const [selectedContentGroup, setSelectedContentGroup] = useState<{
     groupName: string;
@@ -600,7 +602,8 @@ const TopicListItem = ({
     onStartQuiz,
     getTopicContent,
     onStartTopicQuiz,
-    onStartTopicMatching
+    onStartTopicMatching,
+    onStartGroupMatching
 }: TopicListItemProps) => {
     const { hasMatchingActivities } = useTopicMatching(topic.id);
 
@@ -707,6 +710,7 @@ const TopicListItem = ({
                   topicContent={topicContent}
                   onContentClick={onContentClick}
                   onStartQuiz={onStartQuiz}
+                  onStartGroupMatching={onStartGroupMatching}
                 />
               )}
 
