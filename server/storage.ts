@@ -207,7 +207,6 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
       
-      let query = db.select().from(schema.questions);
       const conditions = [];
 
       if (contentId) {
@@ -241,11 +240,12 @@ export class DatabaseStorage implements IStorage {
         console.log(`Added level condition for: ${level.toLowerCase()}`);
       }
 
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+      let questions;
+      if (conditions.length === 0) {
+        questions = await db.select().from(schema.questions);
+      } else {
+        questions = await db.select().from(schema.questions).where(and(...conditions));
       }
-
-      const questions = await query;
 
       console.log(`Found ${questions.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
 
@@ -273,7 +273,7 @@ export class DatabaseStorage implements IStorage {
 
         if (debugQuery) {
           const availableLevels = await debugQuery;
-          const uniqueLevels = [...new Set(availableLevels.map(q => q.level).filter(Boolean))];
+          const uniqueLevels = Array.from(new Set(availableLevels.map(q => q.level).filter(Boolean)));
           console.log(`Available levels for this content/topic:`, uniqueLevels);
           
           // Try to match with available levels case-insensitively
@@ -661,7 +661,6 @@ export class DatabaseStorage implements IStorage {
       console.error('Error creating assignment:', error);
       // Return a simple assignment object if database insert fails
       return {
-        id: assignmentData.id,
         ...assignmentData,
         created_at: new Date()
       };

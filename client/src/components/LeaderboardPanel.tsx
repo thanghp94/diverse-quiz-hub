@@ -61,6 +61,8 @@ export const LeaderboardPanel = () => {
     return "bg-white/10 text-white";
   };
 
+  const isLoading = activeTab === 'tries' ? isLoadingTries : isLoadingLeaderboard;
+
   const getCurrentLeaderboard = () => {
     if (activeTab === 'tries') {
       return Array.isArray(studentTriesData) ? studentTriesData : [];
@@ -79,8 +81,6 @@ export const LeaderboardPanel = () => {
         return [];
     }
   };
-
-  const isLoading = activeTab === 'tries' ? isLoadingTries : isLoadingLeaderboard;
 
   const getTabIcon = (tab: string) => {
     switch (tab) {
