@@ -278,25 +278,55 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                 <CardHeader className="pb-6">
                     <div className="flex justify-between items-center mb-4">
                         <CardTitle className="text-xl">Question {currentQuestionIndex + 1}/{questionIds.length}</CardTitle>
-                        <div className="flex items-center gap-3">
-                            <div className="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
-                                <div className="text-sm text-gray-600 font-medium mb-2">Progress</div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-24 bg-gray-200 rounded-full h-3 relative overflow-hidden">
+                        <div className="flex items-center gap-4">
+                            {/* Question Number System */}
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: questionIds.length }, (_, index) => {
+                                    const questionNumber = index + 1;
+                                    const isAnswered = index < currentQuestionIndex || (index === currentQuestionIndex && showFeedback);
+                                    const isCurrent = index === currentQuestionIndex;
+                                    const wasCorrect = index < currentQuestionIndex && sessionStorage.getItem('quizResults') ? 
+                                        JSON.parse(sessionStorage.getItem('quizResults') || '[]')[index] : false;
+                                    
+                                    return (
+                                        <div
+                                            key={index}
+                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                                                isAnswered && !isCurrent
+                                                    ? wasCorrect 
+                                                        ? 'bg-green-500 text-white'
+                                                        : 'bg-red-500 text-white'
+                                                    : isCurrent 
+                                                    ? 'bg-blue-500 text-white ring-2 ring-blue-300'
+                                                    : 'bg-gray-200 text-gray-600'
+                                            }`}
+                                        >
+                                            {questionNumber}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            
+                            {/* Progress Bar */}
+                            <div className="bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                                <div className="text-sm text-gray-600 font-medium mb-1">Progress</div>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-20 bg-gray-200 rounded-full h-2 relative overflow-hidden">
                                         <div 
-                                            className="bg-green-500 rounded-full h-3 transition-all duration-300 absolute left-0"
-                                            style={{ width: `${correctPercentage}%` }}
+                                            className="bg-green-500 rounded-full h-2 transition-all duration-300 absolute left-0"
+                                            style={{ width: `${(correctAnswersCount / totalQuestions) * 100}%` }}
                                         />
                                         <div 
-                                            className="bg-red-500 rounded-full h-3 transition-all duration-300 absolute right-0"
-                                            style={{ width: `${incorrectPercentage}%` }}
+                                            className="bg-red-500 rounded-full h-2 transition-all duration-300 absolute"
+                                            style={{ 
+                                                left: `${(correctAnswersCount / totalQuestions) * 100}%`,
+                                                width: `${(incorrectAnswersCount / totalQuestions) * 100}%` 
+                                            }}
                                         />
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm font-bold">
-                                        <span className="text-green-600">{correctPercentage}%</span>
-                                        <span className="text-gray-400">|</span>
-                                        <span className="text-red-600">{incorrectPercentage}%</span>
-                                    </div>
+                                    <span className="text-green-600 font-bold text-sm">{correctPercentage}%</span>
+                                    <span className="text-gray-400">|</span>
+                                    <span className="text-red-600 font-bold text-sm">{incorrectPercentage}%</span>
                                 </div>
                             </div>
                         </div>
@@ -304,39 +334,119 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                     <CardDescription className="text-2xl font-semibold text-blue-600 pt-2 leading-relaxed">{currentQuestion.noi_dung}</CardDescription>
                 </CardHeader>
                 <CardContent className="pb-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {choices.map((choice, index) => {
                             const choiceLetter = String.fromCharCode(65 + index);
-                            let buttonClass = "";
-                            if (showFeedback) {
-                                if (choiceLetter === currentQuestion.correct_choice) {
-                                    buttonClass = "bg-green-100 border-green-500 hover:bg-green-100";
-                                } else if (choiceLetter === selectedAnswer) {
-                                    buttonClass = "bg-red-100 border-red-500 hover:bg-red-100";
-                                }
-                            }
+                            const isSelected = selectedAnswer === choiceLetter;
+                            const isCorrect = showFeedback && choiceLetter === currentQuestion.correct_choice;
+                            const isWrong = showFeedback && isSelected && choiceLetter !== currentQuestion.correct_choice;
+                            
                             return (
-                                <Button
+                                <Card
                                     key={index}
-                                    variant="outline"
-                                    className={`justify-start text-left h-auto py-6 px-6 whitespace-normal text-lg min-h-[80px] ${buttonClass}`}
-                                    onClick={() => handleAnswerSelect(index)}
-                                    disabled={showFeedback}
+                                    className={`cursor-pointer transition-all duration-200 hover:scale-[1.02] ${
+                                        isCorrect
+                                            ? 'ring-2 ring-green-500 bg-green-50 border-green-300'
+                                            : isWrong
+                                            ? 'ring-2 ring-red-500 bg-red-50 border-red-300'
+                                            : isSelected
+                                            ? 'ring-2 ring-blue-500 bg-blue-50 border-blue-300'
+                                            : 'hover:shadow-lg border-gray-200 bg-gradient-to-r from-yellow-50 to-orange-50'
+                                    } ${showFeedback ? 'pointer-events-none' : ''}`}
+                                    onClick={() => !showFeedback && handleAnswerSelect(index)}
                                 >
-                                    <span className="font-bold mr-4 text-blue-600 text-xl">{choiceLetter}</span>
-                                    <span className="text-blue-700 font-medium">{choice}</span>
-                                </Button>
-                            )
+                                    <CardContent className="p-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
+                                                isCorrect
+                                                    ? 'bg-green-500 text-white'
+                                                    : isWrong
+                                                    ? 'bg-red-500 text-white'
+                                                    : isSelected 
+                                                    ? 'bg-blue-500 text-white' 
+                                                    : choiceLetter === 'A' ? 'bg-yellow-400 text-yellow-900'
+                                                    : choiceLetter === 'B' ? 'bg-green-400 text-green-900'
+                                                    : choiceLetter === 'C' ? 'bg-pink-400 text-pink-900'
+                                                    : 'bg-blue-400 text-blue-900'
+                                            }`}>
+                                                {choiceLetter}
+                                            </div>
+                                            <span className={`text-base font-medium flex-1 ${
+                                                isCorrect ? 'text-green-800' : isWrong ? 'text-red-800' : 'text-gray-800'
+                                            }`}>
+                                                {choice}
+                                            </span>
+                                            {isCorrect && (
+                                                <Check className="h-5 w-5 text-green-600" />
+                                            )}
+                                            {isWrong && (
+                                                <X className="h-5 w-5 text-red-600" />
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            );
                         })}
                     </div>
 
 
 
-                    <div className="mt-6 flex justify-start">
-                        <Button variant="outline" onClick={handleShowContent} disabled={isContentLoading || showFeedback}>
-                            {isContentLoading ? 'Loading Content...' : (showContent ? 'Hide Content' : 'Show Content')}
-                        </Button>
-                    </div>
+                    {/* Correct Answer Feedback - Above Content */}
+                    {showFeedback && (
+                        <div className={`mt-6 p-4 rounded-lg flex items-center gap-3 ${
+                            isCorrect 
+                                ? 'bg-green-50 border border-green-200' 
+                                : 'bg-red-50 border border-red-200'
+                        }`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                                isCorrect ? 'bg-green-500' : 'bg-red-500'
+                            }`}>
+                                {isCorrect ? (
+                                    <Check className="h-5 w-5 text-white" />
+                                ) : (
+                                    <X className="h-5 w-5 text-white" />
+                                )}
+                            </div>
+                            <div className="flex-1">
+                                <div className={`font-bold text-lg ${
+                                    isCorrect ? 'text-green-800' : 'text-red-800'
+                                }`}>
+                                    {isCorrect ? 'Correct Answer!' : 'Incorrect'}
+                                </div>
+                                {currentQuestion.explanation && (
+                                    <div className={`text-sm mt-1 ${
+                                        isCorrect ? 'text-green-700' : 'text-red-700'
+                                    }`}>
+                                        {currentQuestion.explanation}
+                                    </div>
+                                )}
+                                {isCorrect && (
+                                    <div className="text-green-700 text-sm mt-1">+100 points added to your score</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Show Content and Next Button on Same Line */}
+                    {showFeedback && (
+                        <div className="mt-6 flex items-center justify-between gap-4">
+                            <Button 
+                                variant="outline" 
+                                onClick={handleShowContent} 
+                                disabled={isContentLoading}
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                                {isContentLoading ? 'Loading...' : (showContent ? 'Hide Content' : '📚 Show Content')}
+                            </Button>
+                            
+                            <Button 
+                                onClick={handleNext}
+                                className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+                            >
+                                {currentQuestionIndex < questionIds.length - 1 ? 'Next ➡️' : 'Finish Quiz 🎉'}
+                            </Button>
+                        </div>
+                    )}
 
                     {showContent && linkedContent && (
                         <Card className="mt-6 bg-blue-50 border-blue-200">
@@ -381,26 +491,6 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                                 </div>
                             </CardContent>
                         </Card>
-                    )}
-
-                    {showFeedback && (
-                         <Alert className={`mt-6 ${isCorrect ? 'border-green-500 text-green-800' : 'border-red-500 text-red-800'}`}>
-                            {isCorrect ? <Check className="h-5 w-5 text-green-600" /> : <X className="h-5 w-5 text-red-600" />}
-                             <AlertTitle className="font-bold">
-                                {isCorrect ? 'Correct!' : 'Incorrect'}
-                             </AlertTitle>
-                             <AlertDescription className="pt-2">
-                                 {currentQuestion.explanation || (isCorrect ? 'Excellent!' : "That's not quite right, but don't give up!")}
-                             </AlertDescription>
-                         </Alert>
-                    )}
-
-                    {showFeedback && (
-                        <div className="mt-6 flex justify-end">
-                            <Button onClick={handleNext}>
-                                {currentQuestionIndex < questionIds.length - 1 ? 'Next Question' : 'Finish Quiz'}
-                            </Button>
-                        </div>
                     )}
                 </CardContent>
             </Card>
