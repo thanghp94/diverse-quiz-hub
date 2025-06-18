@@ -802,16 +802,26 @@ const TopicListItem = ({
                                   return !belongsToGroup;
                                 });
                                 
-                                // Sort displayable content preserving proper order with stable sort
+                                // Sort displayable content with group cards at end
                                 const sortedContent = displayableContent.sort((a, b) => {
-                                  const orderA = (a.order && a.order !== '') ? parseInt(a.order) : 999999;
-                                  const orderB = (b.order && b.order !== '') ? parseInt(b.order) : 999999;
+                                  const isGroupCardA = a.prompt === "groupcard";
+                                  const isGroupCardB = b.prompt === "groupcard";
                                   
-                                  if (orderA !== orderB) {
-                                    return orderA - orderB;
+                                  // Group cards always go to the end
+                                  if (isGroupCardA && !isGroupCardB) return 1;
+                                  if (!isGroupCardA && isGroupCardB) return -1;
+                                  
+                                  // For non-group cards, sort by order then title
+                                  if (!isGroupCardA && !isGroupCardB) {
+                                    const orderA = (a.order && a.order !== '') ? parseInt(a.order) : 999999;
+                                    const orderB = (b.order && b.order !== '') ? parseInt(b.order) : 999999;
+                                    
+                                    if (orderA !== orderB) {
+                                      return orderA - orderB;
+                                    }
                                   }
                                   
-                                  // For items with same order (or both NULL), use title for stable sort
+                                  // For items with same order or both group cards, use title for stable sort
                                   const titleA = (a.title || '').toLowerCase();
                                   const titleB = (b.title || '').toLowerCase();
                                   return titleA.localeCompare(titleB);

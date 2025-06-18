@@ -300,13 +300,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
               {/* Text items from left side */}
               {leftItems.filter(item => !isImageItem(item)).map(item => {
                 const isUsed = Object.keys(matches).includes(item);
-                const isCorrect = isSubmitted && correctMatches[item];
-                const isIncorrect = isSubmitted && correctMatches[item] === false;
+                const isCorrect = showResults && correctMatches[item];
+                const isIncorrect = showResults && correctMatches[item] === false;
 
                 return (
                   <div
                     key={item}
-                    draggable={!isUsed && !isSubmitted}
+                    draggable={!isUsed && !showResults}
                     onDragStart={(e) => handleDragStart(e, item)}
                     className={`relative p-1 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
                       isCorrect 
@@ -362,16 +362,16 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             >
               {fixedRightItems.map((item: string) => {
                 const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
-                const isCorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft];
-                const isIncorrect = isSubmitted && matchedLeft && correctMatches[matchedLeft] === false;
+                const isCorrect = showResults && matchedLeft && correctMatches[matchedLeft];
+                const isIncorrect = showResults && matchedLeft && correctMatches[matchedLeft] === false;
 
                 return (
                   <div
                     key={item}
-                    onDragOver={!isSubmitted ? handleDragOver : undefined}
-                    onDragEnter={!isSubmitted ? handleDragEnter : undefined}
-                    onDragLeave={!isSubmitted ? handleDragLeave : undefined}
-                    onDrop={!isSubmitted ? (e) => handleDrop(e, item) : undefined}
+                    onDragOver={!showResults ? handleDragOver : undefined}
+                    onDragEnter={!showResults ? handleDragEnter : undefined}
+                    onDragLeave={!showResults ? handleDragLeave : undefined}
+                    onDrop={!showResults ? (e) => handleDrop(e, item) : undefined}
                     className={`p-1 rounded-lg text-black border-2 border-dashed transition-all duration-300 ${
                       isCorrect
                         ? 'bg-green-100 border-green-400 shadow-lg'
@@ -494,8 +494,8 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           </Button>
         ) : (
           <Button
-            onClick={handleSubmit}
-            disabled={!isComplete || isSubmitting || isSubmitted}
+            onClick={handleCheckResults}
+            disabled={!isComplete || isSubmitting}
             className={`w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
               isSubmitted 
                 ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-2 border-green-400" 
@@ -515,7 +515,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                 ✓ Completed
               </span>
             ) : (
-              'Submit Answers'
+              'Check Results'
             )}
           </Button>
         )}
