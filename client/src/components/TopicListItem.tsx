@@ -25,6 +25,7 @@ import { ContentRatingButtons } from "@/components/ContentRatingButtons";
 import { ContentGroupCard, ContentGroupPopup } from "@/components/ContentGroupCard";
 import { GroupedContentCard } from "@/components/GroupedContentCard";
 import { ContentThumbnailGallery } from "@/components/ContentThumbnailGallery";
+import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
@@ -290,6 +291,12 @@ const getContentTypeColor = (content: any) => {
 const getSubtopicLabel = (parentTopic: string, index: number) => {
     const letter = parentTopic.charAt(0).toUpperCase();
     return `${letter}.${index + 1}`;
+};
+
+// Helper function to validate translation dictionary
+const isValidTranslationDictionary = (dict: any): dict is Record<string, string> => {
+  return dict && typeof dict === 'object' && !Array.isArray(dict) && 
+         Object.values(dict).every(value => typeof value === 'string');
 };
 
 const formatDescription = (description: string) => {
@@ -1139,7 +1146,14 @@ const TopicListItem = ({
                                                 
                                                 {/* Description at bottom for group cards - hidden when expanded */}
                                                 {!isGroupExpanded && content.short_description && (
-                                                  <p className="text-white/60 text-sm leading-relaxed mt-2 text-center">{formatDescription(content.short_description)}</p>
+                                                  <div className="text-white/60 text-sm leading-relaxed mt-2 text-center">
+                                                    <MarkdownRenderer 
+                                                      className="text-sm leading-relaxed"
+                                                      translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
+                                                    >
+                                                      {content.short_description}
+                                                    </MarkdownRenderer>
+                                                  </div>
                                                 )}
                                               </div>
                                             ) : (
@@ -1322,9 +1336,14 @@ const TopicListItem = ({
                                                             <CompactContentDifficultyIndicator contentId={groupItem.id} />
                                                           </div>
                                                           {groupItem.short_description && (
-                                                            <p className="text-white/60 text-xs leading-relaxed">
-                                                              {formatDescription(groupItem.short_description)}
-                                                            </p>
+                                                            <div className="text-white/60 text-xs leading-relaxed">
+                                                              <MarkdownRenderer 
+                                                                className="text-xs leading-relaxed"
+                                                                translationDictionary={isValidTranslationDictionary(groupItem.translation_dictionary) ? groupItem.translation_dictionary : null}
+                                                              >
+                                                                {groupItem.short_description}
+                                                              </MarkdownRenderer>
+                                                            </div>
                                                           )}
                                                         </div>
                                                       </div>
