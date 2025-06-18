@@ -24,7 +24,7 @@ interface LeaderboardData {
   }>;
 }
 
-const LeaderboardPanel = () => {
+export const LeaderboardPanel = () => {
   const [activeTab, setActiveTab] = useState<'streak' | 'today' | 'weekly'>('today');
   
   const { data: leaderboardData, isLoading } = useQuery<LeaderboardData>({

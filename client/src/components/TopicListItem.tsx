@@ -123,7 +123,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
             className="flex-grow cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <ContentThumbnail 
+              <LocalContentThumbnail 
                 content={content} 
                 onClick={() => onContentClick({
                   content,
@@ -810,7 +810,7 @@ const TopicListItem = ({
                                             className="flex-grow cursor-pointer"
                                           >
                                             <div className="flex items-center gap-2">
-                                              <ContentThumbnail 
+                                              <LocalContentThumbnail 
                                                 content={content} 
                                                 onClick={() => onContentClick({
                                                   content,
@@ -905,7 +905,7 @@ const TopicListItem = ({
                                                   {groupedContent.map((groupItem) => (
                                                     <div key={groupItem.id} className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
                                                       <div className="flex items-start gap-3">
-                                                        <ContentThumbnail 
+                                                        <LocalContentThumbnail 
                                                           content={groupItem} 
                                                           onClick={() => onContentClick({
                                                             content: groupItem,

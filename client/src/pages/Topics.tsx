@@ -10,7 +10,7 @@ import TopicQuizRunner from "@/components/TopicQuizRunner";
 import TopicMatchingPopup from "@/components/TopicMatchingPopup";
 import MatchingListPopup from "@/components/MatchingListPopup";
 import { MatchingActivityPopup } from "@/components/MatchingActivityPopup";
-import LeaderboardPanel from "@/components/LeaderboardPanel";
+import { LeaderboardPanel } from "@/components/LeaderboardPanel";
 import { useLocation } from "wouter";
 
 interface Topic {
@@ -254,7 +254,7 @@ const Topics = () => {
                   {activeTab ? `Quiz Mode: ${activeTab.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}` : 'Bowl & Challenge Topics'}
                 </h1>
                 <div className="flex-1 flex justify-end">
-                  <LeaderboardPanel />
+                  {/* Leaderboard temporarily disabled */}
                 </div>
               </div>
               {activeTab && (
