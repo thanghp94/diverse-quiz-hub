@@ -7,6 +7,7 @@ import { ArrowLeft, ArrowRight, HelpCircle, Languages, ChevronDown } from "lucid
 import { useState } from "react";
 import { Content } from "@/hooks/useContent";
 import { ContentRatingButtons } from "../ContentRatingButtons";
+import { PersonalNotesDropdown } from "../PersonalNotesDropdown";
 
 interface PopupHeaderProps {
   contentListLength: number;
@@ -110,10 +111,17 @@ export const PopupHeader = ({
       </div>
 
       {/* Content Rating Section */}
-      <div className="px-4">
+      <div className="px-4 flex items-center gap-3">
         <ContentRatingButtons
           contentId={contentId}
           studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'anonymous'}
+        />
+        
+        {/* Personal Notes Dropdown */}
+        <PersonalNotesDropdown
+          contentId={contentId}
+          studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+          compact={true}
         />
       </div>
     </div>
