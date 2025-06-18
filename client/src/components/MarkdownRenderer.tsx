@@ -129,7 +129,7 @@ export const MarkdownRenderer = ({
         </p>
       ),
       li: ({ children, ...props }: any) => (
-        <li {...props} className="text-[#ffffff] text-[13px] pl-[0px] pr-[0px] pt-[0px] pb-[0px] mt-[-2px] mb-[-2px] ml-[-4.5px] mr-[-4.5px]">
+        <li {...props} className="text-[#ffffff] text-[13px] pl-[0px] pr-[0px] pt-[0px] pb-[0px] mt-[-1px] mb-[-1px] ml-[2.75px] mr-[2.75px]">
           {React.Children.map(children, (child) => 
             typeof child === 'string' ? addTranslationTooltips(child) : child
           )}
