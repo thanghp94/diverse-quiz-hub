@@ -12,10 +12,12 @@ export const MarkdownRenderer = ({
   children,
   className = "",
   translationDictionary,
+  textColor = "",
 }: {
   children: string;
   className?: string;
   translationDictionary?: Record<string, string> | null;
+  textColor?: string;
 }) => {
   // Function to add translation tooltips to text nodes
   const addTranslationTooltips = (text: string): React.ReactNode => {
@@ -113,7 +115,7 @@ export const MarkdownRenderer = ({
         </p>
       ),
       li: ({ children, ...props }: any) => (
-        <li {...props}>
+        <li {...props} className={textColor}>
           {React.Children.map(children, (child) => 
             typeof child === 'string' ? addTranslationTooltips(child) : child
           )}
