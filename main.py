@@ -39,16 +39,21 @@ def get_openai_client():
         print(f"Error initializing OpenAI client: {e}")
         sys.exit(1)
 
-def fetch_content_rows(conn):
+def fetch_content_rows(conn, field_choice='short_blurb'):
     """Fetch content rows that need translation dictionaries."""
     try:
         cursor = conn.cursor()
-        query = """
-        SELECT id, short_blurb 
+        
+        # Choose which field to process
+        field_name = field_choice if field_choice in ['short_blurb', 'short_description'] else 'short_blurb'
+        print(f"Processing field: {field_name}")
+        
+        query = f"""
+        SELECT id, {field_name} 
         FROM public.content 
         WHERE translation_dictionary IS NULL 
-        AND short_blurb IS NOT NULL 
-        AND short_blurb != ''
+        AND {field_name} IS NOT NULL 
+        AND {field_name} != ''
         LIMIT 5
         """
         cursor.execute(query)
@@ -64,9 +69,11 @@ def generate_translation_dictionary(client, content_text):
     """Call OpenAI API to generate Vietnamese translation dictionary."""
     try:
         system_message = (
-            "You are an expert linguistic assistant. Your task is to identify 5-10 key terms "
-            "from a text, translate them to Vietnamese, and return ONLY a valid, raw JSON object. "
-            "The JSON keys must be the English terms in lowercase, and the values their Vietnamese translations."
+            "You are an expert linguistic assistant helping young Vietnamese learners understand English academic content. "
+            "Your task is to identify 5-10 COMPLICATED vocabulary words that would be challenging for Vietnamese students. "
+            "Focus on: abstract concepts, academic terminology, complex adjectives, philosophical terms, technical vocabulary. "
+            "AVOID: proper names, places, people's names, simple words, basic vocabulary. "
+            "Return ONLY a valid, raw JSON object with English terms as lowercase keys and Vietnamese translations as values."
         )
         
         user_message = f"Here is the text: {content_text}. Please create the translation JSON."
@@ -113,7 +120,8 @@ def main():
     
     try:
         # Fetch content rows that need processing
-        rows = fetch_content_rows(conn)
+        # Change 'short_blurb' to 'short_description' to process different field
+        rows = fetch_content_rows(conn, 'short_blurb')
         
         if not rows:
             print("No rows found that need translation dictionaries")
