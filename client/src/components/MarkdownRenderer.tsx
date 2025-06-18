@@ -78,7 +78,7 @@ export const MarkdownRenderer = ({
             side="top" 
             className="w-auto max-w-sm bg-white border-gray-300 text-lg p-4 rounded-lg shadow-xl z-50"
           >
-            <div className="font-medium text-gray-600 text-sm uppercase tracking-wide mb-2">
+            <div className="text-gray-900 font-medium text-sm uppercase tracking-wide mb-2">
               VIETNAMESE
             </div>
             <div className="text-gray-900 font-semibold text-lg">
