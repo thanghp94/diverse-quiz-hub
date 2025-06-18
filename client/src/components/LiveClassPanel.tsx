@@ -131,10 +131,11 @@ const LiveClassPanel = () => {
           <Button 
             variant="outline" 
             size="sm"
-            className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border-green-400/30 text-white hover:from-green-600/30 hover:to-blue-600/30 hover:border-green-400/50 backdrop-blur-sm shadow-lg transition-all duration-300"
+            className="bg-gradient-to-r from-green-600/12 to-blue-600/12 border-green-400/18 text-white/60 hover:from-green-600/30 hover:to-blue-600/30 hover:border-green-400/50 hover:text-white backdrop-blur-sm shadow-lg transition-all duration-300 group"
+            title="Homework"
           >
-            <Video className="h-4 w-4 mr-1" />
-            Homework
+            <Video className="h-4 w-4" />
+            <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">Homework</span>
             <Badge className="ml-1 bg-green-500/20 text-green-200 text-xs">
               {isLoading ? '...' : (liveAssignments as LiveAssignment[]).length}
             </Badge>

@@ -911,7 +911,7 @@ const TopicListItem = ({
                       const isExpanded = openContent.includes(`subtopic-${subtopic.id}`);
                       return (
                         <div key={subtopic.id} className={cn(
-                          "bg-white/5 border border-white/20 rounded-lg p-2 transition-all duration-200",
+                          "bg-white/5 border border-white/20 rounded-lg px-2 pt-2 pb-1 transition-all duration-200",
                           isExpanded && "md:col-span-2" // Full width when expanded
                         )}>
                           <div 

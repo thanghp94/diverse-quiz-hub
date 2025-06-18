@@ -87,10 +87,11 @@ export const ContentProgressPanel = () => {
         <Button 
           variant="outline" 
           size="sm"
-          className="bg-blue-600/20 border-blue-400/50 text-blue-200 hover:bg-blue-600/30"
+          className="bg-blue-600/12 border-blue-400/30 text-white/60 hover:bg-blue-600/30 hover:text-white transition-all duration-300 group"
+          title="Content Progress"
         >
-          <BarChart3 className="h-4 w-4 mr-1" />
-          Content Progress
+          <BarChart3 className="h-4 w-4" />
+          <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">Content Progress</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-gray-900 border-gray-700">
