@@ -79,18 +79,18 @@ export const MarkdownRenderer = ({
           <HoverCardContent 
             side="top" 
             className={`w-auto max-w-sm text-lg p-4 rounded-lg shadow-xl z-50 ${
-              tooltipStyle === "dark" 
+              tooltipStyle === "light" 
                 ? "bg-white border-gray-300 text-gray-900" 
                 : "bg-gray-800 border-gray-600 text-white"
             }`}
           >
             <div className={`font-medium text-sm uppercase tracking-wide mb-2 ${
-              tooltipStyle === "dark" ? "text-gray-600" : "text-gray-300"
+              tooltipStyle === "light" ? "text-gray-600" : "text-gray-300"
             }`}>
               VIETNAMESE
             </div>
             <div className={`font-semibold text-lg ${
-              tooltipStyle === "dark" ? "text-gray-900" : "text-white"
+              tooltipStyle === "light" ? "text-gray-900" : "text-white"
             }`}>
               {match.translation}
             </div>
@@ -176,7 +176,7 @@ export const MarkdownRenderer = ({
   }, [translationDictionary]);
 
   return (
-    <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-1 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-1 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
+    <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-li:ml-4 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-4 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-4 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
       <ReactMarkdown components={components}>{children}</ReactMarkdown>
     </div>
   );

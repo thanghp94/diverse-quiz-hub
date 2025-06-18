@@ -1146,7 +1146,7 @@ const TopicListItem = ({
                                                 
                                                 {/* Description at bottom for group cards - hidden when expanded */}
                                                 {!isGroupExpanded && content.short_description && (
-                                                  <div className="text-white/60 text-sm leading-relaxed mt-2 text-center">
+                                                  <div className="text-white/60 text-sm leading-relaxed mt-1 text-center">
                                                     <MarkdownRenderer 
                                                       className="text-sm leading-relaxed"
                                                       translationDictionary={isValidTranslationDictionary(content.translation_dictionary) ? content.translation_dictionary : null}
