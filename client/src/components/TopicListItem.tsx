@@ -711,11 +711,16 @@ const TopicListItem = ({
 
               {subtopics.length > 0 && (
                 <div className="mt-3">
-                  <div className="space-y-2">
+                  {/* Two-column responsive layout for subtopics */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {subtopics.map((subtopic, index) => {
                       const subtopicContent = getTopicContent(subtopic.id);
+                      const isExpanded = openContent.includes(`subtopic-${subtopic.id}`);
                       return (
-                        <div key={subtopic.id} className="bg-white/5 border border-white/10 rounded-lg p-2">
+                        <div key={subtopic.id} className={cn(
+                          "bg-white/5 border border-white/10 rounded-lg p-2 transition-all duration-200",
+                          isExpanded && "md:col-span-2" // Full width when expanded
+                        )}>
                           <div 
                             className="flex items-start justify-between cursor-pointer"
                             onClick={() => onToggleContent(`subtopic-${subtopic.id}`)}
@@ -726,7 +731,6 @@ const TopicListItem = ({
                                   <BookOpen className="h-3 w-3" />
                                 </Badge>
                                 <span className="text-white/90 text-lg font-bold text-center">{subtopic.topic}</span>
-
                               </div>
                               {subtopic.short_summary && <p className="text-white/60 text-xs ml-6">{formatDescription(subtopic.short_summary)}</p>}
                             </div>
@@ -749,10 +753,10 @@ const TopicListItem = ({
                                     <DropdownMenuItem onClick={() => onStartTopicQuiz(subtopic.id, 'Hard', subtopic.topic)}>Hard Quiz</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                              <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", openContent.includes(`subtopic-${subtopic.id}`) && "rotate-180")} />
+                              <ChevronDown className={cn("h-5 w-5 text-white/80 transition-transform duration-200", isExpanded && "rotate-180")} />
                             </div>
                           </div>
-                          {subtopicContent.length > 0 && openContent.includes(`subtopic-${subtopic.id}`) && (
+                          {subtopicContent.length > 0 && isExpanded && (
                             <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                               {subtopicContent
                                 .sort((a, b) => {

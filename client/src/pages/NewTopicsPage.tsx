@@ -118,17 +118,18 @@ const NewTopicsPage = () => {
           </div>
         )}
 
-        {/* Topics Grid */}
-        <div className="space-y-4">
-          {topics?.filter(topic => topic.showstudent).map((topic, index) => {
+        {/* Topics Grid - Two Column Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {topics?.filter(topic => !topic.parentid).map((topic, index) => {
             const isExpanded = expandedTopic === topic.id;
             const subtopics = getSubtopics(topic.id);
             const topicContent = getTopicContent(topic.id);
             const colors = getTopicColor(index);
             
             return (
-              <div key={topic.id} className="w-full">
+              <>
                 <Card 
+                  key={topic.id}
                   className={cn(
                     "cursor-pointer transition-all duration-200 hover:shadow-md border-2",
                     colors.bg,
@@ -166,9 +167,9 @@ const NewTopicsPage = () => {
                   </CardContent>
                 </Card>
 
-                {/* Expanded Content - Two Column Layout */}
+                {/* Expanded Content - Full Width Below */}
                 {isExpanded && (
-                  <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
+                  <div className="col-span-full mt-4 animate-in slide-in-from-top-2 duration-200">
                     <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
                       <h4 className="text-lg font-semibold text-gray-900 mb-4">
                         {topic.topic} - Content & Subtopics
@@ -177,7 +178,7 @@ const NewTopicsPage = () => {
                       {/* Two Column Grid for Content and Subtopics */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Topic Content */}
-                        {topicContent.slice(0, 4).map((content) => (
+                        {topicContent.slice(0, 8).map((content) => (
                           <Card key={content.id} className="border border-gray-200 hover:shadow-sm transition-shadow">
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
@@ -235,7 +236,7 @@ const NewTopicsPage = () => {
                     </div>
                   </div>
                 )}
-              </div>
+              </>
             );
           })}
         </div>
