@@ -858,132 +858,191 @@ const TopicListItem = ({
                                         isGroupCard && isGroupExpanded && "col-span-2 ring-2 ring-yellow-400/40 z-20",
                                         !isGroupCard && "z-5"
                                       )}>
-                                        <div className="flex items-start justify-between gap-2">
-                                          <div
-                                            onClick={() => {
-                                              if (isGroupCard) {
-                                                setIsGroupExpanded(!isGroupExpanded);
-                                              } else {
-                                                onContentClick({
-                                                  content,
-                                                  contextList: subtopicContent
-                                                });
-                                              }
-                                            }}
-                                            className="flex-grow cursor-pointer"
-                                          >
-                                            <div className="flex items-center gap-2">
-                                              <LocalContentThumbnail 
-                                                content={content} 
-                                                isGroupCard={isGroupCard}
-                                                onClick={() => onContentClick({
-                                                  content,
-                                                  contextList: subtopicContent
-                                                })}
-                                              />
-                                              <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between gap-2 mb-2">
-                                                  {isGroupCard ? (
-                                                    <div className="flex items-center gap-2 flex-1">
-                                                      <div className="bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200">
-                                                        <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
+                                        {isGroupCard ? (
+                                          /* Group Card Layout */
+                                          <div className="flex flex-col">
+                                            {/* Title Section - Centered */}
+                                            <div className="text-center mb-4">
+                                              <div 
+                                                className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
+                                                onClick={() => setIsGroupExpanded(!isGroupExpanded)}
+                                              >
+                                                <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
+                                              </div>
+                                              {groupedContent.length > 0 && (
+                                                <Badge className="ml-2 bg-yellow-500/20 text-yellow-200 text-xs">
+                                                  {groupedContent.length} items
+                                                </Badge>
+                                              )}
+                                            </div>
+
+                                            {/* Image Gallery and Action Buttons Row */}
+                                            <div className="flex items-center justify-between gap-4">
+                                              {/* Thumbnail Gallery */}
+                                              <div className="flex-1">
+                                                {groupedContent.length > 0 && (
+                                                  <div className="flex flex-wrap gap-2">
+                                                    {groupedContent.map((groupItem) => (
+                                                      <div key={`thumb-${groupItem.id}`} className="w-16 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                                                        <div className="w-full h-full object-cover object-center">
+                                                          <LocalContentThumbnail 
+                                                            content={groupItem} 
+                                                            onClick={() => onContentClick({
+                                                              content: groupItem,
+                                                              contextList: [...subtopicContent]
+                                                            })}
+                                                          />
+                                                        </div>
                                                       </div>
-                                                      {groupedContent.length > 0 && (
-                                                        <Badge className="bg-yellow-500/20 text-yellow-200 text-xs">
-                                                          {groupedContent.length} items
-                                                        </Badge>
-                                                      )}
-                                                    </div>
-                                                  ) : (
-                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-left">{content.title}</h4>
-                                                  )}
-                                                  <div className="flex items-center gap-1 flex-shrink-0">
-                                                    {isGroupCard && content.parentid && (
-                                                      <Button 
-                                                        variant="outline" 
-                                                        size="sm" 
-                                                        className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6 mr-1"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          onStartGroupMatching(content.parentid!, content.title || 'Group Match');
-                                                        }}
-                                                      >
-                                                        <Shuffle className="h-3 w-3 mr-1" />
-                                                        Match
-                                                      </Button>
-                                                    )}
-                                                    <ContentRatingButtons 
-                                                      key={`${content.id}-rating`}
-                                                      contentId={content.id}
-                                                      compact={true}
-                                                      studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
-                                                    />
-                                                    {(hasVideo1 || hasVideo2) && (
-                                                      <Button 
-                                                        variant="outline" 
-                                                        size="sm" 
-                                                        className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          setVideoPopupOpen(true);
-                                                        }}
-                                                      >
-                                                        <Play className="h-3 w-3 mr-1" />
-                                                        Video{(hasVideo1 && hasVideo2) ? 's' : ''}
-                                                      </Button>
-                                                    )}
-                                                    <DropdownMenu>
-                                                      <DropdownMenuTrigger asChild>
-                                                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
-                                                          Quiz
-                                                        </Button>
-                                                      </DropdownMenuTrigger>
-                                                      <DropdownMenuContent>
-                                                        <DropdownMenuItem onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          onStartQuiz(content, subtopicContent, 'Easy');
-                                                        }}>
-                                                          Easy Quiz
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          onStartQuiz(content, subtopicContent, 'Hard');
-                                                        }}>
-                                                          Hard Quiz
-                                                        </DropdownMenuItem>
-                                                      </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    ))}
                                                   </div>
+                                                )}
+                                              </div>
+
+                                              {/* Action Buttons */}
+                                              <div className="flex items-center gap-1 flex-shrink-0">
+                                                {content.parentid && (
+                                                  <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      onStartGroupMatching(content.parentid!, content.title || 'Group Match');
+                                                    }}
+                                                  >
+                                                    <Shuffle className="h-3 w-3 mr-1" />
+                                                    Match
+                                                  </Button>
+                                                )}
+                                                <ContentRatingButtons 
+                                                  key={`${content.id}-rating`}
+                                                  contentId={content.id}
+                                                  compact={true}
+                                                  studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                />
+                                                {(hasVideo1 || hasVideo2) && (
+                                                  <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setVideoPopupOpen(true);
+                                                    }}
+                                                  >
+                                                    <Play className="h-3 w-3 mr-1" />
+                                                    Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                  </Button>
+                                                )}
+                                                <DropdownMenu>
+                                                  <DropdownMenuTrigger asChild>
+                                                    <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                      Quiz
+                                                    </Button>
+                                                  </DropdownMenuTrigger>
+                                                  <DropdownMenuContent>
+                                                    <DropdownMenuItem onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      onStartQuiz(content, subtopicContent, 'Easy');
+                                                    }}>
+                                                      Easy Quiz
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      onStartQuiz(content, subtopicContent, 'Hard');
+                                                    }}>
+                                                      Hard Quiz
+                                                    </DropdownMenuItem>
+                                                  </DropdownMenuContent>
+                                                </DropdownMenu>
+                                              </div>
+                                            </div>
+
+                                            {/* Description */}
+                                            {content.short_description && (
+                                              <div className="mt-3 text-center">
+                                                <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          /* Normal Content Card Layout */
+                                          <div className="flex items-start justify-between gap-2">
+                                            <div
+                                              onClick={() => onContentClick({
+                                                content,
+                                                contextList: subtopicContent
+                                              })}
+                                              className="flex-grow cursor-pointer"
+                                            >
+                                              <div className="flex items-center gap-2">
+                                                <LocalContentThumbnail 
+                                                  content={content} 
+                                                  isGroupCard={isGroupCard}
+                                                  onClick={() => onContentClick({
+                                                    content,
+                                                    contextList: subtopicContent
+                                                  })}
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center justify-between gap-2 mb-2">
+                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-left">{content.title}</h4>
+                                                    <div className="flex items-center gap-1 flex-shrink-0">
+                                                      <ContentRatingButtons 
+                                                        key={`${content.id}-rating`}
+                                                        contentId={content.id}
+                                                        compact={true}
+                                                        studentId={localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')!).id : 'GV0002'}
+                                                      />
+                                                      {(hasVideo1 || hasVideo2) && (
+                                                        <Button 
+                                                          variant="outline" 
+                                                          size="sm" 
+                                                          className="text-white hover:bg-red-500/20 hover:text-white bg-red-500/10 border-red-400/50 text-xs px-2 py-1 h-6"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setVideoPopupOpen(true);
+                                                          }}
+                                                        >
+                                                          <Play className="h-3 w-3 mr-1" />
+                                                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                        </Button>
+                                                      )}
+                                                      <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                            Quiz
+                                                          </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                          <DropdownMenuItem onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onStartQuiz(content, subtopicContent, 'Easy');
+                                                          }}>
+                                                            Easy Quiz
+                                                          </DropdownMenuItem>
+                                                          <DropdownMenuItem onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onStartQuiz(content, subtopicContent, 'Hard');
+                                                          }}>
+                                                            Hard Quiz
+                                                          </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                      </DropdownMenu>
+                                                    </div>
+                                                  </div>
+                                                  <div className="flex items-center gap-2 mb-2">
+                                                    <CompactContentDifficultyIndicator contentId={content.id} />
+                                                  </div>
+                                                  {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                                 </div>
-                                                <div className="flex items-center gap-2 mb-2">
-                                                  <CompactContentDifficultyIndicator contentId={content.id} />
-                                                </div>
-                                                {content.short_description && <p className="text-white/60 text-sm leading-relaxed">{formatDescription(content.short_description)}</p>}
                                               </div>
                                             </div>
                                           </div>
-                                        </div>
-
-                                        {/* Thumbnail Gallery for Group Cards */}
-                                        {isGroupCard && groupedContent.length > 0 && (
-                                          <div className="mt-3 pt-3 border-t border-purple-400/20">
-                                            <div className="flex flex-wrap gap-2">
-                                              {groupedContent.map((groupItem) => (
-                                                <div key={`thumb-${groupItem.id}`} className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                  <div className="w-full h-full object-cover object-center">
-                                                    <LocalContentThumbnail 
-                                                      content={groupItem} 
-                                                      onClick={() => onContentClick({
-                                                        content: groupItem,
-                                                        contextList: [...subtopicContent]
-                                                      })}
-                                                    />
-                                                  </div>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </div>
                                         )}
+
+
 
                                         {/* Inline Grouped Content Expansion - Responsive Layout */}
                                         {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
