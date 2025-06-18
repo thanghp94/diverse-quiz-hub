@@ -175,8 +175,8 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
           </div>
         </div>
 
-        {/* Thumbnail Gallery - moved under title */}
-        {groupedContent.length > 0 && (
+        {/* Thumbnail Gallery - hidden when expanded */}
+        {!isExpanded && groupedContent.length > 0 && (
           <div className="mb-3">
             <div className="flex flex-wrap gap-2 justify-center">
               {groupedContent.slice(0, 8).map((content) => (
@@ -196,8 +196,8 @@ export const GroupedContentCard: React.FC<GroupedContentCardProps> = ({
           </div>
         )}
 
-        {/* Short Description - moved to bottom */}
-        {groupContent.short_description && (
+        {/* Short Description - hidden when expanded */}
+        {!isExpanded && groupContent.short_description && (
           <div className="text-center">
             <p className="text-white/70 text-sm">
               {groupContent.short_description}
