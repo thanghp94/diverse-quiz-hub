@@ -8,7 +8,7 @@ interface ContentThumbnailGalleryProps {
 
 const GalleryThumbnail = ({ content, onClick }: { 
   content: any, 
-  onClick?: () => void
+  onClick?: (e: React.MouseEvent) => void
 }) => {
   const { data: imageUrl } = useContentImage(content.imageid);
 
@@ -64,7 +64,7 @@ export const ContentThumbnailGallery = ({
           <div key={`thumb-${groupItem.id}`} className="flex-shrink-0">
             <GalleryThumbnail 
               content={groupItem} 
-              onClick={() => handleThumbnailClick(groupItem, {} as React.MouseEvent)}
+              onClick={(e) => handleThumbnailClick(groupItem, e)}
             />
           </div>
         ))}
