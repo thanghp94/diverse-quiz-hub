@@ -18,6 +18,7 @@ import { CompactContentDifficultyIndicator } from "@/components/ContentDifficult
 import { ContentRatingButtons } from "@/components/ContentRatingButtons";
 import { ContentGroupCard, ContentGroupPopup } from "@/components/ContentGroupCard";
 import { GroupedContentCard } from "@/components/GroupedContentCard";
+import { ContentThumbnailGallery } from "@/components/ContentThumbnailGallery";
 import { useQuery } from "@tanstack/react-query";
 
 interface Topic {
@@ -914,34 +915,9 @@ const TopicListItem = ({
                                                 </div>
                                                 
                                                 {/* Thumbnail Gallery for Group Cards - moved under title */}
-                                                {groupedContent.length > 0 && (
-                                                  <div className="mb-3 flex justify-center">
-                                                    <div className="flex flex-wrap gap-2 justify-center">
-                                                      {groupedContent.map((groupItem) => (
-                                                        <div key={`thumb-${groupItem.id}`} className="w-6 h-7 rounded-md overflow-hidden flex-shrink-0">
-                                                          <LocalContentThumbnail 
-                                                            content={groupItem} 
-                                                            isGroupCard={true}
-                                                            onClick={(e) => {
-                                                              e.stopPropagation();
-                                                              // Show image in dialog instead of content popup
-                                                              if (groupItem.imageid) {
-                                                                const imageDialog = document.createElement('div');
-                                                                imageDialog.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
-                                                                imageDialog.onclick = () => document.body.removeChild(imageDialog);
-                                                                const img = document.createElement('img');
-                                                                img.src = groupItem.imageid;
-                                                                img.className = 'max-w-[90vw] max-h-[90vh] object-contain';
-                                                                imageDialog.appendChild(img);
-                                                                document.body.appendChild(imageDialog);
-                                                              }
-                                                            }}
-                                                          />
-                                                        </div>
-                                                      ))}
-                                                    </div>
-                                                  </div>
-                                                )}
+                                                <ContentThumbnailGallery 
+                                                  groupedContent={groupedContent}
+                                                />
                                                 
                                                 {/* Description at bottom for group cards */}
                                                 {content.short_description && (
