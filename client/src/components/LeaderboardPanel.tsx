@@ -58,18 +58,18 @@ export const LeaderboardPanel = () => {
 
   const getCurrentLeaderboard = () => {
     if (activeTab === 'tries') {
-      return studentTriesData || [];
+      return Array.isArray(studentTriesData) ? studentTriesData : [];
     }
     
     if (!leaderboardData) return [];
     
     switch (activeTab) {
       case 'streak':
-        return leaderboardData.bestStreak || [];
+        return Array.isArray(leaderboardData.bestStreak) ? leaderboardData.bestStreak : [];
       case 'today':
-        return leaderboardData.todayQuizzes || [];
+        return Array.isArray(leaderboardData.todayQuizzes) ? leaderboardData.todayQuizzes : [];
       case 'weekly':
-        return leaderboardData.weeklyQuizzes || [];
+        return Array.isArray(leaderboardData.weeklyQuizzes) ? leaderboardData.weeklyQuizzes : [];
       default:
         return [];
     }
@@ -90,8 +90,27 @@ export const LeaderboardPanel = () => {
     }
   };
 
+
+
+  const getValue = (item: any, tab: string) => {
+    switch (tab) {
+      case 'tries':
+        return item.total_tries || 0;
+      case 'streak':
+        return item.longest_streak || 0;
+      case 'today':
+        return item.today_count || 0;
+      case 'weekly':
+        return item.weekly_count || 0;
+      default:
+        return 0;
+    }
+  };
+
   const getValueLabel = (tab: string) => {
     switch (tab) {
+      case 'tries':
+        return 'tries';
       case 'streak':
         return 'streak';
       case 'today':
@@ -103,18 +122,7 @@ export const LeaderboardPanel = () => {
     }
   };
 
-  const getValue = (item: any, tab: string) => {
-    switch (tab) {
-      case 'streak':
-        return item.longest_streak || 0;
-      case 'today':
-        return item.today_count || 0;
-      case 'weekly':
-        return item.weekly_count || 0;
-      default:
-        return 0;
-    }
-  };
+
 
   return (
     <Dialog>
@@ -177,13 +185,13 @@ export const LeaderboardPanel = () => {
                 <div className="text-center py-8">
                   <div className="text-white/60">Loading leaderboard...</div>
                 </div>
-              ) : getCurrentLeaderboard().length === 0 ? (
+              ) : !Array.isArray(getCurrentLeaderboard()) || getCurrentLeaderboard().length === 0 ? (
                 <div className="text-center py-8">
                   <div className="text-white/60">No data available</div>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {getCurrentLeaderboard().slice(0, 10).map((item, index) => {
+                  {getCurrentLeaderboard().slice(0, 10).map((item: any, index: number) => {
                     const rank = index + 1;
                     const value = getValue(item, activeTab);
                     
@@ -200,7 +208,7 @@ export const LeaderboardPanel = () => {
                           </div>
                           <div>
                             <div className="text-white font-medium">
-                              {item.full_name || 'Anonymous'}
+                              {item.full_name || item.name || item.student_id || 'Anonymous'}
                             </div>
                             <div className="text-white/60 text-sm">
                               {value} {getValueLabel(activeTab)}
