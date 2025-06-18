@@ -1,4 +1,3 @@
-
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -29,24 +28,24 @@ export const MarkdownRenderer = ({
 
     const elements: React.ReactNode[] = [];
     let lastIndex = 0;
-    
+
     // Sort keys by length (longest first) to match longer phrases first
     const sortedKeys = Object.keys(translationDictionary).sort((a, b) => b.length - a.length);
-    
+
     // Find all matches in the text
     const matches: Array<{ start: number; end: number; key: string; translation: string }> = [];
-    
+
     sortedKeys.forEach(key => {
       const regex = new RegExp(`\\b${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi');
       let match: RegExpExecArray | null;
-      
+
       while ((match = regex.exec(text)) !== null) {
         // Check if this match overlaps with existing matches
         const overlaps = matches.some(existing => 
           (match!.index >= existing.start && match!.index < existing.end) ||
           (match!.index + match![0].length > existing.start && match!.index + match![0].length <= existing.end)
         );
-        
+
         if (!overlaps) {
           matches.push({
             start: match.index,
@@ -57,17 +56,17 @@ export const MarkdownRenderer = ({
         }
       }
     });
-    
+
     // Sort matches by start position
     matches.sort((a, b) => a.start - b.start);
-    
+
     // Build the elements array with tooltips
     matches.forEach((match, index) => {
       // Add text before this match
       if (match.start > lastIndex) {
         elements.push(text.slice(lastIndex, match.start));
       }
-      
+
       // Add the tooltip for this match
       elements.push(
         <HoverCard key={`tooltip-${match.start}-${index}`} openDelay={200} closeDelay={100}>
@@ -82,11 +81,7 @@ export const MarkdownRenderer = ({
           </HoverCardTrigger>
           <HoverCardContent 
             side="top" 
-            className={`w-auto max-w-sm text-lg py-1 px-2 rounded-lg shadow-xl z-50 ${
-              tooltipStyle === "light" 
-                ? "bg-white border-gray-300 text-gray-900" 
-                : "bg-gray-900 border-gray-700 text-white"
-            }`}
+            className="w-auto max-w-sm text-lg py-1 px-2 rounded-lg shadow-xl z-50 bg-white border-gray-200 text-gray-900"
           >
             <div className={`font-medium text-sm uppercase tracking-wide mb-2 ${
               tooltipStyle === "light" ? "text-gray-600" : "text-gray-400"
@@ -101,15 +96,15 @@ export const MarkdownRenderer = ({
           </HoverCardContent>
         </HoverCard>
       );
-      
+
       lastIndex = match.end;
     });
-    
+
     // Add remaining text after last match
     if (lastIndex < text.length) {
       elements.push(text.slice(lastIndex));
     }
-    
+
     return elements.length > 0 ? elements : [text];
   };
 
