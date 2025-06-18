@@ -920,7 +920,7 @@ const TopicListItem = ({
                           >
                             <div className="flex-grow">
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="text-white/90 text-base font-bold text-center">{subtopic.topic}</span>
+                                <span className="text-base font-bold text-center text-[#ffff78e6]">{subtopic.topic}</span>
                               </div>
                               {subtopic.short_summary && <p className="text-white/60 text-xs ml-4">{formatDescription(subtopic.short_summary)}</p>}
                             </div>
