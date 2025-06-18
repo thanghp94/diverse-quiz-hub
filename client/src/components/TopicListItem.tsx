@@ -52,6 +52,7 @@ interface TopicListItemProps {
     getTopicContent: (topicId: string) => Content[];
     onStartTopicQuiz: (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => void;
     onStartTopicMatching: (topicId: string, topicName: string) => void;
+    onStartGroupMatching: (matchingId: string, matchingTitle: string) => void;
 }
 
 const getContentIcon = (content: any) => {
@@ -844,7 +845,7 @@ const TopicListItem = ({
                                                         className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6 mr-1"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
-                                                          onStartTopicMatching(content.parentid!, content.title || 'Group Match');
+                                                          onStartGroupMatching(content.parentid!, content.title || 'Group Match');
                                                         }}
                                                       >
                                                         <Shuffle className="h-3 w-3 mr-1" />

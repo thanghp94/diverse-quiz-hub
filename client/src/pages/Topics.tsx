@@ -293,6 +293,7 @@ const Topics = () => {
                     getTopicContent={getTopicContent}
                     onStartTopicQuiz={handleStartTopicQuiz}
                     onStartTopicMatching={handleStartTopicMatching}
+                    onStartGroupMatching={handleStartGroupMatching}
                   />
                 );
               })}
