@@ -54,7 +54,7 @@ def fetch_content_rows(conn, field_choice='short_blurb'):
         WHERE translation_dictionary IS NULL 
         AND {field_name} IS NOT NULL 
         AND {field_name} != ''
-        LIMIT 5
+        LIMIT 25
         """
         cursor.execute(query)
         rows = cursor.fetchall()
@@ -79,7 +79,7 @@ def generate_translation_dictionary(client, content_text):
         user_message = f"Here is the text: {content_text}. Please create the translation JSON."
         
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}
