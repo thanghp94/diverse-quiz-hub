@@ -12,7 +12,7 @@ interface MatchingProps {
   studentTryId?: string;
   onNextActivity?: () => void;
   onGoBack?: () => void;
-  currentQuizPhase?: 'picture-title' | 'title-description';
+  currentQuizPhase?: 'picture-title' | 'title-description' | null;
   onNextPhase?: () => void;
 }
 
@@ -58,6 +58,15 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   const rightItems = filteredPairs.map(pair => pair.right);
   // Keep right items in consistent order instead of shuffling
   const fixedRightItems = [...rightItems];
+
+  // Reset matches when phase changes in sequential matching
+  useEffect(() => {
+    if (hasSequentialMatching && currentQuizPhase) {
+      setMatches({});
+      setIsSubmitted(false);
+      setCorrectMatches({});
+    }
+  }, [currentQuizPhase, hasSequentialMatching]);
 
   // Get text styling based on matching type and word count
   const getTextStyling = (text: string) => {
@@ -469,31 +478,58 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
         </div>
       </CardContent>
       <div className="p-6 border-t-2 border-purple-200 bg-white/80 backdrop-blur-sm">
-        <Button
-          onClick={handleSubmit}
-          disabled={!isComplete || isSubmitting || isSubmitted}
-          className={`w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
-            isSubmitted 
-              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-2 border-green-400" 
-              : isComplete
-              ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
-              : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
-          }`}
-          variant="default"
-        >
-          {isSubmitting ? (
+        {/* Check if this is sequential matching and we should show Next Phase button */}
+        {hasSequentialMatching && currentQuizPhase === 'picture-title' && isSubmitted ? (
+          <Button
+            onClick={onNextPhase}
+            className="w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-2 border-blue-400 hover:scale-105 hover:shadow-xl"
+            variant="default"
+          >
             <span className="flex items-center gap-2">
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              Submitting...
+              Continue to Title-Description Matching →
             </span>
-          ) : isSubmitted ? (
-            <span className="flex items-center gap-2">
-              ✓ Completed
-            </span>
-          ) : (
-            'Submit Answers'
-          )}
-        </Button>
+          </Button>
+        ) : (
+          <Button
+            onClick={handleSubmit}
+            disabled={!isComplete || isSubmitting || isSubmitted}
+            className={`w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
+              isSubmitted 
+                ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-2 border-green-400" 
+                : isComplete
+                ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
+                : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
+            }`}
+            variant="default"
+          >
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Submitting...
+              </span>
+            ) : isSubmitted ? (
+              <span className="flex items-center gap-2">
+                ✓ Completed
+              </span>
+            ) : (
+              'Submit Answers'
+            )}
+          </Button>
+        )}
+        
+        {/* Phase indicator for sequential matching */}
+        {hasSequentialMatching && (
+          <div className="mt-3 text-center">
+            <div className="text-sm font-medium text-purple-700">
+              {currentQuizPhase === 'picture-title' ? 'Phase 1: Picture-Title Matching' : 'Phase 2: Title-Description Matching'}
+            </div>
+            <div className="flex justify-center mt-2 gap-2">
+              <div className={`w-3 h-3 rounded-full ${currentQuizPhase === 'picture-title' ? 'bg-purple-600' : 'bg-purple-300'}`}></div>
+              <div className={`w-3 h-3 rounded-full ${currentQuizPhase === 'title-description' ? 'bg-purple-600' : 'bg-purple-300'}`}></div>
+            </div>
+          </div>
+        )}
+        
         {isComplete && !isSubmitted && (
           <p className="text-sm text-purple-700 mt-3 text-center font-medium bg-purple-100 p-2 rounded-lg">
             All pairs matched! Click Submit to complete.

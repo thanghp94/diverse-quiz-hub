@@ -404,7 +404,12 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
                   </div>
                 )}
                 <div className="flex-1">
-                  <Matching question={currentQuestion} onAnswer={handleAnswer} />
+                  <Matching 
+                    question={currentQuestion} 
+                    onAnswer={handleAnswer}
+                    currentQuizPhase={currentQuizPhase}
+                    onNextPhase={handleNextPhase}
+                  />
                 </div>
               </div>
             )}
