@@ -874,47 +874,15 @@ const TopicListItem = ({
                                         {isGroupCard ? (
                                           /* Group Card Layout */
                                           <div className="flex flex-col">
-                                            {/* Title Section - Centered */}
-                                            <div className="text-center mb-4">
-                                              <div 
-                                                className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
-                                                onClick={() => setIsGroupExpanded(!isGroupExpanded)}
-                                              >
-                                                <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
-                                              </div>
-                                            </div>
-
-                                            {/* Image Gallery and Action Buttons Row */}
-                                            <div className="flex items-center justify-between gap-4">
-                                              {/* Thumbnail Gallery */}
-                                              <div className="flex-1">
-                                                {groupedContent.length > 0 && (
-                                                  <div className="flex flex-wrap gap-2">
-                                                    {groupedContent.map((groupItem) => (
-                                                      <div key={`thumb-${groupItem.id}`} className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                        <div className="w-full h-full">
-                                                          <LocalContentThumbnail 
-                                                            content={groupItem} 
-                                                            isGroupCard={true}
-                                                            onClick={() => onContentClick({
-                                                              content: groupItem,
-                                                              contextList: [...subtopicContent]
-                                                            })}
-                                                          />
-                                                        </div>
-                                                      </div>
-                                                    ))}
-                                                  </div>
-                                                )}
-                                              </div>
-
-                                              {/* Action Buttons - Stacked */}
-                                              <div className="flex flex-col gap-1 flex-shrink-0">
+                                            {/* Title and Action Buttons Row */}
+                                            <div className="flex items-center justify-between gap-4 mb-4">
+                                              {/* Action Buttons - Left */}
+                                              <div className="flex flex-col gap-0.5 flex-shrink-0">
                                                 {content.parentid && (
                                                   <Button 
                                                     variant="outline" 
                                                     size="sm" 
-                                                    className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6"
+                                                    className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-0.5 h-4"
                                                     onClick={(e) => {
                                                       e.stopPropagation();
                                                       onStartGroupMatching(content.parentid!, content.title || 'Group Match');
@@ -929,7 +897,7 @@ const TopicListItem = ({
                                                     <Button 
                                                       variant="outline" 
                                                       size="sm" 
-                                                      className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-1 h-6"
+                                                      className="text-yellow-200 hover:bg-yellow-500/20 hover:text-yellow-100 bg-yellow-500/10 border-yellow-400/40 text-xs px-2 py-0.5 h-4"
                                                     >
                                                       Quiz
                                                     </Button>
@@ -950,6 +918,41 @@ const TopicListItem = ({
                                                   </DropdownMenuContent>
                                                 </DropdownMenu>
                                               </div>
+
+                                              {/* Title Section - Centered */}
+                                              <div className="flex-1 text-center">
+                                                <div 
+                                                  className="inline-block bg-yellow-500/20 border border-yellow-400/40 rounded-lg px-4 py-2 cursor-pointer hover:bg-yellow-500/30 transition-all duration-200"
+                                                  onClick={() => setIsGroupExpanded(!isGroupExpanded)}
+                                                >
+                                                  <h4 className="text-yellow-200 text-base font-medium leading-tight">{content.title}</h4>
+                                                </div>
+                                              </div>
+
+                                              {/* Empty space for balance */}
+                                              <div className="flex-shrink-0 w-12"></div>
+                                            </div>
+
+                                            {/* Image Gallery Row */}
+                                            <div className="flex justify-center">
+                                              {groupedContent.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 justify-center">
+                                                  {groupedContent.map((groupItem) => (
+                                                    <div key={`thumb-${groupItem.id}`} className="w-20 h-16 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
+                                                      <div className="w-full h-full">
+                                                        <LocalContentThumbnail 
+                                                          content={groupItem} 
+                                                          isGroupCard={true}
+                                                          onClick={() => onContentClick({
+                                                            content: groupItem,
+                                                            contextList: [...subtopicContent]
+                                                          })}
+                                                        />
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              )}
                                             </div>
 
                                             {/* Description */}
