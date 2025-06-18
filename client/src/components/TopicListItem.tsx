@@ -267,13 +267,17 @@ const GroupedContentDisplay = ({
     const groupCards: Content[] = [];
     const groupedContentMap: { [groupId: string]: Content[] } = {};
     
+    // First, separate all content by type
+    const allUngroupedContent: Content[] = [];
+    const allGroupCards: Content[] = [];
+    
     topicContent.forEach(content => {
       if (content.prompt === "groupcard") {
-        // This is a group header card
-        groupCards.push(content);
+        // This is a group header card - always goes to group cards
+        allGroupCards.push(content);
       } else if (!content.contentgroup || content.contentgroup.trim() === '') {
-        // This is ungrouped content (shows on top)
-        ungroupedContent.push(content);
+        // This is ungrouped content - always goes to ungrouped
+        allUngroupedContent.push(content);
       } else {
         // This content belongs to a group
         if (!groupedContentMap[content.contentgroup]) {
@@ -283,14 +287,31 @@ const GroupedContentDisplay = ({
       }
     });
     
-    // Sort by order field to ensure proper display sequence
-    ungroupedContent.sort((a, b) => (a.order || 0) - (b.order || 0));
-    groupCards.sort((a, b) => (a.order || 0) - (b.order || 0));
+    // Sort ungrouped content by order, with NULL/undefined values treated as very high numbers so they appear last among ungrouped
+    allUngroupedContent.sort((a, b) => {
+      const aOrder = (a.order !== null && a.order !== undefined && a.order !== '') ? parseInt(a.order) : 999999;
+      const bOrder = (b.order !== null && b.order !== undefined && b.order !== '') ? parseInt(b.order) : 999999;
+      return aOrder - bOrder;
+    });
+    
+    // Sort group cards by order, with NULL/undefined values treated as very high numbers
+    allGroupCards.sort((a, b) => {
+      const aOrder = (a.order !== null && a.order !== undefined && a.order !== '') ? parseInt(a.order) : 999999;
+      const bOrder = (b.order !== null && b.order !== undefined && b.order !== '') ? parseInt(b.order) : 999999;
+      return aOrder - bOrder;
+    });
     
     // Sort grouped content within each group
     Object.keys(groupedContentMap).forEach(groupId => {
-      groupedContentMap[groupId].sort((a, b) => (a.order || 0) - (b.order || 0));
+      groupedContentMap[groupId].sort((a, b) => {
+        const aOrder = (a.order !== null && a.order !== undefined && a.order !== '') ? parseInt(a.order) : 999999;
+        const bOrder = (b.order !== null && b.order !== undefined && b.order !== '') ? parseInt(b.order) : 999999;
+        return aOrder - bOrder;
+      });
     });
+    
+    ungroupedContent.push(...allUngroupedContent);
+    groupCards.push(...allGroupCards);
     
     return { ungroupedContent, groupCards, groupedContentMap };
   }, [topicContent]);
