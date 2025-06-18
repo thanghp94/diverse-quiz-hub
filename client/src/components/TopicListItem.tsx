@@ -1092,7 +1092,7 @@ const TopicListItem = ({
                                           <div className="flex-grow cursor-pointer">
                                             {isGroupCard ? (
                                               <div 
-                                                className="w-full"
+                                                className="w-full text-[#ffffff]"
                                                 onClick={() => onToggleGroupCard(content.id)}
                                               >
                                                 {/* Title with action buttons for group cards */}
