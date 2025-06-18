@@ -84,37 +84,39 @@ const QuizDialog: React.FC<QuizDialogProps> = ({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[90vh] overflow-y-auto bg-gray-900 border-gray-700">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle className="text-white flex items-center gap-2">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+      <div className="w-full max-w-7xl h-[90vh] bg-white rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b bg-gray-50">
+          <h2 className="text-xl font-semibold text-gray-900">
             {assignmentName || "Quiz"}
-          </DialogTitle>
+          </h2>
           <Button
             variant="ghost"
             size="sm"
             onClick={handleClose}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-600 hover:text-gray-900"
           >
             <X className="h-4 w-4" />
           </Button>
-        </DialogHeader>
+        </div>
 
-        {questionIdsFromProps.length > 0 && mockAssignmentTry ? (
-          <QuizView 
-            questionIds={questionIdsFromProps} 
-            onQuizFinish={handleClose}
-            assignmentStudentTryId={mockAssignmentTry.id.toString()}
-            studentTryId={mockAssignmentTry?.id}
-            contentId={content?.id}
-          />
-        ) : (
-          <div className="text-white text-center py-8">
-            Loading quiz...
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+        <div className="h-[calc(90vh-4rem)] overflow-y-auto">
+          {questionIdsFromProps.length > 0 && mockAssignmentTry ? (
+            <QuizView 
+              questionIds={questionIdsFromProps} 
+              onQuizFinish={handleClose}
+              assignmentStudentTryId={mockAssignmentTry.id.toString()}
+              studentTryId={mockAssignmentTry?.id}
+              contentId={content?.id}
+            />
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-gray-600">Loading quiz...</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
