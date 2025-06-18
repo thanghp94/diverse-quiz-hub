@@ -36,7 +36,20 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   // Check if this is a sequential matching quiz (has both picture-title and title-description)
   const matchingTypes = (question.type || '').split(', ');
   const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
+
   const effectiveMatchingType = currentQuizPhase || (hasSequentialMatching ? 'picture-title' : question.type);
+
+  // Reset state when phase changes for sequential matching
+  useEffect(() => {
+    if (hasSequentialMatching && currentQuizPhase) {
+      setMatches({});
+      setShowResults(false);
+      setIsSubmitted(false);
+      setIsSubmitting(false);
+      setCorrectMatches({});
+      setDraggedItem(null);
+    }
+  }, [currentQuizPhase, hasSequentialMatching]);
   
   // Filter pairs based on current phase
   const allPairs = question.pairs || [];
@@ -170,8 +183,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     const relevantPairs = filteredPairs; // Use filtered pairs for current phase
     const newCorrectMatches: {[key: string]: boolean} = {};
 
+    // Debug logging
+    console.log('Checking results for matches:', matches);
+    console.log('Against relevant pairs:', relevantPairs);
+
     relevantPairs.forEach(pair => {
-      const isMatchCorrect = matches[pair.left] === pair.right;
+      const userMatch = matches[pair.left];
+      const correctMatch = pair.right;
+      const isMatchCorrect = userMatch === correctMatch;
+      
+      console.log(`Checking: "${pair.left}" -> user: "${userMatch}" vs correct: "${correctMatch}" = ${isMatchCorrect}`);
+      
       newCorrectMatches[pair.left] = isMatchCorrect;
       if (isMatchCorrect) {
         correctCount++;
@@ -181,6 +203,8 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     const totalPairs = relevantPairs.length;
     const score = Math.round((correctCount / totalPairs) * 100);
     const isCorrect = correctCount === totalPairs;
+
+    console.log(`Final score: ${correctCount}/${totalPairs} = ${score}% (${isCorrect ? 'PASS' : 'FAIL'})`);
 
     // Set correctness state for visual feedback
     setCorrectMatches(newCorrectMatches);

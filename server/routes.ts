@@ -788,6 +788,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Leaderboard API endpoints
+  app.get("/api/student-tries-leaderboard", async (req, res) => {
+    try {
+      const leaderboard = await storage.getStudentTriesLeaderboard();
+      res.json(leaderboard);
+    } catch (error) {
+      console.error('Error fetching student tries leaderboard:', error);
+      res.status(500).json({ error: 'Failed to fetch student tries leaderboard' });
+    }
+  });
+
+  app.get("/api/leaderboards", async (req, res) => {
+    try {
+      const leaderboards = await storage.getLeaderboards();
+      res.json(leaderboards);
+    } catch (error) {
+      console.error('Error fetching leaderboards:', error);
+      res.status(500).json({ error: 'Failed to fetch leaderboards' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
