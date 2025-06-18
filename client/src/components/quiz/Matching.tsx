@@ -135,19 +135,21 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
   const isComplete = Object.keys(matches).length === leftItems.length;
 
   return (
-    <Card className="bg-white border-gray-300 shadow-lg h-full flex flex-col">
-      <CardHeader className="pb-1 pt-2">
-        <div className="flex justify-start items-center mb-1">
+    <Card className="bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 border-2 border-purple-200 shadow-2xl h-full flex flex-col">
+      <CardHeader className="pb-3 pt-4 bg-white/80 backdrop-blur-sm border-b-2 border-purple-200">
+        <div className="flex justify-start items-center mb-2">
           <Button 
             variant="outline" 
             size="sm" 
-            className="text-xs"
+            className="text-xs bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200 hover:border-purple-400 font-medium"
             onClick={onGoBack || (() => setLocation('/topics'))}
           >
             ← Go Back
           </Button>
         </div>
-        <CardTitle className="text-black text-lg font-bold">{question.question}</CardTitle>
+        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          {question.question}
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-2">
         <div className="flex flex-col gap-1 h-full">
@@ -174,14 +176,14 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                     key={item}
                     draggable={!isUsed && !isSubmitted}
                     onDragStart={(e) => handleDragStart(e, item)}
-                    className={`relative p-0.5 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
+                    className={`relative p-2 rounded-xl text-black transition-all duration-300 border-3 flex items-center justify-center shadow-lg transform hover:scale-105 ${
                       isCorrect 
-                        ? 'bg-green-100 border-green-400 cursor-not-allowed'
+                        ? 'bg-gradient-to-br from-green-100 to-green-200 border-green-500 cursor-not-allowed'
                         : isIncorrect
-                        ? 'bg-red-100 border-red-400 cursor-not-allowed'
+                        ? 'bg-gradient-to-br from-red-100 to-red-200 border-red-500 cursor-not-allowed'
                         : isUsed 
-                        ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' 
-                        : 'bg-blue-50 border-blue-300 cursor-move hover:bg-blue-100 hover:border-blue-400'
+                        ? 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-400 opacity-50 cursor-not-allowed' 
+                        : 'bg-gradient-to-br from-blue-100 to-purple-100 border-blue-400 cursor-move hover:from-blue-200 hover:to-purple-200 hover:border-purple-500 hover:shadow-xl'
                     }`}
                   >
                     {isUsed && (
@@ -340,7 +342,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
                         </DialogContent>
                       </Dialog>
                     ) : (
-                      <div className="font-medium text-sm leading-relaxed whitespace-pre-line text-left min-h-[120px] flex items-center">{item}</div>
+                      <div className="font-medium text-base leading-tight whitespace-pre-line text-left">{item}</div>
                     )}
                     {matchedLeft && (
                       <div className={`flex items-center gap-1 text-xs mt-1 p-1 rounded border ${
@@ -400,17 +402,34 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack }
           </div>
         </div>
       </CardContent>
-      <div className="p-4 border-t">
+      <div className="p-6 border-t-2 border-purple-200 bg-white/80 backdrop-blur-sm">
         <Button
           onClick={handleSubmit}
           disabled={!isComplete || isSubmitting || isSubmitted}
-          className="w-full"
-          variant={isSubmitted ? "outline" : "default"}
+          className={`w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
+            isSubmitted 
+              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white border-2 border-green-400" 
+              : isComplete
+              ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
+              : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
+          }`}
+          variant="default"
         >
-          {isSubmitting ? 'Submitting...' : isSubmitted ? 'Completed' : 'Submit Answers'}
+          {isSubmitting ? (
+            <span className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Submitting...
+            </span>
+          ) : isSubmitted ? (
+            <span className="flex items-center gap-2">
+              ✓ Completed
+            </span>
+          ) : (
+            'Submit Answers'
+          )}
         </Button>
         {isComplete && !isSubmitted && (
-          <p className="text-sm text-gray-600 mt-2 text-center">
+          <p className="text-sm text-purple-700 mt-3 text-center font-medium bg-purple-100 p-2 rounded-lg">
             All pairs matched! Click Submit to complete.
           </p>
         )}
