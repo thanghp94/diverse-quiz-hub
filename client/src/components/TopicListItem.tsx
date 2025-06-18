@@ -36,7 +36,7 @@ interface NoteButtonProps {
 const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact = false }) => {
   const [isNoteOpen, setIsNoteOpen] = useState(false);
 
-  // Fetch existing note
+  // Check if there's an existing note for visual indication
   const { data: existingRating } = useQuery<{ rating: string; personal_note?: string } | null>({
     queryKey: ['/api/content-ratings', studentId, contentId],
     queryFn: async () => {
@@ -54,57 +54,7 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         return null;
       }
     },
-    enabled: isNoteOpen
   });
-
-  // Update note text when dialog opens and data is loaded
-  React.useEffect(() => {
-    if (isNoteOpen && existingRating) {
-      setNoteText(existingRating.personal_note || '');
-    }
-  }, [isNoteOpen, existingRating]);
-
-  // Save note mutation
-  const saveNoteMutation = useMutation({
-    mutationFn: async (note: string) => {
-      const response = await fetch(`/api/content-ratings/${studentId}/${contentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          personal_note: note
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to save note');
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Note saved",
-        description: "Your personal note has been saved successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/content-ratings', studentId, contentId] });
-      setIsNoteOpen(false);
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to save note. Please try again.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleSaveNote = () => {
-    setIsLoading(true);
-    saveNoteMutation.mutate(noteText);
-    setIsLoading(false);
-  };
 
   const hasNote = existingRating?.personal_note && existingRating.personal_note.trim() !== '';
 
@@ -125,75 +75,19 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          // Add a small delay to ensure event propagation is fully stopped
-          setTimeout(() => {
-            setIsNoteOpen(true);
-          }, 10);
+          setIsNoteOpen(true);
         }}
       >
         <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
         {hasNote && <span className="ml-1 text-xs">*</span>}
       </Button>
       
-      {/* Personal note dialog rendered as portal to document.body */}
-      {isNoteOpen && createPortal(
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/80"
-            onClick={() => setIsNoteOpen(false)}
-          />
-          
-          {/* Dialog content */}
-          <div className="relative z-[10001] bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-auto">
-            {/* Close button */}
-            <button
-              onClick={() => setIsNoteOpen(false)}
-              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
-            </button>
-            
-            {/* Header */}
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold leading-none tracking-tight">Personal Note</h2>
-              <p className="text-sm text-muted-foreground mt-2">
-                Add your personal notes about this content. Only you can see these notes.
-              </p>
-            </div>
-            
-            {/* Content */}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="note-text">Your Note</Label>
-                <Textarea
-                  id="note-text"
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="Write your personal note here..."
-                  className="min-h-[100px] mt-2"
-                />
-              </div>
-            </div>
-            
-            {/* Footer */}
-            <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 mt-6">
-              <Button variant="outline" onClick={() => setIsNoteOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSaveNote} 
-                disabled={isLoading || saveNoteMutation.isPending}
-                className="mb-2 sm:mb-0"
-              >
-                {isLoading || saveNoteMutation.isPending ? "Saving..." : "Save Note"}
-              </Button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+      <PersonalNoteDialog
+        isOpen={isNoteOpen}
+        onClose={() => setIsNoteOpen(false)}
+        contentId={contentId}
+        studentId={studentId}
+      />
     </>
   );
 };
