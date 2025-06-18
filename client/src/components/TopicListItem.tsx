@@ -117,14 +117,14 @@ const NoteButton: React.FC<NoteButtonProps> = ({ contentId, studentId, compact =
           variant="outline" 
           size={compact ? "sm" : "default"}
           className={cn(
-            "text-blue-600 hover:bg-blue-500/20 hover:text-blue-600 bg-blue-500/10 border-blue-400/50",
-            compact ? "text-xs px-2 py-1 h-6" : "text-sm px-3 py-2",
-            hasNote && "bg-blue-500/20 border-blue-400/70"
+            "text-white hover:bg-white/20 hover:text-white bg-transparent border-white/50",
+            compact ? "px-2 py-1 h-6" : "px-2 py-2",
+            hasNote && "bg-white/10 border-white/70"
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          <FileText className={cn("mr-1", compact ? "h-3 w-3" : "h-4 w-4")} />
-          Note{hasNote ? "*" : ""}
+          <FileText className={cn(compact ? "h-3 w-3" : "h-4 w-4")} />
+          {hasNote && <span className="ml-1 text-xs">*</span>}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
@@ -292,7 +292,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
                   <div className="flex items-center gap-1 flex-shrink-0">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                        <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-1 py-0.5 h-5">
                           Quiz
                         </Button>
                       </DropdownMenuTrigger>
@@ -323,7 +323,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
                           setVideoPopupOpen(true);
                         }}
                       >
-                        Video
+                        {(hasVideo1 && hasVideo2) ? '2 Videos' : 'Video'}
                       </Button>
                     )}
                   </div>
@@ -1109,12 +1109,12 @@ const TopicListItem = ({
                                                           }}
                                                         >
                                                           <Play className="h-3 w-3 mr-1" />
-                                                          Video{(hasVideo1 && hasVideo2) ? 's' : ''}
+                                                          {(hasVideo1 && hasVideo2) ? '2 Videos' : 'Video'}
                                                         </Button>
                                                       )}
                                                       <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-2 py-1 h-6">
+                                                          <Button variant="outline" size="sm" className="text-black hover:bg-white/20 hover:text-black bg-white/90 border-white/50 text-xs px-1 py-0.5 h-5">
                                                             Quiz
                                                           </Button>
                                                         </DropdownMenuTrigger>

@@ -131,13 +131,13 @@ export const ContentRatingButtons = ({
           size="sm"
           onClick={() => handleRating('really_bad')}
           disabled={isSubmitting}
-          className={`flex items-center justify-center w-6 h-6 p-0 ${
+          className={`flex items-center justify-center w-5 h-5 p-0 opacity-60 hover:opacity-80 ${
             currentRating === 'really_bad' 
-              ? 'bg-red-500 hover:bg-red-600 text-white' 
+              ? 'bg-red-500 hover:bg-red-600 text-white opacity-100' 
               : 'hover:bg-red-50 hover:border-red-300'
           }`}
         >
-          <ThumbsDown className="w-3 h-3" />
+          <ThumbsDown className="w-2.5 h-2.5" />
         </Button>
 
         <Button
@@ -145,13 +145,13 @@ export const ContentRatingButtons = ({
           size="sm"
           onClick={() => handleRating('ok')}
           disabled={isSubmitting}
-          className={`flex items-center justify-center w-6 h-6 p-0 ${
+          className={`flex items-center justify-center w-5 h-5 p-0 opacity-60 hover:opacity-80 ${
             currentRating === 'ok' 
-              ? 'bg-green-500 hover:bg-green-600 text-white' 
+              ? 'bg-green-500 hover:bg-green-600 text-white opacity-100' 
               : 'hover:bg-green-50 hover:border-green-300'
           }`}
         >
-          <ThumbsUp className="w-3 h-3" />
+          <ThumbsUp className="w-2.5 h-2.5" />
         </Button>
       </>
     );

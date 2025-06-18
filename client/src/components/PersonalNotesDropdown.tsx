@@ -41,8 +41,9 @@ export const PersonalNotesDropdown: React.FC<PersonalNotesDropdownProps> = ({
 
   const hasNote = existingRating?.personal_note && existingRating.personal_note.trim() !== '';
 
+  // Don't show dropdown if no note exists
   if (!hasNote) {
-    return null; // Don't show dropdown if no note exists
+    return null;
   }
 
   return (
