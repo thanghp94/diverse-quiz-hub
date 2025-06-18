@@ -758,13 +758,28 @@ export const TopicListItem = ({
                                 const SubtopicContentCard = () => {
                                   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
                                   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
+                                  const [isGroupExpanded, setIsGroupExpanded] = useState(false);
 
                                   const hasVideo1 = videoEmbedUrl && videoData;
                                   const hasVideo2 = video2EmbedUrl && video2Data;
 
+                                  // Check if this content is a group card and find related content
+                                  const isGroupCard = content.prompt === "groupcard";
+                                  const groupedContent = isGroupCard ? 
+                                    subtopicContent.filter(item => item.contentgroup === content.id && item.id !== content.id) : 
+                                    [];
+
+                                  const toggleGroup = (e: React.MouseEvent) => {
+                                    e.stopPropagation();
+                                    setIsGroupExpanded(!isGroupExpanded);
+                                  };
+
                                   return (
                                     <>
-                                      <div className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3">
+                                      <div className={cn(
+                                        "bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-lg p-3",
+                                        isGroupCard && "bg-gradient-to-r from-purple-600/20 via-blue-600/20 to-indigo-600/20 border-purple-400/30"
+                                      )}>
                                         <div className="flex items-start justify-between gap-2">
                                           <div
                                             onClick={() => onContentClick({
@@ -783,7 +798,27 @@ export const TopicListItem = ({
                                               />
                                               <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2 mb-2">
-                                                  <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0 text-center">{content.title}</h4>
+                                                  <div className="flex items-center gap-2 flex-1">
+                                                    <h4 className="text-white/90 text-base font-medium leading-tight flex-1 min-w-0">{content.title}</h4>
+                                                    {isGroupCard && groupedContent.length > 0 && (
+                                                      <div className="flex items-center gap-1">
+                                                        <Badge className="bg-purple-500/20 text-purple-200 text-xs">
+                                                          {groupedContent.length} items
+                                                        </Badge>
+                                                        <Button
+                                                          variant="ghost"
+                                                          size="sm"
+                                                          onClick={toggleGroup}
+                                                          className="h-6 w-6 p-0 hover:bg-purple-500/20"
+                                                        >
+                                                          <ChevronDown className={cn(
+                                                            "h-4 w-4 text-purple-300 transition-transform duration-200",
+                                                            isGroupExpanded && "rotate-180"
+                                                          )} />
+                                                        </Button>
+                                                      </div>
+                                                    )}
+                                                  </div>
                                                   <div className="flex items-center gap-1 flex-shrink-0">
                                                       <ContentRatingButtons 
                                                         key={`${content.id}-rating`}
@@ -838,6 +873,51 @@ export const TopicListItem = ({
                                             </div>
                                           </div>
                                         </div>
+
+                                        {/* Grouped Content Dropdown */}
+                                        {isGroupCard && groupedContent.length > 0 && isGroupExpanded && (
+                                          <div className="mt-3 pt-3 border-t border-purple-400/30">
+                                            <h5 className="text-purple-200 text-sm font-medium mb-2">Related Content:</h5>
+                                            <div className="space-y-2">
+                                              {groupedContent.map((groupItem) => (
+                                                <div 
+                                                  key={groupItem.id} 
+                                                  className="bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200 rounded-md p-2 cursor-pointer"
+                                                  onClick={() => onContentClick({
+                                                    content: groupItem,
+                                                    contextList: [...subtopicContent]
+                                                  })}
+                                                >
+                                                  <div className="flex items-center gap-2">
+                                                    <ContentThumbnail 
+                                                      content={groupItem} 
+                                                      onClick={() => onContentClick({
+                                                        content: groupItem,
+                                                        contextList: [...subtopicContent]
+                                                      })}
+                                                    />
+                                                    <div className="flex-1 min-w-0">
+                                                      <h6 className="text-white text-sm font-medium line-clamp-1">
+                                                        {groupItem.title}
+                                                      </h6>
+                                                      {groupItem.short_description && (
+                                                        <p className="text-white/60 text-xs line-clamp-2 mt-1">
+                                                          {groupItem.short_description}
+                                                        </p>
+                                                      )}
+                                                      <div className="flex items-center gap-2 mt-1">
+                                                        <Badge className={cn("text-xs", getContentTypeColor(groupItem))}>
+                                                          {getContentIcon(groupItem)}
+                                                        </Badge>
+                                                        <CompactContentDifficultyIndicator contentId={groupItem.id} />
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
                                       </div>
                                       {/* Video Popup - Using Dialog */}
                                       <Dialog open={videoPopupOpen} onOpenChange={setVideoPopupOpen}>
