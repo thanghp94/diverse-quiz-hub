@@ -70,10 +70,10 @@ const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { cont
     return null;
   }
 
-  // For group card thumbnails in the gallery, use different sizing and fit
+  // For group card thumbnails in the gallery, use same sizing but different fit
   if (isGroupCard) {
     return (
-      <div className="w-full h-full rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+      <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
         <img 
           src={imageUrl} 
           alt={content.title} 
@@ -918,18 +918,15 @@ const TopicListItem = ({
                                                   <div className="mb-3 flex justify-center">
                                                     <div className="flex flex-wrap gap-2 justify-center">
                                                       {groupedContent.map((groupItem) => (
-                                                        <div key={`thumb-${groupItem.id}`} className="w-16 h-12 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
-                                                          <div className="w-full h-full">
-                                                            <LocalContentThumbnail 
-                                                              content={groupItem} 
-                                                              isGroupCard={true}
-                                                              onClick={() => onContentClick({
-                                                                content: groupItem,
-                                                                contextList: [...subtopicContent]
-                                                              })}
-                                                            />
-                                                          </div>
-                                                        </div>
+                                                        <LocalContentThumbnail 
+                                                          key={`thumb-${groupItem.id}`}
+                                                          content={groupItem} 
+                                                          isGroupCard={true}
+                                                          onClick={() => onContentClick({
+                                                            content: groupItem,
+                                                            contextList: [...subtopicContent]
+                                                          })}
+                                                        />
                                                       ))}
                                                     </div>
                                                   </div>
