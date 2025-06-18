@@ -24,6 +24,9 @@ interface LiveAssignment {
 const LiveClassPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState<LiveAssignment | null>(null);
+  const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [currentAssignment, setCurrentAssignment] = useState<LiveAssignment | null>(null);
 
   // Fetch real live class assignments from API
   const { data: liveAssignments = [], isLoading } = useQuery<LiveAssignment[]>({
@@ -106,13 +109,14 @@ const LiveClassPanel = () => {
         return;
       }
 
-      // Close the dialog and navigate to quiz
+      // Set up quiz state and open quiz dialog
+      setQuizQuestions(questions.slice(0, assignment.noofquestion || 40));
+      setCurrentAssignment(assignment);
+      setIsQuizOpen(true);
+      
+      // Close the homework dialog
       setIsOpen(false);
       setSelectedAssignment(null);
-      
-      // Here you would typically navigate to a quiz page or open a quiz component
-      // For now, we'll just show an alert confirming the quiz is ready
-      alert(`Quiz started! ${questions.length} questions loaded for: ${assignment.assignmentname}`);
       
     } catch (error) {
       console.error('Error starting quiz:', error);
@@ -121,20 +125,21 @@ const LiveClassPanel = () => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border-green-400/30 text-white hover:from-green-600/30 hover:to-blue-600/30 hover:border-green-400/50 backdrop-blur-sm shadow-lg transition-all duration-300"
-        >
-          <Video className="h-4 w-4 mr-1" />
-          Homework
-          <Badge className="ml-1 bg-green-500/20 text-green-200 text-xs">
-            {isLoading ? '...' : (liveAssignments as LiveAssignment[]).length}
-          </Badge>
-        </Button>
-      </DialogTrigger>
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="bg-gradient-to-r from-green-600/20 to-blue-600/20 border-green-400/30 text-white hover:from-green-600/30 hover:to-blue-600/30 hover:border-green-400/50 backdrop-blur-sm shadow-lg transition-all duration-300"
+          >
+            <Video className="h-4 w-4 mr-1" />
+            Homework
+            <Badge className="ml-1 bg-green-500/20 text-green-200 text-xs">
+              {isLoading ? '...' : (liveAssignments as LiveAssignment[]).length}
+            </Badge>
+          </Button>
+        </DialogTrigger>
       
       <DialogContent className="max-w-3xl max-h-[70vh] bg-gray-900 border-gray-700 text-white">
         <DialogHeader>
@@ -230,6 +235,15 @@ const LiveClassPanel = () => {
         )}
       </DialogContent>
     </Dialog>
+    
+      <QuizDialog
+        isOpen={isQuizOpen}
+        onClose={() => setIsQuizOpen(false)}
+        questions={quizQuestions}
+        assignmentName={currentAssignment?.assignmentname || 'Quiz'}
+        totalQuestions={currentAssignment?.noofquestion || quizQuestions.length}
+      />
+    </>
   );
 };
 
