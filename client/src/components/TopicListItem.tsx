@@ -1181,31 +1181,34 @@ const TopicListItem = ({
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                   {groupedContent.map((groupItem) => (
                                                     <div key={groupItem.id} className={cn(
-                                                      "bg-white/5 border border-white/20 hover:bg-white/10 transition-all duration-200 rounded-lg p-3",
+                                                      "bg-white/5 border border-white/20 hover:bg-white/10 transition-all duration-200 rounded-lg p-3 cursor-pointer",
                                                       activeContentId === groupItem.id && "ring-4 ring-yellow-400/80 bg-yellow-500/20 border-yellow-400/70 shadow-lg shadow-yellow-400/20"
-                                                    )}>
+                                                    )}
+                                                    onClick={() => onContentClick({
+                                                      content: groupItem,
+                                                      contextList: [...subtopicContent]
+                                                    })}
+                                                    >
                                                       <div className="flex items-start gap-3">
-                                                        <LocalContentThumbnail 
-                                                          content={groupItem} 
-                                                          isGroupCard={true}
-                                                          onClick={() => onContentClick({
-                                                            content: groupItem,
-                                                            contextList: [...subtopicContent]
-                                                          })}
-                                                        />
+                                                        <div onClick={(e) => e.stopPropagation()}>
+                                                          <LocalContentThumbnail 
+                                                            content={groupItem} 
+                                                            isGroupCard={true}
+                                                            onClick={() => onContentClick({
+                                                              content: groupItem,
+                                                              contextList: [...subtopicContent]
+                                                            })}
+                                                          />
+                                                        </div>
                                                         <div className="flex-1 min-w-0">
                                                           <div className="flex items-center justify-between gap-2 mb-2">
                                                             <h4 
-                                                              className="text-sm font-medium leading-tight flex-1 min-w-0 cursor-pointer hover:text-white"
+                                                              className="text-sm font-medium leading-tight flex-1 min-w-0"
                                                               style={{ color: '#ffff78e6' }}
-                                                              onClick={() => onContentClick({
-                                                                content: groupItem,
-                                                                contextList: [...subtopicContent]
-                                                              })}
                                                             >
                                                               {groupItem.title}
                                                             </h4>
-                                                            <div className="flex items-center gap-1 flex-shrink-0">
+                                                            <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                                               <ContentRatingButtons 
                                                                 key={`${groupItem.id}-inline-rating`}
                                                                 contentId={groupItem.id}
