@@ -175,7 +175,7 @@ export const MarkdownRenderer = ({
   }, [translationDictionary]);
 
   return (
-    <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-li:ml-4 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-4 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-4 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
+    <div className={`prose prose-blue dark:prose-invert max-w-none whitespace-pre-wrap font-sans prose-li:my-0 prose-li:mb-0 prose-li:mt-0 prose-li:leading-tight prose-li:pl-0 prose-li:ml-2 prose-p:my-0 prose-p:mb-0 prose-p:leading-tight prose-ul:my-0 prose-ul:mb-0 prose-ul:pl-2 prose-ul:mt-0 prose-ul:space-y-0 prose-ol:my-0 prose-ol:mb-0 prose-ol:pl-2 prose-ol:mt-0 prose-ol:space-y-0 ${className}`} style={{ lineHeight: '1.1' }}>
       <ReactMarkdown components={components}>{children}</ReactMarkdown>
     </div>
   );
