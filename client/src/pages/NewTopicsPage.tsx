@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useContent, Content } from "@/hooks/useContent";
 import { LeaderboardPanel } from "@/components/LeaderboardPanel";
+import LiveClassPanel from "@/components/LiveClassPanel";
 
 interface Topic {
   id: string;
@@ -85,6 +86,7 @@ const NewTopicsPage = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <LiveClassPanel />
             <LeaderboardPanel />
             <Button variant="ghost" size="sm">
               <User className="h-4 w-4" />

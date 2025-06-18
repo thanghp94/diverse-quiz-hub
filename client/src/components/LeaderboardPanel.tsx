@@ -27,8 +27,8 @@ interface LeaderboardData {
 export const LeaderboardPanel = () => {
   const [activeTab, setActiveTab] = useState<'streak' | 'today' | 'weekly'>('today');
   
-  const { data: leaderboardData, isLoading } = useQuery<LeaderboardData>({
-    queryKey: ['/api/leaderboard'],
+  const { data: leaderboardData, isLoading } = useQuery({
+    queryKey: ['/api/student-tries-leaderboard'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 

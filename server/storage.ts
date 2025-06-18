@@ -922,6 +922,34 @@ export class DatabaseStorage implements IStorage {
       return result;
     });
   }
+
+  async getStudentTriesLeaderboard(): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.execute(sql`
+        SELECT 
+          hocsinh_id,
+          COUNT(*) as total_tries,
+          SUM(CASE WHEN quiz_result = '✅' THEN 1 ELSE 0 END) as correct_answers,
+          ROUND(
+            (SUM(CASE WHEN quiz_result = '✅' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 
+            1
+          ) as accuracy_percentage
+        FROM student_try 
+        GROUP BY hocsinh_id 
+        ORDER BY total_tries DESC, accuracy_percentage DESC
+        LIMIT 20
+      `);
+      
+      return result.rows.map((row: any, index: number) => ({
+        rank: index + 1,
+        student_id: row.hocsinh_id,
+        name: row.hocsinh_id, // Using ID as name for now
+        total_tries: parseInt(row.total_tries),
+        correct_answers: parseInt(row.correct_answers),
+        accuracy: parseFloat(row.accuracy_percentage) || 0
+      }));
+    });
+  }
 }
 
 export const storage = new DatabaseStorage();
