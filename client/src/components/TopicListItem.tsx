@@ -71,14 +71,14 @@ const LocalContentThumbnail = ({ content, onClick, isGroupCard = false }: { cont
     return null;
   }
 
-  // For group card thumbnails in the gallery, use smaller sizing
+  // For group card thumbnails in the gallery, use same styling as normal content cards
   if (isGroupCard) {
     return (
-      <div className="w-6 h-7 rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
+      <div className="w-24 h-28 rounded-md overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={onClick}>
         <img 
           src={imageUrl} 
           alt={content.title} 
-          className="w-full h-full object-contain bg-white/10"
+          className="w-full h-full object-cover"
         />
       </div>
     );
