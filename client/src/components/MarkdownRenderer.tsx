@@ -81,11 +81,11 @@ export const MarkdownRenderer = ({
             className={`w-auto max-w-sm text-lg p-4 rounded-lg shadow-xl z-50 ${
               tooltipStyle === "light" 
                 ? "bg-white border-gray-300 text-gray-900" 
-                : "bg-gray-800 border-gray-600 text-white"
+                : "bg-gray-900 border-gray-700 text-white"
             }`}
           >
             <div className={`font-medium text-sm uppercase tracking-wide mb-2 ${
-              tooltipStyle === "light" ? "text-gray-600" : "text-gray-300"
+              tooltipStyle === "light" ? "text-gray-600" : "text-gray-400"
             }`}>
               VIETNAMESE
             </div>
