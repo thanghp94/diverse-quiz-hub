@@ -129,7 +129,16 @@ export const ContentRatingButtons = ({
         <Button
           variant={currentRating === 'really_bad' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => handleRating('really_bad')}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleRating('really_bad');
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
           disabled={isSubmitting}
           className={`flex items-center justify-center w-5 h-5 p-0 opacity-60 hover:opacity-80 ${
             currentRating === 'really_bad' 
@@ -143,7 +152,16 @@ export const ContentRatingButtons = ({
         <Button
           variant={currentRating === 'ok' ? 'default' : 'outline'}
           size="sm"
-          onClick={() => handleRating('ok')}
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            handleRating('ok');
+          }}
+          onPointerDown={(e) => e.stopPropagation()}
           disabled={isSubmitting}
           className={`flex items-center justify-center w-5 h-5 p-0 opacity-60 hover:opacity-80 ${
             currentRating === 'ok' 
