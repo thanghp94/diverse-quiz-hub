@@ -1,4 +1,13 @@
-import { pgTable, text, serial, integer, boolean, timestamp, uuid, jsonb } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  boolean,
+  timestamp,
+  uuid,
+  jsonb,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -216,8 +225,8 @@ export const student_try_content = pgTable("student_try_content", {
   contentid: text("contentid"),
   hocsinh_id: text("hocsinh_id"),
   student_try_id: text("student_try_id"),
-  time_end: text("time_end"),
-  time_start: text("time_start"),
+  time_end: timestamp("time_end", { withTimezone: true }),
+  time_start: timestamp("time_start", { withTimezone: true }),
   update: text("update"),
 });
 
@@ -332,15 +341,20 @@ export const insertImageSchema = createInsertSchema(images);
 export const insertQuestionSchema = createInsertSchema(questions);
 export const insertMatchingSchema = createInsertSchema(matching);
 export const insertVideoSchema = createInsertSchema(videos);
-export const insertMatchingAttemptSchema = createInsertSchema(matching_attempts);
+export const insertMatchingAttemptSchema =
+  createInsertSchema(matching_attempts);
 export const insertContentRatingSchema = createInsertSchema(content_ratings);
 export const insertStudentStreakSchema = createInsertSchema(student_streaks);
 export const insertDailyActivitySchema = createInsertSchema(daily_activities);
 export const insertWritingPromptSchema = createInsertSchema(writing_prompts);
-export const insertWritingSubmissionSchema = createInsertSchema(writing_submissions);
-export const insertLearningProgressSchema = createInsertSchema(learning_progress);
+export const insertWritingSubmissionSchema =
+  createInsertSchema(writing_submissions);
+export const insertLearningProgressSchema =
+  createInsertSchema(learning_progress);
 export const insertCronJobSchema = createInsertSchema(cron_jobs);
-export const insertPendingAccessRequestSchema = createInsertSchema(pending_access_requests);
+export const insertPendingAccessRequestSchema = createInsertSchema(
+  pending_access_requests,
+);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
@@ -362,10 +376,16 @@ export type InsertDailyActivity = z.infer<typeof insertDailyActivitySchema>;
 export type WritingPrompt = typeof writing_prompts.$inferSelect;
 export type InsertWritingPrompt = z.infer<typeof insertWritingPromptSchema>;
 export type WritingSubmission = typeof writing_submissions.$inferSelect;
-export type InsertWritingSubmission = z.infer<typeof insertWritingSubmissionSchema>;
+export type InsertWritingSubmission = z.infer<
+  typeof insertWritingSubmissionSchema
+>;
 export type LearningProgress = typeof learning_progress.$inferSelect;
-export type InsertLearningProgress = z.infer<typeof insertLearningProgressSchema>;
+export type InsertLearningProgress = z.infer<
+  typeof insertLearningProgressSchema
+>;
 export type CronJob = typeof cron_jobs.$inferSelect;
 export type InsertCronJob = z.infer<typeof insertCronJobSchema>;
 export type PendingAccessRequest = typeof pending_access_requests.$inferSelect;
-export type InsertPendingAccessRequest = z.infer<typeof insertPendingAccessRequestSchema>;
+export type InsertPendingAccessRequest = z.infer<
+  typeof insertPendingAccessRequestSchema
+>;
