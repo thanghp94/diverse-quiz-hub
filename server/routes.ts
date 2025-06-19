@@ -425,20 +425,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!existingRating) {
         // Create a new content rating entry to track the access
-        // Default rating is null (unrated) but we track the access
         const accessRecord = await storage.createContentRating({
           id: crypto.randomUUID(),
           student_id,
           content_id,
           rating: 'viewed', // Special rating to indicate content was viewed
-          personal_note: null
+          personal_note: null,
+          view_count: 1
         });
         
         console.log(`Content access recorded: Student ${student_id} viewed content ${content_id}`);
         res.json({ message: 'Content access recorded', record: accessRecord });
       } else {
-        // Content already accessed - just update the timestamp
-        res.json({ message: 'Content access already recorded', existing: true });
+        // Content already accessed - increment view count
+        const updatedRating = await storage.incrementContentViewCount(student_id, content_id);
+        console.log(`Content view count incremented: Student ${student_id} viewed content ${content_id}`);
+        res.json({ message: 'Content view count updated', record: updatedRating });
       }
     } catch (error) {
       console.error('Error tracking content access:', error);

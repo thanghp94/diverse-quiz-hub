@@ -54,6 +54,7 @@ export interface IStorage {
   getContentRating(studentId: string, contentId: string): Promise<ContentRating | null>;
   getContentRatingsByStudent(studentId: string): Promise<ContentRating[]>;
   updateContentRating(studentId: string, contentId: string, rating: string): Promise<ContentRating>;
+  incrementContentViewCount(studentId: string, contentId: string): Promise<ContentRating>;
   getContentRatingStats(contentId: string): Promise<{ easy: number; normal: number; hard: number }>;
 
   // Student Streaks
@@ -419,6 +420,33 @@ export class DatabaseStorage implements IStorage {
         content_id: contentId,
         rating: rating || 'normal',
         personal_note: personalNote
+      });
+    }
+  }
+
+  async incrementContentViewCount(studentId: string, contentId: string): Promise<ContentRating> {
+    const existing = await this.getContentRating(studentId, contentId);
+    if (existing) {
+      const currentCount = existing.view_count || 1;
+      const result = await db.update(content_ratings)
+        .set({
+          view_count: currentCount + 1,
+          updated_at: new Date(),
+        })
+        .where(and(
+          eq(content_ratings.student_id, studentId),
+          eq(content_ratings.content_id, contentId)
+        ))
+        .returning();
+      return result[0];
+    } else {
+      return await this.createContentRating({
+        id: crypto.randomUUID(),
+        student_id: studentId,
+        content_id: contentId,
+        rating: 'viewed',
+        personal_note: null,
+        view_count: 1,
       });
     }
   }

@@ -226,8 +226,9 @@ export const content_ratings = pgTable("content_ratings", {
   id: text("id").primaryKey(),
   student_id: text("student_id").notNull(),
   content_id: text("content_id").notNull(),
-  rating: text("rating").notNull(), // "really_bad", "normal", "ok"
+  rating: text("rating").notNull(), // "really_bad", "normal", "ok", "viewed"
   personal_note: text("personal_note"), // Student's personal notes about the content
+  view_count: integer("view_count").default(1), // Track number of times content was viewed
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
 });

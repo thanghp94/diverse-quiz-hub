@@ -95,7 +95,8 @@ export const SimpleContentProgressPanel = () => {
       const response = await fetch('/api/users');
       if (!response.ok) throw new Error('Failed to fetch students');
       const users = await response.json();
-      return users.filter((user: any) => user.id !== 'GV0002').map((user: any) => ({
+      // Include all users, not just excluding GV0002
+      return users.map((user: any) => ({
         id: user.id,
         full_name: user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.id
       }));
@@ -112,8 +113,16 @@ export const SimpleContentProgressPanel = () => {
       ratingMap.set(rating.content_id, rating);
     });
 
+    // Filter topics to show only "0. Introductory Questions" and A-L series
+    const filteredTopics = topics.filter((topic: any) => {
+      if (!topic.topic) return false;
+      const topicName = topic.topic.trim();
+      return topicName.startsWith("0. Introductory Questions") ||
+             /^[A-L]\./.test(topicName);
+    });
+
     const buildHierarchy = (parentId: string | null): HierarchyNode[] => {
-      return topics
+      return filteredTopics
         .filter((topic: any) => topic.parentid === parentId)
         .map((topic: any) => {
           const topicContent = content.filter((c: any) => c.topicid === topic.id);
