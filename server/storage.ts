@@ -927,12 +927,14 @@ export class DatabaseStorage implements IStorage {
         hocsinh_id: studentTry.hocsinh_id,
         question_id: studentTry.question_id || null,
         answer_choice: studentTry.answer_choice || null,
-        correct_answer: studentTry.correct_answer || null,
         quiz_result: studentTry.quiz_result || null,
+        score: studentTry.score ? parseInt(studentTry.score) : null,
         time_start: studentTry.time_start ? (studentTry.time_start instanceof Date ? studentTry.time_start : new Date(studentTry.time_start)) : null,
         time_end: studentTry.time_end ? (studentTry.time_end instanceof Date ? studentTry.time_end : new Date(studentTry.time_end)) : null,
-        currentindex: studentTry.currentindex || null,
-        showcontent: studentTry.showcontent || null
+        currentindex: studentTry.currentindex ? parseInt(studentTry.currentindex) : null,
+        showcontent: studentTry.showcontent?.toString() || null,
+        writing_answer: studentTry.writing_answer || null,
+        update: new Date()
       };
 
       console.log('Creating student_try with data:', studentTryData);
