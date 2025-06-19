@@ -1312,16 +1312,32 @@ export class DatabaseStorage implements IStorage {
           console.log('Error fetching ratings:', e);
         }
 
-        // Get quiz activities
+        // Get quiz activities with proper timestamp conversion
         try {
           const quizzes = await db.execute(sql`
-            SELECT 'quiz_attempt' as type, q.contentid as content_id, c.title as content_title,
-                   st.time_start as timestamp, st.score
+            SELECT DISTINCT 'quiz_attempt' as type, q.contentid as content_id, c.title as content_title,
+                   CASE 
+                     WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
+                       CURRENT_DATE + st.time_start::time
+                     ELSE 
+                       st.time_start::timestamp
+                   END as timestamp, 
+                   st.score, st.quiz_result
             FROM student_try st
-            JOIN questions q ON st.question_id = q.id
+            JOIN question q ON st.question_id = q.id
             JOIN content c ON q.contentid = c.id
-            WHERE st.hocsinh_id = ${studentId} AND st.time_start >= ${startTime}
-            ORDER BY st.time_start DESC
+            WHERE st.hocsinh_id = ${studentId} 
+              AND st.time_start IS NOT NULL 
+              AND st.time_start != ''
+              AND (
+                CASE 
+                  WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
+                    CURRENT_DATE + st.time_start::time >= ${startTime}::timestamp
+                  ELSE 
+                    st.time_start::timestamp >= ${startTime}::timestamp
+                END
+              )
+            ORDER BY timestamp DESC
             LIMIT 10
           `);
           
@@ -1332,7 +1348,8 @@ export class DatabaseStorage implements IStorage {
               content_title: row.content_title,
               timestamp: row.timestamp,
               rating: null,
-              quiz_score: row.score
+              quiz_score: row.score,
+              quiz_result: row.quiz_result
             });
           });
         } catch (e) {
