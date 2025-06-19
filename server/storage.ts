@@ -124,6 +124,9 @@ export interface IStorage {
   // Leaderboards
   getStudentTriesLeaderboard(): Promise<any[]>;
   getLeaderboards(): Promise<any>;
+
+  // Access Requests
+  createPendingAccessRequest(request: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1197,6 +1200,15 @@ export class DatabaseStorage implements IStorage {
       }
 
       console.log(`Updated student try content tracking for ${result.rows.length} records`);
+    });
+  }
+
+  async createPendingAccessRequest(request: any): Promise<any> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(pending_access_requests)
+        .values(request)
+        .returning();
+      return result;
     });
   }
 }
