@@ -282,7 +282,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                             <CardTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                                 Question {currentQuestionIndex + 1}/{questionIds.length}
                             </CardTitle>
-                            
+
                             {/* Progress Bar - Always visible */}
                             <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
                                 <div className="text-xs text-gray-600 font-medium mb-1">Progress</div>
@@ -312,7 +312,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                                 const isCurrent = index === currentQuestionIndex;
                                 const wasCorrect = index < currentQuestionIndex && sessionStorage.getItem('quizResults') ? 
                                     JSON.parse(sessionStorage.getItem('quizResults') || '[]')[index] : false;
-                                
+
                                 return (
                                     <div
                                         key={index}
@@ -341,7 +341,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                             const isSelected = selectedAnswer === choiceLetter;
                             const isCorrect = showFeedback && choiceLetter === currentQuestion.correct_choice;
                             const isWrong = showFeedback && isSelected && choiceLetter !== currentQuestion.correct_choice;
-                            
+
                             return (
                                 <Card
                                     key={index}
@@ -464,7 +464,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                             >
                                 {isContentLoading ? 'Loading...' : (showContent ? 'Hide Content' : 'Show Content')}
                             </Button>
-                            
+
                             <Button 
                                 onClick={handleNext}
                                 className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
@@ -502,7 +502,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     {/* Right side: Image */}
                                     {linkedContent.imageid && (
                                         <div className="flex justify-center">

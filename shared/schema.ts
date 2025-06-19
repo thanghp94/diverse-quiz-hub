@@ -205,8 +205,8 @@ export const student_try = pgTable("student_try", {
   quiz_result: text("quiz_result"),
   score: integer("score"),
   showcontent: text("showcontent"),
-  time_end: text("time_end"),
-  time_start: text("time_start"),
+  time_end: timestamp("time_end", { withTimezone: true }),
+  time_start: timestamp("time_start", { withTimezone: true }),
   update: timestamp("update"),
   writing_answer: text("writing_answer"),
 });
