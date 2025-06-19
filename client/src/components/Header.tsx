@@ -96,12 +96,6 @@ const Header = () => {
             Assignments
           </button>
           <button 
-            onClick={() => setLocation('/image-generator')}
-            className="text-white hover:text-white/80 transition-colors"
-          >
-            Image Generator
-          </button>
-          <button 
             onClick={() => setLocation('/leaderboard')}
             className="text-white hover:text-white/80 transition-colors"
           >

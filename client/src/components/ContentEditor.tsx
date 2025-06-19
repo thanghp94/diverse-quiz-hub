@@ -136,24 +136,8 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
   };
 
   // Check if current user is GV0002
-  const getCurrentUser = () => {
-    try {
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        return JSON.parse(storedUser);
-      }
-      return null;
-    } catch (error) {
-      console.error('Error parsing current user:', error);
-      return null;
-    }
-  };
-
-  const currentUser = getCurrentUser();
-  const isAuthorized = currentUser?.id === 'GV0002';
-
-  console.log('ContentEditor - Current user:', currentUser);
-  console.log('ContentEditor - Is authorized:', isAuthorized);
+  const currentUser = localStorage.getItem('currentUser');
+  const isAuthorized = currentUser ? JSON.parse(currentUser).id === 'GV0002' : false;
 
   if (!isAuthorized) {
     return null;

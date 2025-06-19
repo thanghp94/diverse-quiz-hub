@@ -397,49 +397,25 @@ const ContentPopup = ({
 
               {/* Content Editor - Admin Only Dropdown */}
               {(() => {
-                const getCurrentUser = () => {
-                  try {
-                    const storedUser = localStorage.getItem('currentUser');
-                    if (storedUser) {
-                      return JSON.parse(storedUser);
-                    }
-                    return null;
-                  } catch (error) {
-                    console.error('Error parsing current user:', error);
-                    return null;
-                  }
-                };
-
-                const currentUser = getCurrentUser();
-                const isAuthorized = currentUser?.id === 'GV0002';
+                const currentUser = localStorage.getItem('currentUser');
+                const isAuthorized = currentUser ? JSON.parse(currentUser).id === 'GV0002' : false;
                 
-                console.log('ContentPopup Admin Check - Current user:', currentUser);
-                console.log('ContentPopup Admin Check - Is authorized:', isAuthorized);
-                console.log('ContentPopup Admin Check - localStorage contents:', localStorage.getItem('currentUser'));
-                
-                // Force show for debugging - remove this line when working
-                if (!isAuthorized) {
-                  console.log('Admin editor not showing because user is not GV0002');
-                  return null;
-                }
+                if (!isAuthorized) return null;
                 
                 return (
-                  <div className="mt-6 pt-4 border-t-2 border-red-500 bg-red-50/20">
-                    <div className="mb-2 text-xs text-red-600 font-bold uppercase tracking-wide">
-                      🔧 ADMIN PANEL - USER: {currentUser?.id}
-                    </div>
+                  <div className="mt-6 pt-4 border-t">
                     <button 
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-red-100 rounded-lg border-2 border-red-300 bg-red-50 shadow-md"
+                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg border border-blue-200 bg-blue-50/30"
                       onClick={() => setIsEditorOpen(!isEditorOpen)}
                     >
                       <div className="flex items-center gap-2">
-                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        <span className="font-bold text-red-700 text-lg">Content Editor (Admin Only)</span>
+                        <span className="font-medium text-blue-700">Content Editor (Admin)</span>
                       </div>
                       <svg 
-                        className={`w-6 h-6 text-red-600 transition-transform duration-200 ${isEditorOpen ? 'rotate-180' : ''}`}
+                        className={`w-5 h-5 text-blue-600 transition-transform duration-200 ${isEditorOpen ? 'rotate-180' : ''}`}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"

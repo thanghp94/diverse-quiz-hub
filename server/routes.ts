@@ -5,8 +5,6 @@ import { wakeUpDatabase } from "./db";
 import { getSessionMiddleware, isStudentAuthenticated } from "./sessionAuth";
 import { setupGoogleAuth } from "./googleAuth";
 import crypto from 'crypto';
-import { aiService, AIContentRequest, AIQuestionRequest, AITutorRequest } from './aiService';
-import { imageGenerationService } from './imageGenerator';
 
 // Session type declarations
 declare module 'express-session' {
@@ -27,14 +25,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/student-login', async (req, res) => {
     try {
       const { identifier } = req.body;
-
+      
       if (!identifier) {
         return res.status(400).json({ message: 'Student ID or Meraki Email is required' });
       }
 
       // Check if user exists by UserID or MerakiEmail
       const user = await storage.getUserByIdentifier(identifier);
-
+      
       if (!user) {
         return res.status(401).json({ message: 'Invalid Student ID or Meraki Email' });
       }
@@ -60,14 +58,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/email-login', async (req, res) => {
     try {
       const { email } = req.body;
-
+      
       if (!email) {
         return res.status(400).json({ message: 'Email is required' });
       }
 
       // Find user by their personal email
       const user = await storage.getUserByEmail(email);
-
+      
       if (!user) {
         return res.status(401).json({ message: 'Email not found. Please use Student ID for first-time login.' });
       }
@@ -89,14 +87,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/set-personal-email', async (req, res) => {
     try {
       const { identifier, personalEmail } = req.body;
-
+      
       if (!identifier || !personalEmail) {
         return res.status(400).json({ message: 'Both identifier and email are required' });
       }
 
       // Find user by identifier
       const user = await storage.getUserByIdentifier(identifier);
-
+      
       if (!user) {
         return res.status(401).json({ message: 'Invalid Student ID or Meraki Email' });
       }
@@ -122,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Auth check - Session ID:', req.sessionID);
       console.log('Auth check - User ID in session:', (req.session as any).userId);
-
+      
       if (!(req.session as any).userId) {
         return res.status(401).json({ message: 'Not authenticated' });
       }
@@ -155,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Find student by Student ID or Meraki Email
       const student = await storage.getUserByIdentifier(identifier);
-
+      
       if (!student) {
         return res.status(404).json({ message: 'Student ID or Meraki Email not found in our records' });
       }
@@ -172,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
 
         console.log('Session saved successfully for user:', student.id);
-
+        
         // Check if student needs to set up personal email
         const needsEmailSetup = !student.email || student.email === student.meraki_email;
 
@@ -248,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Logout error:', err);
         return res.status(500).json({ message: 'Logout failed' });
       }
-
+      
       res.clearCookie('connect.sid'); // Clear the session cookie
       res.json({ success: true, message: 'Logged out successfully' });
     });
@@ -258,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/test', (req, res) => {
     const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
     const clientId = process.env.GOOGLE_CLIENT_ID;
-
+    
     res.json({
       domain,
       callbackURL: `https://${domain}/api/auth/google/callback`,
@@ -402,14 +400,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/content-groups/topic/:topicId", async (req, res) => {
     try {
       const topicId = req.params.topicId;
-
+      
       // Get all content for this topic
       const allContent = await storage.getContent(topicId);
-
+      
       // Group content by contentgroup field
       const groupedContent: { [key: string]: any[] } = {};
       const ungroupedContent: any[] = [];
-
+      
       allContent.forEach(content => {
         if (content.contentgroup && content.contentgroup.trim() !== '') {
           if (!groupedContent[content.contentgroup]) {
@@ -420,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ungroupedContent.push(content);
         }
       });
-
+      
       // Format response with group info
       const response = {
         groups: Object.entries(groupedContent).map(([groupName, content]) => ({
@@ -430,7 +428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })),
         ungroupedContent
       };
-
+      
       res.json(response);
     } catch (error) {
       console.error('Error fetching content groups by topic:', error);
@@ -454,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { short_description, short_blurb, imageid, videoid, videoid2 } = req.body;
       const updates = { short_description, short_blurb, imageid, videoid, videoid2 };
-
+      
       // Remove undefined fields
       Object.keys(updates).forEach(key => {
         if (updates[key as keyof typeof updates] === undefined) {
@@ -690,14 +688,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/content-access", async (req, res) => {
     try {
       const { student_id, content_id } = req.body;
-
+      
       if (!student_id || !content_id) {
         return res.status(400).json({ error: 'student_id and content_id are required' });
       }
 
       // Check if this content has already been accessed by this student
       const existingRating = await storage.getContentRating(student_id, content_id);
-
+      
       if (!existingRating) {
         // Create a new content rating entry to track the access
         const accessRecord = await storage.createContentRating({
@@ -708,7 +706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           personal_note: null,
           view_count: 1
         });
-
+        
         console.log(`Content access recorded: Student ${student_id} viewed content ${content_id}`);
         res.json({ message: 'Content access recorded', record: accessRecord });
       } else {
@@ -750,17 +748,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { studentId } = req.params;
       const { contentIds } = req.query;
-
+      
       if (!contentIds) {
         return res.json({});
       }
-
+      
       const contentIdArray = typeof contentIds === 'string' ? contentIds.split(',') : Array.isArray(contentIds) ? contentIds : [];
-
+      
       // Use storage method for optimized student tries count
       const allStudentTries = await storage.getAllStudentTries();
       const triesCount: Record<string, number> = {};
-
+      
       allStudentTries
         .filter((studentTry: any) => 
           studentTry.student_id === studentId && 
@@ -772,45 +770,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             triesCount[studentTry.question_id] = (triesCount[studentTry.question_id] || 0) + 1;
           }
         });
-
+      
       res.json(triesCount);
     } catch (error) {
       console.error('Error fetching student tries count:', error);
       res.status(500).json({ error: 'Failed to fetch student tries count' });
-    }
-  });
-
-  // Get quiz attempts count per content for a student
-  app.get("/api/quiz-attempts-count/:studentId", async (req, res) => {
-    try {
-      const { studentId } = req.params;
-      const { contentIds } = req.query;
-
-      if (!contentIds) {
-        return res.json({});
-      }
-
-      const contentIdArray = typeof contentIds === 'string' ? contentIds.split(',') : Array.isArray(contentIds) ? contentIds : [];
-
-      // Get all assignment tries for this student
-      const assignmentTries = await storage.getAssignmentTriesByStudent(studentId);
-      const quizCount: Record<string, number> = {};
-
-      assignmentTries
-        .filter((attempt: any) => 
-          attempt.contentID && 
-          contentIdArray.includes(attempt.contentID)
-        )
-        .forEach((attempt: any) => {
-          if (attempt.contentID) {
-            quizCount[attempt.contentID] = (quizCount[attempt.contentID] || 0) + 1;
-          }
-        });
-
-      res.json(quizCount);
-    } catch (error) {
-      console.error('Error fetching quiz attempts count:', error);
-      res.status(500).json({ error: 'Failed to fetch quiz attempts count' });
     }
   });
 
@@ -831,7 +795,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { rating, personal_note } = req.body;
       const result = await storage.updateContentRating(req.params.studentId, req.params.contentId, rating, personal_note);
-
+      
       // Record daily activity and update streak only if rating is provided
       if (rating) {
         try {
@@ -841,7 +805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log('Failed to record activity/streak:', activityError);
         }
       }
-
+      
       res.json(result);
     } catch (error) {
       console.error('Error updating content rating:', error);
@@ -885,7 +849,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // First record some activity for today if not already recorded
       await storage.recordDailyActivity(req.params.studentId, 10);
-
+      
       // Then update the streak
       const streak = await storage.updateStudentStreak(req.params.studentId);
       res.json(streak);
@@ -1245,144 +1209,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching assignments:', error);
       res.status(500).json({ error: 'Failed to fetch assignments' });
-    }
-  });
-
-  // AI Content Generation
-  app.post('/api/ai/generate-content', async (req, res) => {
-    try {
-      const request: AIContentRequest = req.body;
-      const content = await aiService.generateContent(request);
-      res.json({ content });
-    } catch (error) {
-      console.error('Error generating AI content:', error);
-      res.status(500).json({ error: 'Failed to generate content' });
-    }
-  });
-
-  // AI Question Generation
-  app.post('/api/ai/generate-questions', async (req, res) => {
-    try {
-      const request: AIQuestionRequest = req.body;
-      const questions = await aiService.generateQuestions(request);
-      res.json({ questions });
-    } catch (error) {
-      console.error('Error generating AI questions:', error);
-      res.status(500).json({ error: 'Failed to generate questions' });
-    }
-  });
-
-  // AI Tutor Help
-  app.post('/api/ai/tutor-help', async (req, res) => {
-    try {
-      const request: AITutorRequest = req.body;
-      const response = await aiService.provideTutorHelp(request);
-      res.json({ response });
-    } catch (error) {
-      console.error('Error providing tutor help:', error);
-      res.status(500).json({ error: 'Failed to provide tutoring assistance' });
-    }
-  });
-
-  // AI Personalized Content
-  app.post('/api/ai/personalize-content', async (req, res) => {
-    try {
-      const { content, studentId } = req.body;
-
-      // Get student data for personalization
-      const studentData = {
-        ratings: await storage.getContentRatingsByStudent(studentId),
-        // Add more student data as needed
-      };
-
-      const personalizedContent = await aiService.personalizeContent(content, studentData);
-      res.json({ content: personalizedContent });
-    } catch (error) {
-      console.error('Error personalizing content:', error);
-      res.status(500).json({ error: 'Failed to personalize content' });
-    }
-  });
-
-  // AI Study Plan Generation
-  app.post('/api/ai/generate-study-plan', async (req, res) => {
-    try {
-      const { studentId, goals } = req.body;
-
-      // Get available topics
-      const topics = await storage.getTopics();
-      const topicNames = topics.map(t => t.topic).filter(Boolean);
-
-      const studyPlan = await aiService.generateStudyPlan(studentId, topicNames, goals);
-      res.json({ studyPlan });
-    } catch (error) {
-      console.error('Error generating study plan:', error);
-      res.status(500).json({ error: 'Failed to generate study plan' });
-    }
-  });
-
-  // Image Generation API Routes
-  app.post('/api/generate-image/:contentId', async (req, res) => {
-    try {
-      const { contentId } = req.params;
-      
-      if (!contentId) {
-        return res.status(400).json({ error: 'Content ID is required' });
-      }
-
-      const imageUrl = await imageGenerationService.generateAndSaveImage(contentId);
-      res.json({ 
-        success: true, 
-        imageUrl,
-        contentId 
-      });
-    } catch (error) {
-      console.error('Error generating image:', error);
-      res.status(500).json({ 
-        error: 'Failed to generate image',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  app.post('/api/generate-images-batch', async (req, res) => {
-    try {
-      const { limit = 10 } = req.body;
-      
-      // Start batch generation in background
-      imageGenerationService.generateImagesForAllContent()
-        .catch(error => console.error('Batch image generation error:', error));
-
-      res.json({ 
-        success: true, 
-        message: 'Batch image generation started. Check server logs for progress.'
-      });
-    } catch (error) {
-      console.error('Error starting batch image generation:', error);
-      res.status(500).json({ 
-        error: 'Failed to start batch image generation',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      });
-    }
-  });
-
-  app.get('/api/content/:contentId/image-status', async (req, res) => {
-    try {
-      const { contentId } = req.params;
-      const content = await storage.getContentById(contentId);
-      
-      if (!content) {
-        return res.status(404).json({ error: 'Content not found' });
-      }
-
-      res.json({
-        contentId,
-        hasImage: !!content.imagelink,
-        imageUrl: content.imagelink || null,
-        title: content.title
-      });
-    } catch (error) {
-      console.error('Error checking image status:', error);
-      res.status(500).json({ error: 'Failed to check image status' });
     }
   });
 
