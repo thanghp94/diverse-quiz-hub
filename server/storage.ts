@@ -178,10 +178,8 @@ export class DatabaseStorage implements IStorage {
           target: users.id,
           set: {
             email: userData.email,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            profile_image_url: userData.profileImageUrl,
-            updated_at: new Date(),
+            first_name: userData.first_name,
+            last_name: userData.last_name,
           },
         })
         .returning();
