@@ -1290,10 +1290,10 @@ export class DatabaseStorage implements IStorage {
         ));
 
       if (existingBadge.length > 0) {
-        // Update progress
+        // Update count
         await db.update(student_badges)
           .set({ 
-            progress: sql`${student_badges.progress} + 1`,
+            count: sql`${student_badges.count} + 1`,
             updated_at: new Date()
           })
           .where(and(
@@ -1301,17 +1301,11 @@ export class DatabaseStorage implements IStorage {
             eq(student_badges.badge_type, badgeType)
           ));
       } else {
-        // Create new badge
-        await db.insert(student_badges)
-          .values({
-            id: crypto.randomUUID(),
-            student_id: studentId,
-            badge_type: badgeType,
-            progress: 1,
-            earned_at: null,
-            created_at: new Date(),
-            updated_at: new Date()
-          });
+        // Create new badge using raw SQL for compatibility
+        await db.execute(sql`
+          INSERT INTO student_badges (id, student_id, badge_type, badge_level, count, threshold, earned_at, updated_at)
+          VALUES (${crypto.randomUUID()}, ${studentId}, ${badgeType}, 1, 1, 10, ${new Date()}, ${new Date()})
+        `);
       }
     });
   }

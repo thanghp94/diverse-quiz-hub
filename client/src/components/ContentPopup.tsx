@@ -209,11 +209,34 @@ const ContentPopup = ({
                   variant="outline"
                   size="sm"
                   onClick={() => handleRating('thumbs_up')}
-                  disabled={rateContentMutation.isPending}
+                  disabled={rateContentMutation.isPending || hasRated}
                   className="flex items-center gap-2 hover:bg-green-50 hover:border-green-300"
                 >
                   <ThumbsUp className="h-4 w-4" />
                   Like
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleRating('thumbs_down')}
+                  disabled={rateContentMutation.isPending || hasRated}
+                  className="flex items-center gap-2 hover:bg-red-50 hover:border-red-300"
+                >
+                  <ThumbsDown className="h-4 w-4" />
+                  Dislike
+                </Button>
+
+                {/* Quiz Buttons */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuizStart('easy')}
+                  disabled={startQuizMutation.isPending}
+                  className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300"
+                >
+                  <Brain className="h-4 w-4" />
+                  Easy Quiz
                 </Button>
                 
                 <Button

@@ -333,16 +333,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("========================");
 
       res.json(topics);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching topics:', error);
       console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
       });
       res.status(500).json({ 
         error: 'Failed to fetch topics',
-        details: error.message,
+        details: error?.message || 'Unknown error',
         timestamp: new Date().toISOString()
       });
     }
@@ -1328,12 +1328,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get available topics
       const topics = await storage.getTopics();
-      const topicNames = topics.map(t => t.topic).filter(Boolean);
+      const topicNames = topics.map(t => t.topic).filter((topic): topic is string => Boolean(topic));
 
       const studyPlan = await aiService.generateStudyPlan(studentId, topicNames, goals);
       res.json({ studyPlan });
-    } catch (error) {
-      console.error('Error generating study plan:', error);
+    } catch (error: any) {
+      console.error('Error generating study plan:', error?.message || error);
       res.status(500).json({ error: 'Failed to generate study plan' });
     }
   });
