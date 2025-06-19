@@ -5,6 +5,14 @@ import { wakeUpDatabase } from "./db";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import crypto from 'crypto';
 
+// Session type declarations
+declare module 'express-session' {
+  export interface SessionData {
+    userId: string;
+    user: any;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication first
   await setupAuth(app);
@@ -26,11 +34,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create session for the user
-      req.session.userId = user.id;
-      req.session.user = user;
+      (req.session as any).userId = user.id;
+      (req.session as any).user = user;
 
       // Check if user needs to set up Google email
-      const needsPersonalEmail = !user.email || user.email === user.merakiemail;
+      const needsPersonalEmail = !user.email || user.email === user.meraki_email;
 
       res.json({ 
         success: true, 
@@ -59,8 +67,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create session for the user
-      req.session.userId = user.id;
-      req.session.user = user;
+      (req.session as any).userId = user.id;
+      (req.session as any).user = user;
 
       res.json({ 
         success: true, 
@@ -91,8 +99,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedUser = await storage.updateUserEmail(user.id, personalEmail);
 
       // Create session for the user
-      req.session.userId = updatedUser.id;
-      req.session.user = updatedUser;
+      (req.session as any).userId = updatedUser.id;
+      (req.session as any).user = updatedUser;
 
       res.json({ 
         success: true, 
@@ -106,11 +114,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/auth/user', async (req: any, res) => {
     try {
-      if (!req.session.userId) {
+      if (!(req.session as any).userId) {
         return res.status(401).json({ message: 'Not authenticated' });
       }
 
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUser((req.session as any).userId);
       if (!user) {
         return res.status(401).json({ message: 'User not found' });
       }
