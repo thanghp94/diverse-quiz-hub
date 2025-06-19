@@ -19,7 +19,7 @@ interface ContentProgress {
 }
 
 export const ContentProgressPanel = () => {
-  const [activeFilter, setActiveFilter] = useState<'all' | 'easy' | 'normal' | 'hard'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'easy' | 'hard'>('all');
   
   // Fetch content ratings for current user
   const { data: progressData, isLoading } = useQuery({
@@ -39,38 +39,43 @@ export const ContentProgressPanel = () => {
     const validProgressData = progressData.filter((item: ContentProgress) => item.topic && item.topic.trim() !== '');
     
     if (activeFilter === 'all') return validProgressData;
-    return validProgressData.filter((item: ContentProgress) => item.difficulty_rating === activeFilter);
+    
+    // Map filter values to database values
+    const filterMap = {
+      'easy': 'ok',
+      'hard': 'really_bad'
+    };
+    
+    const dbValue = filterMap[activeFilter as keyof typeof filterMap];
+    return validProgressData.filter((item: ContentProgress) => item.difficulty_rating === dbValue);
   };
 
   const getDifficultyColor = (rating: string | null) => {
     switch (rating) {
-      case 'easy': return 'bg-green-600 text-white';
-      case 'normal': return 'bg-yellow-600 text-white';
-      case 'hard': return 'bg-red-600 text-white';
+      case 'ok': return 'bg-green-600 text-white';
+      case 'really_bad': return 'bg-red-600 text-white';
       default: return 'bg-gray-600 text-white';
     }
   };
 
   const getDifficultyIcon = (rating: string | null) => {
     switch (rating) {
-      case 'easy': return <CheckCircle className="h-3 w-3" />;
-      case 'normal': return <Circle className="h-3 w-3" />;
-      case 'hard': return <Star className="h-3 w-3" />;
+      case 'ok': return <CheckCircle className="h-3 w-3" />;
+      case 'really_bad': return <Star className="h-3 w-3" />;
       default: return <Circle className="h-3 w-3" />;
     }
   };
 
   const getStats = () => {
-    if (!progressData) return { total: 0, easy: 0, normal: 0, hard: 0, unrated: 0 };
+    if (!progressData) return { total: 0, easy: 0, hard: 0, unrated: 0 };
     
     // Only count content with valid topics
     const validProgressData = progressData.filter((item: ContentProgress) => item.topic && item.topic.trim() !== '');
     
     return {
       total: validProgressData.length,
-      easy: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'easy').length,
-      normal: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'normal').length,
-      hard: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'hard').length,
+      easy: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'ok').length,
+      hard: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === 'really_bad').length,
       unrated: validProgressData.filter((item: ContentProgress) => item.difficulty_rating === null).length,
     };
   };
@@ -113,7 +118,7 @@ export const ContentProgressPanel = () => {
         
         <div className="space-y-4">
           {/* Stats Overview */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             <Card className="bg-gray-800 border-gray-700 p-2">
               <div className="text-center">
                 <div className="text-xl font-bold text-white">{stats.total}</div>
@@ -124,12 +129,6 @@ export const ContentProgressPanel = () => {
               <div className="text-center">
                 <div className="text-xl font-bold text-green-400">{stats.easy}</div>
                 <div className="text-xs text-gray-400">Easy</div>
-              </div>
-            </Card>
-            <Card className="bg-gray-800 border-gray-700 p-2">
-              <div className="text-center">
-                <div className="text-xl font-bold text-yellow-400">{stats.normal}</div>
-                <div className="text-xs text-gray-400">Normal</div>
               </div>
             </Card>
             <Card className="bg-gray-800 border-gray-700 p-2">
@@ -151,7 +150,6 @@ export const ContentProgressPanel = () => {
             {[
               { key: 'all', label: 'All', count: stats.total },
               { key: 'easy', label: 'Easy', count: stats.easy },
-              { key: 'normal', label: 'Normal', count: stats.normal },
               { key: 'hard', label: 'Hard', count: stats.hard }
             ].map((filter) => (
               <Button
@@ -216,7 +214,7 @@ export const ContentProgressPanel = () => {
                             <td className="px-4 py-2">
                               <Badge className={`text-xs h-5 flex items-center gap-1 w-fit ${getDifficultyColor(item.difficulty_rating)}`}>
                                 {getDifficultyIcon(item.difficulty_rating)}
-                                {item.difficulty_rating || 'unrated'}
+                                {item.difficulty_rating === 'ok' ? 'easy' : item.difficulty_rating === 'really_bad' ? 'hard' : 'unrated'}
                               </Badge>
                             </td>
                           </tr>
