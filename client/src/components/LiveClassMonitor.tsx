@@ -139,7 +139,21 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   };
 
   const formatTime = (timestamp: string) => {
-    return format(new Date(timestamp), 'HH:mm:ss');
+    // Handle time-only format (HH:MM:SS) from quiz activities
+    if (timestamp && timestamp.match(/^[0-9]{2}:[0-9]{2}:[0-9]{2}$/)) {
+      return timestamp; // Already in HH:MM:SS format
+    }
+    
+    // Handle full timestamp format
+    try {
+      const date = new Date(timestamp);
+      if (isNaN(date.getTime())) {
+        return timestamp; // Return as-is if can't parse
+      }
+      return format(date, 'HH:mm:ss');
+    } catch (error) {
+      return timestamp || 'Invalid time';
+    }
   };
 
   return (
