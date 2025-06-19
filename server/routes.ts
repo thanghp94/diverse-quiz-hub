@@ -322,11 +322,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Topics API - Protected route requiring authentication
   app.get("/api/topics", isStudentAuthenticated, async (req, res) => {
     try {
+      console.log("=== TOPICS API DEBUG ===");
+      console.log("Request headers:", req.headers);
+      console.log("User ID:", req.headers['x-replit-user-id']);
+
       const topics = await storage.getTopics();
+
+      console.log("Topics query result count:", topics.length);
+      console.log("Sample topics:", topics.slice(0, 3));
+      console.log("========================");
+
       res.json(topics);
     } catch (error) {
       console.error('Error fetching topics:', error);
-      res.status(500).json({ error: 'Failed to fetch topics' });
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
+      res.status(500).json({ 
+        error: 'Failed to fetch topics',
+        details: error.message,
+        timestamp: new Date().toISOString()
+      });
     }
   });
 
@@ -1324,7 +1342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/generate-image/:contentId', async (req, res) => {
     try {
       const { contentId } = req.params;
-      
+
       if (!contentId) {
         return res.status(400).json({ error: 'Content ID is required' });
       }
@@ -1347,7 +1365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/generate-images-batch', async (req, res) => {
     try {
       const { limit = 10 } = req.body;
-      
+
       // Start batch generation in background
       imageGenerationService.generateImagesForAllContent()
         .catch(error => console.error('Batch image generation error:', error));
@@ -1369,7 +1387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { contentId } = req.params;
       const content = await storage.getContentById(contentId);
-      
+
       if (!content) {
         return res.status(404).json({ error: 'Content not found' });
       }
