@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Users, BookOpen, Star, Clock, Filter } from 'lucide-react';
+import { Eye, Users, BookOpen, Star, Clock, Filter, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Student {
   id: string;
   first_name: string;
   last_name: string;
+  full_name?: string;
 }
 
 interface StudentActivity {
@@ -38,21 +40,53 @@ interface LiveClassMonitorProps {
 export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime }) => {
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [monitorStartTime, setMonitorStartTime] = useState(startTime || new Date().toISOString());
+  const [customStartTime, setCustomStartTime] = useState(format(new Date(), 'yyyy-MM-dd\'T\'HH:mm'));
   const [isMonitoring, setIsMonitoring] = useState(false);
   const [showActivityDetails, setShowActivityDetails] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activityFilter, setActivityFilter] = useState<string>('all');
+  const [minContentViewed, setMinContentViewed] = useState<number>(0);
+  const [minContentRated, setMinContentRated] = useState<number>(0);
 
   // Fetch all students
   const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
     queryKey: ['/api/users'],
     refetchInterval: 30000, // Refresh every 30 seconds
+    staleTime: 5 * 60 * 1000, // Keep data fresh for 5 minutes
   });
 
+  // Filter students based on search term
+  const filteredStudents = useMemo(() => {
+    if (!searchTerm) return allStudents as Student[];
+    const searchLower = searchTerm.toLowerCase();
+    return (allStudents as Student[]).filter((student: Student) => {
+      const fullName = student.full_name || `${student.first_name} ${student.last_name}`;
+      return fullName.toLowerCase().includes(searchLower) || 
+             student.id.toLowerCase().includes(searchLower);
+    });
+  }, [allStudents, searchTerm]);
+
   // Fetch student activities (only when monitoring is active)
-  const { data: studentActivities = [], isLoading: activitiesLoading } = useQuery<StudentActivity[]>({
+  const { data: studentActivities = [], isLoading: activitiesLoading, isFetching } = useQuery<StudentActivity[]>({
     queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
     enabled: isMonitoring && selectedStudents.length > 0,
     refetchInterval: 5000, // Refresh every 5 seconds for live updates
+    staleTime: 4000, // Keep data fresh for 4 seconds to reduce flicker
+    refetchOnWindowFocus: false, // Prevent refetch on window focus
   });
+
+  // Filter activities based on criteria
+  const filteredActivities = useMemo(() => {
+    if (!studentActivities) return [];
+    return (studentActivities as StudentActivity[]).filter((activity: StudentActivity) => {
+      if (activityFilter === 'active' && activity.content_viewed === 0 && activity.content_rated === 0) {
+        return false;
+      }
+      if (activity.content_viewed < minContentViewed) return false;
+      if (activity.content_rated < minContentRated) return false;
+      return true;
+    });
+  }, [studentActivities, activityFilter, minContentViewed, minContentRated]);
 
   const handleStudentToggle = (studentId: string) => {
     setSelectedStudents(prev => 
@@ -63,11 +97,24 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   };
 
   const handleSelectAll = () => {
-    if (selectedStudents.length === (allStudents as Student[]).length) {
+    if (selectedStudents.length === filteredStudents.length) {
       setSelectedStudents([]);
     } else {
-      setSelectedStudents((allStudents as Student[]).map((s: Student) => s.id));
+      setSelectedStudents(filteredStudents.map((s: Student) => s.id));
     }
+  };
+
+  const handleSelectAllVisible = () => {
+    const visibleStudentIds = filteredStudents.map((s: Student) => s.id);
+    const combined = [...selectedStudents, ...visibleStudentIds];
+    const uniqueIds = combined.filter((id, index) => combined.indexOf(id) === index);
+    setSelectedStudents(uniqueIds);
+  };
+
+  const handleCustomTimeStart = () => {
+    if (selectedStudents.length === 0) return;
+    setMonitorStartTime(new Date(customStartTime).toISOString());
+    setIsMonitoring(true);
   };
 
   const startMonitoring = () => {
@@ -104,25 +151,97 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Student Selection */}
+          {/* Time Selection Controls */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Monitor Start Time:</label>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Input
+                  type="datetime-local"
+                  value={customStartTime}
+                  onChange={(e) => setCustomStartTime(e.target.value)}
+                  className="w-48"
+                />
+                <Button
+                  onClick={handleCustomTimeStart}
+                  disabled={selectedStudents.length === 0}
+                  variant="outline"
+                  size="sm"
+                >
+                  Use Custom Time
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => {
+                    const now = new Date();
+                    now.setHours(20, 0, 0, 0); // 8 PM today
+                    setCustomStartTime(format(now, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  Set to 8 PM Today
+                </Button>
+                <Button
+                  onClick={() => {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    yesterday.setHours(20, 0, 0, 0); // 8 PM yesterday
+                    setCustomStartTime(format(yesterday, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  Set to 8 PM Yesterday
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Student Search and Selection */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">Select Students to Monitor:</label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAll}
-                disabled={studentsLoading}
-              >
-                {selectedStudents.length === (allStudents as Student[]).length ? 'Deselect All' : 'Select All'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  disabled={studentsLoading}
+                >
+                  {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All Filtered'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAllVisible}
+                  disabled={studentsLoading}
+                >
+                  Add All Visible
+                </Button>
+              </div>
+            </div>
+            
+            {/* Student Search Box */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search students by name or ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
               {studentsLoading ? (
                 <div className="col-span-full text-center text-gray-500">Loading students...</div>
+              ) : filteredStudents.length === 0 ? (
+                <div className="col-span-full text-center text-gray-500">No students found</div>
               ) : (
-                (allStudents as Student[]).map((student: Student) => (
+                filteredStudents.map((student: Student) => (
                   <div key={student.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={student.id}
@@ -132,17 +251,65 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                     <label
                       htmlFor={student.id}
                       className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      title={student.full_name || `${student.first_name} ${student.last_name}`}
                     >
-                      {student.first_name} {student.last_name}
+                      {student.full_name || `${student.first_name} ${student.last_name}`}
                     </label>
                   </div>
                 ))
               )}
             </div>
+            {selectedStudents.length > 0 && (
+              <div className="text-xs text-gray-600">
+                Selected: {selectedStudents.length} students
+              </div>
+            )}
+          </div>
+
+          {/* Activity Filters */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Activity Filters:
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-xs text-gray-600">Activity Level:</label>
+                <Select value={activityFilter} onValueChange={setActivityFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Students</SelectItem>
+                    <SelectItem value="active">Active Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-xs text-gray-600">Min Content Viewed:</label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minContentViewed}
+                  onChange={(e) => setMinContentViewed(parseInt(e.target.value) || 0)}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-600">Min Content Rated:</label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minContentRated}
+                  onChange={(e) => setMinContentRated(parseInt(e.target.value) || 0)}
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Monitor Controls */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span className="text-sm">Monitor from: {format(new Date(monitorStartTime), 'MMM dd, HH:mm')}</span>
@@ -154,7 +321,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                 disabled={selectedStudents.length === 0}
                 className="bg-green-600 hover:bg-green-700"
               >
-                Start Monitoring ({selectedStudents.length} students)
+                Start Monitoring Now ({selectedStudents.length} students)
               </Button>
             ) : (
               <Button
