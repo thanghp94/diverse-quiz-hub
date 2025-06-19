@@ -42,6 +42,8 @@ const ContentPopup = ({
   const [modalVideoUrl, setModalVideoUrl] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [hasViewedContent, setHasViewedContent] = useState(false);
+  const [userRating, setUserRating] = useState<number | null>(null);
+  const [hasRated, setHasRated] = useState(false);
   
   const { user: authUser } = useAuth();
   const { toast } = useToast();
@@ -99,7 +101,7 @@ const ContentPopup = ({
         body: JSON.stringify({
           student_id: currentUser.id,
           content_id: content.id,
-          rating,
+          rating: rating === 'thumbs_up' ? 1 : -1,
           session_id: localStorage.getItem('currentSessionId') || null
         })
       });
@@ -108,16 +110,22 @@ const ContentPopup = ({
       return response.json();
     },
     onSuccess: () => {
+      setHasRated(true);
       toast({
-        title: 'Rating Saved',
-        description: 'Thank you for your feedback!'
+        title: "Rating saved",
+        description: "Your feedback has been recorded"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/content-ratings'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/student-badges'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save rating",
+        variant: "destructive"
+      });
     }
   });
 
-  // Quiz starter mutation
+  // Quiz attempt mutation
   const startQuizMutation = useMutation({
     mutationFn: async ({ level }: { level: 'easy' | 'hard' }) => {
       if (!content || !currentUser?.id) return;
@@ -138,13 +146,26 @@ const ContentPopup = ({
     },
     onSuccess: () => {
       toast({
-        title: 'Quiz Started',
-        description: 'Good luck with your quiz!'
+        title: "Quiz started",
+        description: "Your quiz attempt has been recorded"
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/quiz-attempts'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/student-badges'] });
     }
   });
+
+  // Handle rating button clicks
+  const handleRating = (rating: 'thumbs_up' | 'thumbs_down') => {
+    if (!content || !currentUser?.id || hasRated) return;
+    
+    setUserRating(rating === 'thumbs_up' ? 1 : -1);
+    rateContentMutation.mutate({ rating });
+  };
+
+  // Handle quiz start
+  const handleQuizStart = (level: 'easy' | 'hard') => {
+    if (!content || !currentUser?.id) return;
+    
+    startQuizMutation.mutate({ level });
+  };
 
   // Track content view when popup opens
   useEffect(() => {
@@ -152,22 +173,14 @@ const ContentPopup = ({
       trackContentViewMutation.mutate();
       setHasViewedContent(true);
     }
-  }, [isOpen, content?.id, currentUser?.id]);
-
-  // Reset when content changes
-  useEffect(() => {
-    setHasViewedContent(false);
-  }, [content?.id]);
+    
+    if (!isOpen && content && currentUser?.id) {
+      // Reset view tracking when popup closes
+      setHasViewedContent(false);
+    }
+  }, [isOpen, content?.id, currentUser?.id, hasViewedContent]);
 
   if (!content) return null;
-
-  const handleRating = (rating: 'thumbs_up' | 'thumbs_down') => {
-    rateContentMutation.mutate({ rating });
-  };
-
-  const handleQuizStart = (level: 'easy' | 'hard') => {
-    startQuizMutation.mutate({ level });
-  };
 
   return (
     <>
