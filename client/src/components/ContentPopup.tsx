@@ -53,6 +53,7 @@ const ContentPopup = ({
            Object.values(dict as Record<string, unknown>).every(val => typeof val === 'string');
   };
   
+  // All hooks must be called before any conditional returns
   const {
     quizMode,
     assignmentTry,
@@ -71,10 +72,10 @@ const ContentPopup = ({
   } = useContentMedia(content);
 
   useEffect(() => {
-    if (isOpen && startQuizDirectly && !quizMode && quizLevel) {
+    if (isOpen && startQuizDirectly && !quizMode && quizLevel && content) {
       startQuiz(quizLevel);
     }
-  }, [isOpen, startQuizDirectly, quizMode, startQuiz, quizLevel]);
+  }, [isOpen, startQuizDirectly, quizMode, startQuiz, quizLevel, content]);
 
   // Track content access when popup opens
   useEffect(() => {
@@ -101,6 +102,7 @@ const ContentPopup = ({
     setModalVideoUrl(null);
   }, [content?.id]);
 
+  // Early return after all hooks are called
   if (!content) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => { if(!open) onClose(); }}>
