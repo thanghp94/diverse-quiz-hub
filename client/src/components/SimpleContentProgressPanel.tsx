@@ -147,70 +147,66 @@ export const SimpleContentProgressPanel = () => {
           // Add subtopics
           children.push(...buildHierarchy(topic.id));
 
-          // Group content by prompt
-          const groupedContent = new Map<string, any[]>();
-          const ungroupedContent: any[] = [];
+          // Separate content into groupcards and regular content
+          const groupCards: any[] = [];
+          const regularContent: any[] = [];
 
           topicContent.forEach((c: any) => {
             if (c.prompt === 'groupcard') {
-              const key = c.parentid || 'default';
-              if (!groupedContent.has(key)) {
-                groupedContent.set(key, []);
-              }
-              groupedContent.get(key)!.push(c);
+              groupCards.push(c);
             } else {
-              ungroupedContent.push(c);
+              regularContent.push(c);
             }
           });
 
-          // Add grouped content
-          groupedContent.forEach((groupContents, groupKey) => {
-            const groupParent = groupContents.find(c => c.parentid === null);
-            if (groupParent) {
-              const groupChildren = groupContents
-                .filter(c => c.parentid !== null)
-                .map(c => {
-                  const rating = ratingMap.get(c.id);
-                  return {
-                    id: c.id,
-                    title: c.title || c.short_description || 'Untitled',
-                    type: 'content' as const,
-                    rating: rating?.rating || null,
-                    children: [],
-                    contentData: c,
-                    viewCount: rating?.view_count || 0,
-                    triesCount: studentTriesCount[c.id] || 0,
-                  };
-                });
+          // Add groupcard content
+          groupCards.forEach((groupCard: any) => {
+            // Find related content that has this groupcard as parentid
+            const relatedContent = content.filter((c: any) => c.parentid === groupCard.id);
+            
+            const groupChildren = relatedContent.map(c => {
+              const rating = ratingMap.get(c.id);
+              return {
+                id: c.id,
+                title: c.title || c.short_description || 'Untitled',
+                type: 'content' as const,
+                rating: rating?.rating || null,
+                children: [],
+                contentData: c,
+                viewCount: rating?.view_count || 0,
+                triesCount: studentTriesCount[c.id] || 0,
+              };
+            });
 
-              const groupRating = ratingMap.get(groupParent.id);
-              children.push({
-                id: groupParent.id,
-                title: groupParent.title || groupParent.short_description || 'Group Content',
-                type: 'groupcard',
-                rating: groupRating?.rating || null,
-                children: groupChildren,
-                contentData: groupParent,
-                viewCount: groupRating?.view_count || 0,
-                triesCount: studentTriesCount[groupParent.id] || 0,
-              });
-            }
-          });
-
-          // Add ungrouped content
-          ungroupedContent.forEach((c: any) => {
-            const rating = ratingMap.get(c.id);
+            const groupRating = ratingMap.get(groupCard.id);
             children.push({
-              id: c.id,
-              title: c.title || c.short_description || 'Untitled',
-              type: 'content',
-              rating: rating?.rating || null,
-              children: [],
-              contentData: c,
-              viewCount: rating?.view_count || 0,
-              triesCount: studentTriesCount[c.id] || 0,
+              id: groupCard.id,
+              title: groupCard.title || groupCard.short_description || 'Group Content',
+              type: 'groupcard',
+              rating: groupRating?.rating || null,
+              children: groupChildren,
+              contentData: groupCard,
+              viewCount: groupRating?.view_count || 0,
+              triesCount: studentTriesCount[groupCard.id] || 0,
             });
           });
+
+          // Add regular content that's not part of a group
+          regularContent
+            .filter(c => !groupCards.some(gc => c.parentid === gc.id)) // Exclude content that's already grouped
+            .forEach((c: any) => {
+              const rating = ratingMap.get(c.id);
+              children.push({
+                id: c.id,
+                title: c.title || c.short_description || 'Untitled',
+                type: 'content',
+                rating: rating?.rating || null,
+                children: [],
+                contentData: c,
+                viewCount: rating?.view_count || 0,
+                triesCount: studentTriesCount[c.id] || 0,
+              });
+            });
 
           return {
             id: topic.id,
