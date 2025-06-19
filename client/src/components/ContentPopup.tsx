@@ -52,7 +52,7 @@ const ContentPopup = ({
   // Admin editor logic moved to component level
   const getCurrentUser = () => {
     // First, try the authenticated user
-    if (authUser && typeof authUser === 'object' && 'id' in authUser && authUser.id) {
+    if (authUser && typeof authUser === 'object' && authUser !== null && 'id' in authUser) {
       return authUser as { id: string; [key: string]: any };
     }
     
@@ -70,8 +70,7 @@ const ContentPopup = ({
   };
 
   const currentUser = getCurrentUser();
-  const isAuthorized = (currentUser?.id === 'GV0002') || 
-                     (authUser && typeof authUser === 'object' && 'id' in authUser && authUser.id === 'GV0002');
+  const isAuthorized = (currentUser?.id === 'GV0002');
 
   // Type guard for translation dictionary
   const isValidTranslationDictionary = (dict: unknown): dict is Record<string, string> => {
@@ -431,7 +430,7 @@ const ContentPopup = ({
                       🔧 ADMIN PANEL ACTIVE 🔧
                     </div>
                     <div className="text-sm text-red-600 font-bold uppercase tracking-wide">
-                      USER: {currentUser?.id || authUser?.id} | CONTENT: {content.id}
+                      USER: {currentUser?.id || 'Unknown'} | CONTENT: {content?.id || 'No content'}
                     </div>
                   </div>
                   <button 
