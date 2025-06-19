@@ -397,8 +397,24 @@ const ContentPopup = ({
 
               {/* Content Editor - Admin Only Dropdown */}
               {(() => {
-                const currentUser = localStorage.getItem('currentUser');
-                const isAuthorized = currentUser ? JSON.parse(currentUser).id === 'GV0002' : false;
+                const getCurrentUser = () => {
+                  try {
+                    const storedUser = localStorage.getItem('currentUser');
+                    if (storedUser) {
+                      return JSON.parse(storedUser);
+                    }
+                    return null;
+                  } catch (error) {
+                    console.error('Error parsing current user:', error);
+                    return null;
+                  }
+                };
+
+                const currentUser = getCurrentUser();
+                const isAuthorized = currentUser?.id === 'GV0002';
+                
+                console.log('ContentPopup Admin Check - Current user:', currentUser);
+                console.log('ContentPopup Admin Check - Is authorized:', isAuthorized);
                 
                 if (!isAuthorized) return null;
                 
