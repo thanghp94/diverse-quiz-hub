@@ -14,11 +14,18 @@ export function setupGoogleAuth(app: Express) {
     callbackURL
   });
 
+  // Validate required environment variables
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    console.error('Missing required Google OAuth credentials');
+    throw new Error('Google OAuth credentials not configured');
+  }
+
   // Configure Google OAuth strategy
   passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID!,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL,
+    passReqToCallback: false
   },
   async (accessToken: string, refreshToken: string, profile: any, done: any) => {
     try {
@@ -81,10 +88,17 @@ export function setupGoogleAuth(app: Express) {
 
   // Google OAuth routes
   app.get('/api/auth/google', (req, res, next) => {
-    console.log('Starting Google OAuth authentication...');
+    console.log('Starting Google OAuth authentication...', {
+      userAgent: req.get('User-Agent'),
+      origin: req.get('Origin'),
+      referer: req.get('Referer')
+    });
+    
     passport.authenticate('google', { 
       scope: ['profile', 'email'],
-      failureMessage: true
+      failureMessage: true,
+      successRedirect: undefined,
+      failureRedirect: '/?error=oauth_init_failed'
     })(req, res, next);
   });
 

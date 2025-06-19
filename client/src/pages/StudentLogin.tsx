@@ -230,7 +230,20 @@ export default function StudentLogin() {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
-            onClick={() => window.location.href = "/api/auth/google"}
+            onClick={async () => {
+              try {
+                // Test OAuth config first
+                const configResponse = await fetch('/api/auth/test');
+                const config = await configResponse.json();
+                console.log('OAuth Config:', config);
+                
+                // Then redirect to Google OAuth
+                window.location.href = "/api/auth/google";
+              } catch (error) {
+                console.error('OAuth test failed:', error);
+                window.location.href = "/api/auth/google";
+              }
+            }}
             className="w-full bg-white hover:bg-gray-50 border border-gray-300 text-gray-700" 
             disabled={isLoading}
           >

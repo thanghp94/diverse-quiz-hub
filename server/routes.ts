@@ -229,13 +229,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint to verify OAuth configuration
   app.get('/api/auth/test', (req, res) => {
     const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    
     res.json({
       domain,
       callbackURL: `https://${domain}/api/auth/google/callback`,
-      googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.substring(0, 20) + '...' : 'Missing',
+      googleClientId: clientId ? clientId.substring(0, 12) + '...' + clientId.slice(-6) : 'Missing',
       googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Configured' : 'Missing',
       currentURL: req.protocol + '://' + req.get('host'),
-      headers: req.headers
+      directOAuthURL: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=https%3A%2F%2F${domain}%2Fapi%2Fauth%2Fgoogle%2Fcallback&scope=profile%20email&response_type=code`,
+      timestamp: new Date().toISOString()
     });
   });
 
