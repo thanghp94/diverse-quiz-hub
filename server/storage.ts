@@ -1228,53 +1228,55 @@ export class DatabaseStorage implements IStorage {
   async getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]> {
     return this.executeWithRetry(async () => {
       // Query for student activities from multiple tables to get comprehensive data
-      const activities = await db.execute(sql`
+      // Create SQL query with proper parameter substitution
+      const studentIdList = studentIds.map((_, index) => `$${index + 1}`).join(',');
+      const query = `
         WITH student_activities AS (
           -- Content views from student_try_content
           SELECT 
             stc.hocsinh_id as student_id,
-            u.first_name || ' ' || u.last_name as student_name,
+            COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name,
             'content_view' as activity_type,
             c.id as content_id,
             c.title as content_title,
-            stc.time_start as timestamp,
-            NULL as rating,
-            NULL as quiz_score
+            stc.time_start::timestamp as timestamp,
+            NULL::text as rating,
+            NULL::numeric as quiz_score
           FROM student_try_content stc
           JOIN users u ON stc.hocsinh_id = u.id
           JOIN content c ON stc.contentid = c.id
-          WHERE stc.hocsinh_id = ANY(${studentIds}) 
-            AND stc.time_start >= ${startTime}
+          WHERE stc.hocsinh_id IN (${studentIdList}) 
+            AND stc.time_start::timestamp >= $${studentIds.length + 1}::timestamp
           
           UNION ALL
           
           -- Content ratings
           SELECT 
             cr.student_id,
-            u.first_name || ' ' || u.last_name as student_name,
+            COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name,
             'content_rating' as activity_type,
             cr.content_id,
             c.title as content_title,
-            cr.created_at as timestamp,
+            cr.created_at::timestamp as timestamp,
             cr.rating::text as rating,
-            NULL as quiz_score
+            NULL::numeric as quiz_score
           FROM content_ratings cr
           JOIN users u ON cr.student_id = u.id
           JOIN content c ON cr.content_id = c.id
-          WHERE cr.student_id = ANY(${studentIds}) 
-            AND cr.created_at >= ${startTime}
+          WHERE cr.student_id = ANY($1::text[]) 
+            AND cr.created_at::timestamp >= $2::timestamp
           
           UNION ALL
           
           -- Quiz attempts from student_try (note: student_try doesn't have contentid, using question-based approach)
           SELECT 
             st.hocsinh_id as student_id,
-            u.first_name || ' ' || u.last_name as student_name,
+            COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name,
             'quiz_attempt' as activity_type,
             q.contentid as content_id,
             c.title as content_title,
-            st.time_start as timestamp,
-            NULL as rating,
+            st.time_start::timestamp as timestamp,
+            NULL::text as rating,
             CASE 
               WHEN st.score IS NOT NULL THEN st.score::numeric
               ELSE NULL 
@@ -1283,44 +1285,70 @@ export class DatabaseStorage implements IStorage {
           JOIN users u ON st.hocsinh_id = u.id
           JOIN questions q ON st.question_id = q.id
           JOIN content c ON q.contentid = c.id
-          WHERE st.hocsinh_id = ANY(${studentIds}) 
-            AND st.time_start >= ${startTime}
+          WHERE st.hocsinh_id = ANY($1::text[]) 
+            AND st.time_start::timestamp >= $2::timestamp
         )
+        -- Simplified query - just get student basic info
         SELECT 
-          student_id,
-          student_name,
-          COUNT(CASE WHEN activity_type = 'content_view' THEN 1 END) as content_viewed,
-          COUNT(CASE WHEN activity_type = 'content_rating' THEN 1 END) as content_rated,
-          CASE 
-            WHEN COUNT(CASE WHEN activity_type = 'quiz_attempt' AND quiz_score IS NOT NULL THEN 1 END) > 0 
-            THEN ROUND(AVG(CASE WHEN activity_type = 'quiz_attempt' THEN quiz_score END), 1)
-            ELSE NULL 
-          END as quiz_accuracy,
-          MAX(timestamp) as last_activity,
-          JSON_AGG(
-            JSON_BUILD_OBJECT(
-              'type', activity_type,
-              'content_id', content_id,
-              'content_title', content_title,
-              'timestamp', timestamp,
-              'rating', rating,
-              'quiz_score', quiz_score
-            ) ORDER BY timestamp DESC
-          ) as activities
-        FROM student_activities
-        GROUP BY student_id, student_name
-        ORDER BY student_name
-      `);
+          u.id as student_id,
+          COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name
+        FROM users u
+        WHERE u.id = ANY(ARRAY[${studentIds.map(id => `'${id}'`).join(',')}])
+      `;
 
-      return activities.rows.map((row: any) => ({
-        student_id: row.student_id,
-        student_name: row.student_name,
-        content_viewed: parseInt(row.content_viewed) || 0,
-        content_rated: parseInt(row.content_rated) || 0,
-        quiz_accuracy: row.quiz_accuracy ? parseFloat(row.quiz_accuracy) : null,
-        last_activity: row.last_activity,
-        activities: row.activities || []
-      }));
+      // Execute the basic query first to get student info
+      const basicResults = await db.execute(sql.raw(query));
+      
+      // Then get detailed data for each student
+      const results = [];
+      for (const row of basicResults.rows) {
+        const studentId = (row as any).student_id;
+        
+        // Get content views count
+        const contentViews = await db.execute(sql`
+          SELECT COUNT(*) as count 
+          FROM student_try_content stc
+          WHERE stc.hocsinh_id = ${studentId} 
+            AND stc.time_start >= ${startTime}
+        `);
+        
+        // Get content ratings count
+        const contentRatings = await db.execute(sql`
+          SELECT COUNT(*) as count 
+          FROM content_ratings cr
+          WHERE cr.student_id = ${studentId} 
+            AND cr.created_at >= ${startTime}
+        `);
+        
+        // Get recent activities
+        const activities = await db.execute(sql`
+          SELECT 'content_view' as type, c.id as content_id, c.title as content_title, 
+                 stc.time_start as timestamp, NULL as rating, NULL as quiz_score
+          FROM student_try_content stc
+          JOIN content c ON stc.contentid = c.id
+          WHERE stc.hocsinh_id = ${studentId} AND stc.time_start >= ${startTime}
+          UNION ALL
+          SELECT 'content_rating' as type, cr.content_id, c.title as content_title,
+                 cr.created_at as timestamp, cr.rating::text as rating, NULL as quiz_score
+          FROM content_ratings cr
+          JOIN content c ON cr.content_id = c.id
+          WHERE cr.student_id = ${studentId} AND cr.created_at >= ${startTime}
+          ORDER BY timestamp DESC
+          LIMIT 20
+        `);
+        
+        results.push({
+          student_id: (row as any).student_id,
+          student_name: (row as any).student_name,
+          content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
+          content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
+          quiz_accuracy: null,
+          last_activity: activities.rows.length > 0 ? (activities.rows[0] as any).timestamp : null,
+          activities: activities.rows || []
+        });
+      }
+      
+      return results;
     });
   }
 }
