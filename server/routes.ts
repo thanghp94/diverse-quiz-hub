@@ -226,6 +226,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint to verify OAuth configuration
+  app.get('/api/auth/test', (req, res) => {
+    const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
+    res.json({
+      domain,
+      callbackURL: `https://${domain}/api/auth/google/callback`,
+      googleClientId: process.env.GOOGLE_CLIENT_ID ? process.env.GOOGLE_CLIENT_ID.substring(0, 20) + '...' : 'Missing',
+      googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Configured' : 'Missing',
+      currentURL: req.protocol + '://' + req.get('host'),
+      headers: req.headers
+    });
+  });
+
   app.post('/api/auth/logout', (req, res) => {
     req.session.destroy((err) => {
       if (err) {

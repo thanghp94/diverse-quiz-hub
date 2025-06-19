@@ -4,19 +4,36 @@ import type { Express } from "express";
 import { storage } from "./storage";
 
 export function setupGoogleAuth(app: Express) {
+  const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
+  const callbackURL = `https://${domain}/api/auth/google/callback`;
+  
+  console.log('Google OAuth Setup:', {
+    clientID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Missing',
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Missing',
+    domain,
+    callbackURL
+  });
+
   // Configure Google OAuth strategy
   passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    callbackURL: `https://${process.env.REPLIT_DOMAINS?.split(',')[0]}/api/auth/google/callback`
+    callbackURL
   },
   async (accessToken: string, refreshToken: string, profile: any, done: any) => {
     try {
+      console.log('Google OAuth profile received:', {
+        id: profile.id,
+        email: profile.emails?.[0]?.value,
+        name: profile.displayName
+      });
+
       // Accept any Google user, validation happens after login
       const email = profile.emails?.[0]?.value;
       const name = profile.displayName;
       
       if (!email) {
+        console.error('No email found in Google profile');
         return done(null, false, { message: 'No email found from Google' });
       }
 
@@ -32,8 +49,10 @@ export function setupGoogleAuth(app: Express) {
         profileImage: profile.photos?.[0]?.value || null
       };
 
+      console.log('Google user created successfully:', googleUser.email);
       return done(null, googleUser);
     } catch (error) {
+      console.error('Google OAuth strategy error:', error);
       return done(error, false);
     }
   }));
@@ -61,20 +80,43 @@ export function setupGoogleAuth(app: Express) {
   app.use(passport.session());
 
   // Google OAuth routes
-  app.get('/api/auth/google',
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-  );
+  app.get('/api/auth/google', (req, res, next) => {
+    console.log('Starting Google OAuth authentication...');
+    passport.authenticate('google', { 
+      scope: ['profile', 'email'],
+      failureMessage: true
+    })(req, res, next);
+  });
 
-  app.get('/api/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/?error=google_auth_failed' }),
-    async (req, res) => {
-      // Successful Google authentication - now validate access
-      const googleUser = req.user as any;
-      (req.session as any).googleUser = googleUser;
-      (req.session as any).needsValidation = true;
+  app.get('/api/auth/google/callback', (req, res, next) => {
+    console.log('Google OAuth callback received');
+    passport.authenticate('google', { 
+      failureRedirect: '/?error=google_auth_failed',
+      failureMessage: true 
+    }, (err, user, info) => {
+      if (err) {
+        console.error('Google OAuth error:', err);
+        return res.redirect('/?error=oauth_error');
+      }
+      if (!user) {
+        console.log('Google OAuth failed:', info);
+        return res.redirect('/?error=oauth_failed');
+      }
       
-      // Redirect to validation page
-      res.redirect('/validate-access');
-    }
-  );
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error('Login error:', loginErr);
+          return res.redirect('/?error=login_failed');
+        }
+        
+        console.log('Google OAuth successful:', user);
+        // Store Google user in session for validation
+        (req.session as any).googleUser = user;
+        (req.session as any).needsValidation = true;
+        
+        // Redirect to validation page
+        res.redirect('/validate-access');
+      });
+    })(req, res, next);
+  });
 }
