@@ -12,18 +12,27 @@ export function setupGoogleAuth(app: Express) {
   },
   async (accessToken: string, refreshToken: string, profile: any, done: any) => {
     try {
-      // Find user by Google email
+      // Accept any Google user, validation happens after login
       const email = profile.emails?.[0]?.value;
+      const name = profile.displayName;
+      
       if (!email) {
         return done(null, false, { message: 'No email found from Google' });
       }
 
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return done(null, false, { message: 'Email not registered. Please use Student ID for first-time login.' });
-      }
+      // Create a temporary user object with Google profile data
+      const googleUser = {
+        id: `google_${profile.id}`,
+        email: email,
+        firstName: profile.name?.givenName || '',
+        lastName: profile.name?.familyName || '',
+        fullName: name || '',
+        isGoogleUser: true,
+        googleId: profile.id,
+        profileImage: profile.photos?.[0]?.value || null
+      };
 
-      return done(null, user);
+      return done(null, googleUser);
     } catch (error) {
       return done(error, false);
     }
@@ -58,12 +67,14 @@ export function setupGoogleAuth(app: Express) {
 
   app.get('/api/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/?error=google_auth_failed' }),
-    (req, res) => {
-      // Successful authentication
-      const user = req.user as any;
-      (req.session as any).userId = user.id;
-      (req.session as any).user = user;
-      res.redirect('/');
+    async (req, res) => {
+      // Successful Google authentication - now validate access
+      const googleUser = req.user as any;
+      (req.session as any).googleUser = googleUser;
+      (req.session as any).needsValidation = true;
+      
+      // Redirect to validation page
+      res.redirect('/validate-access');
     }
   );
 }
