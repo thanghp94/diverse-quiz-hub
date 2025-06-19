@@ -269,9 +269,9 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
           </CardHeader>
           <CardContent>
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {studentActivities
+              {(studentActivities as StudentActivity[])
                 .find((a: StudentActivity) => a.student_id === showActivityDetails)
-                ?.activities?.map((activity, index) => (
+                ?.activities?.map((activity: any, index: number) => (
                   <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <Badge className={getActivityColor(activity.type)}>

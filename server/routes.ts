@@ -1148,6 +1148,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Live Class Monitoring API
+  app.get("/api/live-class-activities", async (req, res) => {
+    try {
+      const { studentIds, startTime } = req.query;
+      
+      if (!studentIds || !startTime) {
+        return res.status(400).json({ error: 'studentIds and startTime are required' });
+      }
+
+      // Parse studentIds from comma-separated string to array
+      let studentIdArray: string[];
+      if (Array.isArray(studentIds)) {
+        studentIdArray = studentIds.map(id => String(id));
+      } else {
+        studentIdArray = String(studentIds).split(',');
+      }
+      
+      const activities = await storage.getLiveClassActivities(studentIdArray, startTime as string);
+      res.json(activities);
+    } catch (error) {
+      console.error('Error fetching live class activities:', error);
+      res.status(500).json({ error: 'Failed to fetch live class activities' });
+    }
+  });
+
   app.get("/api/assignments/:assignmentId/progress", async (req, res) => {
     try {
       const progress = await storage.getAssignmentStudentProgress(req.params.assignmentId);

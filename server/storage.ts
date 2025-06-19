@@ -128,6 +128,9 @@ export interface IStorage {
 
   // Access Requests
   createPendingAccessRequest(request: any): Promise<any>;
+
+  // Live Class Monitoring
+  getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1219,6 +1222,104 @@ export class DatabaseStorage implements IStorage {
         .values(request)
         .returning();
       return result;
+    });
+  }
+
+  async getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      // Query for student activities from multiple tables to get comprehensive data
+      const activities = await db.execute(sql`
+        WITH student_activities AS (
+          -- Content views from student_try_content
+          SELECT 
+            stc.hocsinh_id as student_id,
+            u.first_name || ' ' || u.last_name as student_name,
+            'content_view' as activity_type,
+            c.id as content_id,
+            c.title as content_title,
+            stc.time_start as timestamp,
+            NULL as rating,
+            NULL as quiz_score
+          FROM student_try_content stc
+          JOIN users u ON stc.hocsinh_id = u.id
+          JOIN content c ON stc.contentid = c.id
+          WHERE stc.hocsinh_id = ANY(${studentIds}) 
+            AND stc.time_start >= ${startTime}
+          
+          UNION ALL
+          
+          -- Content ratings
+          SELECT 
+            cr.student_id,
+            u.first_name || ' ' || u.last_name as student_name,
+            'content_rating' as activity_type,
+            cr.content_id,
+            c.title as content_title,
+            cr.created_at as timestamp,
+            cr.rating::text as rating,
+            NULL as quiz_score
+          FROM content_ratings cr
+          JOIN users u ON cr.student_id = u.id
+          JOIN content c ON cr.content_id = c.id
+          WHERE cr.student_id = ANY(${studentIds}) 
+            AND cr.created_at >= ${startTime}
+          
+          UNION ALL
+          
+          -- Quiz attempts from student_try
+          SELECT 
+            st.hocsinh_id as student_id,
+            u.first_name || ' ' || u.last_name as student_name,
+            'quiz_attempt' as activity_type,
+            st.contentid as content_id,
+            c.title as content_title,
+            st.time_start as timestamp,
+            NULL as rating,
+            CASE 
+              WHEN st.total_questions > 0 THEN ROUND((st.correct_answers::numeric / st.total_questions::numeric) * 100, 1)
+              ELSE NULL 
+            END as quiz_score
+          FROM student_try st
+          JOIN users u ON st.hocsinh_id = u.id
+          JOIN content c ON st.contentid = c.id
+          WHERE st.hocsinh_id = ANY(${studentIds}) 
+            AND st.time_start >= ${startTime}
+        )
+        SELECT 
+          student_id,
+          student_name,
+          COUNT(CASE WHEN activity_type = 'content_view' THEN 1 END) as content_viewed,
+          COUNT(CASE WHEN activity_type = 'content_rating' THEN 1 END) as content_rated,
+          CASE 
+            WHEN COUNT(CASE WHEN activity_type = 'quiz_attempt' AND quiz_score IS NOT NULL THEN 1 END) > 0 
+            THEN ROUND(AVG(CASE WHEN activity_type = 'quiz_attempt' THEN quiz_score END), 1)
+            ELSE NULL 
+          END as quiz_accuracy,
+          MAX(timestamp) as last_activity,
+          JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'type', activity_type,
+              'content_id', content_id,
+              'content_title', content_title,
+              'timestamp', timestamp,
+              'rating', rating,
+              'quiz_score', quiz_score
+            ) ORDER BY timestamp DESC
+          ) as activities
+        FROM student_activities
+        GROUP BY student_id, student_name
+        ORDER BY student_name
+      `);
+
+      return activities.rows.map((row: any) => ({
+        student_id: row.student_id,
+        student_name: row.student_name,
+        content_viewed: parseInt(row.content_viewed) || 0,
+        content_rated: parseInt(row.content_rated) || 0,
+        quiz_accuracy: row.quiz_accuracy ? parseFloat(row.quiz_accuracy) : null,
+        last_activity: row.last_activity,
+        activities: row.activities || []
+      }));
     });
   }
 }
