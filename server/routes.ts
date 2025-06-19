@@ -322,29 +322,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Topics API - Protected route requiring authentication
   app.get("/api/topics", isStudentAuthenticated, async (req, res) => {
     try {
-      console.log("=== TOPICS API DEBUG ===");
-      console.log("Request headers:", req.headers);
-      console.log("User ID:", req.headers['x-replit-user-id']);
-
       const topics = await storage.getTopics();
-
-      console.log("Topics query result count:", topics.length);
-      console.log("Sample topics:", topics.slice(0, 3));
-      console.log("========================");
-
       res.json(topics);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error fetching topics:', error);
-      console.error('Error details:', {
-        message: error?.message,
-        stack: error?.stack,
-        name: error?.name
-      });
-      res.status(500).json({ 
-        error: 'Failed to fetch topics',
-        details: error?.message || 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
+      res.status(500).json({ error: 'Failed to fetch topics' });
     }
   });
 
@@ -1328,254 +1310,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get available topics
       const topics = await storage.getTopics();
-      const topicNames = topics.map(t => t.topic).filter((topic): topic is string => Boolean(topic));
+      const topicNames = topics.map(t => t.topic).filter(Boolean);
 
       const studyPlan = await aiService.generateStudyPlan(studentId, topicNames, goals);
       res.json({ studyPlan });
-    } catch (error: any) {
-      console.error('Error generating study plan:', error?.message || error);
+    } catch (error) {
+      console.error('Error generating study plan:', error);
       res.status(500).json({ error: 'Failed to generate study plan' });
-    }
-  });
-
-  // Enhanced Content Rating System
-  app.post('/api/content-views', async (req, res) => {
-    try {
-      const { student_id, content_id, session_id } = req.body;
-      
-      if (!student_id || !content_id) {
-        return res.status(400).json({ error: 'student_id and content_id are required' });
-      }
-
-      const contentView = await storage.createContentView({
-        id: crypto.randomUUID(),
-        student_id,
-        content_id,
-        session_id: session_id || null,
-        view_duration: 0,
-        created_at: new Date()
-      });
-
-      // Update badge progress for content views
-      await storage.updateStudentBadge(student_id, 'content_viewer');
-      
-      // Record session activity if session_id is provided
-      if (session_id) {
-        await storage.recordSessionActivity({
-          id: crypto.randomUUID(),
-          session_id,
-          student_id,
-          activity_type: 'content_view',
-          content_id,
-          quiz_id: null,
-          activity_data: { view_timestamp: new Date() },
-          created_at: new Date()
-        });
-      }
-
-      res.json(contentView);
-    } catch (error) {
-      console.error('Error tracking content view:', error);
-      res.status(500).json({ error: 'Failed to track content view' });
-    }
-  });
-
-  app.post('/api/content-ratings', async (req, res) => {
-    try {
-      const { student_id, content_id, rating, session_id } = req.body;
-      
-      if (!student_id || !content_id || !rating) {
-        return res.status(400).json({ error: 'student_id, content_id, and rating are required' });
-      }
-
-      const contentRating = await storage.createEnhancedContentRating({
-        id: crypto.randomUUID(),
-        student_id,
-        content_id,
-        rating,
-        session_id: session_id || null,
-        created_at: new Date()
-      });
-
-      // Record session activity if session_id is provided
-      if (session_id) {
-        await storage.recordSessionActivity({
-          id: crypto.randomUUID(),
-          session_id,
-          student_id,
-          activity_type: 'rating_given',
-          content_id,
-          quiz_id: null,
-          activity_data: { rating, timestamp: new Date() },
-          created_at: new Date()
-        });
-      }
-
-      res.json(contentRating);
-    } catch (error) {
-      console.error('Error creating content rating:', error);
-      res.status(500).json({ error: 'Failed to create content rating' });
-    }
-  });
-
-  app.post('/api/quiz-attempts', async (req, res) => {
-    try {
-      const { student_id, content_id, quiz_level, session_id } = req.body;
-      
-      if (!student_id || !content_id || !quiz_level) {
-        return res.status(400).json({ error: 'student_id, content_id, and quiz_level are required' });
-      }
-
-      const quizAttempt = await storage.createQuizAttempt({
-        id: crypto.randomUUID(),
-        student_id,
-        content_id,
-        quiz_level,
-        score: null,
-        questions_answered: 0,
-        questions_correct: 0,
-        time_taken: null,
-        session_id: session_id || null,
-        status: 'started',
-        created_at: new Date(),
-        completed_at: null
-      });
-
-      // Update badge progress for quiz attempts
-      await storage.updateStudentBadge(student_id, 'quiz_master');
-
-      // Record session activity if session_id is provided
-      if (session_id) {
-        await storage.recordSessionActivity({
-          id: crypto.randomUUID(),
-          session_id,
-          student_id,
-          activity_type: 'quiz_start',
-          content_id,
-          quiz_id: quizAttempt.id,
-          activity_data: { quiz_level, timestamp: new Date() },
-          created_at: new Date()
-        });
-      }
-
-      res.json(quizAttempt);
-    } catch (error) {
-      console.error('Error creating quiz attempt:', error);
-      res.status(500).json({ error: 'Failed to create quiz attempt' });
-    }
-  });
-
-  // Student Badge System
-  app.get('/api/student-badges/:student_id', async (req, res) => {
-    try {
-      const { student_id } = req.params;
-      const badges = await storage.getStudentBadges(student_id);
-      res.json(badges);
-    } catch (error) {
-      console.error('Error fetching student badges:', error);
-      res.status(500).json({ error: 'Failed to fetch student badges' });
-    }
-  });
-
-  // Teaching Session Management
-  app.post('/api/teaching-sessions', async (req, res) => {
-    try {
-      const { teacher_id, session_name, description } = req.body;
-      
-      if (!teacher_id || !session_name) {
-        return res.status(400).json({ error: 'teacher_id and session_name are required' });
-      }
-
-      const session = await storage.createTeachingSession({
-        id: crypto.randomUUID(),
-        teacher_id,
-        session_name,
-        description: description || null,
-        start_time: new Date(),
-        end_time: null,
-        status: 'active',
-        created_at: new Date()
-      });
-
-      res.json(session);
-    } catch (error) {
-      console.error('Error creating teaching session:', error);
-      res.status(500).json({ error: 'Failed to create teaching session' });
-    }
-  });
-
-  app.get('/api/teaching-sessions/:teacher_id', async (req, res) => {
-    try {
-      const { teacher_id } = req.params;
-      const sessions = await storage.getTeachingSessions(teacher_id);
-      res.json(sessions);
-    } catch (error) {
-      console.error('Error fetching teaching sessions:', error);
-      res.status(500).json({ error: 'Failed to fetch teaching sessions' });
-    }
-  });
-
-  app.post('/api/teaching-sessions/:session_id/participants', async (req, res) => {
-    try {
-      const { session_id } = req.params;
-      const { student_id } = req.body;
-      
-      if (!student_id) {
-        return res.status(400).json({ error: 'student_id is required' });
-      }
-
-      const participant = await storage.addSessionParticipant({
-        id: crypto.randomUUID(),
-        session_id,
-        student_id,
-        joined_at: new Date(),
-        last_activity: new Date(),
-        is_active: true
-      });
-
-      res.json(participant);
-    } catch (error) {
-      console.error('Error adding session participant:', error);
-      res.status(500).json({ error: 'Failed to add session participant' });
-    }
-  });
-
-  app.get('/api/teaching-sessions/:session_id/activities', async (req, res) => {
-    try {
-      const { session_id } = req.params;
-      const activities = await storage.getSessionActivities(session_id);
-      res.json(activities);
-    } catch (error) {
-      console.error('Error fetching session activities:', error);
-      res.status(500).json({ error: 'Failed to fetch session activities' });
-    }
-  });
-
-  app.get('/api/teaching-sessions/:session_id/real-time-stats', async (req, res) => {
-    try {
-      const { session_id } = req.params;
-      const stats = await storage.getSessionRealTimeStats(session_id);
-      res.json(stats);
-    } catch (error) {
-      console.error('Error fetching session real-time stats:', error);
-      res.status(500).json({ error: 'Failed to fetch session real-time stats' });
-    }
-  });
-
-  app.patch('/api/teaching-sessions/:session_id/status', async (req, res) => {
-    try {
-      const { session_id } = req.params;
-      const { status } = req.body;
-      
-      if (!status) {
-        return res.status(400).json({ error: 'status is required' });
-      }
-
-      const updatedSession = await storage.updateSessionStatus(session_id, status);
-      res.json(updatedSession);
-    } catch (error) {
-      console.error('Error updating session status:', error);
-      res.status(500).json({ error: 'Failed to update session status' });
     }
   });
 
@@ -1583,7 +1324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/generate-image/:contentId', async (req, res) => {
     try {
       const { contentId } = req.params;
-
+      
       if (!contentId) {
         return res.status(400).json({ error: 'Content ID is required' });
       }
@@ -1606,7 +1347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/generate-images-batch', async (req, res) => {
     try {
       const { limit = 10 } = req.body;
-
+      
       // Start batch generation in background
       imageGenerationService.generateImagesForAllContent()
         .catch(error => console.error('Batch image generation error:', error));
@@ -1628,7 +1369,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { contentId } = req.params;
       const content = await storage.getContentById(contentId);
-
+      
       if (!content) {
         return res.status(404).json({ error: 'Content not found' });
       }

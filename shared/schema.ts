@@ -287,88 +287,6 @@ export const writing_submissions = pgTable("writing_submissions", {
   updated_at: timestamp("updated_at").defaultNow(),
 });
 
-// Enhanced content views tracking with session support
-export const content_views = pgTable("content_views", {
-  id: text("id").primaryKey(),
-  student_id: text("student_id").notNull(),
-  content_id: text("content_id").notNull(),
-  session_id: text("session_id"), // tracks which teaching session this view occurred in
-  view_duration: integer("view_duration").default(0), // in seconds
-  created_at: timestamp("created_at").defaultNow(),
-});
-
-// Enhanced content ratings with thumbs up/down
-export const enhanced_content_ratings = pgTable("enhanced_content_ratings", {
-  id: text("id").primaryKey(),
-  student_id: text("student_id").notNull(),
-  content_id: text("content_id").notNull(),
-  rating: text("rating").notNull(), // "thumbs_up", "thumbs_down"
-  session_id: text("session_id"), // tracks which session this rating occurred in
-  created_at: timestamp("created_at").defaultNow(),
-});
-
-// Quiz attempts tracking
-export const quiz_attempts = pgTable("quiz_attempts", {
-  id: text("id").primaryKey(),
-  student_id: text("student_id").notNull(),
-  content_id: text("content_id").notNull(),
-  quiz_level: text("quiz_level").notNull(), // "easy", "hard"
-  score: integer("score"), // percentage score
-  questions_answered: integer("questions_answered").default(0),
-  questions_correct: integer("questions_correct").default(0),
-  time_taken: integer("time_taken"), // in seconds
-  session_id: text("session_id"), // tracks which session this attempt occurred in
-  status: text("status").default("started"), // "started", "completed", "abandoned"
-  created_at: timestamp("created_at").defaultNow(),
-  completed_at: timestamp("completed_at"),
-});
-
-// Student badges system
-export const student_badges = pgTable("student_badges", {
-  id: text("id").primaryKey(),
-  student_id: text("student_id").notNull(),
-  badge_type: text("badge_type").notNull(), // "content_viewer", "quiz_master", "topic_explorer", "streak_warrior"
-  badge_level: integer("badge_level").default(1), // 1-5 levels for each badge type
-  count: integer("count").default(0), // actual count (content views, quizzes done, etc.)
-  threshold: integer("threshold").notNull(), // threshold needed for this level
-  earned_at: timestamp("earned_at").defaultNow(),
-  updated_at: timestamp("updated_at").defaultNow(),
-});
-
-// Teaching sessions for real-time tracking
-export const teaching_sessions = pgTable("teaching_sessions", {
-  id: text("id").primaryKey(),
-  teacher_id: text("teacher_id").notNull(),
-  session_name: text("session_name").notNull(),
-  description: text("description"),
-  start_time: timestamp("start_time").defaultNow(),
-  end_time: timestamp("end_time"),
-  status: text("status").default("active"), // "active", "paused", "ended"
-  created_at: timestamp("created_at").defaultNow(),
-});
-
-// Students enrolled in teaching sessions
-export const session_participants = pgTable("session_participants", {
-  id: text("id").primaryKey(),
-  session_id: text("session_id").notNull(),
-  student_id: text("student_id").notNull(),
-  joined_at: timestamp("joined_at").defaultNow(),
-  last_activity: timestamp("last_activity").defaultNow(),
-  is_active: boolean("is_active").default(true),
-});
-
-// Real-time session activities for tracking student progress
-export const session_activities = pgTable("session_activities", {
-  id: text("id").primaryKey(),
-  session_id: text("session_id").notNull(),
-  student_id: text("student_id").notNull(),
-  activity_type: text("activity_type").notNull(), // "content_view", "quiz_start", "quiz_complete", "rating_given"
-  content_id: text("content_id"),
-  quiz_id: text("quiz_id"),
-  activity_data: jsonb("activity_data"), // additional data like score, rating, etc.
-  created_at: timestamp("created_at").defaultNow(),
-});
-
 export const learning_progress = pgTable("learning_progress", {
   id: text("id").primaryKey(),
   student_id: text("student_id").notNull(),
@@ -423,13 +341,6 @@ export const insertWritingSubmissionSchema = createInsertSchema(writing_submissi
 export const insertLearningProgressSchema = createInsertSchema(learning_progress);
 export const insertCronJobSchema = createInsertSchema(cron_jobs);
 export const insertPendingAccessRequestSchema = createInsertSchema(pending_access_requests);
-export const insertContentViewSchema = createInsertSchema(content_views);
-export const insertEnhancedContentRatingSchema = createInsertSchema(enhanced_content_ratings);
-export const insertQuizAttemptSchema = createInsertSchema(quiz_attempts);
-export const insertStudentBadgeSchema = createInsertSchema(student_badges);
-export const insertTeachingSessionSchema = createInsertSchema(teaching_sessions);
-export const insertSessionParticipantSchema = createInsertSchema(session_participants);
-export const insertSessionActivitySchema = createInsertSchema(session_activities);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
@@ -458,17 +369,3 @@ export type CronJob = typeof cron_jobs.$inferSelect;
 export type InsertCronJob = z.infer<typeof insertCronJobSchema>;
 export type PendingAccessRequest = typeof pending_access_requests.$inferSelect;
 export type InsertPendingAccessRequest = z.infer<typeof insertPendingAccessRequestSchema>;
-export type ContentView = typeof content_views.$inferSelect;
-export type InsertContentView = z.infer<typeof insertContentViewSchema>;
-export type EnhancedContentRating = typeof enhanced_content_ratings.$inferSelect;
-export type InsertEnhancedContentRating = z.infer<typeof insertEnhancedContentRatingSchema>;
-export type QuizAttempt = typeof quiz_attempts.$inferSelect;
-export type InsertQuizAttempt = z.infer<typeof insertQuizAttemptSchema>;
-export type StudentBadge = typeof student_badges.$inferSelect;
-export type InsertStudentBadge = z.infer<typeof insertStudentBadgeSchema>;
-export type TeachingSession = typeof teaching_sessions.$inferSelect;
-export type InsertTeachingSession = z.infer<typeof insertTeachingSessionSchema>;
-export type SessionParticipant = typeof session_participants.$inferSelect;
-export type InsertSessionParticipant = z.infer<typeof insertSessionParticipantSchema>;
-export type SessionActivity = typeof session_activities.$inferSelect;
-export type InsertSessionActivity = z.infer<typeof insertSessionActivitySchema>;

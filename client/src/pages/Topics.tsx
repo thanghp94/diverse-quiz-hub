@@ -100,20 +100,8 @@ const Topics = () => {
       const data = await response.json();
       console.log('Bowl & Challenge topics fetched:', data);
       return data as Topic[];
-    },
-    retry: 3,
-    retryDelay: 1000,
+    }
   });
-
-  // Debug logging
-  useEffect(() => {
-    console.log("=== TOPICS DEBUG ===");
-    console.log("Topics loading:", isLoading);
-    console.log("Topics error:", error);
-    console.log("Topics data:", topics);
-    console.log("Topics count:", topics?.length || 0);
-    console.log("===================");
-  }, [isLoading, error, topics]);
 
   // Fetch all subtopics for the dropdown
   const {
@@ -182,7 +170,7 @@ const Topics = () => {
         contextList: topicContent,
         imageUrl: findImageUrl(firstContent),
       });
-
+      
       // Track content access when student clicks on subtopic
       const currentUserId = getCurrentUserId();
       if (currentUserId) {
@@ -199,7 +187,7 @@ const Topics = () => {
       contextList: info.contextList,
       imageUrl: findImageUrl(info.content),
     });
-
+    
     // Track content access when student clicks on content
     const currentUserId = getCurrentUserId();
     if (currentUserId) {
@@ -278,7 +266,6 @@ const Topics = () => {
     );
   }
   if (error) {
-    console.error("Topics error details:", error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
         <Header />
@@ -286,7 +273,9 @@ const Topics = () => {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6">
               <h1 className="text-3xl font-bold text-white mb-3">Topics</h1>
-              <p className="text-lg text-white/80">Error loading topics</p>
+              <p className="text-lg text-white/80">
+                Error loading topics
+              </p>
             </div>
             <div className="text-center py-12">
               <p className="text-white">Error loading topics. Please try again later.</p>
