@@ -3,9 +3,19 @@
 import { db } from './server/db';
 import { sql } from 'drizzle-orm';
 
-export async function getLiveClassActivitiesFixed(studentIds: string[], startTime: string): Promise<any[]> {
+interface LiveClassActivity {
+  student_id: string;
+  student_name: string;
+  content_viewed: number;
+  content_rated: number;
+  quiz_accuracy: null;
+  last_activity: any;
+  activities: any[];
+}
+
+export async function getLiveClassActivitiesFixed(studentIds: string[], startTime: string): Promise<LiveClassActivity[]> {
   try {
-    const results = [];
+    const results: LiveClassActivity[] = [];
     
     // Process each student individually to avoid complex query parameter issues
     for (const studentId of studentIds) {
@@ -53,13 +63,13 @@ export async function getLiveClassActivitiesFixed(studentIds: string[], startTim
       `);
       
       results.push({
-        student_id: student.id,
-        student_name: student.student_name,
+        student_id: student.id as string,
+        student_name: student.student_name as string,
         content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
         content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
         quiz_accuracy: null,
         last_activity: activities.rows.length > 0 ? (activities.rows[0] as any).timestamp : null,
-        activities: activities.rows || []
+        activities: activities.rows as any[] || []
       });
     }
     
