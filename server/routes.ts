@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { wakeUpDatabase } from "./db";
 import { getSessionMiddleware, isStudentAuthenticated } from "./sessionAuth";
+import { setupGoogleAuth } from "./googleAuth";
 import crypto from 'crypto';
 
 // Session type declarations
@@ -16,6 +17,9 @@ declare module 'express-session' {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up session middleware for authentication
   app.use(getSessionMiddleware());
+
+  // Set up Google OAuth authentication
+  setupGoogleAuth(app);
 
   // Student Authentication routes
   app.post('/api/auth/student-login', async (req, res) => {
