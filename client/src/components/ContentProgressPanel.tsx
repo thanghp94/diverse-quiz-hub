@@ -1,21 +1,60 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { BarChart3, CheckCircle, Circle, Star } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { BarChart3, CheckCircle, Circle, Star, ChevronDown, ChevronRight, FolderOpen, Folder, FileText, Users } from "lucide-react";
+import ContentPopup from "./ContentPopup";
 
 interface ContentProgress {
   id: string;
   topicid: string;
   topic: string;
   title: string;
-  difficulty_rating: 'easy' | 'normal' | 'hard' | null;
+  difficulty_rating: 'ok' | 'normal' | 'really_bad' | null;
   question_count: number;
   completed_at: string;
   parentid: string | null;
+  short_blurb?: string;
+  prompt?: string;
+}
+
+interface Topic {
+  id: string;
+  topic: string;
+  parentid: string | null;
+  showstudent: boolean;
+}
+
+interface Content {
+  id: string;
+  topicid: string;
+  title: string;
+  prompt: string;
+  short_blurb: string;
+  short_description: string;
+}
+
+interface ContentRating {
+  id: string;
+  student_id: string;
+  content_id: string;
+  rating: 'ok' | 'normal' | 'really_bad';
+  personal_note: string | null;
+  created_at: string;
+}
+
+interface HierarchyItem {
+  id: string;
+  title: string;
+  type: 'topic' | 'subtopic' | 'groupcard' | 'content';
+  rating?: 'ok' | 'normal' | 'really_bad' | null;
+  children: HierarchyItem[];
+  contentData?: Content;
+  parentid?: string | null;
 }
 
 export const ContentProgressPanel = () => {
