@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Edit, Save, X, Video, ArrowUp, ArrowDown, Layers } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import type { Content } from '@shared/schema';
 
 const TopicDropdown = ({ value, onChange }: { value: string | null; onChange: (value: string) => void }) => {
@@ -39,7 +38,6 @@ interface ContentEditorProps {
 
 export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const { user: authUser } = useAuth();
   const [editData, setEditData] = useState({
     short_description: content.short_description || '',
     short_blurb: content.short_blurb || '',
@@ -137,14 +135,8 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
     setIsEditing(false);
   };
 
-  // Check if current user is GV0002 - use same logic as ContentPopup
+  // Check if current user is GV0002
   const getCurrentUser = () => {
-    // First, try the authenticated user
-    if (authUser && typeof authUser === 'object' && authUser !== null && 'id' in authUser) {
-      return authUser as { id: string; [key: string]: any };
-    }
-    
-    // Fallback to localStorage
     try {
       const storedUser = localStorage.getItem('currentUser');
       if (storedUser) {
@@ -158,20 +150,13 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
   };
 
   const currentUser = getCurrentUser();
-  const isAuthorized = (currentUser?.id === 'GV0002');
+  const isAuthorized = currentUser?.id === 'GV0002';
 
-  console.log('ContentEditor - Auth user:', authUser);
   console.log('ContentEditor - Current user:', currentUser);
   console.log('ContentEditor - Is authorized:', isAuthorized);
 
   if (!isAuthorized) {
-    return (
-      <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-        <div className="text-red-600 text-sm">
-          Content Editor requires admin access (GV0002)
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

@@ -15,7 +15,6 @@ import MarkdownRenderer from "./MarkdownRenderer";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
 import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
-import { useAuth } from "@/hooks/useAuth";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -45,32 +44,6 @@ const ContentPopup = ({
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [modalVideoUrl, setModalVideoUrl] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
-  
-  // Move useAuth to component top level to fix Hooks error
-  const { user: authUser } = useAuth();
-  
-  // Admin editor logic moved to component level
-  const getCurrentUser = () => {
-    // First, try the authenticated user
-    if (authUser && typeof authUser === 'object' && authUser !== null && 'id' in authUser) {
-      return authUser as { id: string; [key: string]: any };
-    }
-    
-    // Fallback to localStorage
-    try {
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        return JSON.parse(storedUser);
-      }
-      return null;
-    } catch (error) {
-      console.error('Error parsing current user:', error);
-      return null;
-    }
-  };
-
-  const currentUser = getCurrentUser();
-  const isAuthorized = (currentUser?.id === 'GV0002');
 
   // Type guard for translation dictionary
   const isValidTranslationDictionary = (dict: unknown): dict is Record<string, string> => {
@@ -423,53 +396,65 @@ const ContentPopup = ({
 
 
               {/* Content Editor - Admin Only Dropdown */}
-              {isAuthorized ? (
-                <div className="mt-4 pt-4 border-t-4 border-red-500 bg-red-50 animate-pulse">
-                  <div className="mb-4 text-center">
-                    <div className="text-2xl font-bold text-red-600 mb-2">
-                      🔧 ADMIN PANEL ACTIVE 🔧
+              {(() => {
+                const getCurrentUser = () => {
+                  try {
+                    const storedUser = localStorage.getItem('currentUser');
+                    if (storedUser) {
+                      return JSON.parse(storedUser);
+                    }
+                    return null;
+                  } catch (error) {
+                    console.error('Error parsing current user:', error);
+                    return null;
+                  }
+                };
+
+                const currentUser = getCurrentUser();
+                const isAuthorized = currentUser?.id === 'GV0002';
+                
+                console.log('ContentPopup Admin Check - Current user:', currentUser);
+                console.log('ContentPopup Admin Check - Is authorized:', isAuthorized);
+                console.log('ContentPopup Admin Check - localStorage contents:', localStorage.getItem('currentUser'));
+                
+                // Force show for debugging - remove this line when working
+                if (!isAuthorized) {
+                  console.log('Admin editor not showing because user is not GV0002');
+                  return null;
+                }
+                
+                return (
+                  <div className="mt-6 pt-4 border-t-2 border-red-500 bg-red-50/20">
+                    <div className="mb-2 text-xs text-red-600 font-bold uppercase tracking-wide">
+                      🔧 ADMIN PANEL - USER: {currentUser?.id}
                     </div>
-                    <div className="text-sm text-red-600 font-bold uppercase tracking-wide">
-                      USER: {currentUser?.id || 'Unknown'} | CONTENT: {content?.id || 'No content'}
-                    </div>
-                  </div>
-                  <button 
-                    className="w-full flex items-center justify-between p-6 text-left hover:bg-red-200 rounded-lg border-4 border-red-400 bg-red-100 shadow-lg transform hover:scale-105 transition-all"
-                    onClick={() => {
-                      console.log('🔧 Admin editor toggle clicked!');
-                      setIsEditorOpen(!isEditorOpen);
-                    }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="text-3xl">⚙️</div>
-                      <div>
-                        <div className="font-bold text-red-700 text-xl">CONTENT EDITOR</div>
-                        <div className="text-red-600 text-sm">Click to {isEditorOpen ? 'close' : 'open'} admin tools</div>
+                    <button 
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-red-100 rounded-lg border-2 border-red-300 bg-red-50 shadow-md"
+                      onClick={() => setIsEditorOpen(!isEditorOpen)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span className="font-bold text-red-700 text-lg">Content Editor (Admin Only)</span>
                       </div>
-                    </div>
-                    <div className="text-2xl text-red-600">
-                      {isEditorOpen ? '🔽' : '▶️'}
-                    </div>
-                  </button>
-                  {isEditorOpen && (
-                    <div className="mt-4 p-4 border-2 border-blue-300 bg-blue-50 rounded-lg">
-                      <div className="text-blue-800 font-bold mb-2">📝 EDITOR PANEL:</div>
-                      <ContentEditor content={content} onContentUpdate={onContentChange} />
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="mt-6 pt-4 border-t-4 border-yellow-500 bg-yellow-50 p-4">
-                  <div className="text-sm font-mono text-yellow-800">
-                    <div>🔍 DEBUG INFO:</div>
-                    <div>Auth User: {JSON.stringify(authUser)}</div>
-                    <div>Current User: {JSON.stringify(currentUser)}</div>
-                    <div>User ID: {currentUser?.id || 'None'}</div>
-                    <div>Expected: GV0002</div>
-                    <div>Is Authorized: {isAuthorized ? '✅ YES' : '❌ NO'}</div>
+                      <svg 
+                        className={`w-6 h-6 text-red-600 transition-transform duration-200 ${isEditorOpen ? 'rotate-180' : ''}`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {isEditorOpen && (
+                      <div className="mt-3">
+                        <ContentEditor content={content} onContentUpdate={onContentChange} />
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </>
           )}
         </DialogContent>
