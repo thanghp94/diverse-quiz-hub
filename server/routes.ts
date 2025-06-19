@@ -239,6 +239,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Logout endpoint
+  app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      
+      res.clearCookie('connect.sid'); // Clear the session cookie
+      res.json({ success: true, message: 'Logged out successfully' });
+    });
+  });
+
   // Test endpoint to verify OAuth configuration
   app.get('/api/auth/test', (req, res) => {
     const domain = process.env.REPLIT_DOMAINS?.split(',')[0];

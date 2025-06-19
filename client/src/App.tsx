@@ -19,7 +19,25 @@ import { DemoPage } from "./pages/DemoPage";
 import AssignmentPage from "./pages/AssignmentPage";
 import LiveClass from "./pages/LiveClass";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      queryFn: async ({ queryKey }) => {
+        const response = await fetch(queryKey[0] as string, {
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error(`${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+      },
+    },
+  },
+});
 
 function AppRouter() {
   const { isAuthenticated, isLoading } = useAuth();

@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { StreakDisplay } from "./StreakDisplay";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,24 +16,44 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const userData = localStorage.getItem("currentUser");
-    if (userData) {
-      setCurrentUser(JSON.parse(userData));
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Logged out successfully",
+          description: "You have been signed out of your account.",
+        });
+        window.location.href = "/";
+      } else {
+        toast({
+          title: "Logout failed",
+          description: "There was an error signing you out.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Connection error",
+        description: "Unable to sign out. Please try again.",
+        variant: "destructive",
+      });
     }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("currentUser");
-    setCurrentUser(null);
-    setLocation("/login");
   };
 
   const handleLogin = () => {
-    setLocation("/login");
+    setLocation("/");
   };
 
   return (
