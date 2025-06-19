@@ -227,7 +227,7 @@ export const student_try_content = pgTable("student_try_content", {
   student_try_id: text("student_try_id"),
   time_end: timestamp("time_end", { withTimezone: true }),
   time_start: timestamp("time_start", { withTimezone: true }),
-  update: text("update"),
+  update: timestamp("update", { withTimezone: true }).defaultNow(),
 });
 
 // Content difficulty ratings by students
