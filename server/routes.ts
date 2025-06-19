@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { wakeUpDatabase } from "./db";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { getSessionMiddleware, isStudentAuthenticated } from "./sessionAuth";
 import crypto from 'crypto';
 
 // Session type declarations
@@ -14,8 +14,8 @@ declare module 'express-session' {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Set up authentication first
-  await setupAuth(app);
+  // Set up session middleware for authentication
+  app.use(getSessionMiddleware());
 
   // Student Authentication routes
   app.post('/api/auth/student-login', async (req, res) => {
@@ -180,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Topics API - Protected route requiring authentication
-  app.get("/api/topics", isAuthenticated, async (req, res) => {
+  app.get("/api/topics", isStudentAuthenticated, async (req, res) => {
     try {
       const topics = await storage.getTopics();
       res.json(topics);
@@ -214,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Content API - Protected routes requiring authentication
-  app.get("/api/content", isAuthenticated, async (req, res) => {
+  app.get("/api/content", isStudentAuthenticated, async (req, res) => {
     try {
       const topicId = req.query.topicId as string;
       const content = await storage.getContent(topicId);
@@ -225,7 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/content/:id", isAuthenticated, async (req, res) => {
+  app.get("/api/content/:id", isStudentAuthenticated, async (req, res) => {
     try {
       const content = await storage.getContentById(req.params.id);
       if (!content) {
