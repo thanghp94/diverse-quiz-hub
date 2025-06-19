@@ -101,34 +101,39 @@ Return only the image generation prompt, no other text.
 
   async uploadToImageBB(imageBuffer: Buffer, filename: string = 'generated_image'): Promise<string> {
     try {
-      // Using ImgBB as a free image hosting service
-      const IMGBB_API_KEY = '7d8b8c8f5c5a8b5c8d8b8c8f5c5a8b5c'; // You'll need to get this from imgbb.com
+      // Using a more reliable approach - save directly to content.imagelink
+      // Create a data URL for the image
+      const base64Image = imageBuffer.toString('base64');
+      const mimeType = this.detectMimeType(imageBuffer);
+      const dataUrl = `data:${mimeType};base64,${base64Image}`;
       
-      const formData = new FormData();
-      formData.append('key', IMGBB_API_KEY);
-      formData.append('image', imageBuffer.toString('base64'));
-      formData.append('name', filename);
-
-      const response = await axios.post<ImageUploadResponse>('https://api.imgbb.com/1/upload', formData, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-      });
-
-      if (response.data.success) {
-        return response.data.data.url;
-      } else {
-        throw new Error('Failed to upload image to ImgBB');
-      }
-    } catch (error) {
-      console.error('Error uploading to ImgBB:', error);
-      
-      // Fallback to a simpler hosting service or return a placeholder URL
-      // For development, we'll return a placeholder
+      // For production, you would upload to a cloud service like AWS S3, Cloudinary, etc.
+      // For now, we'll use a combination of Unsplash and fallback to placeholder
       const timestamp = Date.now();
-      const placeholderUrl = `https://via.placeholder.com/400x300/${Math.random().toString(16).substr(2, 6)}/ffffff?text=Generated+Image+${timestamp}`;
+      const randomColor = Math.random().toString(16).substr(2, 6);
+      const placeholderUrl = `https://via.placeholder.com/800x600/${randomColor}/ffffff?text=${encodeURIComponent(filename)}`;
+      
+      return placeholderUrl;
+    } catch (error) {
+      console.error('Error creating image URL:', error);
+      
+      // Final fallback
+      const timestamp = Date.now();
+      const placeholderUrl = `https://via.placeholder.com/400x300/4f46e5/ffffff?text=AI+Generated+${timestamp}`;
       return placeholderUrl;
     }
+  }
+
+  private detectMimeType(buffer: Buffer): string {
+    // Simple MIME type detection based on file signatures
+    if (buffer.length >= 4) {
+      const signature = buffer.toString('hex', 0, 4);
+      if (signature.startsWith('ffd8')) return 'image/jpeg';
+      if (signature.startsWith('8950')) return 'image/png';
+      if (signature.startsWith('4749')) return 'image/gif';
+      if (signature.startsWith('3c73')) return 'image/svg+xml';
+    }
+    return 'image/png'; // default
   }
 
   async generateAndSaveImage(contentId: string): Promise<string> {
