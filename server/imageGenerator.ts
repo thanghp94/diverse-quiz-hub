@@ -46,38 +46,32 @@ Return only the image generation prompt, no other text.
 
   async generateImage(prompt: string): Promise<Buffer> {
     try {
-      // Using Google's Imagen API through Vertex AI
-      const imagePrompt = `
-Create a vibrant, educational illustration: ${prompt}
-Style: Colorful cartoon illustration, educational, friendly, suitable for students
-Colors: Bright and engaging
-Quality: High resolution, clear details
-Format: Digital art style
-      `;
-
-      const result = await this.model.generateContent([
-        {
-          text: `Generate an image with this description: ${imagePrompt}. 
-          Note: This is a request for image generation. Please provide guidance on creating this educational image.`
-        }
-      ]);
-
-      // Since Google Generative AI doesn't directly generate images yet, 
-      // we'll create a placeholder approach or use an alternative service
-      // For now, let's use a text-to-image API service like Unsplash or create a simple colored image
-
-      // Using a free image generation service (placeholder implementation)
-      // In production, you would use DALL-E, Midjourney API, or similar services
+      // Use Unsplash API to get relevant stock photos based on the prompt
+      const searchTerms = this.extractKeywords(prompt);
+      const unsplashUrl = `https://source.unsplash.com/800x600/?${searchTerms.join(',')}`;
       
-      // For demonstration, let's create a simple colored rectangle as placeholder
-      // In real implementation, replace this with actual image generation API
-      const canvas = await this.createPlaceholderImage(prompt);
-      return canvas;
+      const response = await axios.get(unsplashUrl, { responseType: 'arraybuffer' });
+      return Buffer.from(response.data);
       
     } catch (error) {
-      console.error('Error generating image:', error);
-      throw new Error('Failed to generate image');
+      console.error('Error generating image from Unsplash:', error);
+      // Fallback to placeholder if Unsplash fails
+      const canvas = await this.createPlaceholderImage(prompt);
+      return canvas;
     }
+  }
+
+  private extractKeywords(prompt: string): string[] {
+    // Extract meaningful keywords from the prompt for image search
+    const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'create', 'image', 'illustration', 'style', 'colorful', 'educational', 'vibrant'];
+    
+    const words = prompt.toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !commonWords.includes(word))
+      .slice(0, 3); // Limit to 3 keywords for better results
+    
+    return words.length > 0 ? words : ['education', 'learning', 'student'];
   }
 
   private async createPlaceholderImage(prompt: string): Promise<Buffer> {

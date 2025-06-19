@@ -6,6 +6,7 @@ import { getSessionMiddleware, isStudentAuthenticated } from "./sessionAuth";
 import { setupGoogleAuth } from "./googleAuth";
 import crypto from 'crypto';
 import { aiService, AIContentRequest, AIQuestionRequest, AITutorRequest } from './aiService';
+import { imageGenerationService } from './imageGenerator';
 
 // Session type declarations
 declare module 'express-session' {
@@ -1309,13 +1310,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get available topics
       const topics = await storage.getTopics();
-      const topicNames = topics.map(t => t.topic);
+      const topicNames = topics.map(t => t.topic).filter(Boolean);
 
       const studyPlan = await aiService.generateStudyPlan(studentId, topicNames, goals);
       res.json({ studyPlan });
     } catch (error) {
       console.error('Error generating study plan:', error);
       res.status(500).json({ error: 'Failed to generate study plan' });
+    }
+  });
+
+  // Image Generation API Routes
+  app.post('/api/generate-image/:contentId', async (req, res) => {
+    try {
+      const { contentId } = req.params;
+      
+      if (!contentId) {
+        return res.status(400).json({ error: 'Content ID is required' });
+      }
+
+      const imageUrl = await imageGenerationService.generateAndSaveImage(contentId);
+      res.json({ 
+        success: true, 
+        imageUrl,
+        contentId 
+      });
+    } catch (error) {
+      console.error('Error generating image:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate image',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.post('/api/generate-images-batch', async (req, res) => {
+    try {
+      const { limit = 10 } = req.body;
+      
+      // Start batch generation in background
+      imageGenerationService.generateImagesForAllContent()
+        .catch(error => console.error('Batch image generation error:', error));
+
+      res.json({ 
+        success: true, 
+        message: 'Batch image generation started. Check server logs for progress.'
+      });
+    } catch (error) {
+      console.error('Error starting batch image generation:', error);
+      res.status(500).json({ 
+        error: 'Failed to start batch image generation',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get('/api/content/:contentId/image-status', async (req, res) => {
+    try {
+      const { contentId } = req.params;
+      const content = await storage.getContentById(contentId);
+      
+      if (!content) {
+        return res.status(404).json({ error: 'Content not found' });
+      }
+
+      res.json({
+        contentId,
+        hasImage: !!content.imagelink,
+        imageUrl: content.imagelink || null,
+        title: content.title
+      });
+    } catch (error) {
+      console.error('Error checking image status:', error);
+      res.status(500).json({ error: 'Failed to check image status' });
     }
   });
 

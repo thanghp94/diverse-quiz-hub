@@ -18,6 +18,7 @@ import { DemoPage } from "./pages/DemoPage";
 import AssignmentPage from "./pages/AssignmentPage";
 import LiveClass from "./pages/LiveClass";
 import AIAssistant from "./components/AIAssistant";
+import ImageGenerator from "./pages/ImageGenerator";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,6 +68,7 @@ function AppRouter() {
           <Route path="/assignments" component={AssignmentPage} />
           <Route path="/live-class" component={LiveClass} />
           <Route path="/demo" component={DemoPage} />
+          <Route path="/image-generator" component={ImageGenerator} />
         </>
       )}
       <Route component={NotFound} />
