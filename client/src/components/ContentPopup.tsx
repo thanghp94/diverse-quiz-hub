@@ -458,17 +458,6 @@ const ContentPopup = ({
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="mt-6 pt-4 border-t-4 border-yellow-500 bg-yellow-50 p-4">
-                  <div className="text-sm font-mono text-yellow-800">
-                    <div>🔍 DEBUG INFO:</div>
-                    <div>Auth User: {JSON.stringify(authUser)}</div>
-                    <div>Current User: {JSON.stringify(currentUser)}</div>
-                    <div>User ID: {currentUser?.id || 'None'}</div>
-                    <div>Expected: GV0002</div>
-                    <div>Is Authorized: {isAuthorized ? '✅ YES' : '❌ NO'}</div>
-                  </div>
-                </div>
               )}
             </>
           )}
