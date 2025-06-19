@@ -411,6 +411,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Content Access Tracking - automatically records when content is viewed
+  app.post("/api/content-access", async (req, res) => {
+    try {
+      const { student_id, content_id } = req.body;
+      
+      if (!student_id || !content_id) {
+        return res.status(400).json({ error: 'student_id and content_id are required' });
+      }
+
+      // Check if this content has already been accessed by this student
+      const existingRating = await storage.getContentRating(student_id, content_id);
+      
+      if (!existingRating) {
+        // Create a new content rating entry to track the access
+        // Default rating is null (unrated) but we track the access
+        const accessRecord = await storage.createContentRating({
+          id: crypto.randomUUID(),
+          student_id,
+          content_id,
+          rating: 'viewed', // Special rating to indicate content was viewed
+          personal_note: null
+        });
+        
+        console.log(`Content access recorded: Student ${student_id} viewed content ${content_id}`);
+        res.json({ message: 'Content access recorded', record: accessRecord });
+      } else {
+        // Content already accessed - just update the timestamp
+        res.json({ message: 'Content access already recorded', existing: true });
+      }
+    } catch (error) {
+      console.error('Error tracking content access:', error);
+      res.status(500).json({ error: 'Failed to track content access' });
+    }
+  });
+
   // Content Ratings API
   app.post("/api/content-ratings", async (req, res) => {
     try {

@@ -16,6 +16,7 @@ import { AssignmentPanel } from "@/components/AssignmentPanel";
 import LiveClassPanel from "@/components/LiveClassPanel";
 import { PersonalContentPanel } from "@/components/PersonalContentPanel";
 import { useLocation } from "wouter";
+import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
 
 interface Topic {
   id: string;

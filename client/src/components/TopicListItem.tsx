@@ -862,7 +862,7 @@ const TopicListItem = ({
     isGroupCardExpanded,
     activeContentId
 }: TopicListItemProps) => {
-    const { topicMatching, isLoading: isMatchingLoading } = useTopicMatching(topic.id);
+    const { matchingActivities, hasMatchingActivities, isLoading: isMatchingLoading } = useTopicMatching(topic.id);
 
   // Fetch content ratings for filtering
   const { data: contentRatings } = useQuery({

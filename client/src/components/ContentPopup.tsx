@@ -14,6 +14,7 @@ import { ContentEditor } from "./ContentEditor";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
+import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -74,6 +75,16 @@ const ContentPopup = ({
       startQuiz(quizLevel);
     }
   }, [isOpen, startQuizDirectly, quizMode, startQuiz, quizLevel]);
+
+  // Track content access when popup opens
+  useEffect(() => {
+    if (isOpen && content) {
+      const currentUserId = getCurrentUserId();
+      if (currentUserId) {
+        trackContentAccess(currentUserId, content.id);
+      }
+    }
+  }, [isOpen, content?.id]);
 
   // Reset modal states when popup opens/closes or content changes
   useEffect(() => {
