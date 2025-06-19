@@ -1,9 +1,10 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { wakeUpDatabase } from "./db";
+import { wakeUpDatabase, db } from "./db";
 import { getSessionMiddleware, isStudentAuthenticated } from "./sessionAuth";
 import { setupGoogleAuth } from "./googleAuth";
+import { sql } from "drizzle-orm";
 import crypto from 'crypto';
 
 // Session type declarations
@@ -705,20 +706,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'student_id and content_id are required' });
       }
 
-      // Also record in student_try_content table for proper content tracking
+      // Record in student_try_content table for proper content tracking
       try {
+        const now = new Date().toISOString();
         const studentTryContentRecord = {
           id: crypto.randomUUID(),
           contentid: content_id,
           hocsinh_id: student_id,
           student_try_id: crypto.randomUUID(),
-          time_start: new Date(),
-          time_end: new Date(),
-          update: `Content viewed at ${new Date().toISOString()}`
+          time_start: now,
+          time_end: now,
+          update: `Content_viewed_${now}`
         };
 
-        // Insert into student_try_content table
-        await storage.createStudentTryContent(studentTryContentRecord);
+        // Insert into student_try_content table using raw SQL to handle existing schema
+        await db.execute(sql`
+          INSERT INTO student_try_content (id, contentid, hocsinh_id, student_try_id, time_start, time_end, update)
+          VALUES (${studentTryContentRecord.id}, ${content_id}, ${student_id}, ${studentTryContentRecord.student_try_id}, ${now}, ${now}, ${studentTryContentRecord.update})
+        `);
         console.log(`Student try content record created for Student ${student_id}, Content ${content_id}`);
       } catch (contentError) {
         console.error('Error creating student_try_content record:', contentError);
