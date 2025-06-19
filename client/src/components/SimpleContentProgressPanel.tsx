@@ -48,6 +48,8 @@ interface HierarchyNode {
   children: HierarchyNode[];
   contentData?: SimpleContent;
   isExpanded?: boolean;
+  viewCount?: number;
+  triesCount?: number;
 }
 
 export const SimpleContentProgressPanel = () => {
@@ -87,6 +89,19 @@ export const SimpleContentProgressPanel = () => {
       return response.json();
     },
     enabled: !!selectedStudent,
+  });
+
+  // Get student tries count for optimization
+  const { data: studentTriesCount = {} } = useQuery({
+    queryKey: ['/api/student-tries-count', selectedStudent, content?.map((c: any) => c.id)],
+    queryFn: async () => {
+      if (!content || content.length === 0) return {};
+      const contentIds = content.map((c: any) => c.id).join(',');
+      const response = await fetch(`/api/student-tries-count/${selectedStudent}?contentIds=${contentIds}`);
+      if (!response.ok) return {};
+      return response.json();
+    },
+    enabled: !!selectedStudent && !!content && content.length > 0,
   });
 
   // For teacher view, fetch all students
@@ -154,35 +169,46 @@ export const SimpleContentProgressPanel = () => {
             if (groupParent) {
               const groupChildren = groupContents
                 .filter(c => c.parentid !== null)
-                .map(c => ({
-                  id: c.id,
-                  title: c.title || c.short_description || 'Untitled',
-                  type: 'content' as const,
-                  rating: ratingMap.get(c.id)?.rating || null,
-                  children: [],
-                  contentData: c,
-                }));
+                .map(c => {
+                  const rating = ratingMap.get(c.id);
+                  return {
+                    id: c.id,
+                    title: c.title || c.short_description || 'Untitled',
+                    type: 'content' as const,
+                    rating: rating?.rating || null,
+                    children: [],
+                    contentData: c,
+                    viewCount: rating?.view_count || 0,
+                    triesCount: studentTriesCount[c.id] || 0,
+                  };
+                });
 
+              const groupRating = ratingMap.get(groupParent.id);
               children.push({
                 id: groupParent.id,
                 title: groupParent.title || groupParent.short_description || 'Group Content',
                 type: 'groupcard',
-                rating: ratingMap.get(groupParent.id)?.rating || null,
+                rating: groupRating?.rating || null,
                 children: groupChildren,
                 contentData: groupParent,
+                viewCount: groupRating?.view_count || 0,
+                triesCount: studentTriesCount[groupParent.id] || 0,
               });
             }
           });
 
           // Add ungrouped content
           ungroupedContent.forEach((c: any) => {
+            const rating = ratingMap.get(c.id);
             children.push({
               id: c.id,
               title: c.title || c.short_description || 'Untitled',
               type: 'content',
-              rating: ratingMap.get(c.id)?.rating || null,
+              rating: rating?.rating || null,
               children: [],
               contentData: c,
+              viewCount: rating?.view_count || 0,
+              triesCount: studentTriesCount[c.id] || 0,
             });
           });
 
@@ -305,6 +331,24 @@ export const SimpleContentProgressPanel = () => {
           >
             {item.title}
           </span>
+          
+          {/* Metrics display for teacher view */}
+          {activeTab === 'teacher' && (item.type === 'content' || item.type === 'groupcard') && (
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              {item.viewCount !== undefined && item.viewCount > 0 && (
+                <span className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
+                  <Eye className="w-3 h-3" />
+                  {item.viewCount}
+                </span>
+              )}
+              {item.triesCount !== undefined && item.triesCount > 0 && (
+                <span className="flex items-center gap-1 bg-green-100 dark:bg-green-900 px-2 py-1 rounded">
+                  <BarChart3 className="w-3 h-3" />
+                  {item.triesCount}
+                </span>
+              )}
+            </div>
+          )}
           
           {item.rating && (
             <Badge className={`text-xs h-5 ${getRatingColor(item.rating)}`}>
