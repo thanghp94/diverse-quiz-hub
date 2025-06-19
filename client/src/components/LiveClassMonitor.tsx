@@ -70,9 +70,11 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const { data: studentActivities = [], isLoading: activitiesLoading, isFetching } = useQuery<StudentActivity[]>({
     queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
     enabled: isMonitoring && selectedStudents.length > 0,
-    refetchInterval: 5000, // Refresh every 5 seconds for live updates
-    staleTime: 4000, // Keep data fresh for 4 seconds to reduce flicker
+    refetchInterval: 10000, // Refresh every 10 seconds to reduce flickering
+    staleTime: 15000, // Keep data fresh for 15 seconds to prevent constant refetching
     refetchOnWindowFocus: false, // Prevent refetch on window focus
+    refetchOnMount: false, // Prevent refetch on component mount
+    retry: 1, // Reduce retry attempts
   });
 
   // Filter activities based on criteria
@@ -171,7 +173,18 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                   Use Custom Time
                 </Button>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  onClick={() => {
+                    const now = new Date();
+                    now.setHours(16, 0, 0, 0); // 4 PM today
+                    setCustomStartTime(format(now, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  4 PM Today
+                </Button>
                 <Button
                   onClick={() => {
                     const now = new Date();
@@ -181,7 +194,19 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                   variant="outline"
                   size="sm"
                 >
-                  Set to 8 PM Today
+                  8 PM Today
+                </Button>
+                <Button
+                  onClick={() => {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    yesterday.setHours(16, 0, 0, 0); // 4 PM yesterday
+                    setCustomStartTime(format(yesterday, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  4 PM Yesterday
                 </Button>
                 <Button
                   onClick={() => {
@@ -193,7 +218,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                   variant="outline"
                   size="sm"
                 >
-                  Set to 8 PM Yesterday
+                  8 PM Yesterday
                 </Button>
               </div>
             </div>

@@ -1257,22 +1257,91 @@ export class DatabaseStorage implements IStorage {
             AND cr.created_at >= ${startTime}
         `);
         
-        // Get recent activities
-        const activities = await db.execute(sql`
-          SELECT 'content_view' as type, c.id as content_id, c.title as content_title, 
-                 stc.time_start as timestamp, NULL as rating, NULL as quiz_score
-          FROM student_try_content stc
-          JOIN content c ON stc.contentid = c.id
-          WHERE stc.hocsinh_id = ${studentId} AND stc.time_start >= ${startTime}
-          UNION ALL
-          SELECT 'content_rating' as type, cr.content_id, c.title as content_title,
-                 cr.created_at as timestamp, cr.rating::text as rating, NULL as quiz_score
-          FROM content_ratings cr
-          JOIN content c ON cr.content_id = c.id
-          WHERE cr.student_id = ${studentId} AND cr.created_at >= ${startTime}
-          ORDER BY timestamp DESC
-          LIMIT 20
-        `);
+        // Get recent activities - simplified approach
+        const allActivities: any[] = [];
+        
+        // Get content view activities
+        try {
+          const contentViews = await db.execute(sql`
+            SELECT 'content_view' as type, c.id as content_id, c.title as content_title, 
+                   stc.time_start as timestamp
+            FROM student_try_content stc
+            JOIN content c ON stc.contentid = c.id
+            WHERE stc.hocsinh_id = ${studentId} AND stc.time_start >= ${startTime}
+            ORDER BY stc.time_start DESC
+            LIMIT 10
+          `);
+          
+          contentViews.rows.forEach((row: any) => {
+            allActivities.push({
+              type: row.type,
+              content_id: row.content_id,
+              content_title: row.content_title,
+              timestamp: row.timestamp,
+              rating: null,
+              quiz_score: null
+            });
+          });
+        } catch (e) {
+          console.log('Error fetching content views:', e);
+        }
+
+        // Get rating activities
+        try {
+          const ratings = await db.execute(sql`
+            SELECT 'content_rating' as type, cr.content_id, c.title as content_title,
+                   cr.created_at as timestamp, cr.rating
+            FROM content_ratings cr
+            JOIN content c ON cr.content_id = c.id
+            WHERE cr.student_id = ${studentId} AND cr.created_at >= ${startTime}
+            ORDER BY cr.created_at DESC
+            LIMIT 10
+          `);
+          
+          ratings.rows.forEach((row: any) => {
+            allActivities.push({
+              type: row.type,
+              content_id: row.content_id,
+              content_title: row.content_title,
+              timestamp: row.timestamp,
+              rating: row.rating,
+              quiz_score: null
+            });
+          });
+        } catch (e) {
+          console.log('Error fetching ratings:', e);
+        }
+
+        // Get quiz activities
+        try {
+          const quizzes = await db.execute(sql`
+            SELECT 'quiz_attempt' as type, q.contentid as content_id, c.title as content_title,
+                   st.time_start as timestamp, st.score
+            FROM student_try st
+            JOIN questions q ON st.question_id = q.id
+            JOIN content c ON q.contentid = c.id
+            WHERE st.hocsinh_id = ${studentId} AND st.time_start >= ${startTime}
+            ORDER BY st.time_start DESC
+            LIMIT 10
+          `);
+          
+          quizzes.rows.forEach((row: any) => {
+            allActivities.push({
+              type: row.type,
+              content_id: row.content_id,
+              content_title: row.content_title,
+              timestamp: row.timestamp,
+              rating: null,
+              quiz_score: row.score
+            });
+          });
+        } catch (e) {
+          console.log('Error fetching quizzes:', e);
+        }
+
+        // Sort activities by timestamp
+        allActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        allActivities.splice(20); // Keep only top 20
         
         results.push({
           student_id: student.id,
@@ -1280,8 +1349,8 @@ export class DatabaseStorage implements IStorage {
           content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
           content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
           quiz_accuracy: null,
-          last_activity: activities.rows.length > 0 ? (activities.rows[0] as any).timestamp : null,
-          activities: activities.rows || []
+          last_activity: allActivities.length > 0 ? allActivities[0].timestamp : null,
+          activities: allActivities
         });
       }
       
