@@ -929,8 +929,8 @@ export class DatabaseStorage implements IStorage {
         answer_choice: studentTry.answer_choice || null,
         correct_answer: studentTry.correct_answer || null,
         quiz_result: studentTry.quiz_result || null,
-        time_start: studentTry.time_start || null,
-        time_end: studentTry.time_end || null,
+        time_start: studentTry.time_start ? (studentTry.time_start instanceof Date ? studentTry.time_start : new Date(studentTry.time_start)) : null,
+        time_end: studentTry.time_end ? (studentTry.time_end instanceof Date ? studentTry.time_end : new Date(studentTry.time_end)) : null,
         currentindex: studentTry.currentindex || null,
         showcontent: studentTry.showcontent || null
       };

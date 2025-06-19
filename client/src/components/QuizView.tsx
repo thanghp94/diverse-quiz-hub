@@ -243,8 +243,8 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                 answer_choice: selectedAnswer,
                 correct_answer: currentQuestion.correct_choice,
                 quiz_result: isCorrect ? '✅' : '❌',
-                time_start: timeStart,
-                time_end: timeEnd,
+                time_start: timeStart ? new Date(timeStart) : null,
+                time_end: timeEnd ? new Date(timeEnd) : null,
                 currentindex: currentQuestionIndex,
                 showcontent: didShowContent,
             });
