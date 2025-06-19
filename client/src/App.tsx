@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import Login from "./pages/Login";
 import { DemoPage } from "./pages/DemoPage";
 import AssignmentPage from "./pages/AssignmentPage";
 import LiveClass from "./pages/LiveClass";
+import AIAssistant from "./components/AIAssistant";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,11 +28,11 @@ const queryClient = new QueryClient({
         const response = await fetch(queryKey[0] as string, {
           credentials: 'include',
         });
-        
+
         if (!response.ok) {
           throw new Error(`${response.status}: ${response.statusText}`);
         }
-        
+
         return response.json();
       },
     },
@@ -82,6 +82,7 @@ const App = () => (
       <WouterRouter>
         <AppRouter />
       </WouterRouter>
+      <AIAssistant />
     </TooltipProvider>
   </QueryClientProvider>
 );

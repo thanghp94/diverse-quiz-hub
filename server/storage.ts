@@ -769,7 +769,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAssignmentById(id: string): Promise<any> {
-    const result = await db.select().from(assignment).where(eq(assignment.id, id));
+    const result = await db.select().from<replit_final_file>
+assignment).where(eq(assignment.id, id));
     return result[0] || null;
   }
 
