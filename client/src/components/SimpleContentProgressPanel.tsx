@@ -161,8 +161,8 @@ export const SimpleContentProgressPanel = () => {
 
           // Add groupcard content
           groupCards.forEach((groupCard: any) => {
-            // Find related content that has this groupcard as parentid
-            const relatedContent = content.filter((c: any) => c.parentid === groupCard.id);
+            // Find related content that has contentgroup matching this groupcard's id
+            const relatedContent = content.filter((c: any) => c.contentgroup === groupCard.id);
             
             const groupChildren = relatedContent.map(c => {
               const rating = ratingMap.get(c.id);
@@ -193,7 +193,7 @@ export const SimpleContentProgressPanel = () => {
 
           // Add regular content that's not part of a group
           regularContent
-            .filter(c => !groupCards.some(gc => c.parentid === gc.id)) // Exclude content that's already grouped
+            .filter(c => !c.contentgroup || !groupCards.some(gc => gc.id === c.contentgroup)) // Exclude content that's already grouped
             .forEach((c: any) => {
               const rating = ratingMap.get(c.id);
               children.push({
