@@ -778,6 +778,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get quiz attempts count per content for a student
+  app.get("/api/quiz-attempts-count/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const { contentIds } = req.query;
+      
+      if (!contentIds) {
+        return res.json({});
+      }
+      
+      const contentIdArray = typeof contentIds === 'string' ? contentIds.split(',') : Array.isArray(contentIds) ? contentIds : [];
+      
+      // Get all assignment tries for this student
+      const assignmentTries = await storage.getAssignmentTriesByStudent(studentId);
+      const quizCount: Record<string, number> = {};
+      
+      assignmentTries
+        .filter((attempt: any) => 
+          attempt.contentID && 
+          contentIdArray.includes(attempt.contentID)
+        )
+        .forEach((attempt: any) => {
+          if (attempt.contentID) {
+            quizCount[attempt.contentID] = (quizCount[attempt.contentID] || 0) + 1;
+          }
+        });
+      
+      res.json(quizCount);
+    } catch (error) {
+      console.error('Error fetching quiz attempts count:', error);
+      res.status(500).json({ error: 'Failed to fetch quiz attempts count' });
+    }
+  });
+
   app.get("/api/content-ratings/:studentId/:contentId", async (req, res) => {
     try {
       const rating = await storage.getContentRating(req.params.studentId, req.params.contentId);

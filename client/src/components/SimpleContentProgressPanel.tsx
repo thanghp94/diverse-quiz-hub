@@ -50,6 +50,7 @@ interface HierarchyNode {
   isExpanded?: boolean;
   viewCount?: number;
   triesCount?: number;
+  quizAttempts?: number;
 }
 
 export const SimpleContentProgressPanel = () => {
@@ -98,6 +99,19 @@ export const SimpleContentProgressPanel = () => {
       if (!content || content.length === 0) return {};
       const contentIds = content.map((c: any) => c.id).join(',');
       const response = await fetch(`/api/student-tries-count/${selectedStudent}?contentIds=${contentIds}`);
+      if (!response.ok) return {};
+      return response.json();
+    },
+    enabled: !!selectedStudent && !!content && content.length > 0,
+  });
+
+  // Get quiz attempts count per content
+  const { data: quizAttemptsCount = {} } = useQuery({
+    queryKey: ['/api/quiz-attempts-count', selectedStudent, content?.map((c: any) => c.id)],
+    queryFn: async () => {
+      if (!content || content.length === 0) return {};
+      const contentIds = content.map((c: any) => c.id).join(',');
+      const response = await fetch(`/api/quiz-attempts-count/${selectedStudent}?contentIds=${contentIds}`);
       if (!response.ok) return {};
       return response.json();
     },
@@ -173,6 +187,7 @@ export const SimpleContentProgressPanel = () => {
                 contentData: c,
                 viewCount: rating?.view_count || 0,
                 triesCount: studentTriesCount[c.id] || 0,
+                quizAttempts: quizAttemptsCount[c.id] || 0,
               });
             });
 
@@ -192,8 +207,16 @@ export const SimpleContentProgressPanel = () => {
                 contentData: c,
                 viewCount: rating?.view_count || 0,
                 triesCount: studentTriesCount[c.id] || 0,
+                quizAttempts: quizAttemptsCount[c.id] || 0,
               };
             });
+
+            // Calculate total quiz attempts for group card
+            const groupQuizAttempts = relatedContent.reduce((total, c) => total + (quizAttemptsCount[c.id] || 0), 0);
+            const groupViewCount = relatedContent.reduce((total, c) => {
+              const rating = ratingMap.get(c.id);
+              return total + (rating?.view_count || 0);
+            }, 0);
 
             const groupRating = ratingMap.get(groupCard.id);
             children.push({
@@ -203,16 +226,44 @@ export const SimpleContentProgressPanel = () => {
               rating: groupRating?.rating || null,
               children: groupChildren,
               contentData: groupCard,
-              viewCount: groupRating?.view_count || 0,
+              viewCount: groupViewCount,
               triesCount: studentTriesCount[groupCard.id] || 0,
+              quizAttempts: groupQuizAttempts,
             });
           });
+
+          // Calculate total quiz attempts and views for topic/subtopic
+          const calculateTopicStats = (children: HierarchyNode[]): { totalViews: number; totalQuizAttempts: number } => {
+            let totalViews = 0;
+            let totalQuizAttempts = 0;
+            
+            children.forEach(child => {
+              if (child.type === 'content') {
+                totalViews += child.viewCount || 0;
+                totalQuizAttempts += child.quizAttempts || 0;
+              } else if (child.type === 'groupcard') {
+                totalViews += child.viewCount || 0;
+                totalQuizAttempts += child.quizAttempts || 0;
+              } else {
+                // Recursive for subtopics
+                const subStats = calculateTopicStats(child.children);
+                totalViews += subStats.totalViews;
+                totalQuizAttempts += subStats.totalQuizAttempts;
+              }
+            });
+            
+            return { totalViews, totalQuizAttempts };
+          };
+
+          const topicStats = calculateTopicStats(children);
 
           return {
             id: topic.id,
             title: topic.topic || 'Untitled Topic',
             type: topic.parentid ? 'subtopic' : 'topic',
             children,
+            viewCount: topicStats.totalViews,
+            quizAttempts: topicStats.totalQuizAttempts,
           };
         });
     };
@@ -329,17 +380,23 @@ export const SimpleContentProgressPanel = () => {
           </span>
           
           {/* Metrics display for teacher view */}
-          {activeTab === 'teacher' && (item.type === 'content' || item.type === 'groupcard') && (
+          {activeTab === 'teacher' && (
             <div className="flex items-center gap-2 text-xs text-gray-500">
               {item.viewCount !== undefined && item.viewCount > 0 && (
-                <span className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
+                <span className="flex items-center gap-1 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded" title="Views">
                   <Eye className="w-3 h-3" />
                   {item.viewCount}
                 </span>
               )}
-              {item.triesCount !== undefined && item.triesCount > 0 && (
-                <span className="flex items-center gap-1 bg-green-100 dark:bg-green-900 px-2 py-1 rounded">
+              {item.quizAttempts !== undefined && item.quizAttempts > 0 && (
+                <span className="flex items-center gap-1 bg-purple-100 dark:bg-purple-900 px-2 py-1 rounded" title="Quiz Attempts">
                   <BarChart3 className="w-3 h-3" />
+                  {item.quizAttempts}
+                </span>
+              )}
+              {item.triesCount !== undefined && item.triesCount > 0 && item.type === 'content' && (
+                <span className="flex items-center gap-1 bg-green-100 dark:bg-green-900 px-2 py-1 rounded" title="Question Tries">
+                  📝
                   {item.triesCount}
                 </span>
               )}
