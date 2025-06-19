@@ -11,7 +11,7 @@ import TopicMatchingPopup from "@/components/TopicMatchingPopup";
 import MatchingListPopup from "@/components/MatchingListPopup";
 import { MatchingActivityPopup } from "@/components/MatchingActivityPopup";
 import { LeaderboardPanel } from "@/components/LeaderboardPanel";
-import { ContentProgressPanel } from "@/components/ContentProgressPanel";
+import SimpleContentProgressPanel from "@/components/SimpleContentProgressPanel";
 import { AssignmentPanel } from "@/components/AssignmentPanel";
 import LiveClassPanel from "@/components/LiveClassPanel";
 import { PersonalContentPanel } from "@/components/PersonalContentPanel";
@@ -285,7 +285,7 @@ const Topics = () => {
                 </h1>
                 <div className="flex-1 flex justify-end gap-3">
                   <LiveClassPanel />
-                  <ContentProgressPanel />
+                  <SimpleContentProgressPanel />
                   <AssignmentPanel />
                   <PersonalContentPanel onContentClick={handleContentClick} />
                   <LeaderboardPanel />
