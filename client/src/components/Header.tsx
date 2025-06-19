@@ -96,6 +96,12 @@ const Header = () => {
             Assignments
           </button>
           <button 
+            onClick={() => setLocation('/live-monitor')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Live Monitor
+          </button>
+          <button 
             onClick={() => setLocation('/leaderboard')}
             className="text-white hover:text-white/80 transition-colors"
           >

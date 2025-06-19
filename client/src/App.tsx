@@ -18,6 +18,7 @@ import Login from "./pages/Login";
 import { DemoPage } from "./pages/DemoPage";
 import AssignmentPage from "./pages/AssignmentPage";
 import LiveClass from "./pages/LiveClass";
+import LiveClassPage from "./pages/LiveClassPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +26,21 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
       retry: 1,
       queryFn: async ({ queryKey }) => {
-        const response = await fetch(queryKey[0] as string, {
+        let url = queryKey[0] as string;
+        
+        // Handle live class activities with query parameters
+        if (url === '/api/live-class-activities' && queryKey.length > 1) {
+          const [, studentIds, startTime] = queryKey;
+          if (studentIds && startTime) {
+            const params = new URLSearchParams({
+              studentIds: Array.isArray(studentIds) ? studentIds.join(',') : String(studentIds),
+              startTime: String(startTime)
+            });
+            url = `${url}?${params.toString()}`;
+          }
+        }
+        
+        const response = await fetch(url, {
           credentials: 'include',
         });
         
@@ -66,6 +81,7 @@ function AppRouter() {
           <Route path="/writing" component={WritingPage} />
           <Route path="/assignments" component={AssignmentPage} />
           <Route path="/live-class" component={LiveClass} />
+          <Route path="/live-monitor" component={LiveClassPage} />
           <Route path="/demo" component={DemoPage} />
         </>
       )}
