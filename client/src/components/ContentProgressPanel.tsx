@@ -186,41 +186,45 @@ export const ContentProgressPanel = () => {
           ) : (
             <div className="space-y-4">
               {Object.entries(groupedData).map(([topic, items]: [string, any]) => (
-                <Card key={topic} className="bg-gray-800 border-gray-700">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-white text-sm font-medium">
+                <div key={topic} className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+                  <div className="bg-gray-750 px-4 py-2 border-b border-gray-700">
+                    <h3 className="text-white text-sm font-medium flex items-center gap-2">
                       {topic}
-                      <Badge className="ml-2 bg-gray-600 text-white text-xs">
+                      <Badge className="bg-gray-600 text-white text-xs">
                         {items.length} items
                       </Badge>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-2">
-                      {items.map((item: ContentProgress) => (
-                        <div 
-                          key={item.id}
-                          className="flex items-center justify-between p-3 rounded bg-gray-700/50 text-sm"
-                        >
-                          <div className="flex-1">
-                            <div className="text-white font-medium truncate">
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-gray-700">
+                          <th className="text-left text-gray-400 font-medium px-4 py-2">Title</th>
+                          <th className="text-left text-gray-400 font-medium px-4 py-2">Questions</th>
+                          <th className="text-left text-gray-400 font-medium px-4 py-2">Difficulty</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map((item: ContentProgress) => (
+                          <tr key={item.id} className="border-b border-gray-700/50 hover:bg-gray-700/30">
+                            <td className="px-4 py-2 text-white font-medium">
                               {item.title || 'Untitled Content'}
-                            </div>
-                            <div className="text-gray-400 text-xs">
-                              {item.question_count} questions • Completed: {new Date(item.completed_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={`text-xs h-6 flex items-center gap-1 ${getDifficultyColor(item.difficulty_rating)}`}>
-                              {getDifficultyIcon(item.difficulty_rating)}
-                              {item.difficulty_rating || 'unrated'}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                            </td>
+                            <td className="px-4 py-2 text-gray-300">
+                              {item.question_count}
+                            </td>
+                            <td className="px-4 py-2">
+                              <Badge className={`text-xs h-5 flex items-center gap-1 w-fit ${getDifficultyColor(item.difficulty_rating)}`}>
+                                {getDifficultyIcon(item.difficulty_rating)}
+                                {item.difficulty_rating || 'unrated'}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               ))}
             </div>
           )}
