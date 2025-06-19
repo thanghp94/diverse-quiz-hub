@@ -148,9 +148,9 @@ export const ContentProgressPanel = () => {
           {/* Filter Buttons */}
           <div className="flex gap-2 flex-wrap">
             {[
-              { key: 'hard', label: 'Hard', count: stats.hard },
+              { key: 'all', label: 'All', count: stats.total },
               { key: 'easy', label: 'Easy', count: stats.easy },
-              { key: 'all', label: 'All', count: stats.total }
+              { key: 'hard', label: 'Hard', count: stats.hard }
             ].map((filter) => (
               <Button
                 key={filter.key}
@@ -185,12 +185,21 @@ export const ContentProgressPanel = () => {
             <div className="space-y-4">
               {Object.entries(groupedData).map(([topic, items]: [string, any]) => (
                 <div key={topic} className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+                  <div className="bg-gray-750 px-4 py-2 border-b border-gray-700">
+                    <h3 className="text-white text-sm font-medium flex items-center gap-2">
+                      {topic}
+                      <Badge className="bg-gray-600 text-white text-xs">
+                        {items.length} items
+                      </Badge>
+                    </h3>
+                  </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-gray-700">
-                          <th className="text-left text-gray-400 font-medium px-4 py-2">Content</th>
+                          <th className="text-left text-gray-400 font-medium px-4 py-2">Title</th>
                           <th className="text-left text-gray-400 font-medium px-4 py-2">Questions</th>
+                          <th className="text-left text-gray-400 font-medium px-4 py-2">Difficulty</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -201,6 +210,12 @@ export const ContentProgressPanel = () => {
                             </td>
                             <td className="px-4 py-2 text-gray-300">
                               {item.question_count}
+                            </td>
+                            <td className="px-4 py-2">
+                              <Badge className={`text-xs h-5 flex items-center gap-1 w-fit ${getDifficultyColor(item.difficulty_rating)}`}>
+                                {getDifficultyIcon(item.difficulty_rating)}
+                                {item.difficulty_rating === 'ok' ? 'easy' : item.difficulty_rating === 'really_bad' ? 'hard' : 'unrated'}
+                              </Badge>
                             </td>
                           </tr>
                         ))}
