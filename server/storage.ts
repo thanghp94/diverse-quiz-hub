@@ -171,10 +171,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(
-      sql`${users.email} = ${email} OR ${users.meraki_email} = ${email}`
-    );
-    return result[0];
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).where(
+        sql`${users.email} = ${email} OR ${users.meraki_email} = ${email}`
+      );
+      return result[0];
+    });
   }
 
   async getUserByIdentifier(identifier: string): Promise<User | undefined> {
