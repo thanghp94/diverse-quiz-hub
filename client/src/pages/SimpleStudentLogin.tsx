@@ -47,12 +47,14 @@ export default function SimpleStudentLogin() {
           description: "Welcome to the platform",
         });
         
-        // Force immediate redirect
-        if (result.needsEmailSetup) {
-          window.location.href = "/setup-email";
-        } else {
-          window.location.href = "/";
-        }
+        // Wait briefly for session to be saved, then redirect
+        setTimeout(() => {
+          if (result.needsEmailSetup) {
+            window.location.href = "/setup-email";
+          } else {
+            window.location.href = "/";
+          }
+        }, 500);
       } else {
         toast({
           title: "Login Failed", 

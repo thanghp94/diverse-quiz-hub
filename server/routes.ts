@@ -118,6 +118,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/auth/user', async (req: any, res) => {
     try {
+      console.log('Auth check - Session ID:', req.sessionID);
+      console.log('Auth check - User ID in session:', (req.session as any).userId);
+      
       if (!(req.session as any).userId) {
         return res.status(401).json({ message: 'Not authenticated' });
       }
@@ -127,6 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: 'User not found' });
       }
 
+      console.log('Auth check successful for user:', user.id);
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -154,18 +158,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Student ID or Meraki Email not found in our records' });
       }
 
-      // Create authenticated session
+      // Create authenticated session and save it
       (req.session as any).userId = student.id;
       (req.session as any).user = student;
 
-      // Check if student needs to set up personal email
-      const needsEmailSetup = !student.email || student.email === student.meraki_email;
+      // Force session save before responding
+      req.session.save((err) => {
+        if (err) {
+          console.error('Session save error:', err);
+          return res.status(500).json({ message: 'Session save failed' });
+        }
 
-      res.json({ 
-        success: true, 
-        user: student,
-        needsEmailSetup,
-        message: needsEmailSetup ? 'Please set up your personal email' : 'Login successful'
+        console.log('Session saved successfully for user:', student.id);
+        
+        // Check if student needs to set up personal email
+        const needsEmailSetup = !student.email || student.email === student.meraki_email;
+
+        res.json({ 
+          success: true, 
+          user: student,
+          needsEmailSetup,
+          message: needsEmailSetup ? 'Please set up your personal email' : 'Login successful'
+        });
       });
     } catch (error) {
       console.error('Login error:', error);
