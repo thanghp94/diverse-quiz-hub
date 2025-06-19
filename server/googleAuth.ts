@@ -14,10 +14,10 @@ export function setupGoogleAuth(app: Express) {
     callbackURL
   });
 
-  // Validate required environment variables
+  // Skip OAuth setup if credentials are not provided
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-    console.error('Missing required Google OAuth credentials');
-    throw new Error('Google OAuth credentials not configured');
+    console.log('Google OAuth credentials not configured - skipping OAuth setup');
+    return;
   }
 
   // Configure Google OAuth strategy
