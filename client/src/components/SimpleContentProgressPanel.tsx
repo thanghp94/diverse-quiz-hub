@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, ChevronDown, ChevronRight, FolderOpen, Folder, FileText, Users, Filter, Eye } from "lucide-react";
 import ContentPopup from "./ContentPopup";
+import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
 
 interface SimpleContentRating {
   id: string;
@@ -255,6 +256,12 @@ export const SimpleContentProgressPanel = () => {
   const handleContentClick = (content: any) => {
     setSelectedContent(content);
     setIsContentPopupOpen(true);
+    
+    // Track content access when clicked from progress panel
+    const currentUserId = getCurrentUserId();
+    if (currentUserId) {
+      trackContentAccess(currentUserId, content.id);
+    }
   };
 
   const renderHierarchyItem = (item: HierarchyNode, depth: number = 0) => {

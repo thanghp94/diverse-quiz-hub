@@ -170,6 +170,12 @@ const Topics = () => {
         contextList: topicContent,
         imageUrl: findImageUrl(firstContent),
       });
+      
+      // Track content access when student clicks on subtopic
+      const currentUserId = getCurrentUserId();
+      if (currentUserId) {
+        trackContentAccess(currentUserId, firstContent.id);
+      }
     } else {
       console.warn(`Content for topic ID ${topicId} not found`);
     }
@@ -181,6 +187,12 @@ const Topics = () => {
       contextList: info.contextList,
       imageUrl: findImageUrl(info.content),
     });
+    
+    // Track content access when student clicks on content
+    const currentUserId = getCurrentUserId();
+    if (currentUserId) {
+      trackContentAccess(currentUserId, info.content.id);
+    }
   };
   const handleStartQuiz = (content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => {
     console.log('Starting content quiz for:', content.title, 'Level:', level);
