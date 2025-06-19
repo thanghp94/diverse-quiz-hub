@@ -81,11 +81,11 @@ const PersonalNoteContent: React.FC<{ contentId: string; studentId: string; onCl
           personal_note: note
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to save note');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -116,7 +116,7 @@ const PersonalNoteContent: React.FC<{ contentId: string; studentId: string; onCl
       <p className="text-gray-600 text-sm">
         Add your personal notes about this content. Only you can see these notes.
       </p>
-      
+
       <div>
         <Label htmlFor="note-text" className="text-gray-700">Your Note</Label>
         <Textarea
@@ -127,7 +127,7 @@ const PersonalNoteContent: React.FC<{ contentId: string; studentId: string; onCl
           className="min-h-[100px] mt-2"
         />
       </div>
-      
+
       <div className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
         <Button variant="outline" onClick={onClose} className="mb-2 sm:mb-0">
           Cancel
@@ -184,7 +184,7 @@ const NoteButton: React.FC<NoteButtonProps & { onOpenNote: () => void }> = ({ co
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
-          
+
           // Block all content clicks globally for a brief moment
           globalClickBlocked = true;
           if (globalClickBlockTimeout) {
@@ -193,7 +193,7 @@ const NoteButton: React.FC<NoteButtonProps & { onOpenNote: () => void }> = ({ co
           globalClickBlockTimeout = setTimeout(() => {
             globalClickBlocked = false;
           }, 100);
-          
+
           onOpenNote();
         }}
       >
@@ -482,11 +482,11 @@ const GroupedContentDisplay = ({
     const ungroupedContent: Content[] = [];
     const groupCards: Content[] = [];
     const groupedContentMap: { [groupId: string]: Content[] } = {};
-    
+
     // First, separate all content by type
     const allUngroupedContent: Content[] = [];
     const allGroupCards: Content[] = [];
-    
+
     topicContent.forEach(content => {
       if (content.prompt === "groupcard") {
         // This is a group header card - always goes to group cards
@@ -504,21 +504,21 @@ const GroupedContentDisplay = ({
         groupedContentMap[content.contentgroup].push(content);
       }
     });
-    
+
     // Sort ungrouped content by order, with NULL/undefined values treated as very high numbers so they appear last among ungrouped
     allUngroupedContent.sort((a, b) => {
       const aOrder = (a.order !== null && a.order !== undefined && a.order !== '') ? parseInt(a.order) : 999999;
       const bOrder = (b.order !== null && b.order !== undefined && b.order !== '') ? parseInt(b.order) : 999999;
       return aOrder - bOrder;
     });
-    
+
     // Sort group cards by order, with NULL/undefined values treated as very high numbers
     allGroupCards.sort((a, b) => {
       const aOrder = (a.order !== null && a.order !== undefined && a.order !== '') ? parseInt(a.order) : 999999;
       const bOrder = (b.order !== null && b.order !== undefined && b.order !== '') ? parseInt(b.order) : 999999;
       return aOrder - bOrder;
     });
-    
+
     // Sort grouped content within each group
     Object.keys(groupedContentMap).forEach(groupId => {
       groupedContentMap[groupId].sort((a, b) => {
@@ -527,10 +527,10 @@ const GroupedContentDisplay = ({
         return aOrder - bOrder;
       });
     });
-    
+
     ungroupedContent.push(...allUngroupedContent);
     groupCards.push(...allGroupCards);
-    
+
     return { ungroupedContent, groupCards, groupedContentMap };
   }, [topicContent]);
 
@@ -862,7 +862,17 @@ const TopicListItem = ({
     isGroupCardExpanded,
     activeContentId
 }: TopicListItemProps) => {
-    const { hasMatchingActivities } = useTopicMatching(topic.id);
+    const { topicMatching, isLoading: isMatchingLoading } = useTopicMatching(topic.id);
+
+  // Fetch content ratings for filtering
+  const { data: contentRatings } = useQuery({
+    queryKey: ['/api/content-ratings/GV0002'],
+    queryFn: async () => {
+      const response = await fetch('/api/content-ratings/GV0002');
+      if (!response.ok) return [];
+      return response.json();
+    },
+  });
 
     let topicImageUrl: string | undefined | null = null;
     if (allImages && topicContent.length > 0) {
@@ -1027,32 +1037,32 @@ const TopicListItem = ({
                                   );
                                   return !belongsToGroup;
                                 });
-                                
+
                                 // Sort displayable content with group cards at end
                                 const sortedContent = displayableContent.sort((a, b) => {
                                   const isGroupCardA = a.prompt === "groupcard";
                                   const isGroupCardB = b.prompt === "groupcard";
-                                  
+
                                   // Group cards always go to the end
                                   if (isGroupCardA && !isGroupCardB) return 1;
                                   if (!isGroupCardA && isGroupCardB) return -1;
-                                  
+
                                   // For non-group cards, sort by order then title
                                   if (!isGroupCardA && !isGroupCardB) {
                                     const orderA = (a.order && a.order !== '') ? parseInt(a.order) : 999999;
                                     const orderB = (b.order && b.order !== '') ? parseInt(b.order) : 999999;
-                                    
+
                                     if (orderA !== orderB) {
                                       return orderA - orderB;
                                     }
                                   }
-                                  
+
                                   // For items with same order or both group cards, use title for stable sort
                                   const titleA = (a.title || '').toLowerCase();
                                   const titleB = (b.title || '').toLowerCase();
                                   return titleA.localeCompare(titleB);
                                 });
-                                
+
                                 return sortedContent;
                               })()
                                 .map(content => {
@@ -1126,16 +1136,16 @@ const TopicListItem = ({
                                                       <HelpCircle className="h-3 w-3" />
                                                     </Button>
                                                   </div>
-                                                  
+
                                                   {/* Centered title */}
                                                   <div className="flex-1 text-center">
                                                     <h4 className="text-base font-medium leading-tight" style={{ color: '#ffff78e6' }}>{content.title}</h4>
                                                   </div>
-                                                  
+
                                                   {/* Empty div for balance */}
                                                   <div className="w-[42px]"></div>
                                                 </div>
-                                                
+
                                                 {/* Thumbnail Gallery for Group Cards - hidden when expanded */}
                                                 {!isGroupExpanded && (
                                                   <ContentThumbnailGallery 
@@ -1143,7 +1153,7 @@ const TopicListItem = ({
                                                     onContentClick={onContentClick}
                                                   />
                                                 )}
-                                                
+
                                                 {/* Description at bottom for group cards - hidden when expanded */}
                                                 {!isGroupExpanded && content.short_description && (
                                                   <div className="text-white/60 text-sm leading-relaxed mt-1 text-center">
@@ -1397,7 +1407,7 @@ const TopicListItem = ({
                                                 const { videoData: currentVideoData, video2Data: currentVideo2Data, videoEmbedUrl: currentVideoEmbedUrl, video2EmbedUrl: currentVideo2EmbedUrl } = useContentMedia(currentContent);
                                                 const currentHasVideo1 = currentVideoEmbedUrl && currentVideoData;
                                                 const currentHasVideo2 = currentVideo2EmbedUrl && currentVideo2Data;
-                                                
+
                                                 return (
                                                   <>
                                                     {currentHasVideo1 && (
