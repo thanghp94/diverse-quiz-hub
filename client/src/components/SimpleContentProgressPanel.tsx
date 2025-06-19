@@ -18,6 +18,7 @@ interface SimpleContentRating {
   content_id: string;
   rating: string;
   personal_note: string | null;
+  view_count?: number;
   created_at: string;
 }
 

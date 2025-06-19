@@ -470,6 +470,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get student tries count for content optimization
+  app.get("/api/student-tries-count/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const { contentIds } = req.query;
+      
+      if (!contentIds) {
+        return res.json({});
+      }
+      
+      const contentIdArray = typeof contentIds === 'string' ? contentIds.split(',') : Array.isArray(contentIds) ? contentIds : [];
+      
+      // Use storage method for optimized student tries count
+      const allStudentTries = await storage.getAllStudentTries();
+      const triesCount: Record<string, number> = {};
+      
+      allStudentTries
+        .filter((studentTry: any) => 
+          studentTry.student_id === studentId && 
+          studentTry.question_id && 
+          contentIdArray.includes(studentTry.question_id)
+        )
+        .forEach((studentTry: any) => {
+          if (studentTry.question_id) {
+            triesCount[studentTry.question_id] = (triesCount[studentTry.question_id] || 0) + 1;
+          }
+        });
+      
+      res.json(triesCount);
+    } catch (error) {
+      console.error('Error fetching student tries count:', error);
+      res.status(500).json({ error: 'Failed to fetch student tries count' });
+    }
+  });
+
   app.get("/api/content-ratings/:studentId/:contentId", async (req, res) => {
     try {
       const rating = await storage.getContentRating(req.params.studentId, req.params.contentId);
