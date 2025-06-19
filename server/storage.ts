@@ -128,6 +128,24 @@ export interface IStorage {
 
   // Access Requests
   createPendingAccessRequest(request: any): Promise<any>;
+
+  // Enhanced Content Rating System
+  createContentView(contentView: InsertContentView): Promise<ContentView>;
+  createEnhancedContentRating(rating: InsertEnhancedContentRating): Promise<EnhancedContentRating>;
+  createQuizAttempt(attempt: InsertQuizAttempt): Promise<QuizAttempt>;
+
+  // Student Badge System
+  getStudentBadges(studentId: string): Promise<StudentBadge[]>;
+  updateStudentBadge(studentId: string, badgeType: string): Promise<void>;
+
+  // Teaching Session Management
+  createTeachingSession(session: InsertTeachingSession): Promise<TeachingSession>;
+  getTeachingSessions(teacherId: string): Promise<TeachingSession[]>;
+  addSessionParticipant(participant: InsertSessionParticipant): Promise<SessionParticipant>;
+  getSessionActivities(sessionId: string): Promise<SessionActivity[]>;
+  getSessionRealTimeStats(sessionId: string): Promise<any>;
+  updateSessionStatus(sessionId: string, status: string): Promise<TeachingSession>;
+  recordSessionActivity(activity: InsertSessionActivity): Promise<SessionActivity>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1222,6 +1240,170 @@ export class DatabaseStorage implements IStorage {
       const [result] = await db.insert(pending_access_requests)
         .values(request)
         .returning();
+      return result;
+    });
+  }
+
+  // Enhanced Content Rating System
+  async createContentView(contentView: InsertContentView): Promise<ContentView> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(content_views)
+        .values(contentView)
+        .returning();
+      return result;
+    });
+  }
+
+  async createEnhancedContentRating(rating: InsertEnhancedContentRating): Promise<EnhancedContentRating> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(enhanced_content_ratings)
+        .values(rating)
+        .returning();
+      return result;
+    });
+  }
+
+  async createQuizAttempt(attempt: InsertQuizAttempt): Promise<QuizAttempt> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(quiz_attempts)
+        .values(attempt)
+        .returning();
+      return result;
+    });
+  }
+
+  // Student Badge System
+  async getStudentBadges(studentId: string): Promise<StudentBadge[]> {
+    return this.executeWithRetry(async () => {
+      return db.select().from(student_badges).where(eq(student_badges.student_id, studentId));
+    });
+  }
+
+  async updateStudentBadge(studentId: string, badgeType: string): Promise<void> {
+    return this.executeWithRetry(async () => {
+      // Check if badge exists
+      const existingBadge = await db.select()
+        .from(student_badges)
+        .where(and(
+          eq(student_badges.student_id, studentId),
+          eq(student_badges.badge_type, badgeType)
+        ));
+
+      if (existingBadge.length > 0) {
+        // Update progress
+        await db.update(student_badges)
+          .set({ 
+            progress: sql`${student_badges.progress} + 1`,
+            updated_at: new Date()
+          })
+          .where(and(
+            eq(student_badges.student_id, studentId),
+            eq(student_badges.badge_type, badgeType)
+          ));
+      } else {
+        // Create new badge
+        await db.insert(student_badges)
+          .values({
+            id: crypto.randomUUID(),
+            student_id: studentId,
+            badge_type: badgeType,
+            progress: 1,
+            earned_at: null,
+            created_at: new Date(),
+            updated_at: new Date()
+          });
+      }
+    });
+  }
+
+  // Teaching Session Management
+  async createTeachingSession(session: InsertTeachingSession): Promise<TeachingSession> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(teaching_sessions)
+        .values(session)
+        .returning();
+      return result;
+    });
+  }
+
+  async getTeachingSessions(teacherId: string): Promise<TeachingSession[]> {
+    return this.executeWithRetry(async () => {
+      return db.select()
+        .from(teaching_sessions)
+        .where(eq(teaching_sessions.teacher_id, teacherId))
+        .orderBy(desc(teaching_sessions.created_at));
+    });
+  }
+
+  async addSessionParticipant(participant: InsertSessionParticipant): Promise<SessionParticipant> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(session_participants)
+        .values(participant)
+        .returning();
+      return result;
+    });
+  }
+
+  async getSessionActivities(sessionId: string): Promise<SessionActivity[]> {
+    return this.executeWithRetry(async () => {
+      return db.select()
+        .from(session_activities)
+        .where(eq(session_activities.session_id, sessionId))
+        .orderBy(desc(session_activities.created_at));
+    });
+  }
+
+  async getSessionRealTimeStats(sessionId: string): Promise<any> {
+    return this.executeWithRetry(async () => {
+      const participants = await db.select()
+        .from(session_participants)
+        .where(eq(session_participants.session_id, sessionId));
+
+      const activities = await db.select()
+        .from(session_activities)
+        .where(eq(session_activities.session_id, sessionId));
+
+      const activeParticipants = participants.filter(p => p.is_active).length;
+      const totalActivities = activities.length;
+      const recentActivities = activities.slice(0, 10);
+
+      return {
+        participants: participants.length,
+        activeParticipants,
+        totalActivities,
+        recentActivities,
+        lastActivity: activities[0]?.created_at || null
+      };
+    });
+  }
+
+  async updateSessionStatus(sessionId: string, status: string): Promise<TeachingSession> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.update(teaching_sessions)
+        .set({ 
+          status,
+          end_time: status === 'ended' ? new Date() : null
+        })
+        .where(eq(teaching_sessions.id, sessionId))
+        .returning();
+      return result;
+    });
+  }
+
+  async recordSessionActivity(activity: InsertSessionActivity): Promise<SessionActivity> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(session_activities)
+        .values(activity)
+        .returning();
+
+      // Update participant last activity
+      await db.update(session_participants)
+        .set({ last_activity: new Date() })
+        .where(and(
+          eq(session_participants.session_id, activity.session_id),
+          eq(session_participants.student_id, activity.student_id)
+        ));
+
       return result;
     });
   }
