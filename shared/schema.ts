@@ -329,6 +329,7 @@ export const insertLearningProgressSchema = createInsertSchema(learning_progress
 export const insertCronJobSchema = createInsertSchema(cron_jobs);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type Topic = typeof topics.$inferSelect;
 export type Content = typeof content.$inferSelect;

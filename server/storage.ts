@@ -1,4 +1,4 @@
-import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, cron_jobs, student_try_content, type User, type InsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress, type CronJob, type InsertCronJob } from "@shared/schema";
+import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, cron_jobs, student_try_content, type User, type InsertUser, type UpsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress, type CronJob, type InsertCronJob } from "@shared/schema";
 import { db } from "./db";
 import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
@@ -10,6 +10,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
 
   // Topics
   getTopics(): Promise<Topic[]>;
@@ -166,6 +167,26 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(users).values(insertUser).returning();
     return result[0];
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    return await this.executeWithRetry(async () => {
+      const [user] = await db
+        .insert(users)
+        .values(userData)
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            email: userData.email,
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            profile_image_url: userData.profileImageUrl,
+            updated_at: new Date(),
+          },
+        })
+        .returning();
+      return user;
+    });
   }
 
   // Topics
