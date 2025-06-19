@@ -54,7 +54,7 @@ const ContentPopup = ({
            !Array.isArray(dict) &&
            Object.values(dict as Record<string, unknown>).every(val => typeof val === 'string');
   };
-  
+
   // All hooks must be called before any conditional returns
   const {
     quizMode,
@@ -81,13 +81,28 @@ const ContentPopup = ({
 
   // Track content access when popup opens
   useEffect(() => {
-    if (isOpen && content) {
-      const currentUserId = getCurrentUserId();
-      if (currentUserId) {
-        trackContentAccess(currentUserId, content.id);
-      }
+    if (isOpen && content && user?.id) {
+      console.log(`Tracking content access for student ${user.id}, content ${content.id}`);
+      // Track content access
+      fetch('/api/content-access', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          student_id: user.id,
+          content_id: content.id,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Content access tracked successfully:', data);
+      })
+      .catch(error => {
+        console.error('Failed to track content access:', error);
+      });
     }
-  }, [isOpen, content?.id]);
+  }, [isOpen, content, user]);
 
   // Reset modal states when popup opens/closes or content changes
   useEffect(() => {
@@ -261,7 +276,7 @@ const ContentPopup = ({
                           console.log('Image loaded successfully:', content.imageid);
                           const img = e.target as HTMLImageElement;
                           const aspectRatio = img.naturalWidth / img.naturalHeight;
-                          
+
                           // If horizontal (landscape), fit to width
                           if (aspectRatio > 1.2) {
                             img.style.width = '100%';
@@ -308,7 +323,7 @@ const ContentPopup = ({
                       )}
                     </div>
                   )}
-                  
+
                   {/* Videos Section - Center single video, side-by-side for two videos */}
                   {(videoEmbedUrl || video2EmbedUrl) && (
                     <div className={`mt-4 ${videoEmbedUrl && video2EmbedUrl ? 'grid grid-cols-2 gap-3' : 'flex justify-center'}`}>
@@ -402,9 +417,9 @@ const ContentPopup = ({
               {/* Content Editor - Admin Only Dropdown */}
               {(() => {
                 const isAuthorized = user && typeof user === 'object' && user !== null && 'id' in user && (user as any).id === 'GV0002';
-                
+
                 if (!isAuthorized) return null;
-                
+
                 return (
                   <div className="mt-6 pt-4 border-t">
                     <button 

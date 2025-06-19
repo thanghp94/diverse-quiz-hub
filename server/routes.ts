@@ -699,8 +699,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { student_id, content_id } = req.body;
       
+      console.log(`Content access tracking called: Student ${student_id}, Content ${content_id}`);
+      
       if (!student_id || !content_id) {
         return res.status(400).json({ error: 'student_id and content_id are required' });
+      }
+
+      // Also record in student_try_content table for proper content tracking
+      try {
+        const studentTryContentRecord = {
+          id: crypto.randomUUID(),
+          contentid: content_id,
+          hocsinh_id: student_id,
+          student_try_id: crypto.randomUUID(),
+          time_start: new Date(),
+          time_end: new Date(),
+          update: `Content viewed at ${new Date().toISOString()}`
+        };
+
+        // Insert into student_try_content table
+        await storage.createStudentTryContent(studentTryContentRecord);
+        console.log(`Student try content record created for Student ${student_id}, Content ${content_id}`);
+      } catch (contentError) {
+        console.error('Error creating student_try_content record:', contentError);
       }
 
       // Check if this content has already been accessed by this student
@@ -1233,6 +1254,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating student tracking:', error);
       res.status(500).json({ error: 'Failed to update student tracking' });
+    }
+  });
+
+  // Student Try Content Debug API
+  app.get("/api/student-try-content/:studentId", async (req, res) => {
+    try {
+      const studentTryContentRecords = await storage.getStudentTryContentByStudent(req.params.studentId);
+      res.json(studentTryContentRecords);
+    } catch (error) {
+      console.error('Error fetching student try content:', error);
+      res.status(500).json({ error: 'Failed to fetch student try content' });
+    }
+  });
+
+  app.get("/api/student-try-content", async (req, res) => {
+    try {
+      const recentRecords = await storage.getRecentStudentTryContent();
+      res.json(recentRecords);
+    } catch (error) {
+      console.error('Error fetching recent student try content:', error);
+      res.status(500).json({ error: 'Failed to fetch recent student try content' });
     }
   });
 

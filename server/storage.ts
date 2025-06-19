@@ -129,6 +129,11 @@ export interface IStorage {
   // Access Requests
   createPendingAccessRequest(request: any): Promise<any>;
 
+  // Student Try Content
+  createStudentTryContent(record: any): Promise<any>;
+  getStudentTryContentByStudent(studentId: string): Promise<any[]>;
+  getRecentStudentTryContent(): Promise<any[]>;
+
   // Live Class Monitoring
   getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]>;
 }
@@ -1223,6 +1228,36 @@ export class DatabaseStorage implements IStorage {
       const [result] = await db.insert(pending_access_requests)
         .values(request)
         .returning();
+      return result;
+    });
+  }
+
+  async createStudentTryContent(record: any): Promise<any> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(student_try_content)
+        .values(record)
+        .returning();
+      return result;
+    });
+  }
+
+  async getStudentTryContentByStudent(studentId: string): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select()
+        .from(student_try_content)
+        .where(eq(student_try_content.hocsinh_id, studentId))
+        .orderBy(desc(student_try_content.time_start))
+        .limit(20);
+      return result;
+    });
+  }
+
+  async getRecentStudentTryContent(): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select()
+        .from(student_try_content)
+        .orderBy(desc(student_try_content.time_start))
+        .limit(10);
       return result;
     });
   }
