@@ -1266,22 +1266,23 @@ export class DatabaseStorage implements IStorage {
           
           UNION ALL
           
-          -- Quiz attempts from student_try
+          -- Quiz attempts from student_try (note: student_try doesn't have contentid, using question-based approach)
           SELECT 
             st.hocsinh_id as student_id,
             u.first_name || ' ' || u.last_name as student_name,
             'quiz_attempt' as activity_type,
-            st.contentid as content_id,
+            q.contentid as content_id,
             c.title as content_title,
             st.time_start as timestamp,
             NULL as rating,
             CASE 
-              WHEN st.total_questions > 0 THEN ROUND((st.correct_answers::numeric / st.total_questions::numeric) * 100, 1)
+              WHEN st.score IS NOT NULL THEN st.score::numeric
               ELSE NULL 
             END as quiz_score
           FROM student_try st
           JOIN users u ON st.hocsinh_id = u.id
-          JOIN content c ON st.contentid = c.id
+          JOIN questions q ON st.question_id = q.id
+          JOIN content c ON q.contentid = c.id
           WHERE st.hocsinh_id = ANY(${studentIds}) 
             AND st.time_start >= ${startTime}
         )
