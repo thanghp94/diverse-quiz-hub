@@ -1227,82 +1227,19 @@ export class DatabaseStorage implements IStorage {
 
   async getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]> {
     return this.executeWithRetry(async () => {
-      // Query for student activities from multiple tables to get comprehensive data
-      // Create SQL query with proper parameter substitution
-      const studentIdList = studentIds.map((_, index) => `$${index + 1}`).join(',');
-      const query = `
-        WITH student_activities AS (
-          -- Content views from student_try_content
-          SELECT 
-            stc.hocsinh_id as student_id,
-            COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name,
-            'content_view' as activity_type,
-            c.id as content_id,
-            c.title as content_title,
-            stc.time_start::timestamp as timestamp,
-            NULL::text as rating,
-            NULL::numeric as quiz_score
-          FROM student_try_content stc
-          JOIN users u ON stc.hocsinh_id = u.id
-          JOIN content c ON stc.contentid = c.id
-          WHERE stc.hocsinh_id IN (${studentIdList}) 
-            AND stc.time_start::timestamp >= $${studentIds.length + 1}::timestamp
-          
-          UNION ALL
-          
-          -- Content ratings
-          SELECT 
-            cr.student_id,
-            COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name,
-            'content_rating' as activity_type,
-            cr.content_id,
-            c.title as content_title,
-            cr.created_at::timestamp as timestamp,
-            cr.rating::text as rating,
-            NULL::numeric as quiz_score
-          FROM content_ratings cr
-          JOIN users u ON cr.student_id = u.id
-          JOIN content c ON cr.content_id = c.id
-          WHERE cr.student_id = ANY($1::text[]) 
-            AND cr.created_at::timestamp >= $2::timestamp
-          
-          UNION ALL
-          
-          -- Quiz attempts from student_try (note: student_try doesn't have contentid, using question-based approach)
-          SELECT 
-            st.hocsinh_id as student_id,
-            COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name,
-            'quiz_attempt' as activity_type,
-            q.contentid as content_id,
-            c.title as content_title,
-            st.time_start::timestamp as timestamp,
-            NULL::text as rating,
-            CASE 
-              WHEN st.score IS NOT NULL THEN st.score::numeric
-              ELSE NULL 
-            END as quiz_score
-          FROM student_try st
-          JOIN users u ON st.hocsinh_id = u.id
-          JOIN questions q ON st.question_id = q.id
-          JOIN content c ON q.contentid = c.id
-          WHERE st.hocsinh_id = ANY($1::text[]) 
-            AND st.time_start::timestamp >= $2::timestamp
-        )
-        -- Simplified query - just get student basic info
-        SELECT 
-          u.id as student_id,
-          COALESCE(u.full_name, u.first_name || ' ' || u.last_name) as student_name
-        FROM users u
-        WHERE u.id = ANY(ARRAY[${studentIds.map(id => `'${id}'`).join(',')}])
-      `;
-
-      // Execute the basic query first to get student info
-      const basicResults = await db.execute(sql.raw(query));
-      
-      // Then get detailed data for each student
       const results = [];
-      for (const row of basicResults.rows) {
-        const studentId = (row as any).student_id;
+      
+      // Process each student individually to avoid complex query parameter issues
+      for (const studentId of studentIds) {
+        // Get student info
+        const studentInfo = await db.execute(sql`
+          SELECT id, COALESCE(full_name, first_name || ' ' || last_name) as student_name
+          FROM users WHERE id = ${studentId}
+        `);
+        
+        if (studentInfo.rows.length === 0) continue;
+        
+        const student = studentInfo.rows[0] as any;
         
         // Get content views count
         const contentViews = await db.execute(sql`
@@ -1338,8 +1275,8 @@ export class DatabaseStorage implements IStorage {
         `);
         
         results.push({
-          student_id: (row as any).student_id,
-          student_name: (row as any).student_name,
+          student_id: student.id,
+          student_name: student.student_name,
           content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
           content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
           quiz_accuracy: null,
