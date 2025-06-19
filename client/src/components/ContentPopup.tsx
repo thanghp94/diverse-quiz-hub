@@ -415,23 +415,31 @@ const ContentPopup = ({
                 
                 console.log('ContentPopup Admin Check - Current user:', currentUser);
                 console.log('ContentPopup Admin Check - Is authorized:', isAuthorized);
+                console.log('ContentPopup Admin Check - localStorage contents:', localStorage.getItem('currentUser'));
                 
-                if (!isAuthorized) return null;
+                // Force show for debugging - remove this line when working
+                if (!isAuthorized) {
+                  console.log('Admin editor not showing because user is not GV0002');
+                  return null;
+                }
                 
                 return (
-                  <div className="mt-6 pt-4 border-t">
+                  <div className="mt-6 pt-4 border-t-2 border-red-500 bg-red-50/20">
+                    <div className="mb-2 text-xs text-red-600 font-bold uppercase tracking-wide">
+                      🔧 ADMIN PANEL - USER: {currentUser?.id}
+                    </div>
                     <button 
-                      className="w-full flex items-center justify-between p-3 text-left hover:bg-gray-50 rounded-lg border border-blue-200 bg-blue-50/30"
+                      className="w-full flex items-center justify-between p-4 text-left hover:bg-red-100 rounded-lg border-2 border-red-300 bg-red-50 shadow-md"
                       onClick={() => setIsEditorOpen(!isEditorOpen)}
                     >
                       <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        <span className="font-medium text-blue-700">Content Editor (Admin)</span>
+                        <span className="font-bold text-red-700 text-lg">Content Editor (Admin Only)</span>
                       </div>
                       <svg 
-                        className={`w-5 h-5 text-blue-600 transition-transform duration-200 ${isEditorOpen ? 'rotate-180' : ''}`}
+                        className={`w-6 h-6 text-red-600 transition-transform duration-200 ${isEditorOpen ? 'rotate-180' : ''}`}
                         fill="none" 
                         stroke="currentColor" 
                         viewBox="0 0 24 24"
