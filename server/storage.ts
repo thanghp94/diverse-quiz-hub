@@ -1298,16 +1298,30 @@ export class DatabaseStorage implements IStorage {
         const quizStats = await db.execute(sql`
           SELECT 
             COUNT(*) as total_attempts,
-            COUNT(CASE WHEN st.quiz_result = '✅' THEN 1 END) as correct_answers
+            COUNT(CASE WHEN st.quiz_result = '✅' THEN 1 END) as correct_answers,
+            COUNT(CASE WHEN st.quiz_result = '❌' THEN 1 END) as incorrect_answers
           FROM student_try st
           WHERE st.hocsinh_id = ${studentId} 
             AND st.time_start >= ${startTime}
             AND st.time_start IS NOT NULL
+            AND st.quiz_result IS NOT NULL
+            AND st.quiz_result != ''
         `);
         
         const totalQuizzes = parseInt((quizStats.rows[0] as any)?.total_attempts) || 0;
         const correctAnswers = parseInt((quizStats.rows[0] as any)?.correct_answers) || 0;
+        const incorrectAnswers = parseInt((quizStats.rows[0] as any)?.incorrect_answers) || 0;
         const quizAccuracy = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : null;
+        
+        // Debug logging for quiz accuracy
+        if (totalQuizzes > 0) {
+          console.log(`Student ${studentId} quiz stats:`, {
+            total: totalQuizzes,
+            correct: correctAnswers,
+            incorrect: incorrectAnswers,
+            accuracy: quizAccuracy
+          });
+        }
         
         // Get recent activities - simplified approach
         const allActivities: any[] = [];
