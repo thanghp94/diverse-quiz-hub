@@ -1,305 +1,303 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, CheckCircle, AlertCircle } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, Users, BookOpen, Star, Clock, Filter } from 'lucide-react';
+import { format } from 'date-fns';
 
-interface Assignment {
+interface Student {
   id: string;
-  assignmentname: string;
-  description: string;
-  expiring_date: string;
-  category: string;
-  status: string;
-  noofquestion: number;
+  first_name: string;
+  last_name: string;
 }
 
-interface StudentProgress {
-  assignment_student_try: {
-    id: number;
-    assignmentid: string;
-    hocsinh_id: string;
-    start_time: string;
-    end_time: string | null;
-    typeoftaking: string;
-  };
-  student_tries: {
-    id: string;
-    question_id: string;
-    answer_choice: string;
-    quiz_result: string;
-    score: number;
-    currentindex: number;
-  } | null;
-  user: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    full_name: string;
-    email: string;
-  } | null;
+interface StudentActivity {
+  student_id: string;
+  student_name: string;
+  content_viewed: number;
+  content_rated: number;
+  quiz_accuracy: number;
+  last_activity: string;
+  activities: Array<{
+    type: 'content_view' | 'content_rating' | 'quiz_attempt';
+    content_id: string;
+    content_title: string;
+    timestamp: string;
+    rating?: string;
+    quiz_score?: number;
+  }>;
 }
 
-interface QuizProgress {
-  id: string;
-  question_id: string;
-  answer_choice: string;
-  quiz_result: string;
-  score: number;
-  time_start: string;
-  time_end: string;
-  currentindex: number;
+interface LiveClassMonitorProps {
+  startTime?: string;
 }
 
-export const LiveClassMonitor = () => {
-  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  const [showProgressDialog, setShowProgressDialog] = useState(false);
+export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime }) => {
+  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
+  const [monitorStartTime, setMonitorStartTime] = useState(startTime || new Date().toISOString());
+  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [showActivityDetails, setShowActivityDetails] = useState<string | null>(null);
 
-  // Fetch live assignments within 3 hours
-  const { data: liveAssignments = [], isLoading: assignmentsLoading, refetch: refetchAssignments } = useQuery({
-    queryKey: ['/api/live-assignments'],
-    queryFn: () => fetch('/api/live-assignments').then(res => res.json()),
+  // Fetch all students
+  const { data: allStudents = [], isLoading: studentsLoading } = useQuery({
+    queryKey: ['/api/users'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Fetch student progress for selected assignment
-  const { data: studentProgress = [], isLoading: progressLoading } = useQuery<StudentProgress[]>({
-    queryKey: ['/api/assignments', selectedAssignment?.id, 'progress'],
-    queryFn: () => fetch(`/api/assignments/${selectedAssignment?.id}/progress`).then(res => res.json()),
-    enabled: !!selectedAssignment,
-    refetchInterval: 10000, // Refresh every 10 seconds
+  // Fetch student activities (only when monitoring is active)
+  const { data: studentActivities = [], isLoading: activitiesLoading } = useQuery({
+    queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
+    enabled: isMonitoring && selectedStudents.length > 0,
+    refetchInterval: 5000, // Refresh every 5 seconds for live updates
   });
 
-  const getVietnamTime = () => {
-    const now = new Date();
-    return new Date(now.getTime() + (7 * 60 * 60 * 1000));
-  };
-
-  const formatTimeRemaining = (expiringDate: string) => {
-    const vietnamTime = getVietnamTime();
-    const expiry = new Date(expiringDate);
-    const timeDiff = expiry.getTime() - vietnamTime.getTime();
-    
-    if (timeDiff <= 0) return 'Expired';
-    
-    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m remaining`;
-    }
-    return `${minutes}m remaining`;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'bg-green-500';
-      case 'pending':
-        return 'bg-yellow-500';
-      case 'completed':
-        return 'bg-blue-500';
-      default:
-        return 'bg-gray-500';
-    }
-  };
-
-  const handleAssignmentClick = (assignment: Assignment) => {
-    setSelectedAssignment(assignment);
-    setShowProgressDialog(true);
-  };
-
-  const calculateProgress = (progress: StudentProgress[]) => {
-    const activeStudents = progress.filter(p => p.assignment_student_try.end_time === null).length;
-    const completedStudents = progress.filter(p => p.assignment_student_try.end_time !== null).length;
-    return { activeStudents, completedStudents, totalStudents: progress.length };
-  };
-
-  if (assignmentsLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
-            Live Class Monitor
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-4">Loading live assignments...</div>
-        </CardContent>
-      </Card>
+  const handleStudentToggle = (studentId: string) => {
+    setSelectedStudents(prev => 
+      prev.includes(studentId) 
+        ? prev.filter(id => id !== studentId)
+        : [...prev, studentId]
     );
-  }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedStudents.length === allStudents.length) {
+      setSelectedStudents([]);
+    } else {
+      setSelectedStudents(allStudents.map((s: Student) => s.id));
+    }
+  };
+
+  const startMonitoring = () => {
+    if (selectedStudents.length === 0) return;
+    setMonitorStartTime(new Date().toISOString());
+    setIsMonitoring(true);
+  };
+
+  const stopMonitoring = () => {
+    setIsMonitoring(false);
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'content_view': return 'bg-blue-100 text-blue-800';
+      case 'content_rating': return 'bg-green-100 text-green-800';
+      case 'quiz_attempt': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatTime = (timestamp: string) => {
+    return format(new Date(timestamp), 'HH:mm:ss');
+  };
 
   return (
-    <>
+    <div className="space-y-6">
+      {/* Header and Controls */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+            <Users className="h-6 w-6" />
             Live Class Monitor
-            <Badge variant="outline">{liveAssignments?.length || 0} Active</Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {!liveAssignments || liveAssignments.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <AlertCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No live assignments within the last 3 hours</p>
-              <p className="text-sm mt-1">Vietnam Time: {getVietnamTime().toLocaleString()}</p>
+        <CardContent className="space-y-4">
+          {/* Student Selection */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Select Students to Monitor:</label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAll}
+                disabled={studentsLoading}
+              >
+                {selectedStudents.length === allStudents.length ? 'Deselect All' : 'Select All'}
+              </Button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {liveAssignments.map((assignment: Assignment) => (
-                <Card 
-                  key={assignment.id} 
-                  className="cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => handleAssignmentClick(assignment)}
-                >
-                  <CardContent className="pt-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{assignment.assignmentname}</h3>
-                        <p className="text-gray-600 text-sm mt-1">{assignment.description}</p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <Badge className={getStatusColor(assignment.status)}>
-                            {assignment.status}
-                          </Badge>
-                          <span className="text-sm text-gray-500">
-                            {assignment.noofquestion} questions
-                          </span>
-                          <span className="text-sm text-gray-500">
-                            Category: {assignment.category}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium text-blue-600">
-                          {formatTimeRemaining(assignment.expiring_date)}
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          Expires: {new Date(assignment.expiring_date).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+              {studentsLoading ? (
+                <div className="col-span-full text-center text-gray-500">Loading students...</div>
+              ) : (
+                allStudents.map((student: Student) => (
+                  <div key={student.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={student.id}
+                      checked={selectedStudents.includes(student.id)}
+                      onCheckedChange={() => handleStudentToggle(student.id)}
+                    />
+                    <label
+                      htmlFor={student.id}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                    >
+                      {student.first_name} {student.last_name}
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Monitor Controls */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">Monitor from: {format(new Date(monitorStartTime), 'MMM dd, HH:mm')}</span>
+            </div>
+            
+            {!isMonitoring ? (
+              <Button
+                onClick={startMonitoring}
+                disabled={selectedStudents.length === 0}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Start Monitoring ({selectedStudents.length} students)
+              </Button>
+            ) : (
+              <Button
+                onClick={stopMonitoring}
+                variant="destructive"
+              >
+                Stop Monitoring
+              </Button>
+            )}
+          </div>
+
+          {isMonitoring && (
+            <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-green-700">
+                Live monitoring active - Updates every 5 seconds
+              </span>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Student Progress Dialog */}
-      <Dialog open={showProgressDialog} onOpenChange={setShowProgressDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Student Progress: {selectedAssignment?.assignmentname}
-            </DialogTitle>
-          </DialogHeader>
-          
-          {progressLoading ? (
-            <div className="text-center py-8">Loading student progress...</div>
-          ) : studentProgress && studentProgress.length > 0 ? (
-            <div className="space-y-4">
-              {/* Progress Summary */}
-              <Card>
-                <CardContent className="pt-4">
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-green-600">
-                        {calculateProgress(studentProgress).activeStudents}
-                      </div>
-                      <div className="text-sm text-gray-600">Active Students</div>
+      {/* Student Activities */}
+      {isMonitoring && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Student Activity Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activitiesLoading ? (
+              <div className="text-center py-8">Loading activities...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-3">Student</th>
+                      <th className="text-left p-3">Content Viewed</th>
+                      <th className="text-left p-3">Content Rated</th>
+                      <th className="text-left p-3">Quiz Accuracy</th>
+                      <th className="text-left p-3">Last Activity</th>
+                      <th className="text-left p-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedStudents.map(studentId => {
+                      const student = allStudents.find((s: Student) => s.id === studentId);
+                      const activity = studentActivities.find((a: StudentActivity) => a.student_id === studentId);
+                      
+                      if (!student) return null;
+                      
+                      return (
+                        <tr key={studentId} className="border-b hover:bg-gray-50">
+                          <td className="p-3">
+                            <div className="font-medium">{student.first_name} {student.last_name}</div>
+                            <div className="text-sm text-gray-500">{student.id}</div>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline" className="bg-blue-50">
+                              <BookOpen className="w-3 h-3 mr-1" />
+                              {activity?.content_viewed || 0}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline" className="bg-green-50">
+                              <Star className="w-3 h-3 mr-1" />
+                              {activity?.content_rated || 0}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline" className="bg-purple-50">
+                              {activity?.quiz_accuracy ? `${activity.quiz_accuracy}%` : 'N/A'}
+                            </Badge>
+                          </td>
+                          <td className="p-3 text-sm">
+                            {activity?.last_activity ? formatTime(activity.last_activity) : 'No activity'}
+                          </td>
+                          <td className="p-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowActivityDetails(
+                                showActivityDetails === studentId ? null : studentId
+                              )}
+                              disabled={!activity?.activities?.length}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Details
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Activity Details Modal */}
+      {showActivityDetails && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>Activity Details - {allStudents.find((s: Student) => s.id === showActivityDetails)?.first_name}</span>
+              <Button variant="outline" size="sm" onClick={() => setShowActivityDetails(null)}>
+                Close
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {studentActivities
+                .find((a: StudentActivity) => a.student_id === showActivityDetails)
+                ?.activities?.map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between p-2 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <Badge className={getActivityColor(activity.type)}>
+                        {activity.type.replace('_', ' ')}
+                      </Badge>
+                      <span className="font-medium">{activity.content_title}</span>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">
-                        {calculateProgress(studentProgress).completedStudents}
-                      </div>
-                      <div className="text-sm text-gray-600">Completed</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-600">
-                        {calculateProgress(studentProgress).totalStudents}
-                      </div>
-                      <div className="text-sm text-gray-600">Total Students</div>
+                    <div className="flex items-center gap-2">
+                      {activity.rating && (
+                        <Badge variant="outline">Rating: {activity.rating}</Badge>
+                      )}
+                      {activity.quiz_score && (
+                        <Badge variant="outline">Score: {activity.quiz_score}%</Badge>
+                      )}
+                      <span className="text-sm text-gray-500">
+                        {formatTime(activity.timestamp)}
+                      </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Individual Student Progress */}
-              <div className="space-y-3">
-                {studentProgress.map((progress: StudentProgress, index: number) => (
-                  <Card key={index}>
-                    <CardContent className="pt-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-semibold text-blue-600">
-                              {progress.user?.first_name?.[0] || progress.assignment_student_try.hocsinh_id[0]}
-                            </span>
-                          </div>
-                          <div>
-                            <h4 className="font-medium">
-                              {progress.user?.full_name || progress.user?.first_name + ' ' + progress.user?.last_name || progress.assignment_student_try.hocsinh_id}
-                            </h4>
-                            <p className="text-sm text-gray-600">{progress.user?.email}</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4">
-                          {progress.student_tries && (
-                            <div className="text-right">
-                              <div className="text-sm font-medium">
-                                Question {progress.student_tries.currentindex || 1}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                Score: {progress.student_tries.score || 0}
-                              </div>
-                            </div>
-                          )}
-                          
-                          <div className="flex items-center gap-2">
-                            {progress.assignment_student_try.end_time ? (
-                              <Badge className="bg-blue-500">
-                                <CheckCircle className="h-3 w-3 mr-1" />
-                                Completed
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-green-500">
-                                <Clock className="h-3 w-3 mr-1" />
-                                In Progress
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-3 text-xs text-gray-500">
-                        Started: {new Date(progress.assignment_student_try.start_time).toLocaleString()}
-                        {progress.assignment_student_try.end_time && (
-                          <span className="ml-4">
-                            Ended: {new Date(progress.assignment_student_try.end_time).toLocaleString()}
-                          </span>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                )) || <div className="text-center text-gray-500">No activities yet</div>}
             </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No student progress data available</p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
+
+export default LiveClassMonitor;

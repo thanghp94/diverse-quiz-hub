@@ -15,6 +15,7 @@ import MarkdownRenderer from "./MarkdownRenderer";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
 import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -44,6 +45,7 @@ const ContentPopup = ({
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [modalVideoUrl, setModalVideoUrl] = useState<string | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const { user } = useAuth();
 
   // Type guard for translation dictionary
   const isValidTranslationDictionary = (dict: unknown): dict is Record<string, string> => {
@@ -399,8 +401,7 @@ const ContentPopup = ({
 
               {/* Content Editor - Admin Only Dropdown */}
               {(() => {
-                const currentUser = localStorage.getItem('currentUser');
-                const isAuthorized = currentUser ? JSON.parse(currentUser).id === 'GV0002' : false;
+                const isAuthorized = user?.id === 'GV0002';
                 
                 if (!isAuthorized) return null;
                 
