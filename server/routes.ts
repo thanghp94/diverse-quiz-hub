@@ -6,6 +6,21 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import crypto from 'crypto';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up authentication first
+  await setupAuth(app);
+
+  // Authentication routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
   // Health check endpoint
   app.get("/api/health", async (req, res) => {
     try {
@@ -46,8 +61,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Topics API
-  app.get("/api/topics", async (req, res) => {
+  // Topics API - Protected route requiring authentication
+  app.get("/api/topics", isAuthenticated, async (req, res) => {
     try {
       const topics = await storage.getTopics();
       res.json(topics);
@@ -80,8 +95,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Content API
-  app.get("/api/content", async (req, res) => {
+  // Content API - Protected routes requiring authentication
+  app.get("/api/content", isAuthenticated, async (req, res) => {
     try {
       const topicId = req.query.topicId as string;
       const content = await storage.getContent(topicId);
@@ -92,7 +107,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/content/:id", async (req, res) => {
+  app.get("/api/content/:id", isAuthenticated, async (req, res) => {
     try {
       const content = await storage.getContentById(req.params.id);
       if (!content) {
