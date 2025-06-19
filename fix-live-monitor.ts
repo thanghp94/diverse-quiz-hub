@@ -1,6 +1,6 @@
 // Temporary fix for live class monitoring storage method
 
-import { db } from './server/database';
+import { db } from './server/db';
 import { sql } from 'drizzle-orm';
 
 export async function getLiveClassActivitiesFixed(studentIds: string[], startTime: string): Promise<any[]> {

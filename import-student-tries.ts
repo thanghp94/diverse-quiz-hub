@@ -72,4 +72,4 @@ async function importStudentTries() {
   }
 }
 
-importStudentTries();
+importStudentTries().catch(console.error);

@@ -111,7 +111,7 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {isAuthenticated && user && (
+          {isAuthenticated && user && user.id && (
             <StreakDisplay 
               studentId={user.id} 
               className="text-white/90 bg-white/10 px-3 py-1 rounded-full"
@@ -132,16 +132,16 @@ const Header = () => {
                 <Button variant="ghost" className="text-white hover:bg-white/20 flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {user.full_name || user.first_name || user.id}
+                    {user.full_name || user.first_name || user.id || 'User'}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-2 py-1.5 text-sm font-medium">
-                  {user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim()}
+                  {user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'User'}
                 </div>
                 <div className="px-2 py-1 text-xs text-muted-foreground">
-                  {user.category} • {user.id}
+                  {user.category || 'Student'} • {user.id || 'Unknown'}
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
