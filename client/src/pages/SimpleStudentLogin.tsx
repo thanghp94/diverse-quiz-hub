@@ -42,27 +42,16 @@ export default function SimpleStudentLogin() {
       const result = await response.json();
 
       if (response.ok) {
-        // Invalidate auth cache to refresh authentication state
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        toast({
+          title: "Login Successful!",
+          description: "Welcome to the platform",
+        });
         
+        // Force immediate redirect
         if (result.needsEmailSetup) {
-          // Redirect to email setup page
-          toast({
-            title: "Login Successful!",
-            description: "Setting up your profile...",
-          });
-          setTimeout(() => {
-            window.location.href = "/setup-email";
-          }, 1000);
+          window.location.href = "/setup-email";
         } else {
-          // Direct access to platform
-          toast({
-            title: "Welcome Back!",
-            description: "Redirecting to learning platform...",
-          });
-          setTimeout(() => {
-            window.location.reload();
-          }, 800);
+          window.location.href = "/topics";
         }
       } else {
         toast({

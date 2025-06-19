@@ -68,16 +68,11 @@ export default function SetupEmail() {
       const result = await response.json();
 
       if (response.ok) {
-        // Invalidate auth cache to refresh user data
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        
         toast({
           title: "Email Setup Complete",
           description: "Welcome to the learning platform!",
         });
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 1000);
+        window.location.href = "/topics";
       } else {
         toast({
           title: "Setup Failed", 
@@ -107,16 +102,11 @@ export default function SetupEmail() {
       });
 
       if (response.ok) {
-        // Invalidate auth cache to refresh user data
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        
         toast({
           title: "Setup Skipped",
           description: "You can add your email later in settings.",
         });
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 800);
+        window.location.href = "/topics";
       }
     } catch (error) {
       window.location.href = "/";
