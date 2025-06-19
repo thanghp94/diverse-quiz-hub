@@ -159,7 +159,24 @@ export const SimpleContentProgressPanel = () => {
             }
           });
 
-          // Add groupcard content
+          // Add regular content that's not part of a group FIRST
+          regularContent
+            .filter(c => !c.contentgroup || !groupCards.some(gc => gc.id === c.contentgroup)) // Exclude content that's already grouped
+            .forEach((c: any) => {
+              const rating = ratingMap.get(c.id);
+              children.push({
+                id: c.id,
+                title: c.title || c.short_description || 'Untitled',
+                type: 'content',
+                rating: rating?.rating || null,
+                children: [],
+                contentData: c,
+                viewCount: rating?.view_count || 0,
+                triesCount: studentTriesCount[c.id] || 0,
+              });
+            });
+
+          // Add groupcard content AFTER regular content
           groupCards.forEach((groupCard: any) => {
             // Find related content that has contentgroup matching this groupcard's id
             const relatedContent = content.filter((c: any) => c.contentgroup === groupCard.id);
@@ -190,23 +207,6 @@ export const SimpleContentProgressPanel = () => {
               triesCount: studentTriesCount[groupCard.id] || 0,
             });
           });
-
-          // Add regular content that's not part of a group
-          regularContent
-            .filter(c => !c.contentgroup || !groupCards.some(gc => gc.id === c.contentgroup)) // Exclude content that's already grouped
-            .forEach((c: any) => {
-              const rating = ratingMap.get(c.id);
-              children.push({
-                id: c.id,
-                title: c.title || c.short_description || 'Untitled',
-                type: 'content',
-                rating: rating?.rating || null,
-                children: [],
-                contentData: c,
-                viewCount: rating?.view_count || 0,
-                triesCount: studentTriesCount[c.id] || 0,
-              });
-            });
 
           return {
             id: topic.id,
