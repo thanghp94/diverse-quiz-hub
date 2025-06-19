@@ -181,7 +181,7 @@ export const SimpleContentProgressPanel = () => {
             // Find related content that has contentgroup matching this groupcard's id
             const relatedContent = content.filter((c: any) => c.contentgroup === groupCard.id);
             
-            const groupChildren = relatedContent.map(c => {
+            const groupChildren = relatedContent.map((c: any) => {
               const rating = ratingMap.get(c.id);
               return {
                 id: c.id,

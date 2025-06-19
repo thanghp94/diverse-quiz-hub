@@ -8,6 +8,7 @@ import * as schema from "@shared/schema";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByIdentifier(identifier: string): Promise<User | undefined>;
   updateUserEmail(userId: string, newEmail: string): Promise<User>;
@@ -159,6 +160,13 @@ export class DatabaseStorage implements IStorage {
     return this.executeWithRetry(async () => {
       const result = await db.select().from(users).where(eq(users.id, id));
       return result[0];
+    });
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).orderBy(asc(users.first_name));
+      return result;
     });
   }
 
