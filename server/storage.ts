@@ -22,7 +22,7 @@ export interface IStorage {
   // Content
   getContent(topicId?: string): Promise<Content[]>;
   getContentById(id: string): Promise<Content | undefined>;
-  updateContent(id: string, updates: { short_description?: string; short_blurb?: string; imageid?: string; videoid?: string; videoid2?: string }): Promise<Content | undefined>;
+  updateContent(id: string, updates: { short_description?: string; short_blurb?: string; imageid?: string; videoid?: string; videoid2?: string; imagelink?: string }): Promise<Content | undefined>;
 
   // Content Groups
   getContentGroups(): Promise<Array<{ contentgroup: string; url: string; content_count: number }>>;
@@ -769,8 +769,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAssignmentById(id: string): Promise<any> {
-    const result = await db.select().from<replit_final_file>
-assignment).where(eq(assignment.id, id));
+    const result = await db.select().from(assignment).where(eq(assignment.id, id));
     return result[0] || null;
   }
 
@@ -997,6 +996,7 @@ assignment).where(eq(assignment.id, id));
     imageid?: string;
     videoid?: string;
     videoid2?: string;
+    imagelink?: string;
   }): Promise<Content | undefined> {
     return this.executeWithRetry(async () => {
       const result = await db.update(content)
