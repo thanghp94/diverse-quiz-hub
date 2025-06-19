@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { Mail, CheckCircle, User } from "lucide-react";
 
 export default function SetupEmail() {
@@ -11,6 +12,7 @@ export default function SetupEmail() {
   const [isLoading, setIsLoading] = useState(false);
   const [userInfo, setUserInfo] = useState<any>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     // Get current user info
@@ -66,13 +68,16 @@ export default function SetupEmail() {
       const result = await response.json();
 
       if (response.ok) {
+        // Invalidate auth cache to refresh user data
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
         toast({
           title: "Email Setup Complete",
           description: "Welcome to the learning platform!",
         });
         setTimeout(() => {
           window.location.href = "/";
-        }, 1500);
+        }, 1000);
       } else {
         toast({
           title: "Setup Failed", 
@@ -102,13 +107,16 @@ export default function SetupEmail() {
       });
 
       if (response.ok) {
+        // Invalidate auth cache to refresh user data
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
         toast({
           title: "Setup Skipped",
           description: "You can add your email later in settings.",
         });
         setTimeout(() => {
           window.location.href = "/";
-        }, 1000);
+        }, 800);
       }
     } catch (error) {
       window.location.href = "/";

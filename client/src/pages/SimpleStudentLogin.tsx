@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { BookOpen, User, Lock } from "lucide-react";
 
 export default function SimpleStudentLogin() {
@@ -11,6 +12,7 @@ export default function SimpleStudentLogin() {
   const [password, setPassword] = useState("Meraki123");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,9 +42,18 @@ export default function SimpleStudentLogin() {
       const result = await response.json();
 
       if (response.ok) {
+        // Invalidate auth cache to refresh authentication state
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        
         if (result.needsEmailSetup) {
           // Redirect to email setup page
-          window.location.href = "/setup-email";
+          toast({
+            title: "Login Successful!",
+            description: "Setting up your profile...",
+          });
+          setTimeout(() => {
+            window.location.href = "/setup-email";
+          }, 1000);
         } else {
           // Direct access to platform
           toast({
@@ -50,8 +61,8 @@ export default function SimpleStudentLogin() {
             description: "Redirecting to learning platform...",
           });
           setTimeout(() => {
-            window.location.href = "/";
-          }, 1500);
+            window.location.reload();
+          }, 800);
         }
       } else {
         toast({
