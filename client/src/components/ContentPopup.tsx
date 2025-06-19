@@ -422,7 +422,7 @@ const ContentPopup = ({
                 };
 
                 const currentUser = getCurrentUser();
-                const isAuthorized = currentUser?.id === 'GV0002';
+                const isAuthorized = currentUser?.id === 'GV0002' || authUser?.id === 'GV0002';
                 
                 console.log('=== ADMIN EDITOR DEBUG ===');
                 console.log('Auth user:', authUser);

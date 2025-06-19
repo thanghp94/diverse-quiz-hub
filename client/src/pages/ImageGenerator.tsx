@@ -25,6 +25,7 @@ export default function ImageGenerator() {
   const [selectedContent, setSelectedContent] = useState<string[]>([]);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingItems, setGeneratingItems] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
   const { data: content = [], isLoading } = useQuery<Content[]>({
@@ -61,9 +62,20 @@ export default function ImageGenerator() {
 
   const handleGenerateImage = async (contentId: string) => {
     try {
+      setGeneratingItems(prev => new Set(prev).add(contentId));
       await generateImageMutation.mutateAsync(contentId);
+      setGeneratingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(contentId);
+        return newSet;
+      });
     } catch (error) {
       console.error('Failed to generate image:', error);
+      setGeneratingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(contentId);
+        return newSet;
+      });
     }
   };
 
@@ -180,9 +192,9 @@ export default function ImageGenerator() {
                 <Button
                   size="sm"
                   onClick={() => handleGenerateImage(item.id)}
-                  disabled={generateImageMutation.isPending}
+                  disabled={generatingItems.has(item.id)}
                 >
-                  {generateImageMutation.isPending ? (
+                  {generatingItems.has(item.id) ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Wand2 className="h-4 w-4" />
