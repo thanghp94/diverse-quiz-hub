@@ -42,13 +42,13 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const [showActivityDetails, setShowActivityDetails] = useState<string | null>(null);
 
   // Fetch all students
-  const { data: allStudents = [], isLoading: studentsLoading } = useQuery({
+  const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
     queryKey: ['/api/users'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Fetch student activities (only when monitoring is active)
-  const { data: studentActivities = [], isLoading: activitiesLoading } = useQuery({
+  const { data: studentActivities = [], isLoading: activitiesLoading } = useQuery<StudentActivity[]>({
     queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
     enabled: isMonitoring && selectedStudents.length > 0,
     refetchInterval: 5000, // Refresh every 5 seconds for live updates
@@ -63,10 +63,10 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   };
 
   const handleSelectAll = () => {
-    if (selectedStudents.length === allStudents.length) {
+    if (selectedStudents.length === (allStudents as Student[]).length) {
       setSelectedStudents([]);
     } else {
-      setSelectedStudents(allStudents.map((s: Student) => s.id));
+      setSelectedStudents((allStudents as Student[]).map((s: Student) => s.id));
     }
   };
 
@@ -114,7 +114,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                 onClick={handleSelectAll}
                 disabled={studentsLoading}
               >
-                {selectedStudents.length === allStudents.length ? 'Deselect All' : 'Select All'}
+                {selectedStudents.length === (allStudents as Student[]).length ? 'Deselect All' : 'Select All'}
               </Button>
             </div>
             
@@ -122,7 +122,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
               {studentsLoading ? (
                 <div className="col-span-full text-center text-gray-500">Loading students...</div>
               ) : (
-                allStudents.map((student: Student) => (
+                (allStudents as Student[]).map((student: Student) => (
                   <div key={student.id} className="flex items-center space-x-2">
                     <Checkbox
                       id={student.id}
@@ -201,8 +201,8 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                   </thead>
                   <tbody>
                     {selectedStudents.map(studentId => {
-                      const student = allStudents.find((s: Student) => s.id === studentId);
-                      const activity = studentActivities.find((a: StudentActivity) => a.student_id === studentId);
+                      const student = (allStudents as Student[]).find((s: Student) => s.id === studentId);
+                      const activity = (studentActivities as StudentActivity[]).find((a: StudentActivity) => a.student_id === studentId);
                       
                       if (!student) return null;
                       
@@ -261,7 +261,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Activity Details - {allStudents.find((s: Student) => s.id === showActivityDetails)?.first_name}</span>
+              <span>Activity Details - {(allStudents as Student[]).find((s: Student) => s.id === showActivityDetails)?.first_name}</span>
               <Button variant="outline" size="sm" onClick={() => setShowActivityDetails(null)}>
                 Close
               </Button>

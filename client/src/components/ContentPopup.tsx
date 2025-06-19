@@ -401,7 +401,7 @@ const ContentPopup = ({
 
               {/* Content Editor - Admin Only Dropdown */}
               {(() => {
-                const isAuthorized = user?.id === 'GV0002';
+                const isAuthorized = user && typeof user === 'object' && user !== null && 'id' in user && (user as any).id === 'GV0002';
                 
                 if (!isAuthorized) return null;
                 
