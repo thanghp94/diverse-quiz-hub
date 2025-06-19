@@ -2,25 +2,23 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { BookOpen, User, Lock } from "lucide-react";
+import { Loader2, User, Lock, BookOpen, Trophy, Users, Star, Globe, Zap, Brain } from "lucide-react";
+import merakiLogo from "@assets/MERAKI new logo vo6-03_1750301582337.png";
 
 export default function SimpleStudentLogin() {
   const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("Meraki123");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!identifier.trim()) {
+    if (!identifier.trim() || !password) {
       toast({
-        title: "Required Field",
-        description: "Please enter your Student ID or Meraki Email",
+        title: "Missing Information",
+        description: "Please enter both Student ID/Email and password.",
         variant: "destructive",
       });
       return;
@@ -58,15 +56,15 @@ export default function SimpleStudentLogin() {
         }, 500);
       } else {
         toast({
-          title: "Login Failed", 
-          description: result.message || "Invalid Student ID/Email or password",
+          title: "Login Failed",
+          description: result.message || "Invalid credentials",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
         title: "Connection Error",
-        description: "Unable to connect. Please try again.",
+        description: "Unable to connect to the server. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -74,64 +72,175 @@ export default function SimpleStudentLogin() {
     }
   };
 
+  const features = [
+    { icon: BookOpen, title: "Interactive Learning", description: "Engaging content modules" },
+    { icon: Trophy, title: "Competitions", description: "Bowl & Challenge events" },
+    { icon: Users, title: "Team Building", description: "Collaborate with peers" },
+    { icon: Star, title: "Track Progress", description: "Monitor your achievements" }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <BookOpen className="h-12 w-12 text-blue-600" />
-          </div>
-          <CardTitle className="text-2xl font-bold">Student Login</CardTitle>
-          <CardDescription>
-            Enter your Student ID or Meraki Email to access learning materials
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="identifier">Student ID or Meraki Email</Label>
-              <Input
-                id="identifier"
-                type="text"
-                placeholder="Enter Student ID or Meraki Email"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                required
-                className="text-center"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="text-center"
-              />
-              <p className="text-xs text-gray-500 text-center">
-                Default password: Meraki123
-              </p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0">
+        <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-bounce"></div>
+        <div className="absolute top-40 right-20 w-16 h-16 bg-yellow-300/20 rounded-full animate-pulse"></div>
+        <div className="absolute bottom-32 left-1/4 w-12 h-12 bg-pink-300/20 rounded-full animate-bounce delay-1000"></div>
+        <div className="absolute bottom-20 right-1/3 w-14 h-14 bg-green-300/20 rounded-full animate-pulse delay-500"></div>
+        
+        {/* Floating Icons */}
+        <Globe className="absolute top-32 right-32 w-8 h-8 text-white/20 animate-spin" style={{animationDuration: '20s'}} />
+        <Zap className="absolute bottom-40 left-20 w-6 h-6 text-yellow-300/30 animate-pulse" />
+        <Brain className="absolute top-1/2 left-10 w-7 h-7 text-pink-300/30 animate-bounce" />
+      </div>
+
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
+          
+          {/* Left Side - Branding & Features */}
+          <div className="text-center lg:text-left space-y-8">
+            {/* Logo and Title */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-center lg:justify-start gap-4">
+                <img 
+                  src={merakiLogo} 
+                  alt="Meraki Skills House" 
+                  className="w-20 h-20 lg:w-24 lg:h-24 drop-shadow-lg"
+                />
+                <div>
+                  <h1 className="text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
+                    Meraki
+                  </h1>
+                  <p className="text-xl text-cyan-100 font-medium">Skills House</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h2 className="text-2xl lg:text-3xl font-semibold text-white">
+                  World Scholar Cup Excellence
+                </h2>
+                <p className="text-lg text-white/90 max-w-lg">
+                  Unlock your potential, master new skills, and join a community of global scholars ready to change the world.
+                </p>
+              </div>
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
-              <User className="h-4 w-4 mr-2" />
-              {isLoading ? "Signing In..." : "Sign In"}
-            </Button>
-          </form>
-          
-          <div className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>First time? Use your Student ID with default password.</p>
-            <p className="mt-1">You'll be prompted to set up your personal email.</p>
+            {/* Features Grid */}
+            <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto lg:mx-0">
+              {features.map((feature, index) => (
+                <div 
+                  key={index}
+                  className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 hover:bg-white/20 transition-all duration-300"
+                >
+                  <feature.icon className="w-8 h-8 text-white mb-2 mx-auto lg:mx-0" />
+                  <h3 className="font-semibold text-white text-sm">{feature.title}</h3>
+                  <p className="text-white/80 text-xs">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Stats */}
+            <div className="flex justify-center lg:justify-start gap-8 text-center">
+              <div>
+                <div className="text-2xl font-bold text-white">500+</div>
+                <div className="text-white/80 text-sm">Students</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white">50+</div>
+                <div className="text-white/80 text-sm">Topics</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-white">20+</div>
+                <div className="text-white/80 text-sm">Countries</div>
+              </div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Right Side - Login Form */}
+          <div className="flex justify-center lg:justify-end">
+            <Card className="w-full max-w-md shadow-2xl bg-white/95 backdrop-blur-sm border-0">
+              <CardHeader className="space-y-4 text-center pb-6">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                  <User className="text-white w-8 h-8" />
+                </div>
+                <div>
+                  <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back!</CardTitle>
+                  <CardDescription className="text-gray-600 mt-2">
+                    Sign in to continue your learning journey
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Student ID or Email</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Input
+                        type="text"
+                        placeholder="Enter your Student ID or Meraki Email"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">Password</label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Input
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-700 text-center">
+                        Default password: <span className="font-mono bg-blue-100 px-2 py-1 rounded text-blue-800">Meraki123</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Signing you in...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="mr-2 h-5 w-5" />
+                        Start Learning
+                      </>
+                    )}
+                  </Button>
+                </form>
+                
+                <div className="text-center space-y-3">
+                  <div className="flex items-center gap-2 justify-center text-green-600 bg-green-50 p-2 rounded-lg">
+                    <Star className="w-4 h-4" />
+                    <span className="text-sm font-medium">Ready for World Scholar Cup success!</span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Need help? Contact your teacher or administrator
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
