@@ -386,7 +386,7 @@ const ContentPopup = ({
         >
           <div className="relative max-w-full max-h-full">
             <img
-              src={imageUrl || content.imageid}
+              src={(imageUrl || content.imageid) ?? ''}
               alt={content.title}
               className="max-w-full max-h-full object-contain"
               onClick={(e) => e.stopPropagation()}
