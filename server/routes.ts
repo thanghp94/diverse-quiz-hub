@@ -134,95 +134,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/auth/google-user', (req: any, res) => {
-    const googleUser = (req.session as any).googleUser;
-    if (!googleUser) {
-      return res.status(401).json({ message: 'No Google user in session' });
-    }
-    res.json({ user: googleUser });
-  });
-
-  app.post('/api/auth/validate-student', async (req, res) => {
+  app.post('/api/auth/login', async (req, res) => {
     try {
-      const { studentId, merakiEmail } = req.body;
-      const googleUser = (req.session as any).googleUser;
+      const { identifier, password } = req.body;
 
-      if (!googleUser) {
-        return res.status(401).json({ message: 'No Google user in session' });
+      if (!identifier || !password) {
+        return res.status(400).json({ message: 'Student ID/Email and password are required' });
+      }
+
+      // Default password check
+      if (password !== 'Meraki123') {
+        return res.status(401).json({ message: 'Invalid password. Use default password: Meraki123' });
       }
 
       // Find student by Student ID or Meraki Email
-      const student = await storage.getUserByIdentifier(studentId || merakiEmail);
+      const student = await storage.getUserByIdentifier(identifier);
       
       if (!student) {
         return res.status(404).json({ message: 'Student ID or Meraki Email not found in our records' });
       }
 
-      // Link Google account to existing student record
-      const updatedStudent = await storage.updateUserEmail(student.id, googleUser.email);
-
       // Create authenticated session
-      (req.session as any).userId = updatedStudent.id;
+      (req.session as any).userId = student.id;
+      (req.session as any).user = student;
+
+      // Check if student needs to set up personal email
+      const needsEmailSetup = !student.email || student.email === student.meraki_email;
+
+      res.json({ 
+        success: true, 
+        user: student,
+        needsEmailSetup,
+        message: needsEmailSetup ? 'Please set up your personal email' : 'Login successful'
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  app.post('/api/auth/setup-email', async (req, res) => {
+    // Check authentication
+    if (!(req.session as any).userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+    try {
+      const { personalEmail } = req.body;
+      const userId = (req.session as any).userId;
+
+      if (!personalEmail) {
+        return res.status(400).json({ message: 'Personal email is required' });
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(personalEmail)) {
+        return res.status(400).json({ message: 'Invalid email format' });
+      }
+
+      // Update user's personal email
+      const updatedStudent = await storage.updateUserEmail(userId, personalEmail);
+
+      // Update session
       (req.session as any).user = updatedStudent;
-      delete (req.session as any).googleUser;
-      delete (req.session as any).needsValidation;
 
       res.json({ 
         success: true, 
         user: updatedStudent,
-        message: 'Access validated successfully'
+        message: 'Personal email saved successfully'
       });
     } catch (error) {
-      console.error('Student validation error:', error);
-      res.status(500).json({ message: 'Validation failed' });
+      console.error('Email setup error:', error);
+      res.status(500).json({ message: 'Failed to save email' });
     }
   });
 
-  app.post('/api/auth/request-access', async (req, res) => {
+  app.post('/api/auth/skip-email-setup', async (req, res) => {
+    // Check authentication
+    if (!(req.session as any).userId) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
     try {
-      const googleUser = (req.session as any).googleUser;
-
-      if (!googleUser) {
-        return res.status(401).json({ message: 'No Google user in session' });
-      }
-
-      // Send admin notification email
-      const adminNotification = {
-        to: 'admin@yourdomain.com', // Replace with actual admin email
-        subject: 'New Student Access Request',
-        html: `
-          <h2>New Student Access Request</h2>
-          <p>A student has requested access to the learning platform:</p>
-          <ul>
-            <li><strong>Name:</strong> ${googleUser.fullName}</li>
-            <li><strong>Email:</strong> ${googleUser.email}</li>
-            <li><strong>Google ID:</strong> ${googleUser.googleId}</li>
-            <li><strong>Request Time:</strong> ${new Date().toLocaleString()}</li>
-          </ul>
-          <p>Please review and approve access if this is a valid student.</p>
-        `
-      };
-
-      // Store pending access request
-      await storage.createPendingAccessRequest({
-        id: crypto.randomUUID(),
-        googleEmail: googleUser.email,
-        fullName: googleUser.fullName,
-        googleId: googleUser.googleId,
-        requestDate: new Date(),
-        status: 'pending'
-      });
-
-      // TODO: Send email notification to admin
-      console.log('Admin notification:', adminNotification);
-
       res.json({ 
         success: true,
-        message: 'Access request sent to admin'
+        message: 'Email setup skipped'
       });
     } catch (error) {
-      console.error('Access request error:', error);
-      res.status(500).json({ message: 'Failed to send access request' });
+      console.error('Skip email setup error:', error);
+      res.status(500).json({ message: 'Failed to skip email setup' });
     }
   });
 

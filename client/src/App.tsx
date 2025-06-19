@@ -5,9 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router as WouterRouter, Route, Switch } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import StudentLogin from "./pages/StudentLogin";
-import ValidateAccess from "./pages/ValidateAccess";
-import OAuthDebug from "./pages/OAuthDebug";
+import SimpleStudentLogin from "./pages/SimpleStudentLogin";
+import SetupEmail from "./pages/SetupEmail";
 import Topics from "./pages/Topics";
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
@@ -35,10 +34,9 @@ function AppRouter() {
 
   return (
     <Switch>
-      <Route path="/validate-access" component={ValidateAccess} />
-      <Route path="/oauth-debug" component={OAuthDebug} />
+      <Route path="/setup-email" component={SetupEmail} />
       {!isAuthenticated ? (
-        <Route path="/" component={StudentLogin} />
+        <Route path="/" component={SimpleStudentLogin} />
       ) : (
         <>
           <Route path="/" component={Topics} />
