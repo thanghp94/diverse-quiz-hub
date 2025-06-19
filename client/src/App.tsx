@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router as WouterRouter, Route, Switch } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import StudentLogin from "./pages/StudentLogin";
+import ValidateAccess from "./pages/ValidateAccess";
 import Topics from "./pages/Topics";
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
@@ -33,6 +34,7 @@ function AppRouter() {
 
   return (
     <Switch>
+      <Route path="/validate-access" component={ValidateAccess} />
       {!isAuthenticated ? (
         <Route path="/" component={StudentLogin} />
       ) : (

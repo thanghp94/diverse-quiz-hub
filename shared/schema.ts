@@ -312,6 +312,19 @@ export const cron_jobs = pgTable("cron_jobs", {
   created_at: timestamp("created_at").defaultNow(),
 });
 
+// Pending access requests for Google OAuth validation
+export const pending_access_requests = pgTable("pending_access_requests", {
+  id: text("id").primaryKey(),
+  google_email: text("google_email").notNull(),
+  full_name: text("full_name").notNull(),
+  google_id: text("google_id").notNull(),
+  request_date: timestamp("request_date").defaultNow(),
+  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  admin_notes: text("admin_notes"),
+  processed_at: timestamp("processed_at"),
+  processed_by: text("processed_by"),
+});
+
 export const insertUserSchema = createInsertSchema(users);
 export const insertTopicSchema = createInsertSchema(topics);
 export const insertContentSchema = createInsertSchema(content);
@@ -327,6 +340,7 @@ export const insertWritingPromptSchema = createInsertSchema(writing_prompts);
 export const insertWritingSubmissionSchema = createInsertSchema(writing_submissions);
 export const insertLearningProgressSchema = createInsertSchema(learning_progress);
 export const insertCronJobSchema = createInsertSchema(cron_jobs);
+export const insertPendingAccessRequestSchema = createInsertSchema(pending_access_requests);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UpsertUser = typeof users.$inferInsert;
@@ -353,3 +367,5 @@ export type LearningProgress = typeof learning_progress.$inferSelect;
 export type InsertLearningProgress = z.infer<typeof insertLearningProgressSchema>;
 export type CronJob = typeof cron_jobs.$inferSelect;
 export type InsertCronJob = z.infer<typeof insertCronJobSchema>;
+export type PendingAccessRequest = typeof pending_access_requests.$inferSelect;
+export type InsertPendingAccessRequest = z.infer<typeof insertPendingAccessRequestSchema>;

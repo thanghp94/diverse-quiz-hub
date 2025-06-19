@@ -134,6 +134,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/auth/google-user', (req: any, res) => {
+    const googleUser = (req.session as any).googleUser;
+    if (!googleUser) {
+      return res.status(401).json({ message: 'No Google user in session' });
+    }
+    res.json({ user: googleUser });
+  });
+
+  app.post('/api/auth/validate-student', async (req, res) => {
+    try {
+      const { studentId, merakiEmail } = req.body;
+      const googleUser = (req.session as any).googleUser;
+
+      if (!googleUser) {
+        return res.status(401).json({ message: 'No Google user in session' });
+      }
+
+      // Find student by Student ID or Meraki Email
+      const student = await storage.getUserByIdentifier(studentId || merakiEmail);
+      
+      if (!student) {
+        return res.status(404).json({ message: 'Student ID or Meraki Email not found in our records' });
+      }
+
+      // Link Google account to existing student record
+      const updatedStudent = await storage.updateUserEmail(student.id, googleUser.email);
+
+      // Create authenticated session
+      (req.session as any).userId = updatedStudent.id;
+      (req.session as any).user = updatedStudent;
+      delete (req.session as any).googleUser;
+      delete (req.session as any).needsValidation;
+
+      res.json({ 
+        success: true, 
+        user: updatedStudent,
+        message: 'Access validated successfully'
+      });
+    } catch (error) {
+      console.error('Student validation error:', error);
+      res.status(500).json({ message: 'Validation failed' });
+    }
+  });
+
+  app.post('/api/auth/request-access', async (req, res) => {
+    try {
+      const googleUser = (req.session as any).googleUser;
+
+      if (!googleUser) {
+        return res.status(401).json({ message: 'No Google user in session' });
+      }
+
+      // Send admin notification email
+      const adminNotification = {
+        to: 'admin@yourdomain.com', // Replace with actual admin email
+        subject: 'New Student Access Request',
+        html: `
+          <h2>New Student Access Request</h2>
+          <p>A student has requested access to the learning platform:</p>
+          <ul>
+            <li><strong>Name:</strong> ${googleUser.fullName}</li>
+            <li><strong>Email:</strong> ${googleUser.email}</li>
+            <li><strong>Google ID:</strong> ${googleUser.googleId}</li>
+            <li><strong>Request Time:</strong> ${new Date().toLocaleString()}</li>
+          </ul>
+          <p>Please review and approve access if this is a valid student.</p>
+        `
+      };
+
+      // Store pending access request
+      await storage.createPendingAccessRequest({
+        id: crypto.randomUUID(),
+        googleEmail: googleUser.email,
+        fullName: googleUser.fullName,
+        googleId: googleUser.googleId,
+        requestDate: new Date(),
+        status: 'pending'
+      });
+
+      // TODO: Send email notification to admin
+      console.log('Admin notification:', adminNotification);
+
+      res.json({ 
+        success: true,
+        message: 'Access request sent to admin'
+      });
+    } catch (error) {
+      console.error('Access request error:', error);
+      res.status(500).json({ message: 'Failed to send access request' });
+    }
+  });
+
   app.post('/api/auth/logout', (req, res) => {
     req.session.destroy((err) => {
       if (err) {
