@@ -87,7 +87,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                 }
                 const data = await response.json();
                 setCurrentQuestion(data as QuizQuestion);
-                setTimeStart(new Date().toTimeString().slice(0, 8));
+                setTimeStart(new Date().toISOString());
             } catch (error) {
                 console.error("Error fetching question", error);
                 toast({
@@ -202,7 +202,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
 
     const handleNext = async () => {
         if (!currentQuestion || selectedAnswer === null) return;
-        const timeEnd = new Date().toTimeString().slice(0, 8);
+        const timeEnd = new Date().toISOString();
 
         try {
             // Create new student_try record for each question response

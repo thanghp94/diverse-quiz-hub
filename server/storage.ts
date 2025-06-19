@@ -1312,19 +1312,18 @@ export class DatabaseStorage implements IStorage {
           console.log('Error fetching ratings:', e);
         }
 
-        // Get quiz activities with proper date filtering
+        // Get quiz activities with proper timestamp handling
         try {
-          // Parse the startTime to get date and time components
-          const startDate = new Date(startTime);
-          const startTimeOnly = startDate.toTimeString().substring(0, 8); // HH:MM:SS format
-          const startDateOnly = startDate.toISOString().substring(0, 10); // YYYY-MM-DD format
-          
-          // For quiz activities, we need to filter by time on the monitoring date
-          // Since quiz times are stored as time-only, we compare against the start time
-          // and only include activities that happened on or after the monitoring start time
           const quizzes = await db.execute(sql`
             SELECT DISTINCT 'quiz_attempt' as type, q.contentid as content_id, c.title as content_title,
-                   (CURRENT_DATE || ' ' || st.time_start)::timestamp as timestamp,
+                   CASE 
+                     WHEN st.time_start ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN 
+                       st.time_start::timestamp
+                     WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
+                       (CURRENT_DATE || ' ' || st.time_start)::timestamp
+                     ELSE 
+                       st.time_start::timestamp
+                   END as timestamp,
                    st.score, st.quiz_result, st.time_start as original_time
             FROM student_try st
             JOIN question q ON st.question_id = q.id
@@ -1332,16 +1331,17 @@ export class DatabaseStorage implements IStorage {
             WHERE st.hocsinh_id = ${studentId} 
               AND st.time_start IS NOT NULL 
               AND st.time_start != ''
-              AND st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$'
               AND (
-                -- If the quiz time is after the start time on the same day, include it
-                -- If the quiz time is before the start time, it must be from the next day
                 CASE 
-                  WHEN st.time_start::time >= ${startTimeOnly}::time THEN true
-                  ELSE false
+                  WHEN st.time_start ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN 
+                    st.time_start::timestamp >= ${startTime}::timestamp
+                  WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
+                    (CURRENT_DATE || ' ' || st.time_start)::timestamp >= ${startTime}::timestamp
+                  ELSE 
+                    st.time_start::timestamp >= ${startTime}::timestamp
                 END
               )
-            ORDER BY st.time_start DESC
+            ORDER BY timestamp DESC
             LIMIT 10
           `);
           
@@ -1350,7 +1350,7 @@ export class DatabaseStorage implements IStorage {
               type: row.type,
               content_id: row.content_id,
               content_title: row.content_title,
-              timestamp: row.original_time, // Use original time for display
+              timestamp: row.timestamp,
               rating: null,
               quiz_score: row.score,
               quiz_result: row.quiz_result
