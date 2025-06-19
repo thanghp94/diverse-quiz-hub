@@ -1,5 +1,3 @@
-
-import { useState, useEffect } from "react";
 import { Search, User, LogOut } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -107,9 +105,9 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          {currentUser && (
+          {isAuthenticated && user && (
             <StreakDisplay 
-              studentId={currentUser.id} 
+              studentId={user.id} 
               className="text-white/90 bg-white/10 px-3 py-1 rounded-full"
             />
           )}
@@ -122,22 +120,22 @@ const Header = () => {
             />
           </div>
 
-          {currentUser ? (
+          {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-white hover:bg-white/20 flex items-center gap-2">
                   <User className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {currentUser.full_name || currentUser.first_name || currentUser.id}
+                    {user.full_name || user.first_name || user.id}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-2 py-1.5 text-sm font-medium">
-                  {currentUser.full_name || `${currentUser.first_name || ''} ${currentUser.last_name || ''}`.trim()}
+                  {user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim()}
                 </div>
                 <div className="px-2 py-1 text-xs text-muted-foreground">
-                  {currentUser.category} • {currentUser.id}
+                  {user.category} • {user.id}
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
