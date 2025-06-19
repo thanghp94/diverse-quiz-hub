@@ -769,7 +769,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAssignmentById(id: string): Promise<any> {
-    Adding the method to get assignment tries by student to the DatabaseStorage class.```text
     const result = await db.select().from(assignment).where(eq(assignment.id, id));
     return result[0] || null;
   }
