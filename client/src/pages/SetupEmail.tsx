@@ -57,6 +57,7 @@ export default function SetupEmail() {
     try {
       const response = await fetch("/api/auth/setup-email", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
@@ -96,6 +97,7 @@ export default function SetupEmail() {
     try {
       const response = await fetch("/api/auth/skip-email-setup", {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
