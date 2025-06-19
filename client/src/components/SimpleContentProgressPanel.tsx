@@ -502,7 +502,6 @@ export const SimpleContentProgressPanel = () => {
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="GV0002">GV0002 (Current User)</SelectItem>
                   {students?.map((student: any) => (
                     <SelectItem key={student.id} value={student.id}>
                       {student.full_name} ({student.id})
