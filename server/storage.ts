@@ -52,6 +52,7 @@ export interface IStorage {
   // Content Ratings
   createContentRating(rating: InsertContentRating): Promise<ContentRating>;
   getContentRating(studentId: string, contentId: string): Promise<ContentRating | null>;
+  getContentRatingsByStudent(studentId: string): Promise<ContentRating[]>;
   updateContentRating(studentId: string, contentId: string, rating: string): Promise<ContentRating>;
   getContentRatingStats(contentId: string): Promise<{ easy: number; normal: number; hard: number }>;
 
@@ -420,6 +421,12 @@ export class DatabaseStorage implements IStorage {
         personal_note: personalNote
       });
     }
+  }
+
+  async getContentRatingsByStudent(studentId: string): Promise<ContentRating[]> {
+    const ratings = await db.select().from(content_ratings)
+      .where(eq(content_ratings.student_id, studentId));
+    return ratings;
   }
 
   async getContentRatingStats(contentId: string): Promise<{ easy: number; normal: number; hard: number }> {

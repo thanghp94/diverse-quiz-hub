@@ -422,6 +422,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all content ratings for a student
+  app.get("/api/content-ratings/:studentId", async (req, res) => {
+    try {
+      const ratings = await storage.getContentRatingsByStudent(req.params.studentId);
+      res.json(ratings);
+    } catch (error) {
+      console.error('Error fetching student content ratings:', error);
+      res.status(500).json({ error: 'Failed to fetch student content ratings' });
+    }
+  });
+
   app.get("/api/content-ratings/:studentId/:contentId", async (req, res) => {
     try {
       const rating = await storage.getContentRating(req.params.studentId, req.params.contentId);

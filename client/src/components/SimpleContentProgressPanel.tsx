@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,38 +10,56 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, ChevronDown, ChevronRight, FolderOpen, Folder, FileText, Users, Filter, Eye } from "lucide-react";
 import ContentPopup from "./ContentPopup";
-import type { Topic, Content, ContentRating, User } from "@shared/schema";
 
-interface HierarchyItem {
+interface SimpleContentRating {
+  id: string;
+  student_id: string;
+  content_id: string;
+  rating: string;
+  personal_note: string | null;
+  created_at: string;
+}
+
+interface SimpleContent {
+  id: string;
+  topicid: string | null;
+  title: string | null;
+  prompt: string | null;
+  short_blurb: string | null;
+  short_description: string | null;
+  parentid: string | null;
+  translation_dictionary: any;
+}
+
+interface SimpleTopic {
+  id: string;
+  topic: string | null;
+  parentid: string | null;
+  showstudent: boolean | null;
+}
+
+interface HierarchyNode {
   id: string;
   title: string;
   type: 'topic' | 'subtopic' | 'groupcard' | 'content';
-  rating?: 'ok' | 'normal' | 'really_bad' | null;
-  children: HierarchyItem[];
-  contentData?: Content;
-  parentid?: string | null;
+  rating?: string | null;
+  children: HierarchyNode[];
+  contentData?: SimpleContent;
   isExpanded?: boolean;
 }
 
-interface Student {
-  id: string;
-  full_name: string;
-}
-
-export const EnhancedContentProgressPanel = () => {
+export const SimpleContentProgressPanel = () => {
   const [activeTab, setActiveTab] = useState<'student' | 'teacher'>('student');
   const [filterRating, setFilterRating] = useState<'all' | 'ok' | 'really_bad'>('all');
   const [selectedStudent, setSelectedStudent] = useState<string>('GV0002');
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
+  const [selectedContent, setSelectedContent] = useState<any>(null);
   const [isContentPopupOpen, setIsContentPopupOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
-  const queryClient = useQueryClient();
-
   // Fetch topics
-  const { data: topics, isLoading: topicsLoading } = useQuery({
+  const { data: topics = [], isLoading: topicsLoading } = useQuery({
     queryKey: ['/api/topics'],
-    queryFn: async (): Promise<Topic[]> => {
+    queryFn: async () => {
       const response = await fetch('/api/topics');
       if (!response.ok) throw new Error('Failed to fetch topics');
       return response.json();
@@ -49,9 +67,9 @@ export const EnhancedContentProgressPanel = () => {
   });
 
   // Fetch content
-  const { data: content, isLoading: contentLoading } = useQuery({
+  const { data: content = [], isLoading: contentLoading } = useQuery({
     queryKey: ['/api/content'],
-    queryFn: async (): Promise<Content[]> => {
+    queryFn: async () => {
       const response = await fetch('/api/content');
       if (!response.ok) throw new Error('Failed to fetch content');
       return response.json();
@@ -59,9 +77,9 @@ export const EnhancedContentProgressPanel = () => {
   });
 
   // Fetch content ratings for selected student
-  const { data: contentRatings, isLoading: ratingsLoading } = useQuery({
+  const { data: contentRatings = [], isLoading: ratingsLoading } = useQuery({
     queryKey: ['/api/content-ratings', selectedStudent],
-    queryFn: async (): Promise<ContentRating[]> => {
+    queryFn: async () => {
       const response = await fetch(`/api/content-ratings/${selectedStudent}`);
       if (!response.ok) return [];
       return response.json();
@@ -70,62 +88,56 @@ export const EnhancedContentProgressPanel = () => {
   });
 
   // For teacher view, fetch all students
-  const { data: students } = useQuery({
-    queryKey: ['/api/students'],
+  const { data: students = [] } = useQuery({
+    queryKey: ['/api/users'],
     queryFn: async () => {
       const response = await fetch('/api/users');
       if (!response.ok) throw new Error('Failed to fetch students');
       const users = await response.json();
       return users.filter((user: any) => user.id !== 'GV0002').map((user: any) => ({
         id: user.id,
-        full_name: user.full_name || user.first_name + ' ' + user.last_name || user.id
+        full_name: user.full_name || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.id
       }));
     },
     enabled: activeTab === 'teacher',
   });
 
-  // Build hierarchy
+  // Build simple hierarchy
   const hierarchy = useMemo(() => {
-    if (!topics || !content) return [];
+    if (!topics || !content || topics.length === 0) return [];
 
-    const ratingMap = new Map<string, ContentRating>();
-    contentRatings?.forEach(rating => {
+    const ratingMap = new Map<string, SimpleContentRating>();
+    contentRatings?.forEach((rating: any) => {
       ratingMap.set(rating.content_id, rating);
     });
 
-    // Build topic hierarchy
-    const topicMap = new Map<string, Topic>();
-    topics.forEach(topic => {
-      topicMap.set(topic.id, topic);
-    });
-
-    const buildTopicHierarchy = (parentId: string | null): HierarchyItem[] => {
+    const buildHierarchy = (parentId: string | null): HierarchyNode[] => {
       return topics
-        .filter(topic => topic.parentid === parentId)
-        .map(topic => {
-          const topicContent = content.filter(c => c.topicid === topic.id);
-          const children: HierarchyItem[] = [];
+        .filter((topic: any) => topic.parentid === parentId)
+        .map((topic: any) => {
+          const topicContent = content.filter((c: any) => c.topicid === topic.id);
+          const children: HierarchyNode[] = [];
 
           // Add subtopics
-          children.push(...buildTopicHierarchy(topic.id));
+          children.push(...buildHierarchy(topic.id));
 
-          // Group content by prompt (for grouped content cards)
-          const groupedContent = new Map<string, Content[]>();
-          const ungroupedContent: Content[] = [];
+          // Group content by prompt
+          const groupedContent = new Map<string, any[]>();
+          const ungroupedContent: any[] = [];
 
-          topicContent.forEach(c => {
+          topicContent.forEach((c: any) => {
             if (c.prompt === 'groupcard') {
               const key = c.parentid || 'default';
               if (!groupedContent.has(key)) {
                 groupedContent.set(key, []);
               }
               groupedContent.get(key)!.push(c);
-            } else if (c.prompt !== 'groupcard') {
+            } else {
               ungroupedContent.push(c);
             }
           });
 
-          // Add grouped content cards
+          // Add grouped content
           groupedContent.forEach((groupContents, groupKey) => {
             const groupParent = groupContents.find(c => c.parentid === null);
             if (groupParent) {
@@ -135,7 +147,7 @@ export const EnhancedContentProgressPanel = () => {
                   id: c.id,
                   title: c.title || c.short_description || 'Untitled',
                   type: 'content' as const,
-                  rating: (ratingMap.get(c.id)?.rating as 'ok' | 'normal' | 'really_bad') || null,
+                  rating: ratingMap.get(c.id)?.rating || null,
                   children: [],
                   contentData: c,
                 }));
@@ -144,7 +156,7 @@ export const EnhancedContentProgressPanel = () => {
                 id: groupParent.id,
                 title: groupParent.title || groupParent.short_description || 'Group Content',
                 type: 'groupcard',
-                rating: (ratingMap.get(groupParent.id)?.rating as 'ok' | 'normal' | 'really_bad') || null,
+                rating: ratingMap.get(groupParent.id)?.rating || null,
                 children: groupChildren,
                 contentData: groupParent,
               });
@@ -152,12 +164,12 @@ export const EnhancedContentProgressPanel = () => {
           });
 
           // Add ungrouped content
-          ungroupedContent.forEach(c => {
+          ungroupedContent.forEach((c: any) => {
             children.push({
               id: c.id,
               title: c.title || c.short_description || 'Untitled',
               type: 'content',
-              rating: (ratingMap.get(c.id)?.rating as 'ok' | 'normal' | 'really_bad') || null,
+              rating: ratingMap.get(c.id)?.rating || null,
               children: [],
               contentData: c,
             });
@@ -168,21 +180,21 @@ export const EnhancedContentProgressPanel = () => {
             title: topic.topic || 'Untitled Topic',
             type: topic.parentid ? 'subtopic' : 'topic',
             children,
-          } as HierarchyItem;
+          };
         });
     };
 
-    return buildTopicHierarchy(null);
+    return buildHierarchy(null);
   }, [topics, content, contentRatings]);
 
   // Filter hierarchy by rating
   const filteredHierarchy = useMemo(() => {
     if (filterRating === 'all') return hierarchy;
 
-    const filterNode = (node: HierarchyItem): HierarchyItem | null => {
+    const filterNode = (node: HierarchyNode): HierarchyNode | null => {
       const filteredChildren = node.children
         .map(child => filterNode(child))
-        .filter(Boolean) as HierarchyItem[];
+        .filter(Boolean) as HierarchyNode[];
 
       const hasMatchingRating = node.rating === filterRating;
       const hasMatchingChildren = filteredChildren.length > 0;
@@ -199,7 +211,7 @@ export const EnhancedContentProgressPanel = () => {
 
     return hierarchy
       .map(node => filterNode(node))
-      .filter(Boolean) as HierarchyItem[];
+      .filter(Boolean) as HierarchyNode[];
   }, [hierarchy, filterRating]);
 
   const getRatingColor = (rating: string | null) => {
@@ -240,12 +252,12 @@ export const EnhancedContentProgressPanel = () => {
     setExpandedItems(newExpanded);
   };
 
-  const handleContentClick = (content: Content) => {
+  const handleContentClick = (content: any) => {
     setSelectedContent(content);
     setIsContentPopupOpen(true);
   };
 
-  const renderHierarchyItem = (item: HierarchyItem, depth: number = 0) => {
+  const renderHierarchyItem = (item: HierarchyNode, depth: number = 0) => {
     const isExpanded = expandedItems.has(item.id);
     const hasChildren = item.children.length > 0;
     const paddingLeft = depth * 16;
@@ -308,9 +320,9 @@ export const EnhancedContentProgressPanel = () => {
     const allRatings = contentRatings || [];
     return {
       total: allRatings.length,
-      ok: allRatings.filter(r => r.rating === 'ok').length,
-      really_bad: allRatings.filter(r => r.rating === 'really_bad').length,
-      normal: allRatings.filter(r => r.rating === 'normal').length,
+      ok: allRatings.filter((r: any) => r.rating === 'ok').length,
+      really_bad: allRatings.filter((r: any) => r.rating === 'really_bad').length,
+      normal: allRatings.filter((r: any) => r.rating === 'normal').length,
     };
   };
 
@@ -324,7 +336,7 @@ export const EnhancedContentProgressPanel = () => {
           variant="outline" 
           size="sm"
           className="bg-white/10 border-white/20 text-white/80 hover:bg-white/20 hover:text-white transition-all duration-300 h-8 w-8 p-0"
-          title="Enhanced Content Progress"
+          title="Content Progress Directory"
         >
           <BarChart3 className="h-4 w-4" />
         </Button>
@@ -333,7 +345,7 @@ export const EnhancedContentProgressPanel = () => {
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-white flex items-center gap-2">
             <BarChart3 className="h-5 w-5 text-blue-500" />
-            Enhanced Content Progress Directory
+            Content Progress Directory
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-400">
             Hierarchical view of content with ratings and progress tracking
@@ -434,7 +446,7 @@ export const EnhancedContentProgressPanel = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="GV0002">GV0002 (Current User)</SelectItem>
-                  {students?.map(student => (
+                  {students?.map((student: any) => (
                     <SelectItem key={student.id} value={student.id}>
                       {student.full_name} ({student.id})
                     </SelectItem>
@@ -443,7 +455,7 @@ export const EnhancedContentProgressPanel = () => {
               </Select>
             </div>
 
-            {/* Teacher view uses same hierarchy as student view but for selected student */}
+            {/* Teacher view uses same hierarchy for selected student */}
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg text-gray-900 dark:text-white">
@@ -491,4 +503,4 @@ export const EnhancedContentProgressPanel = () => {
   );
 };
 
-export default EnhancedContentProgressPanel;
+export default SimpleContentProgressPanel;
