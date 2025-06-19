@@ -26,6 +26,8 @@ interface HierarchyItem {
 interface Student {
   id: string;
   full_name: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 export const EnhancedContentProgressPanel = () => {
@@ -72,13 +74,15 @@ export const EnhancedContentProgressPanel = () => {
   // For teacher view, fetch all students
   const { data: students } = useQuery({
     queryKey: ['/api/students'],
-    queryFn: async () => {
+    queryFn: async (): Promise<Student[]> => {
       const response = await fetch('/api/users');
       if (!response.ok) throw new Error('Failed to fetch students');
       const users = await response.json();
-      return users.filter((user: any) => user.id !== 'GV0002').map((user: any) => ({
+      return users.map((user: any) => ({
         id: user.id,
-        full_name: user.full_name || user.first_name + ' ' + user.last_name || user.id
+        full_name: user.full_name || (user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.id),
+        first_name: user.first_name,
+        last_name: user.last_name
       }));
     },
     enabled: activeTab === 'teacher',
@@ -433,8 +437,7 @@ export const EnhancedContentProgressPanel = () => {
                   <SelectValue placeholder="Select student" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="GV0002">GV0002 (Current User)</SelectItem>
-                  {students?.map(student => (
+                  {students?.map((student) => (
                     <SelectItem key={student.id} value={student.id}>
                       {student.full_name} ({student.id})
                     </SelectItem>
