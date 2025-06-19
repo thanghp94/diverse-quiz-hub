@@ -15,6 +15,7 @@ import MarkdownRenderer from "./MarkdownRenderer";
 import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
 import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ContentPopupProps {
   isOpen: boolean;
@@ -397,7 +398,17 @@ const ContentPopup = ({
 
               {/* Content Editor - Admin Only Dropdown */}
               {(() => {
+                // Import useAuth hook at component level
+                const { user: authUser } = useAuth();
+                
+                // Try multiple sources for current user
                 const getCurrentUser = () => {
+                  // First, try the authenticated user
+                  if (authUser?.id) {
+                    return authUser;
+                  }
+                  
+                  // Fallback to localStorage
                   try {
                     const storedUser = localStorage.getItem('currentUser');
                     if (storedUser) {
@@ -414,7 +425,8 @@ const ContentPopup = ({
                 const isAuthorized = currentUser?.id === 'GV0002';
                 
                 console.log('=== ADMIN EDITOR DEBUG ===');
-                console.log('Current user from localStorage:', currentUser);
+                console.log('Auth user:', authUser);
+                console.log('Current user (combined):', currentUser);
                 console.log('User ID:', currentUser?.id);
                 console.log('Is authorized (GV0002):', isAuthorized);
                 console.log('Raw localStorage content:', localStorage.getItem('currentUser'));
@@ -425,6 +437,7 @@ const ContentPopup = ({
                   <div className="mt-6 pt-4 border-t-4 border-yellow-500 bg-yellow-50 p-4">
                     <div className="text-sm font-mono text-yellow-800">
                       <div>🔍 DEBUG INFO:</div>
+                      <div>Auth User: {JSON.stringify(authUser)}</div>
                       <div>Current User: {JSON.stringify(currentUser)}</div>
                       <div>User ID: {currentUser?.id || 'None'}</div>
                       <div>Expected: GV0002</div>
