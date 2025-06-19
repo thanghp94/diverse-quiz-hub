@@ -111,7 +111,6 @@ export default function SimpleStudentLogin() {
                   <h1 className="text-4xl lg:text-5xl font-bold text-white drop-shadow-lg">
                     Meraki
                   </h1>
-                  <p className="text-xl text-cyan-100 font-medium">Skills House</p>
                 </div>
               </div>
               
@@ -158,81 +157,76 @@ export default function SimpleStudentLogin() {
 
           {/* Right Side - Login Form */}
           <div className="flex justify-center lg:justify-end">
-            <Card className="w-full max-w-md shadow-2xl bg-white/95 backdrop-blur-sm border-0">
-              <CardHeader className="space-y-4 text-center pb-6">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-cyan-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
-                  <User className="text-white w-8 h-8" />
+            <Card className="w-full max-w-md shadow-2xl bg-white/98 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
+              <CardHeader className="space-y-6 text-center pb-8 pt-8">
+                <div className="w-20 h-20 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 rounded-full flex items-center justify-center mx-auto shadow-xl">
+                  <User className="text-white w-10 h-10" />
                 </div>
                 <div>
-                  <CardTitle className="text-2xl font-bold text-gray-900">Welcome Back!</CardTitle>
-                  <CardDescription className="text-gray-600 mt-2">
+                  <CardTitle className="text-3xl font-bold text-gray-900 mb-3">Welcome Back!</CardTitle>
+                  <CardDescription className="text-gray-600 text-lg">
                     Sign in to continue your learning journey
                   </CardDescription>
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-6">
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Student ID or Email</label>
+              <CardContent className="space-y-8 px-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-gray-700">Student ID or Email</label>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <Input
                         type="text"
                         placeholder="Enter your Student ID or Meraki Email"
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
-                        className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                        className="pl-12 h-14 border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-xl text-base transition-all duration-200"
                         disabled={isLoading}
                       />
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Password</label>
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold text-gray-700">Password</label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <Input
                         type="password"
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10 h-12 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                        className="pl-12 h-14 border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-xl text-base transition-all duration-200"
                         disabled={isLoading}
                       />
-                    </div>
-                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                      <p className="text-sm text-blue-700 text-center">
-                        Default password: <span className="font-mono bg-blue-100 px-2 py-1 rounded text-blue-800">Meraki123</span>
-                      </p>
                     </div>
                   </div>
 
                   <Button 
                     type="submit" 
-                    className="w-full h-12 bg-gradient-to-r from-purple-600 to-cyan-500 hover:from-purple-700 hover:to-cyan-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    className="w-full h-14 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-500 hover:from-purple-700 hover:via-blue-700 hover:to-cyan-600 text-white font-semibold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-0.5 rounded-xl"
                     disabled={isLoading}
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader2 className="mr-3 h-6 w-6 animate-spin" />
                         Signing you in...
                       </>
                     ) : (
                       <>
-                        <Zap className="mr-2 h-5 w-5" />
+                        <Zap className="mr-3 h-6 w-6" />
                         Start Learning
                       </>
                     )}
                   </Button>
                 </form>
                 
-                <div className="text-center space-y-3">
-                  <div className="flex items-center gap-2 justify-center text-green-600 bg-green-50 p-2 rounded-lg">
-                    <Star className="w-4 h-4" />
-                    <span className="text-sm font-medium">Ready for World Scholar Cup success!</span>
+                <div className="text-center space-y-4 pt-4">
+                  <div className="flex items-center gap-3 justify-center text-green-600 bg-green-50 p-3 rounded-xl border border-green-200">
+                    <Star className="w-5 h-5" />
+                    <span className="text-sm font-semibold">Ready for World Scholar Cup success!</span>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-500">
                     Need help? Contact your teacher or administrator
                   </p>
                 </div>
