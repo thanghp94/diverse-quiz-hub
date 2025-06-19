@@ -458,7 +458,7 @@ const ContentPopup = ({
                     </div>
                   )}
                 </div>
-              )}
+              ) : null}
             </>
           )}
         </DialogContent>
