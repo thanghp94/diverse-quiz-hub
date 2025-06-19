@@ -157,14 +157,14 @@ export default function SimpleStudentLogin() {
 
           {/* Right Side - Login Form */}
           <div className="flex justify-center lg:justify-end">
-            <Card className="w-full max-w-md shadow-2xl bg-white/98 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden">
+            <Card className="w-full max-w-md shadow-2xl bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl overflow-hidden">
               <CardHeader className="space-y-6 text-center pb-8 pt-8">
                 <div className="w-20 h-20 bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500 rounded-full flex items-center justify-center mx-auto shadow-xl">
                   <User className="text-white w-10 h-10" />
                 </div>
                 <div>
-                  <CardTitle className="text-3xl font-bold text-gray-900 mb-3">Welcome Back!</CardTitle>
-                  <CardDescription className="text-gray-600 text-lg">
+                  <CardTitle className="text-3xl font-bold text-white mb-3">Welcome Back!</CardTitle>
+                  <CardDescription className="text-white/90 text-lg">
                     Sign in to continue your learning journey
                   </CardDescription>
                 </div>
@@ -173,7 +173,7 @@ export default function SimpleStudentLogin() {
               <CardContent className="space-y-8 px-8">
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-gray-700">Student ID or Email</label>
+                    <label className="text-sm font-semibold text-white">Student ID or Email</label>
                     <div className="relative">
                       <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <Input
@@ -181,14 +181,14 @@ export default function SimpleStudentLogin() {
                         placeholder="Enter your Student ID or Meraki Email"
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
-                        className="pl-12 h-14 border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-xl text-base transition-all duration-200"
+                        className="pl-12 h-14 border-2 border-white/30 focus:border-white focus:ring-2 focus:ring-white/20 rounded-xl text-base transition-all duration-200 bg-white/10 backdrop-blur-sm text-white placeholder:text-white/70"
                         disabled={isLoading}
                       />
                     </div>
                   </div>
                   
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold text-gray-700">Password</label>
+                    <label className="text-sm font-semibold text-white">Password</label>
                     <div className="relative">
                       <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <Input
@@ -196,7 +196,7 @@ export default function SimpleStudentLogin() {
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-12 h-14 border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 rounded-xl text-base transition-all duration-200"
+                        className="pl-12 h-14 border-2 border-white/30 focus:border-white focus:ring-2 focus:ring-white/20 rounded-xl text-base transition-all duration-200 bg-white/10 backdrop-blur-sm text-white placeholder:text-white/70"
                         disabled={isLoading}
                       />
                     </div>
@@ -226,7 +226,7 @@ export default function SimpleStudentLogin() {
                     <Star className="w-5 h-5" />
                     <span className="text-sm font-semibold">Ready for World Scholar Cup success!</span>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-white/70">
                     Need help? Contact your teacher or administrator
                   </p>
                 </div>
