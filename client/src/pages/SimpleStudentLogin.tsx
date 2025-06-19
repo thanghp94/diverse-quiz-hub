@@ -51,7 +51,7 @@ export default function SimpleStudentLogin() {
         if (result.needsEmailSetup) {
           window.location.href = "/setup-email";
         } else {
-          window.location.href = "/topics";
+          window.location.href = "/";
         }
       } else {
         toast({

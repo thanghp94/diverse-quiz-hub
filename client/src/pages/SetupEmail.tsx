@@ -72,7 +72,7 @@ export default function SetupEmail() {
           title: "Email Setup Complete",
           description: "Welcome to the learning platform!",
         });
-        window.location.href = "/topics";
+        window.location.href = "/";
       } else {
         toast({
           title: "Setup Failed", 
@@ -106,7 +106,7 @@ export default function SetupEmail() {
           title: "Setup Skipped",
           description: "You can add your email later in settings.",
         });
-        window.location.href = "/topics";
+        window.location.href = "/";
       }
     } catch (error) {
       window.location.href = "/";
