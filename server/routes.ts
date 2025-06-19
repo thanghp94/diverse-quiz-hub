@@ -9,16 +9,126 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication first
   await setupAuth(app);
 
-  // Authentication routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+  // Student Authentication routes
+  app.post('/api/auth/student-login', async (req, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const { identifier } = req.body;
+      
+      if (!identifier) {
+        return res.status(400).json({ message: 'Student ID or Meraki Email is required' });
+      }
+
+      // Check if user exists by UserID or MerakiEmail
+      const user = await storage.getUserByIdentifier(identifier);
+      
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid Student ID or Meraki Email' });
+      }
+
+      // Create session for the user
+      req.session.userId = user.id;
+      req.session.user = user;
+
+      // Check if user needs to set up Google email
+      const needsPersonalEmail = !user.email || user.email === user.merakiemail;
+
+      res.json({ 
+        success: true, 
+        user: user,
+        needsPersonalEmail 
+      });
+    } catch (error) {
+      console.error('Student login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  app.post('/api/auth/email-login', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+
+      // Find user by their personal email
+      const user = await storage.getUserByEmail(email);
+      
+      if (!user) {
+        return res.status(401).json({ message: 'Email not found. Please use Student ID for first-time login.' });
+      }
+
+      // Create session for the user
+      req.session.userId = user.id;
+      req.session.user = user;
+
+      res.json({ 
+        success: true, 
+        user: user 
+      });
+    } catch (error) {
+      console.error('Email login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  app.post('/api/auth/set-personal-email', async (req, res) => {
+    try {
+      const { identifier, personalEmail } = req.body;
+      
+      if (!identifier || !personalEmail) {
+        return res.status(400).json({ message: 'Both identifier and email are required' });
+      }
+
+      // Find user by identifier
+      const user = await storage.getUserByIdentifier(identifier);
+      
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid Student ID or Meraki Email' });
+      }
+
+      // Update user's personal email
+      const updatedUser = await storage.updateUserEmail(user.id, personalEmail);
+
+      // Create session for the user
+      req.session.userId = updatedUser.id;
+      req.session.user = updatedUser;
+
+      res.json({ 
+        success: true, 
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error('Set personal email error:', error);
+      res.status(500).json({ message: 'Failed to save email' });
+    }
+  });
+
+  app.get('/api/auth/user', async (req: any, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(401).json({ message: 'User not found' });
+      }
+
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
+  });
+
+  app.post('/api/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      res.json({ message: 'Logged out successfully' });
+    });
   });
 
   // Health check endpoint

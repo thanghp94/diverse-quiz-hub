@@ -9,6 +9,8 @@ import * as schema from "@shared/schema";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByIdentifier(identifier: string): Promise<User | undefined>;
+  updateUserEmail(userId: string, newEmail: string): Promise<User>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
 
@@ -162,6 +164,26 @@ export class DatabaseStorage implements IStorage {
       sql`${users.email} = ${email} OR ${users.meraki_email} = ${email}`
     );
     return result[0];
+  }
+
+  async getUserByIdentifier(identifier: string): Promise<User | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).where(
+        sql`${users.id} = ${identifier} OR ${users.meraki_email} = ${identifier}`
+      );
+      return result[0];
+    });
+  }
+
+  async updateUserEmail(userId: string, newEmail: string): Promise<User> {
+    return this.executeWithRetry(async () => {
+      const [updatedUser] = await db
+        .update(users)
+        .set({ email: newEmail })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    });
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
