@@ -21,6 +21,7 @@ interface StudentActivity {
   student_name: string;
   content_viewed: number;
   content_rated: number;
+  quiz_attempts: number;
   quiz_accuracy: number;
   last_activity: string;
   activities: Array<{
@@ -400,6 +401,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                       <th className="text-left p-3">Student</th>
                       <th className="text-left p-3">Content Viewed</th>
                       <th className="text-left p-3">Content Rated</th>
+                      <th className="text-left p-3">Quiz Attempts</th>
                       <th className="text-left p-3">Quiz Accuracy</th>
                       <th className="text-left p-3">Last Activity</th>
                       <th className="text-left p-3">Actions</th>
@@ -428,6 +430,12 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                             <Badge variant="outline" className="bg-green-50">
                               <Star className="w-3 h-3 mr-1" />
                               {activity?.content_rated || 0}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline" className="bg-orange-50">
+                              <BookOpen className="w-3 h-3 mr-1" />
+                              {activity?.quiz_attempts || 0}
                             </Badge>
                           </td>
                           <td className="p-3">

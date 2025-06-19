@@ -1294,12 +1294,27 @@ export class DatabaseStorage implements IStorage {
             AND cr.created_at >= ${startTime}
         `);
         
+        // Get quiz attempts count and accuracy
+        const quizStats = await db.execute(sql`
+          SELECT 
+            COUNT(*) as total_attempts,
+            COUNT(CASE WHEN st.quiz_result = '✅' THEN 1 END) as correct_answers
+          FROM student_try st
+          WHERE st.hocsinh_id = ${studentId} 
+            AND st.time_start >= ${startTime}
+            AND st.time_start IS NOT NULL
+        `);
+        
+        const totalQuizzes = parseInt((quizStats.rows[0] as any)?.total_attempts) || 0;
+        const correctAnswers = parseInt((quizStats.rows[0] as any)?.correct_answers) || 0;
+        const quizAccuracy = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : null;
+        
         // Get recent activities - simplified approach
         const allActivities: any[] = [];
         
         // Get content view activities
         try {
-          const contentViews = await db.execute(sql`
+          const contentViewActivities = await db.execute(sql`
             SELECT 'content_view' as type, c.id as content_id, c.title as content_title, 
                    stc.time_start as timestamp
             FROM student_try_content stc
@@ -1309,7 +1324,7 @@ export class DatabaseStorage implements IStorage {
             LIMIT 10
           `);
           
-          contentViews.rows.forEach((row: any) => {
+          contentViewActivities.rows.forEach((row: any) => {
             allActivities.push({
               type: row.type,
               content_id: row.content_id,
@@ -1325,7 +1340,7 @@ export class DatabaseStorage implements IStorage {
 
         // Get rating activities
         try {
-          const ratings = await db.execute(sql`
+          const ratingActivities = await db.execute(sql`
             SELECT 'content_rating' as type, cr.content_id, c.title as content_title,
                    cr.created_at as timestamp, cr.rating
             FROM content_ratings cr
@@ -1335,7 +1350,7 @@ export class DatabaseStorage implements IStorage {
             LIMIT 10
           `);
           
-          ratings.rows.forEach((row: any) => {
+          ratingActivities.rows.forEach((row: any) => {
             allActivities.push({
               type: row.type,
               content_id: row.content_id,
@@ -1351,7 +1366,7 @@ export class DatabaseStorage implements IStorage {
 
         // Get quiz activities with proper timestamp handling
         try {
-          const quizzes = await db.execute(sql`
+          const quizActivities = await db.execute(sql`
             SELECT DISTINCT 'quiz_attempt' as type, q.contentid as content_id, c.title as content_title,
                    CASE 
                      WHEN st.time_start ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN 
@@ -1379,10 +1394,10 @@ export class DatabaseStorage implements IStorage {
                 END
               )
             ORDER BY timestamp DESC
-            LIMIT 10
+            LIMIT 15
           `);
           
-          quizzes.rows.forEach((row: any) => {
+          quizActivities.rows.forEach((row: any) => {
             allActivities.push({
               type: row.type,
               content_id: row.content_id,
@@ -1399,14 +1414,15 @@ export class DatabaseStorage implements IStorage {
 
         // Sort activities by timestamp
         allActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        allActivities.splice(20); // Keep only top 20
+        allActivities.splice(25); // Keep only top 25
         
         results.push({
           student_id: student.id,
           student_name: student.student_name,
           content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
           content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
-          quiz_accuracy: null,
+          quiz_attempts: totalQuizzes,
+          quiz_accuracy: quizAccuracy,
           last_activity: allActivities.length > 0 ? allActivities[0].timestamp : null,
           activities: allActivities
         });
