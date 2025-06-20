@@ -52,6 +52,9 @@ class ApiResponse {
 class SessionManager {
   static async saveSession(req: any, res: any, user: any): Promise<boolean> {
     return new Promise((resolve) => {
+      console.log('Attempting to save session for user:', user.id);
+      console.log('Session ID before save:', req.sessionID);
+      
       req.session.userId = user.id;
       req.session.user = user;
       
@@ -62,6 +65,8 @@ class SessionManager {
           resolve(false);
         } else {
           console.log('Session saved successfully for user:', user.id);
+          console.log('Session ID after save:', req.sessionID);
+          console.log('Session data after save:', req.session);
           resolve(true);
         }
       });
@@ -160,20 +165,25 @@ class AuthRoutes {
   static async getUser(req: any, res: any) {
     try {
       console.log('Auth check - Session ID:', req.sessionID);
+      console.log('Auth check - Session data:', req.session);
       console.log('Auth check - User ID in session:', req.session.userId);
+      console.log('Auth check - Session cookie:', req.headers.cookie);
       
       if (!req.session.userId) {
+        console.log('No userId in session, returning unauthorized');
         return ApiResponse.unauthorized(res);
       }
 
       const user = await storage.getUser(req.session.userId);
       if (!user) {
+        console.log('User not found for ID:', req.session.userId);
         return ApiResponse.unauthorized(res, 'User not found');
       }
 
       console.log('Auth check successful for user:', user.id);
       return res.json(user);
     } catch (error) {
+      console.error('Auth check error:', error);
       return ApiResponse.serverError(res, 'Failed to fetch user', error);
     }
   }
