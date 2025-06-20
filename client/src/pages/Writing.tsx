@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import { WritingJournal } from "@/components/WritingJournal";
@@ -19,6 +20,7 @@ const WritingPage = () => {
         title: "",
         description: "",
     });
+    const [writingPrompts, setWritingPrompts] = useState<any[]>([]);
 
     useEffect(() => {
         const userData = localStorage.getItem("currentUser");
@@ -34,18 +36,33 @@ const WritingPage = () => {
         }
     }, []);
 
+    // Fetch writing prompts from API
+    useEffect(() => {
+        const fetchWritingPrompts = async () => {
+            try {
+                const response = await fetch('/api/writing-prompts');
+                if (response.ok) {
+                    const prompts = await response.json();
+                    setWritingPrompts(prompts);
+                }
+            } catch (error) {
+                console.error('Failed to fetch writing prompts:', error);
+            }
+        };
+
+        fetchWritingPrompts();
+    }, []);
+
     const handleCategorySelect = (category: string) => {
         setSelectedCategory(category);
         setWritingFlow("topics");
     };
 
     const handleTopicSelect = (topicId: string) => {
-        // Assume writing_prompts is an object fetched from a database linking topics
-        const writing_prompts: Record<string, { title: string; description: string }> = {};
-
-        // Fetch topics based on topicId
-
-        const topic = writing_prompts[topicId] || {
+        // Find the topic from fetched writing prompts
+        const foundPrompt = writingPrompts.find(prompt => prompt.id === topicId);
+        
+        const topic = foundPrompt || {
             title: "Creative Writing",
             description: "Write about your chosen topic."
         };
@@ -87,30 +104,40 @@ const WritingPage = () => {
 
     if (writingFlow === "topics") {
         return (
-            <WritingTopicSelection
-                category={selectedCategory}
-                onBack={handleBackToJournal}
-                onTopicSelect={handleTopicSelect}
-            />
+            <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+                <Header />
+                <WritingTopicSelection
+                    category={selectedCategory}
+                    onBack={handleBackToJournal}
+                    onTopicSelect={handleTopicSelect}
+                />
+            </div>
         );
     }
 
     if (writingFlow === "essay") {
         return (
-            <StructuredEssayWriter
-                topicTitle={selectedTopic.title}
-                topicDescription={selectedTopic.description}
-                studentId={currentUser.id}
-                onBack={handleBackToTopics}
-            />
+            <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+                <Header />
+                <StructuredEssayWriter
+                    topicTitle={selectedTopic.title}
+                    topicDescription={selectedTopic.description}
+                    studentId={currentUser.id}
+                    onBack={handleBackToTopics}
+                />
+            </div>
         );
     }
 
     return (
-        <WritingJournal
-            studentId={currentUser.id}
-            studentName={currentUser.full_name || currentUser.first_name}
-        />
+        <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
+            <Header />
+            <WritingJournal
+                studentId={currentUser.id}
+                studentName={currentUser.full_name || currentUser.first_name}
+                onCategorySelect={handleCategorySelect}
+            />
+        </div>
     );
 };
 

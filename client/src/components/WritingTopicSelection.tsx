@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Home } from 'lucide-react';
@@ -83,7 +83,40 @@ const topicsByCategory = {
 };
 
 export const WritingTopicSelection = ({ category, onBack, onTopicSelect }: WritingTopicSelectionProps) => {
-  const topics = topicsByCategory[category as keyof typeof topicsByCategory] || [];
+  const [fetchedTopics, setFetchedTopics] = useState<WritingTopic[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/writing-prompts/category/${category}`);
+        if (response.ok) {
+          const prompts = await response.json();
+          const formattedTopics = prompts.map((prompt: any) => ({
+            id: prompt.id,
+            title: prompt.title,
+            description: prompt.description || 'Write about this topic.',
+            prompts: prompt.prompts || []
+          }));
+          setFetchedTopics(formattedTopics);
+        } else {
+          // Fallback to hardcoded topics if API fails
+          setFetchedTopics(topicsByCategory[category as keyof typeof topicsByCategory] || []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch writing prompts:', error);
+        // Fallback to hardcoded topics
+        setFetchedTopics(topicsByCategory[category as keyof typeof topicsByCategory] || []);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTopics();
+  }, [category]);
+
+  const topics = fetchedTopics;
   
   const getCategoryTitle = (cat: string) => {
     const titles = {
@@ -97,7 +130,7 @@ export const WritingTopicSelection = ({ category, onBack, onTopicSelect }: Writi
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -124,7 +157,26 @@ export const WritingTopicSelection = ({ category, onBack, onTopicSelect }: Writi
 
         {/* Topics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {topics.map((topic) => (
+          {loading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="bg-white/80 backdrop-blur-sm border-purple-200 rounded-lg p-6 animate-pulse">
+                <div className="h-6 bg-gray-300 rounded mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded mb-4"></div>
+                <div className="space-y-2 mb-4">
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                  <div className="h-3 bg-gray-200 rounded"></div>
+                </div>
+                <div className="h-10 bg-gray-300 rounded"></div>
+              </div>
+            ))
+          ) : topics.length === 0 ? (
+            <div className="col-span-2 text-center py-8 text-gray-600">
+              <p>No writing topics found for this category.</p>
+            </div>
+          ) : (
+            topics.map((topic) => (
             <Card 
               key={topic.id}
               className="bg-white/80 backdrop-blur-sm border-purple-200 hover:border-purple-400 cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg"
@@ -157,7 +209,8 @@ export const WritingTopicSelection = ({ category, onBack, onTopicSelect }: Writi
                 </Button>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
