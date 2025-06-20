@@ -5,6 +5,7 @@ import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
 import WritingOutlinePopup from "@/components/WritingOutlinePopup";
 import AcademicEssayPopup from "@/components/AcademicEssayPopup";
+import CreativeWritingPopup from "@/components/CreativeWritingPopup";
 import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
@@ -75,6 +76,12 @@ const WritingPage = () => {
     isOpen: boolean;
     contentTitle?: string;
     contentId?: string;
+  }>({ isOpen: false });
+  const [creativeWritingInfo, setCreativeWritingInfo] = useState<{
+    isOpen: boolean;
+    contentTitle?: string;
+    contentId?: string;
+    outlineData?: any;
   }>({ isOpen: false });
 
   // Helper functions for group card expansion
@@ -250,8 +257,20 @@ const WritingPage = () => {
     setSelectedMatchingActivity({ matchingId, matchingTitle });
   };
 
-  const handleOpenOutlinePopup = (contentTitle?: string) => {
+  const handleOpenOutlinePopup = (contentTitle?: string, contentId?: string) => {
     setOutlinePopupInfo({ isOpen: true, contentTitle });
+    setCurrentContentId(contentId);
+  };
+
+  const [currentContentId, setCurrentContentId] = useState<string | undefined>();
+
+  const handleProceedToCreativeWriting = (outlineData: any) => {
+    setCreativeWritingInfo({
+      isOpen: true,
+      contentTitle: outlinePopupInfo.contentTitle,
+      contentId: currentContentId,
+      outlineData
+    });
   };
 
   const handleCloseOutlinePopup = () => {
@@ -264,6 +283,10 @@ const WritingPage = () => {
 
   const handleCloseEssayPopup = () => {
     setEssayPopupInfo({ isOpen: false });
+  };
+
+  const handleCloseCreativeWriting = () => {
+    setCreativeWritingInfo({ isOpen: false });
   };
 
   const getSubtopics = (parentId: string) => {
@@ -379,7 +402,7 @@ const WritingPage = () => {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenOutlinePopup(content.title || content.short_blurb);
+                          handleOpenOutlinePopup(content.title || content.short_blurb, content.id);
                         }}
                         size="sm"
                         className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -432,7 +455,7 @@ const WritingPage = () => {
                     View Content
                   </Button>
                   <Button
-                    onClick={() => handleOpenOutlinePopup(content.title || content.short_blurb)}
+                    onClick={() => handleOpenOutlinePopup(content.title || content.short_blurb, content.id)}
                     size="sm"
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
@@ -505,6 +528,16 @@ const WritingPage = () => {
         isOpen={outlinePopupInfo.isOpen}
         onClose={handleCloseOutlinePopup}
         contentTitle={outlinePopupInfo.contentTitle}
+        onProceedToWriting={handleProceedToCreativeWriting}
+      />
+
+      <CreativeWritingPopup
+        isOpen={creativeWritingInfo.isOpen}
+        onClose={handleCloseCreativeWriting}
+        contentTitle={creativeWritingInfo.contentTitle}
+        contentId={creativeWritingInfo.contentId}
+        studentId={user?.id || 'GV0002'}
+        outlineData={creativeWritingInfo.outlineData || {}}
       />
 
       <AcademicEssayPopup

@@ -1289,7 +1289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const draft = await db.select()
         .from(writing_submissions)
         .where(
-          sql`student_id = ${studentId} AND content_id = ${contentId} AND submitted_at IS NULL`
+          sql`student_id = ${studentId} AND prompt_id = ${contentId} AND status = 'draft'`
         )
         .limit(1);
       
@@ -1311,7 +1311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existing = await db.select()
         .from(writing_submissions)
         .where(
-          sql`student_id = ${student_id} AND content_id = ${content_id} AND submitted_at IS NULL`
+          sql`student_id = ${student_id} AND prompt_id = ${content_id} AND submitted_at IS NULL`
         )
         .limit(1);
 
@@ -1319,12 +1319,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update existing draft
         const updated = await db.update(writing_submissions)
           .set({
-            content_title,
-            outline_data,
-            essay_data,
-            phase,
-            timer_remaining,
-            timer_active,
+            title: content_title,
+            opening_paragraph: essay_data?.introduction || '',
+            body_paragraph_1: essay_data?.body || '',
+            conclusion_paragraph: essay_data?.conclusion || '',
+            full_essay: [essay_data?.introduction, essay_data?.body, essay_data?.conclusion].filter(Boolean).join('\n\n'),
             updated_at: new Date()
           })
           .where(sql`id = ${existing[0].id}`)
@@ -1337,13 +1336,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .values({
             id: crypto.randomUUID(),
             student_id,
-            content_id,
-            content_title,
-            outline_data,
-            essay_data,
-            phase,
-            timer_remaining,
-            timer_active,
+            prompt_id: content_id,
+            title: content_title,
+            opening_paragraph: essay_data?.introduction || '',
+            body_paragraph_1: essay_data?.body || '',
+            conclusion_paragraph: essay_data?.conclusion || '',
+            full_essay: [essay_data?.introduction, essay_data?.body, essay_data?.conclusion].filter(Boolean).join('\n\n'),
             status: 'draft'
           })
           .returning();
@@ -1360,7 +1358,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { studentId, contentId } = req.params;
       await db.delete(writing_submissions)
         .where(
-          sql`student_id = ${studentId} AND content_id = ${contentId} AND submitted_at IS NULL`
+          sql`student_id = ${studentId} AND prompt_id = ${contentId} AND status = 'draft'`
         );
       
       res.json({ success: true });
@@ -1384,14 +1382,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .values({
           id: crypto.randomUUID(),
           student_id,
-          content_id,
-          content_title,
-          outline_data,
-          essay_data,
-          time_spent,
+          prompt_id: content_id,
+          title: content_title,
+          opening_paragraph: essay_data?.introduction || '',
+          body_paragraph_1: essay_data?.body || '',
+          conclusion_paragraph: essay_data?.conclusion || '',
+          full_essay: [essay_data?.introduction, essay_data?.body, essay_data?.conclusion].filter(Boolean).join('\n\n'),
           word_count: wordCount,
           status: 'submitted',
-          submitted_at: new Date(submitted_at),
           created_at: new Date(),
           updated_at: new Date()
         })
@@ -1408,7 +1406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { studentId } = req.params;
       const submissions = await db.select()
         .from(writing_submissions)
-        .where(sql`student_id = ${studentId} AND submitted_at IS NOT NULL`)
+        .where(sql`student_id = ${studentId} AND status = 'submitted'`)
         .orderBy(sql`created_at DESC`);
       
       res.json(submissions);
