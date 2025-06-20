@@ -226,6 +226,21 @@ export default function AcademicEssayPopup({
   const proceedToWriting = () => {
     setPhase('writing');
     setIsTimerActive(false);
+    
+    // Update localStorage immediately and trigger storage event
+    if (studentId && contentId) {
+      const storageKey = `academic_essay_${studentId}_${contentId}`;
+      const dataToSave = {
+        phase: 'writing',
+        outlineData,
+        essayData,
+        timeRemaining,
+        isTimerActive: false
+      };
+      localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+      window.dispatchEvent(new Event('storage'));
+    }
+    
     toast({
       title: "Outline Complete",
       description: "You can now begin writing your essay.",
@@ -349,120 +364,98 @@ export default function AcademicEssayPopup({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left side - Outline form (2 columns) */}
-              <div className="lg:col-span-2 space-y-4">
-                {/* Introduction */}
-                <div className="bg-blue-50 p-4 rounded-lg border">
-                  <h4 className="font-semibold text-blue-800 mb-3">Introduction</h4>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-sm font-medium">Hook</Label>
-                      <Textarea
-                        placeholder="Attention-grabbing opening..."
-                        value={outlineData.hook}
-                        onChange={(e) => setOutlineData(prev => ({ ...prev, hook: e.target.value }))}
-                        className="mt-1 min-h-[60px]"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm font-medium">Thesis (Main Idea)</Label>
-                      <Textarea
-                        placeholder="Your main argument..."
-                        value={outlineData.thesis}
-                        onChange={(e) => setOutlineData(prev => ({ ...prev, thesis: e.target.value }))}
-                        className="mt-1 min-h-[80px]"
-                      />
-                    </div>
+            <div className="space-y-4">
+              {/* Introduction */}
+              <div className="bg-blue-50 p-4 rounded-lg border">
+                <div className="flex justify-between items-start mb-3">
+                  <h4 className="font-semibold text-blue-800">Introduction</h4>
+                  <div className="bg-blue-100 px-3 py-1 rounded-md text-xs text-blue-700">
+                    Hook: Question, quote, or interesting fact • Thesis: Clear main argument or position
                   </div>
                 </div>
-
-                {/* Body */}
-                <div className="bg-green-50 p-4 rounded-lg border">
-                  <h4 className="font-semibold text-green-800 mb-3">Body</h4>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-sm font-medium">Body Paragraph 1</Label>
-                      <Textarea
-                        placeholder="First main point..."
-                        value={outlineData.bodyParagraph1}
-                        onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph1: e.target.value }))}
-                        className="mt-1 min-h-[60px]"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm font-medium">Body Paragraph 2</Label>
-                      <Textarea
-                        placeholder="Second main point..."
-                        value={outlineData.bodyParagraph2}
-                        onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph2: e.target.value }))}
-                        className="mt-1 min-h-[60px]"
-                      />
-                    </div>
-                    
-                    <div>
-                      <Label className="text-sm font-medium">Body Paragraph 3</Label>
-                      <Textarea
-                        placeholder="Third main point..."
-                        value={outlineData.bodyParagraph3}
-                        onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph3: e.target.value }))}
-                        className="mt-1 min-h-[60px]"
-                      />
-                    </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium">Hook</Label>
+                    <Textarea
+                      placeholder="Attention-grabbing opening..."
+                      value={outlineData.hook}
+                      onChange={(e) => setOutlineData(prev => ({ ...prev, hook: e.target.value }))}
+                      className="mt-1 min-h-[60px]"
+                    />
                   </div>
-                </div>
-
-                {/* Conclusion */}
-                <div className="bg-purple-50 p-4 rounded-lg border">
-                  <h4 className="font-semibold text-purple-800 mb-3">Conclusion</h4>
                   
                   <div>
-                    <Label className="text-sm font-medium">Summary and Final Thoughts</Label>
+                    <Label className="text-sm font-medium">Thesis (Main Idea)</Label>
                     <Textarea
-                      placeholder="Summarize and conclude..."
-                      value={outlineData.conclusion}
-                      onChange={(e) => setOutlineData(prev => ({ ...prev, conclusion: e.target.value }))}
+                      placeholder="Your main argument..."
+                      value={outlineData.thesis}
+                      onChange={(e) => setOutlineData(prev => ({ ...prev, thesis: e.target.value }))}
                       className="mt-1 min-h-[80px]"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Right side - Essay Structure Guide (1 column) */}
-              <div className="bg-gray-50 p-4 rounded-lg h-fit">
-                <h4 className="font-semibold mb-4">Essay Structure Guide</h4>
+              {/* Body */}
+              <div className="bg-green-50 p-4 rounded-lg border">
+                <div className="flex justify-between items-start mb-3">
+                  <h4 className="font-semibold text-green-800">Body</h4>
+                  <div className="bg-green-100 px-3 py-1 rounded-md text-xs text-green-700">
+                    Topic sentence • Supporting evidence • Analysis and explanation • Transition to next point
+                  </div>
+                </div>
                 
-                <div className="space-y-4 text-sm">
+                <div className="space-y-3">
                   <div>
-                    <h5 className="font-medium text-blue-600 mb-2">Introduction</h5>
-                    <ul className="space-y-1 text-gray-600 ml-4">
-                      <li>• Hook: Question, quote, or interesting fact</li>
-                      <li>• Thesis: Clear main argument or position</li>
-                    </ul>
+                    <Label className="text-sm font-medium">Body Paragraph 1</Label>
+                    <Textarea
+                      placeholder="First main point..."
+                      value={outlineData.bodyParagraph1}
+                      onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph1: e.target.value }))}
+                      className="mt-1 min-h-[60px]"
+                    />
                   </div>
                   
                   <div>
-                    <h5 className="font-medium text-green-600 mb-2">Body Paragraphs</h5>
-                    <ul className="space-y-1 text-gray-600 ml-4">
-                      <li>• Topic sentence</li>
-                      <li>• Supporting evidence</li>
-                      <li>• Analysis and explanation</li>
-                      <li>• Transition to next point</li>
-                    </ul>
+                    <Label className="text-sm font-medium">Body Paragraph 2</Label>
+                    <Textarea
+                      placeholder="Second main point..."
+                      value={outlineData.bodyParagraph2}
+                      onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph2: e.target.value }))}
+                      className="mt-1 min-h-[60px]"
+                    />
                   </div>
                   
                   <div>
-                    <h5 className="font-medium text-purple-600 mb-2">Conclusion</h5>
-                    <ul className="space-y-1 text-gray-600 ml-4">
-                      <li>• Restate thesis</li>
-                      <li>• Summarize main points</li>
-                      <li>• Final thought or call to action</li>
-                    </ul>
+                    <Label className="text-sm font-medium">Body Paragraph 3</Label>
+                    <Textarea
+                      placeholder="Third main point..."
+                      value={outlineData.bodyParagraph3}
+                      onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph3: e.target.value }))}
+                      className="mt-1 min-h-[60px]"
+                    />
                   </div>
+                </div>
+              </div>
+
+              {/* Conclusion */}
+              <div className="bg-purple-50 p-4 rounded-lg border">
+                <div className="flex justify-between items-start mb-3">
+                  <h4 className="font-semibold text-purple-800">Conclusion</h4>
+                  <div className="bg-purple-100 px-3 py-1 rounded-md text-xs text-purple-700">
+                    Restate thesis • Summarize main points • Final thought or call to action
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Summary and Final Thoughts</Label>
+                  <Textarea
+                    placeholder="Summarize and conclude..."
+                    value={outlineData.conclusion}
+                    onChange={(e) => setOutlineData(prev => ({ ...prev, conclusion: e.target.value }))}
+                    className="mt-1 min-h-[80px]"
+                  />
                 </div>
               </div>
             </div>
