@@ -246,15 +246,6 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
               Live Class Monitor
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                onClick={() => setShowConfigPopup(!showConfigPopup)}
-                variant="outline"
-                size="sm"
-                className="relative"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Configure
-              </Button>
               {!isMonitoring ? (
                 <Button
                   onClick={startMonitoring}
@@ -280,23 +271,10 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
         </CardHeader>
         <CardContent className="space-y-4">
           
-          {/* Configuration Popup */}
-          {showConfigPopup && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" ref={configPopupRef}>
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">Monitor Configuration</h3>
-                  <Button variant="outline" size="sm" onClick={() => setShowConfigPopup(false)}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <div className="space-y-6">
-                  {/* Student Selection */}
-                  <div className="space-y-3">
-                    <label className="text-sm font-medium">Select Students to Monitor</label>
-                    
-                    {/* Selected Students Display */}
+          {/* Student Selection */}
+          <div className="space-y-3">
+            
+            {/* Selected Students Display */}
                     <div className="relative" ref={studentSelectorRef}>
                       <div 
                         className="min-h-12 p-3 border rounded-lg bg-white cursor-pointer hover:bg-gray-50 transition-colors"
@@ -399,111 +377,109 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                             <div className="text-xs text-gray-600 text-center">
                               {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} selected
                             </div>
+                            
+                            {/* Monitor Start Time & Activity Filters */}
+                            <div className="border-t pt-3 mt-3">
+                              <div className="grid grid-cols-1 gap-4">
+                                {/* Monitor Start Time */}
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium flex items-center gap-2">
+                                    <Clock className="h-4 w-4" />
+                                    Monitor Start Time
+                                  </label>
+                                  <div className="grid grid-cols-1 gap-2">
+                                    <div>
+                                      <label className="text-xs text-gray-600">Time Preset:</label>
+                                      <Select value={timePreset} onValueChange={(value) => {
+                                        setTimePreset(value);
+                                        if (value !== 'custom') {
+                                          applyTimePreset(value);
+                                        }
+                                      }}>
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="now">Now</SelectItem>
+                                          <SelectItem value="4pm_today">4 PM Today</SelectItem>
+                                          <SelectItem value="8pm_today">8 PM Today</SelectItem>
+                                          <SelectItem value="today">Start of Today</SelectItem>
+                                          <SelectItem value="yesterday">Yesterday</SelectItem>
+                                          <SelectItem value="7_days_ago">7 Days Ago</SelectItem>
+                                          <SelectItem value="custom">Custom Time</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    {timePreset === 'custom' && (
+                                      <div>
+                                        <label className="text-xs text-gray-600">Custom DateTime:</label>
+                                        <Input
+                                          type="datetime-local"
+                                          value={customStartTime}
+                                          onChange={(e) => {
+                                            setCustomStartTime(e.target.value);
+                                            setMonitorStartTime(new Date(e.target.value).toISOString());
+                                          }}
+                                          className="w-full"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    Current: {format(new Date(monitorStartTime), 'MMM dd, yyyy HH:mm')}
+                                  </div>
+                                </div>
+
+                                {/* Activity Filters */}
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium flex items-center gap-2">
+                                    <Filter className="h-4 w-4" />
+                                    Activity Filters
+                                  </label>
+                                  <div className="grid grid-cols-1 gap-2">
+                                    <div>
+                                      <label className="text-xs text-gray-600">Activity Level:</label>
+                                      <Select value={activityFilter} onValueChange={setActivityFilter}>
+                                        <SelectTrigger>
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="all">All Students</SelectItem>
+                                          <SelectItem value="active">Active Only</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <label className="text-xs text-gray-600">Min Viewed:</label>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          value={minContentViewed}
+                                          onChange={(e) => setMinContentViewed(parseInt(e.target.value) || 0)}
+                                          className="w-full"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="text-xs text-gray-600">Min Rated:</label>
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          value={minContentRated}
+                                          onChange={(e) => setMinContentRated(parseInt(e.target.value) || 0)}
+                                          className="w-full"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* Monitor Start Time & Activity Filters */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Monitor Start Time */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Clock className="h-4 w-4" />
-                        Monitor Start Time
-                      </label>
-                      <div className="grid grid-cols-1 gap-3">
-                        <div>
-                          <label className="text-xs text-gray-600">Time Preset:</label>
-                          <Select value={timePreset} onValueChange={(value) => {
-                            setTimePreset(value);
-                            if (value !== 'custom') {
-                              applyTimePreset(value);
-                            }
-                          }}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="now">Now</SelectItem>
-                              <SelectItem value="4pm_today">4 PM Today</SelectItem>
-                              <SelectItem value="8pm_today">8 PM Today</SelectItem>
-                              <SelectItem value="today">Start of Today</SelectItem>
-                              <SelectItem value="yesterday">Yesterday</SelectItem>
-                              <SelectItem value="7_days_ago">7 Days Ago</SelectItem>
-                              <SelectItem value="custom">Custom Time</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        {timePreset === 'custom' && (
-                          <div>
-                            <label className="text-xs text-gray-600">Custom DateTime:</label>
-                            <Input
-                              type="datetime-local"
-                              value={customStartTime}
-                              onChange={(e) => {
-                                setCustomStartTime(e.target.value);
-                                setMonitorStartTime(new Date(e.target.value).toISOString());
-                              }}
-                              className="w-full"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Current: {format(new Date(monitorStartTime), 'MMM dd, yyyy HH:mm')}
-                      </div>
-                    </div>
-
-                    {/* Activity Filters */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Filter className="h-4 w-4" />
-                        Activity Filters
-                      </label>
-                      <div className="grid grid-cols-1 gap-3">
-                        <div>
-                          <label className="text-xs text-gray-600">Activity Level:</label>
-                          <Select value={activityFilter} onValueChange={setActivityFilter}>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All Students</SelectItem>
-                              <SelectItem value="active">Active Only</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className="text-xs text-gray-600">Min Viewed:</label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={minContentViewed}
-                              onChange={(e) => setMinContentViewed(parseInt(e.target.value) || 0)}
-                              className="w-full"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs text-gray-600">Min Rated:</label>
-                            <Input
-                              type="number"
-                              min="0"
-                              value={minContentRated}
-                              onChange={(e) => setMinContentRated(parseInt(e.target.value) || 0)}
-                              className="w-full"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          </div>
 
         </CardContent>
       </Card>
