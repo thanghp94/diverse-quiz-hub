@@ -226,21 +226,6 @@ export default function AcademicEssayPopup({
   const proceedToWriting = () => {
     setPhase('writing');
     setIsTimerActive(false);
-    
-    // Update localStorage immediately and trigger storage event
-    if (studentId && contentId) {
-      const storageKey = `academic_essay_${studentId}_${contentId}`;
-      const dataToSave = {
-        phase: 'writing',
-        outlineData,
-        essayData,
-        timeRemaining,
-        isTimerActive: false
-      };
-      localStorage.setItem(storageKey, JSON.stringify(dataToSave));
-      window.dispatchEvent(new Event('storage'));
-    }
-    
     toast({
       title: "Outline Complete",
       description: "You can now begin writing your essay.",

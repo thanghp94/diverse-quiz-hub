@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Loader2, PenTool, FileText, Clock, BookOpen, Edit } from "lucide-react";
+import { Loader2, PenTool, FileText, Clock, BookOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
@@ -439,50 +439,6 @@ const WritingPage = () => {
                         <FileText className="h-4 w-4 mr-1" />
                         Academic Essay
                       </Button>
-                      
-                      {/* Writing in progress indicator for topic content */}
-                      {(() => {
-                        const storageKey = `academic_essay_${user?.id}_${content.id}`;
-                        const savedData = localStorage.getItem(storageKey);
-                        if (savedData) {
-                          try {
-                            const parsed = JSON.parse(savedData);
-                            if (parsed.phase === 'writing') {
-                              return (
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenEssayPopup(content.title || content.short_blurb, content.id);
-                                  }}
-                                  size="sm"
-                                  className="bg-orange-600 hover:bg-orange-700 text-white"
-                                >
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  Writing in Progress
-                                </Button>
-                              );
-                            } else if (parsed.phase === 'outline' || Object.values(parsed.outlineData || {}).some(val => val.trim())) {
-                              return (
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenEssayPopup(content.title || content.short_blurb, content.id);
-                                  }}
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                                >
-                                  <Clock className="h-4 w-4 mr-1" />
-                                  Draft Saved
-                                </Button>
-                              );
-                            }
-                          } catch (error) {
-                            console.error('Failed to parse saved essay data:', error);
-                          }
-                        }
-                        return null;
-                      })()}
                     </div>
                   )}
                 />
@@ -534,43 +490,17 @@ const WritingPage = () => {
                       Academic Essay
                     </Button>
                     
-                    {/* Writing in progress indicator */}
-                    {(() => {
-                      const storageKey = `academic_essay_${user?.id}_${content.id}`;
-                      const savedData = localStorage.getItem(storageKey);
-                      if (savedData) {
-                        try {
-                          const parsed = JSON.parse(savedData);
-                          if (parsed.phase === 'writing') {
-                            return (
-                              <Button
-                                onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
-                                size="sm"
-                                className="bg-orange-600 hover:bg-orange-700 text-white"
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Writing in Progress
-                              </Button>
-                            );
-                          } else if (parsed.phase === 'outline' || Object.values(parsed.outlineData || {}).some(val => val.trim())) {
-                            return (
-                              <Button
-                                onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
-                                size="sm"
-                                variant="outline"
-                                className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                              >
-                                <Clock className="h-4 w-4 mr-1" />
-                                Draft Saved
-                              </Button>
-                            );
-                          }
-                        } catch (error) {
-                          console.error('Failed to parse saved essay data:', error);
-                        }
-                      }
-                      return null;
-                    })()}
+                    {/* Progress indicator */}
+                    {localStorage.getItem(`essay_${user?.id}_${content.id}`) && (
+                      <Button
+                        onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
+                        size="sm"
+                        variant="outline"
+                        className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                      >
+                        <Clock className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
