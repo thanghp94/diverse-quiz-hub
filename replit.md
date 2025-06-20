@@ -4,6 +4,7 @@
 This is an educational platform that provides content management, quizzes, assignments, and student tracking. The project has been successfully migrated from Replit Agent to standard Replit environment with Neon PostgreSQL database.
 
 ## Recent Changes
+- **Debate Page (June 20, 2025)**: Created debate page with topic and content cards, displaying topics with challengesubject='debate' and content with parentid='debate'
 - **Admin Pagination (June 20, 2025)**: Added pagination to display 10 rows per table with navigation controls and result counters
 - **Admin CRUD Operations (June 20, 2025)**: Added complete insert functionality for Students, Topics, Content, and Matching with dialog forms and API endpoints
 - **Admin Data Management (June 20, 2025)**: Fixed student filtering, content table columns, and matching data display with proper field mapping
