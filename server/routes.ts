@@ -1,3 +1,4 @@
+
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -15,250 +16,218 @@ declare module 'express-session' {
   }
 }
 
-export async function registerRoutes(app: Express): Promise<Server> {
-  // Set up session middleware for authentication
-  app.use(getSessionMiddleware());
+// Helper functions for consistent error handling
+class ApiResponse {
+  static success(res: any, data: any, message?: string) {
+    return res.json({ success: true, ...data, ...(message && { message }) });
+  }
 
-  // Set up Google OAuth authentication
-  setupGoogleAuth(app);
+  static error(res: any, status: number, message: string, details?: any) {
+    return res.status(status).json({ 
+      success: false, 
+      message, 
+      ...(details && { details }) 
+    });
+  }
 
-  // Student Authentication routes
-  app.post('/api/auth/student-login', async (req, res) => {
+  static notFound(res: any, resource: string) {
+    return this.error(res, 404, `${resource} not found`);
+  }
+
+  static unauthorized(res: any, message = 'Not authenticated') {
+    return this.error(res, 401, message);
+  }
+
+  static badRequest(res: any, message: string) {
+    return this.error(res, 400, message);
+  }
+
+  static serverError(res: any, message = 'Internal server error', error?: any) {
+    console.error('Server error:', error);
+    return this.error(res, 500, message);
+  }
+}
+
+// Session management helper
+class SessionManager {
+  static async saveSession(req: any, res: any, user: any): Promise<boolean> {
+    return new Promise((resolve) => {
+      req.session.userId = user.id;
+      req.session.user = user;
+      
+      req.session.save((err: any) => {
+        if (err) {
+          console.error('Session save error:', err);
+          ApiResponse.serverError(res, 'Session save failed');
+          resolve(false);
+        } else {
+          console.log('Session saved successfully for user:', user.id);
+          resolve(true);
+        }
+      });
+    });
+  }
+
+  static destroySession(req: any, res: any, callback: () => void) {
+    req.session.destroy((err: any) => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return ApiResponse.serverError(res, 'Logout failed');
+      }
+      res.clearCookie('connect.sid');
+      callback();
+    });
+  }
+}
+
+// Route handlers organized by functionality
+class AuthRoutes {
+  static async studentLogin(req: any, res: any) {
     try {
       const { identifier } = req.body;
       
       if (!identifier) {
-        return res.status(400).json({ message: 'Student ID or Meraki Email is required' });
+        return ApiResponse.badRequest(res, 'Student ID or Meraki Email is required');
       }
 
-      // Check if user exists by UserID or MerakiEmail
       const user = await storage.getUserByIdentifier(identifier);
-      
       if (!user) {
-        return res.status(401).json({ message: 'Invalid Student ID or Meraki Email' });
+        return ApiResponse.unauthorized(res, 'Invalid Student ID or Meraki Email');
       }
 
-      // Create session for the user
-      (req.session as any).userId = user.id;
-      (req.session as any).user = user;
+      const sessionSaved = await SessionManager.saveSession(req, res, user);
+      if (!sessionSaved) return; // Response already sent
 
-      // Check if user needs to set up Google email
       const needsPersonalEmail = !user.email || user.email === user.meraki_email;
-
-      res.json({ 
-        success: true, 
-        user: user,
-        needsPersonalEmail 
-      });
+      return ApiResponse.success(res, { user, needsPersonalEmail });
     } catch (error) {
-      console.error('Student login error:', error);
-      res.status(500).json({ message: 'Login failed' });
+      return ApiResponse.serverError(res, 'Login failed', error);
     }
-  });
+  }
 
-  app.post('/api/auth/email-login', async (req, res) => {
+  static async emailLogin(req: any, res: any) {
     try {
       const { email } = req.body;
       
       if (!email) {
-        return res.status(400).json({ message: 'Email is required' });
+        return ApiResponse.badRequest(res, 'Email is required');
       }
 
-      // Find user by their personal email
       const user = await storage.getUserByEmail(email);
-      
       if (!user) {
-        return res.status(401).json({ message: 'Email not found. Please use Student ID for first-time login.' });
+        return ApiResponse.unauthorized(res, 'Email not found. Please use Student ID for first-time login.');
       }
 
-      // Create session for the user
-      (req.session as any).userId = user.id;
-      (req.session as any).user = user;
+      const sessionSaved = await SessionManager.saveSession(req, res, user);
+      if (!sessionSaved) return; // Response already sent
 
-      res.json({ 
-        success: true, 
-        user: user 
-      });
+      return ApiResponse.success(res, { user });
     } catch (error) {
-      console.error('Email login error:', error);
-      res.status(500).json({ message: 'Login failed' });
+      return ApiResponse.serverError(res, 'Login failed', error);
     }
-  });
+  }
 
-  app.post('/api/auth/set-personal-email', async (req, res) => {
-    try {
-      const { identifier, personalEmail } = req.body;
-      
-      if (!identifier || !personalEmail) {
-        return res.status(400).json({ message: 'Both identifier and email are required' });
-      }
-
-      // Find user by identifier
-      const user = await storage.getUserByIdentifier(identifier);
-      
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid Student ID or Meraki Email' });
-      }
-
-      // Update user's personal email
-      const updatedUser = await storage.updateUserEmail(user.id, personalEmail);
-
-      // Create session for the user
-      (req.session as any).userId = updatedUser.id;
-      (req.session as any).user = updatedUser;
-
-      res.json({ 
-        success: true, 
-        user: updatedUser 
-      });
-    } catch (error) {
-      console.error('Set personal email error:', error);
-      res.status(500).json({ message: 'Failed to save email' });
-    }
-  });
-
-  app.get('/api/auth/user', async (req: any, res) => {
-    try {
-      console.log('Auth check - Session ID:', req.sessionID);
-      console.log('Auth check - User ID in session:', (req.session as any).userId);
-      
-      if (!(req.session as any).userId) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
-
-      const user = await storage.getUser((req.session as any).userId);
-      if (!user) {
-        return res.status(401).json({ message: 'User not found' });
-      }
-
-      console.log('Auth check successful for user:', user.id);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
-
-  app.post('/api/auth/login', async (req, res) => {
+  static async loginWithPassword(req: any, res: any) {
     try {
       const { identifier, password } = req.body;
 
       if (!identifier || !password) {
-        return res.status(400).json({ message: 'Student ID/Email and password are required' });
+        return ApiResponse.badRequest(res, 'Student ID/Email and password are required');
       }
 
-      // Default password check
       if (password !== 'Meraki123') {
-        return res.status(401).json({ message: 'Invalid password. Use default password: Meraki123' });
+        return ApiResponse.unauthorized(res, 'Invalid password. Use default password: Meraki123');
       }
 
-      // Find student by Student ID or Meraki Email
       const student = await storage.getUserByIdentifier(identifier);
-      
       if (!student) {
-        return res.status(404).json({ message: 'Student ID or Meraki Email not found in our records' });
+        return ApiResponse.notFound(res, 'Student ID or Meraki Email');
       }
 
-      // Create authenticated session and save it
-      (req.session as any).userId = student.id;
-      (req.session as any).user = student;
+      const sessionSaved = await SessionManager.saveSession(req, res, student);
+      if (!sessionSaved) return; // Response already sent
 
-      // Force session save before responding
-      req.session.save((err) => {
-        if (err) {
-          console.error('Session save error:', err);
-          return res.status(500).json({ message: 'Session save failed' });
-        }
-
-        console.log('Session saved successfully for user:', student.id);
-        
-        // Check if student needs to set up personal email
-        const needsEmailSetup = !student.email || student.email === student.meraki_email;
-
-        res.json({ 
-          success: true, 
-          user: student,
-          needsEmailSetup,
-          message: needsEmailSetup ? 'Please set up your personal email' : 'Login successful'
-        });
-      });
+      const needsEmailSetup = !student.email || student.email === student.meraki_email;
+      return ApiResponse.success(res, { 
+        user: student, 
+        needsEmailSetup 
+      }, needsEmailSetup ? 'Please set up your personal email' : 'Login successful');
     } catch (error) {
-      console.error('Login error:', error);
-      res.status(500).json({ message: 'Login failed' });
+      return ApiResponse.serverError(res, 'Login failed', error);
     }
-  });
+  }
 
-  app.post('/api/auth/setup-email', async (req, res) => {
-    // Check authentication
-    if (!(req.session as any).userId) {
-      return res.status(401).json({ message: 'Authentication required' });
+  static async getUser(req: any, res: any) {
+    try {
+      console.log('Auth check - Session ID:', req.sessionID);
+      console.log('Auth check - User ID in session:', req.session.userId);
+      
+      if (!req.session.userId) {
+        return ApiResponse.unauthorized(res);
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return ApiResponse.unauthorized(res, 'User not found');
+      }
+
+      console.log('Auth check successful for user:', user.id);
+      return res.json(user);
+    } catch (error) {
+      return ApiResponse.serverError(res, 'Failed to fetch user', error);
     }
+  }
+
+  static async setupEmail(req: any, res: any) {
+    if (!req.session.userId) {
+      return ApiResponse.unauthorized(res, 'Authentication required');
+    }
+
     try {
       const { personalEmail } = req.body;
-      const userId = (req.session as any).userId;
+      const userId = req.session.userId;
 
       if (!personalEmail) {
-        return res.status(400).json({ message: 'Personal email is required' });
+        return ApiResponse.badRequest(res, 'Personal email is required');
       }
 
-      // Basic email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(personalEmail)) {
-        return res.status(400).json({ message: 'Invalid email format' });
+        return ApiResponse.badRequest(res, 'Invalid email format');
       }
 
-      // Update user's personal email
       const updatedStudent = await storage.updateUserEmail(userId, personalEmail);
+      req.session.user = updatedStudent;
 
-      // Update session
-      (req.session as any).user = updatedStudent;
-
-      res.json({ 
-        success: true, 
-        user: updatedStudent,
-        message: 'Personal email saved successfully'
-      });
+      return ApiResponse.success(res, { user: updatedStudent }, 'Personal email saved successfully');
     } catch (error) {
-      console.error('Email setup error:', error);
-      res.status(500).json({ message: 'Failed to save email' });
+      return ApiResponse.serverError(res, 'Failed to save email', error);
     }
-  });
+  }
 
-  app.post('/api/auth/skip-email-setup', async (req, res) => {
-    // Check authentication
-    if (!(req.session as any).userId) {
-      return res.status(401).json({ message: 'Authentication required' });
+  static async skipEmailSetup(req: any, res: any) {
+    if (!req.session.userId) {
+      return ApiResponse.unauthorized(res, 'Authentication required');
     }
+
     try {
-      res.json({ 
-        success: true,
-        message: 'Email setup skipped'
-      });
+      return ApiResponse.success(res, {}, 'Email setup skipped');
     } catch (error) {
-      console.error('Skip email setup error:', error);
-      res.status(500).json({ message: 'Failed to skip email setup' });
+      return ApiResponse.serverError(res, 'Failed to skip email setup', error);
     }
-  });
+  }
 
-  // Logout endpoint
-  app.post('/api/auth/logout', (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        console.error('Logout error:', err);
-        return res.status(500).json({ message: 'Logout failed' });
-      }
-      
-      res.clearCookie('connect.sid'); // Clear the session cookie
-      res.json({ success: true, message: 'Logged out successfully' });
+  static logout(req: any, res: any) {
+    SessionManager.destroySession(req, res, () => {
+      ApiResponse.success(res, {}, 'Logged out successfully');
     });
-  });
+  }
 
-  // Test endpoint to verify OAuth configuration
-  app.get('/api/auth/test', (req, res) => {
+  static testConfig(req: any, res: any) {
     const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
     const clientId = process.env.GOOGLE_CLIENT_ID;
     
-    res.json({
+    return res.json({
       domain,
       callbackURL: `https://${domain}/api/auth/google/callback`,
       googleClientId: clientId ? clientId.substring(0, 12) + '...' + clientId.slice(-6) : 'Missing',
@@ -267,189 +236,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       directOAuthURL: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=https%3A%2F%2F${domain}%2Fapi%2Fauth%2Fgoogle%2Fcallback&scope=profile%20email&response_type=code`,
       timestamp: new Date().toISOString()
     });
-  });
+  }
+}
 
-  app.post('/api/auth/logout', (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ message: 'Logout failed' });
-      }
-      res.json({ message: 'Logged out successfully' });
-    });
-  });
-
-  // Health check endpoint
-  app.get("/api/health", async (req, res) => {
-    try {
-      const isDbHealthy = await wakeUpDatabase();
-      res.json({ 
-        status: isDbHealthy ? 'healthy' : 'unhealthy',
-        database: isDbHealthy ? 'connected' : 'disconnected',
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Health check failed:', error);
-      res.status(503).json({ 
-        status: 'unhealthy',
-        database: 'disconnected',
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
-    }
-  });
-
-  // Wake up database endpoint
-  app.post("/api/wake-db", async (req, res) => {
-    try {
-      console.log('Attempting to wake up database...');
-      const success = await wakeUpDatabase();
-      res.json({ 
-        success,
-        message: success ? 'Database is awake' : 'Failed to wake database',
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Wake up failed:', error);
-      res.status(500).json({ 
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
-      });
-    }
-  });
-
-  // Topics API - Protected route requiring authentication
-  app.get("/api/topics", isStudentAuthenticated, async (req, res) => {
+class ContentRoutes {
+  static async getTopics(req: any, res: any) {
     try {
       const topics = await storage.getTopics();
-      res.json(topics);
+      return res.json(topics);
     } catch (error) {
-      console.error('Error fetching topics:', error);
-      res.status(500).json({ error: 'Failed to fetch topics' });
+      return ApiResponse.serverError(res, 'Failed to fetch topics', error);
     }
-  });
+  }
 
-  app.get("/api/topics/bowl-challenge", async (req, res) => {
+  static async getBowlChallengeTopics(req: any, res: any) {
     try {
       const topics = await storage.getBowlChallengeTopics();
-      res.json(topics);
+      return res.json(topics);
     } catch (error) {
-      console.error('Error fetching bowl challenge topics:', error);
-      res.status(500).json({ error: 'Failed to fetch bowl challenge topics' });
+      return ApiResponse.serverError(res, 'Failed to fetch bowl challenge topics', error);
     }
-  });
+  }
 
-  app.get("/api/topics/:id", async (req, res) => {
+  static async getTopicById(req: any, res: any) {
     try {
       const topic = await storage.getTopicById(req.params.id);
       if (!topic) {
-        return res.status(404).json({ error: 'Topic not found' });
+        return ApiResponse.notFound(res, 'Topic');
       }
-      res.json(topic);
+      return res.json(topic);
     } catch (error) {
-      console.error('Error fetching topic:', error);
-      res.status(500).json({ error: 'Failed to fetch topic' });
+      return ApiResponse.serverError(res, 'Failed to fetch topic', error);
     }
-  });
+  }
 
-  // Content API - Protected routes requiring authentication
-  app.get("/api/content", isStudentAuthenticated, async (req, res) => {
+  static async getContent(req: any, res: any) {
     try {
       const topicId = req.query.topicId as string;
       const content = await storage.getContent(topicId);
-      res.json(content);
+      return res.json(content);
     } catch (error) {
-      console.error('Error fetching content:', error);
-      res.status(500).json({ error: 'Failed to fetch content' });
+      return ApiResponse.serverError(res, 'Failed to fetch content', error);
     }
-  });
+  }
 
-  app.get("/api/content/:id", isStudentAuthenticated, async (req, res) => {
+  static async getContentById(req: any, res: any) {
     try {
       const content = await storage.getContentById(req.params.id);
       if (!content) {
-        return res.status(404).json({ error: 'Content not found' });
+        return ApiResponse.notFound(res, 'Content');
       }
-      res.json(content);
+      return res.json(content);
     } catch (error) {
-      console.error('Error fetching content:', error);
-      res.status(500).json({ error: 'Failed to fetch content' });
+      return ApiResponse.serverError(res, 'Failed to fetch content', error);
     }
-  });
+  }
 
-  // Content Groups API
-  app.get("/api/content-groups", async (req, res) => {
-    try {
-      const contentGroups = await storage.getContentGroups();
-      res.json(contentGroups);
-    } catch (error) {
-      console.error('Error fetching content groups:', error);
-      res.status(500).json({ error: 'Failed to fetch content groups' });
-    }
-  });
-
-  app.get("/api/content-groups/:groupName", async (req, res) => {
-    try {
-      const contentGroup = await storage.getContentByGroup(req.params.groupName);
-      res.json(contentGroup);
-    } catch (error) {
-      console.error('Error fetching content by group:', error);
-      res.status(500).json({ error: 'Failed to fetch content by group' });
-    }
-  });
-
-  app.get("/api/content-groups/topic/:topicId", async (req, res) => {
-    try {
-      const topicId = req.params.topicId;
-      
-      // Get all content for this topic
-      const allContent = await storage.getContent(topicId);
-      
-      // Group content by contentgroup field
-      const groupedContent: { [key: string]: any[] } = {};
-      const ungroupedContent: any[] = [];
-      
-      allContent.forEach(content => {
-        if (content.contentgroup && content.contentgroup.trim() !== '') {
-          if (!groupedContent[content.contentgroup]) {
-            groupedContent[content.contentgroup] = [];
-          }
-          groupedContent[content.contentgroup].push(content);
-        } else {
-          ungroupedContent.push(content);
-        }
-      });
-      
-      // Format response with group info
-      const response = {
-        groups: Object.entries(groupedContent).map(([groupName, content]) => ({
-          groupName,
-          content,
-          count: content.length
-        })),
-        ungroupedContent
-      };
-      
-      res.json(response);
-    } catch (error) {
-      console.error('Error fetching content groups by topic:', error);
-      res.status(500).json({ error: 'Failed to fetch content groups by topic' });
-    }
-  });
-
-  // Images
-  app.get("/api/images", async (req, res) => {
-    try {
-      const images = await storage.getImages();
-      res.json(images);
-    } catch (error) {
-      console.error('Error fetching images:', error);
-      res.status(500).json({ error: 'Failed to fetch images' });
-    }
-  });
-
-  // Content Update API
-  app.patch("/api/content/:id", async (req, res) => {
+  static async updateContent(req: any, res: any) {
     try {
       const { short_description, short_blurb, imageid, videoid, videoid2 } = req.body;
       const updates = { short_description, short_blurb, imageid, videoid, videoid2 };
@@ -463,247 +306,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updatedContent = await storage.updateContent(req.params.id, updates);
       if (!updatedContent) {
-        return res.status(404).json({ error: 'Content not found' });
+        return ApiResponse.notFound(res, 'Content');
       }
-      res.json(updatedContent);
+      return res.json(updatedContent);
     } catch (error) {
-      console.error('Error updating content:', error);
-      res.status(500).json({ error: 'Failed to update content' });
+      return ApiResponse.serverError(res, 'Failed to update content', error);
     }
-  });
+  }
 
-  // Images API
-  app.get("/api/images", async (req, res) => {
-    try {
-      const images = await storage.getImages();
-      res.json(images);
-    } catch (error) {
-      console.error('Error fetching images:', error);
-      res.status(500).json({ error: 'Failed to fetch images' });
-    }
-  });
-
-  app.get("/api/images/:id", async (req, res) => {
-    try {
-      const image = await storage.getImageById(req.params.id);
-      if (!image) {
-        return res.status(404).json({ error: 'Image not found' });
-      }
-      res.json(image);
-    } catch (error) {
-      console.error('Error fetching image:', error);
-      res.status(500).json({ error: 'Failed to fetch image' });
-    }
-  });
-
-  // Questions
-  app.get("/api/questions", async (req, res) => {
-    try {
-      const { contentId, topicId, level } = req.query;
-      console.log(`API: Fetching questions with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
-
-      // Ensure level parameter is properly passed and not undefined
-      const levelParam = level && level !== 'undefined' ? level as string : undefined;
-
-      const questions = await storage.getQuestions(
-        contentId as string, 
-        topicId as string, 
-        levelParam
-      );
-
-      console.log(`API: Returning ${questions.length} questions for level: ${levelParam || 'all'}`);
-      res.json(questions);
-    } catch (error) {
-      console.error("Error fetching questions:", error);
-      res.status(500).json({ error: "Failed to fetch questions" });
-    }
-  });
-
-  app.get("/api/questions/:id", async (req, res) => {
-    try {
-      const question = await storage.getQuestionById(req.params.id);
-      if (!question) {
-        return res.status(404).json({ error: 'Question not found' });
-      }
-      res.json(question);
-    } catch (error) {
-      console.error('Error fetching question:', error);
-      res.status(500).json({ error: 'Failed to fetch question' });
-    }
-  });
-
-  // Matching API
-  app.get("/api/matching", async (req, res) => {
-    try {
-      const matching = await storage.getMatchingActivities();
-      res.json(matching);
-    } catch (error) {
-      console.error('Error fetching matching activities:', error);
-      res.status(500).json({ error: 'Failed to fetch matching activities' });
-    }
-  });
-
-  app.get("/api/matching/:id", async (req, res) => {
-    try {
-      const matching = await storage.getMatchingById(req.params.id);
-      if (!matching) {
-        return res.status(404).json({ error: 'Matching activity not found' });
-      }
-      res.json(matching);
-    } catch (error) {
-      console.error('Error fetching matching activity:', error);
-      res.status(500).json({ error: 'Failed to fetch matching activity' });
-    }
-  });
-
-  app.get("/api/matching/topic/:topicId", async (req, res) => {
-    try {
-      const matching = await storage.getMatchingByTopicId(req.params.topicId);
-      res.json(matching);
-    } catch (error) {
-      console.error('Error fetching matching activities by topic:', error);
-      res.status(500).json({ error: 'Failed to fetch matching activities by topic' });
-    }
-  });
-
-  // Videos
-  app.get("/api/videos", async (req, res) => {
-    try {
-      const videos = await storage.getVideos();
-      res.json(videos);
-    } catch (error) {
-      console.error('Error fetching videos:', error);
-      res.status(500).json({ error: 'Failed to fetch videos' });
-    }
-  });
-
-  app.get("/api/videos/:id", async (req, res) => {
-    try {
-      const video = await storage.getVideoById(req.params.id);
-      if (!video) {
-        return res.status(404).json({ error: 'Video not found' });
-      }
-      res.json(video);
-    } catch (error) {
-      console.error('Error fetching video:', error);
-      res.status(500).json({ error: 'Failed to fetch video' });
-    }
-  });
-
-  app.get("/api/content/:contentId/videos", async (req, res) => {
-    try {
-      const videos = await storage.getVideosByContentId(req.params.contentId);
-      res.json(videos);
-    } catch (error) {
-      console.error('Error fetching videos for content:', error);
-      res.status(500).json({ error: 'Failed to fetch videos for content' });
-    }
-  });
-
-  // User authentication routes
-  app.get("/api/users", async (req, res) => {
-    try {
-      const users = await storage.getAllUsers();
-      res.json(users);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      res.status(500).json({ error: 'Failed to fetch users' });
-    }
-  });
-
-  app.get("/api/users/:id", async (req, res) => {
-    try {
-      const user = await storage.getUser(req.params.id);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      res.json(user);
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      res.status(500).json({ error: 'Failed to fetch user' });
-    }
-  });
-
-  app.get("/api/users/by-email/:email", async (req, res) => {
-    try {
-      const email = decodeURIComponent(req.params.email);
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      res.json(user);
-    } catch (error) {
-      console.error('Error fetching user by email:', error);
-      res.status(500).json({ error: 'Failed to fetch user' });
-    }
-  });
-
-  // Matching Attempts routes
-  app.post("/api/matching-attempts", async (req, res) => {
-    try {
-      const attempt = await storage.createMatchingAttempt(req.body);
-      res.json(attempt);
-    } catch (error) {
-      console.error('Error creating matching attempt:', error);
-      res.status(500).json({ error: 'Failed to create matching attempt' });
-    }
-  });
-
-  app.get("/api/matching-attempts/student/:studentId", async (req, res) => {
-    try {
-      const { studentId } = req.params;
-      const { matchingId } = req.query;
-      const attempts = await storage.getMatchingAttempts(studentId, matchingId as string);
-      res.json(attempts);
-    } catch (error) {
-      console.error('Error fetching matching attempts:', error);
-      res.status(500).json({ error: 'Failed to fetch matching attempts' });
-    }
-  });
-
-  app.get("/api/matching-attempts/:id", async (req, res) => {
-    try {
-      const attempt = await storage.getMatchingAttemptById(req.params.id);
-      if (!attempt) {
-        return res.status(404).json({ error: 'Matching attempt not found' });
-      }
-      res.json(attempt);
-    } catch (error) {
-      console.error('Error fetching matching attempt:', error);
-      res.status(500).json({ error: 'Failed to fetch matching attempt' });
-    }
-  });
-
-  app.patch("/api/matching-attempts/:id", async (req, res) => {
-    try {
-      const attempt = await storage.updateMatchingAttempt(req.params.id, req.body);
-      res.json(attempt);
-    } catch (error) {
-      console.error('Error updating matching attempt:', error);
-      res.status(500).json({ error: 'Failed to update matching attempt' });
-    }
-  });
-
-  // Personal Content API
-  app.get("/api/personal-content/:studentId", async (req, res) => {
-    try {
-      const personalContent = await storage.getPersonalContent(req.params.studentId);
-      res.json(personalContent);
-    } catch (error) {
-      console.error('Error fetching personal content:', error);
-      res.status(500).json({ error: 'Failed to fetch personal content' });
-    }
-  });
-
-  // Content Access Tracking - automatically records when content is viewed
-  app.post("/api/content-access", async (req, res) => {
+  static async trackContentAccess(req: any, res: any) {
     try {
       const { student_id, content_id } = req.body;
       
       console.log(`Content access tracking called: Student ${student_id}, Content ${content_id}`);
       
       if (!student_id || !content_id) {
-        return res.status(400).json({ error: 'student_id and content_id are required' });
+        return ApiResponse.badRequest(res, 'student_id and content_id are required');
       }
 
       // Record in student_try_content table for proper content tracking
@@ -719,7 +337,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           update: `Content_viewed_${now}`
         };
 
-        // Insert into student_try_content table using raw SQL to handle existing schema
         await db.execute(sql`
           INSERT INTO student_try_content (id, contentid, hocsinh_id, student_try_id, time_start, time_end, update)
           VALUES (${studentTryContentRecord.id}, ${content_id}, ${student_id}, ${studentTryContentRecord.student_try_id}, ${now}, ${now}, ${studentTryContentRecord.update})
@@ -729,31 +346,378 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Error creating student_try_content record:', contentError);
       }
 
-      // Check if this content has already been accessed by this student
       const existingRating = await storage.getContentRating(student_id, content_id);
       
       if (!existingRating) {
-        // Create a new content rating entry to track the access
         const accessRecord = await storage.createContentRating({
           id: crypto.randomUUID(),
           student_id,
           content_id,
-          rating: 'viewed', // Special rating to indicate content was viewed
+          rating: 'viewed',
           personal_note: null,
           view_count: 1
         });
         
         console.log(`Content access recorded: Student ${student_id} viewed content ${content_id}`);
-        res.json({ message: 'Content access recorded', record: accessRecord });
+        return ApiResponse.success(res, { record: accessRecord }, 'Content access recorded');
       } else {
-        // Content already accessed - increment view count
         const updatedRating = await storage.incrementContentViewCount(student_id, content_id);
         console.log(`Content view count incremented: Student ${student_id} viewed content ${content_id}`);
-        res.json({ message: 'Content view count updated', record: updatedRating });
+        return ApiResponse.success(res, { record: updatedRating }, 'Content view count updated');
       }
     } catch (error) {
-      console.error('Error tracking content access:', error);
-      res.status(500).json({ error: 'Failed to track content access' });
+      return ApiResponse.serverError(res, 'Failed to track content access', error);
+    }
+  }
+}
+
+class SystemRoutes {
+  static async healthCheck(req: any, res: any) {
+    try {
+      const isDbHealthy = await wakeUpDatabase();
+      return res.json({ 
+        status: isDbHealthy ? 'healthy' : 'unhealthy',
+        database: isDbHealthy ? 'connected' : 'disconnected',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Health check failed:', error);
+      return res.status(503).json({ 
+        status: 'unhealthy',
+        database: 'disconnected',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+
+  static async wakeDatabase(req: any, res: any) {
+    try {
+      console.log('Attempting to wake up database...');
+      const success = await wakeUpDatabase();
+      return res.json({ 
+        success,
+        message: success ? 'Database is awake' : 'Failed to wake database',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Wake up failed:', error);
+      return res.status(500).json({ 
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      });
+    }
+  }
+}
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Set up session middleware for authentication
+  app.use(getSessionMiddleware());
+
+  // Set up Google OAuth authentication
+  setupGoogleAuth(app);
+
+  // Authentication routes
+  app.post('/api/auth/student-login', AuthRoutes.studentLogin);
+  app.post('/api/auth/email-login', AuthRoutes.emailLogin);
+  app.post('/api/auth/login', AuthRoutes.loginWithPassword);
+  app.get('/api/auth/user', AuthRoutes.getUser);
+  app.post('/api/auth/setup-email', AuthRoutes.setupEmail);
+  app.post('/api/auth/skip-email-setup', AuthRoutes.skipEmailSetup);
+  app.post('/api/auth/logout', AuthRoutes.logout);
+  app.get('/api/auth/test', AuthRoutes.testConfig);
+
+  // Legacy email setup route
+  app.post('/api/auth/set-personal-email', async (req, res) => {
+    try {
+      const { identifier, personalEmail } = req.body;
+      
+      if (!identifier || !personalEmail) {
+        return ApiResponse.badRequest(res, 'Both identifier and email are required');
+      }
+
+      const user = await storage.getUserByIdentifier(identifier);
+      if (!user) {
+        return ApiResponse.unauthorized(res, 'Invalid Student ID or Meraki Email');
+      }
+
+      const updatedUser = await storage.updateUserEmail(user.id, personalEmail);
+      const sessionSaved = await SessionManager.saveSession(req, res, updatedUser);
+      if (!sessionSaved) return;
+
+      return ApiResponse.success(res, { user: updatedUser });
+    } catch (error) {
+      return ApiResponse.serverError(res, 'Failed to save email', error);
+    }
+  });
+
+  // System routes
+  app.get("/api/health", SystemRoutes.healthCheck);
+  app.post("/api/wake-db", SystemRoutes.wakeDatabase);
+
+  // Content routes
+  app.get("/api/topics", isStudentAuthenticated, ContentRoutes.getTopics);
+  app.get("/api/topics/bowl-challenge", ContentRoutes.getBowlChallengeTopics);
+  app.get("/api/topics/:id", ContentRoutes.getTopicById);
+  app.get("/api/content", isStudentAuthenticated, ContentRoutes.getContent);
+  app.get("/api/content/:id", isStudentAuthenticated, ContentRoutes.getContentById);
+  app.patch("/api/content/:id", ContentRoutes.updateContent);
+  app.post("/api/content-access", ContentRoutes.trackContentAccess);
+
+  // Content Groups API
+  app.get("/api/content-groups", async (req, res) => {
+    try {
+      const contentGroups = await storage.getContentGroups();
+      res.json(contentGroups);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch content groups', error);
+    }
+  });
+
+  app.get("/api/content-groups/:groupName", async (req, res) => {
+    try {
+      const contentGroup = await storage.getContentByGroup(req.params.groupName);
+      res.json(contentGroup);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch content by group', error);
+    }
+  });
+
+  app.get("/api/content-groups/topic/:topicId", async (req, res) => {
+    try {
+      const topicId = req.params.topicId;
+      const allContent = await storage.getContent(topicId);
+      
+      const groupedContent: { [key: string]: any[] } = {};
+      const ungroupedContent: any[] = [];
+      
+      allContent.forEach(content => {
+        if (content.contentgroup && content.contentgroup.trim() !== '') {
+          if (!groupedContent[content.contentgroup]) {
+            groupedContent[content.contentgroup] = [];
+          }
+          groupedContent[content.contentgroup].push(content);
+        } else {
+          ungroupedContent.push(content);
+        }
+      });
+      
+      const response = {
+        groups: Object.entries(groupedContent).map(([groupName, content]) => ({
+          groupName,
+          content,
+          count: content.length
+        })),
+        ungroupedContent
+      };
+      
+      res.json(response);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch content groups by topic', error);
+    }
+  });
+
+  // Images API
+  app.get("/api/images", async (req, res) => {
+    try {
+      const images = await storage.getImages();
+      res.json(images);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch images', error);
+    }
+  });
+
+  app.get("/api/images/:id", async (req, res) => {
+    try {
+      const image = await storage.getImageById(req.params.id);
+      if (!image) {
+        return ApiResponse.notFound(res, 'Image');
+      }
+      res.json(image);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch image', error);
+    }
+  });
+
+  // Questions API
+  app.get("/api/questions", async (req, res) => {
+    try {
+      const { contentId, topicId, level } = req.query;
+      console.log(`API: Fetching questions with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
+
+      const levelParam = level && level !== 'undefined' ? level as string : undefined;
+      const questions = await storage.getQuestions(
+        contentId as string, 
+        topicId as string, 
+        levelParam
+      );
+
+      console.log(`API: Returning ${questions.length} questions for level: ${levelParam || 'all'}`);
+      res.json(questions);
+    } catch (error) {
+      ApiResponse.serverError(res, "Failed to fetch questions", error);
+    }
+  });
+
+  app.get("/api/questions/:id", async (req, res) => {
+    try {
+      const question = await storage.getQuestionById(req.params.id);
+      if (!question) {
+        return ApiResponse.notFound(res, 'Question');
+      }
+      res.json(question);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch question', error);
+    }
+  });
+
+  // Matching API
+  app.get("/api/matching", async (req, res) => {
+    try {
+      const matching = await storage.getMatchingActivities();
+      res.json(matching);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch matching activities', error);
+    }
+  });
+
+  app.get("/api/matching/:id", async (req, res) => {
+    try {
+      const matching = await storage.getMatchingById(req.params.id);
+      if (!matching) {
+        return ApiResponse.notFound(res, 'Matching activity');
+      }
+      res.json(matching);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch matching activity', error);
+    }
+  });
+
+  app.get("/api/matching/topic/:topicId", async (req, res) => {
+    try {
+      const matching = await storage.getMatchingByTopicId(req.params.topicId);
+      res.json(matching);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch matching activities by topic', error);
+    }
+  });
+
+  // Videos API
+  app.get("/api/videos", async (req, res) => {
+    try {
+      const videos = await storage.getVideos();
+      res.json(videos);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch videos', error);
+    }
+  });
+
+  app.get("/api/videos/:id", async (req, res) => {
+    try {
+      const video = await storage.getVideoById(req.params.id);
+      if (!video) {
+        return ApiResponse.notFound(res, 'Video');
+      }
+      res.json(video);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch video', error);
+    }
+  });
+
+  app.get("/api/content/:contentId/videos", async (req, res) => {
+    try {
+      const videos = await storage.getVideosByContentId(req.params.contentId);
+      res.json(videos);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch videos for content', error);
+    }
+  });
+
+  // User API
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch users', error);
+    }
+  });
+
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const user = await storage.getUser(req.params.id);
+      if (!user) {
+        return ApiResponse.notFound(res, 'User');
+      }
+      res.json(user);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch user', error);
+    }
+  });
+
+  app.get("/api/users/by-email/:email", async (req, res) => {
+    try {
+      const email = decodeURIComponent(req.params.email);
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return ApiResponse.notFound(res, 'User');
+      }
+      res.json(user);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch user', error);
+    }
+  });
+
+  // Matching Attempts API
+  app.post("/api/matching-attempts", async (req, res) => {
+    try {
+      const attempt = await storage.createMatchingAttempt(req.body);
+      res.json(attempt);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to create matching attempt', error);
+    }
+  });
+
+  app.get("/api/matching-attempts/student/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const { matchingId } = req.query;
+      const attempts = await storage.getMatchingAttempts(studentId, matchingId as string);
+      res.json(attempts);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch matching attempts', error);
+    }
+  });
+
+  app.get("/api/matching-attempts/:id", async (req, res) => {
+    try {
+      const attempt = await storage.getMatchingAttemptById(req.params.id);
+      if (!attempt) {
+        return ApiResponse.notFound(res, 'Matching attempt');
+      }
+      res.json(attempt);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch matching attempt', error);
+    }
+  });
+
+  app.patch("/api/matching-attempts/:id", async (req, res) => {
+    try {
+      const attempt = await storage.updateMatchingAttempt(req.params.id, req.body);
+      res.json(attempt);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to update matching attempt', error);
+    }
+  });
+
+  // Personal Content API
+  app.get("/api/personal-content/:studentId", async (req, res) => {
+    try {
+      const personalContent = await storage.getPersonalContent(req.params.studentId);
+      res.json(personalContent);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch personal content', error);
     }
   });
 
@@ -763,23 +727,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const rating = await storage.createContentRating(req.body);
       res.json(rating);
     } catch (error) {
-      console.error('Error creating content rating:', error);
-      res.status(500).json({ error: 'Failed to create content rating' });
+      ApiResponse.serverError(res, 'Failed to create content rating', error);
     }
   });
 
-  // Get all content ratings for a student
   app.get("/api/content-ratings/:studentId", async (req, res) => {
     try {
       const ratings = await storage.getContentRatingsByStudent(req.params.studentId);
       res.json(ratings);
     } catch (error) {
-      console.error('Error fetching student content ratings:', error);
-      res.status(500).json({ error: 'Failed to fetch student content ratings' });
+      ApiResponse.serverError(res, 'Failed to fetch student content ratings', error);
     }
   });
 
-  // Get student tries count for content optimization
   app.get("/api/student-tries-count/:studentId", async (req, res) => {
     try {
       const { studentId } = req.params;
@@ -790,8 +750,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const contentIdArray = typeof contentIds === 'string' ? contentIds.split(',') : Array.isArray(contentIds) ? contentIds : [];
-      
-      // Use storage method for optimized student tries count
       const allStudentTries = await storage.getAllStudentTries();
       const triesCount: Record<string, number> = {};
       
@@ -809,8 +767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(triesCount);
     } catch (error) {
-      console.error('Error fetching student tries count:', error);
-      res.status(500).json({ error: 'Failed to fetch student tries count' });
+      ApiResponse.serverError(res, 'Failed to fetch student tries count', error);
     }
   });
 
@@ -818,12 +775,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const rating = await storage.getContentRating(req.params.studentId, req.params.contentId);
       if (rating === null) {
-        return res.status(404).json({ error: 'Rating not found' });
+        return ApiResponse.notFound(res, 'Rating');
       }
       res.json(rating);
     } catch (error) {
-      console.error('Error fetching content rating:', error);
-      res.status(500).json({ error: 'Failed to fetch content rating' });
+      ApiResponse.serverError(res, 'Failed to fetch content rating', error);
     }
   });
 
@@ -832,7 +788,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { rating, personal_note } = req.body;
       const result = await storage.updateContentRating(req.params.studentId, req.params.contentId, rating, personal_note);
       
-      // Record daily activity and update streak only if rating is provided
       if (rating) {
         try {
           await storage.recordDailyActivity(req.params.studentId, 10);
@@ -844,8 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(result);
     } catch (error) {
-      console.error('Error updating content rating:', error);
-      res.status(500).json({ error: 'Failed to update content rating' });
+      ApiResponse.serverError(res, 'Failed to update content rating', error);
     }
   });
 
@@ -855,8 +809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const leaderboard = await storage.getStudentTriesLeaderboard();
       res.json(leaderboard);
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      res.status(500).json({ error: 'Failed to fetch leaderboard' });
+      ApiResponse.serverError(res, 'Failed to fetch leaderboard', error);
     }
   });
 
@@ -865,8 +818,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getContentRatingStats(req.params.contentId);
       res.json(stats);
     } catch (error) {
-      console.error('Error fetching content rating stats:', error);
-      res.status(500).json({ error: 'Failed to fetch content rating stats' });
+      ApiResponse.serverError(res, 'Failed to fetch content rating stats', error);
     }
   });
 
@@ -876,22 +828,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const streak = await storage.getStudentStreak(req.params.studentId);
       res.json(streak);
     } catch (error) {
-      console.error('Error fetching student streak:', error);
-      res.status(500).json({ error: 'Failed to fetch student streak' });
+      ApiResponse.serverError(res, 'Failed to fetch student streak', error);
     }
   });
 
   app.post("/api/streaks/:studentId", async (req, res) => {
     try {
-      // First record some activity for today if not already recorded
       await storage.recordDailyActivity(req.params.studentId, 10);
-      
-      // Then update the streak
       const streak = await storage.updateStudentStreak(req.params.studentId);
       res.json(streak);
     } catch (error) {
-      console.error('Error updating student streak:', error);
-      res.status(500).json({ error: 'Failed to update student streak' });
+      ApiResponse.serverError(res, 'Failed to update student streak', error);
     }
   });
 
@@ -901,8 +848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activity = await storage.recordDailyActivity(req.body.studentId, req.body.points);
       res.json(activity);
     } catch (error) {
-      console.error('Error recording daily activity:', error);
-      res.status(500).json({ error: 'Failed to record daily activity' });
+      ApiResponse.serverError(res, 'Failed to record daily activity', error);
     }
   });
 
@@ -912,8 +858,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const leaderboards = await storage.getLeaderboards();
       res.json(leaderboards);
     } catch (error) {
-      console.error('Error fetching leaderboards:', error);
-      res.status(500).json({ error: 'Failed to fetch leaderboards' });
+      ApiResponse.serverError(res, 'Failed to fetch leaderboards', error);
     }
   });
 
@@ -923,8 +868,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const prompts = await storage.getWritingPrompts();
       res.json(prompts);
     } catch (error) {
-      console.error('Error fetching writing prompts:', error);
-      res.status(500).json({ error: 'Failed to fetch writing prompts' });
+      ApiResponse.serverError(res, 'Failed to fetch writing prompts', error);
     }
   });
 
@@ -933,8 +877,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const prompts = await storage.getWritingPromptsByCategory(req.params.category);
       res.json(prompts);
     } catch (error) {
-      console.error('Error fetching writing prompts by category:', error);
-      res.status(500).json({ error: 'Failed to fetch writing prompts by category' });
+      ApiResponse.serverError(res, 'Failed to fetch writing prompts by category', error);
     }
   });
 
@@ -942,12 +885,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const prompt = await storage.getWritingPromptById(req.params.id);
       if (!prompt) {
-        return res.status(404).json({ error: 'Writing prompt not found' });
+        return ApiResponse.notFound(res, 'Writing prompt');
       }
       res.json(prompt);
     } catch (error) {
-      console.error('Error fetching writing prompt:', error);
-      res.status(500).json({ error: 'Failed to fetch writing prompt' });
+      ApiResponse.serverError(res, 'Failed to fetch writing prompt', error);
     }
   });
 
@@ -957,8 +899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const submission = await storage.createWritingSubmission(req.body);
       res.json(submission);
     } catch (error) {
-      console.error('Error creating writing submission:', error);
-      res.status(500).json({ error: 'Failed to create writing submission' });
+      ApiResponse.serverError(res, 'Failed to create writing submission', error);
     }
   });
 
@@ -966,12 +907,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const submission = await storage.getWritingSubmission(req.params.id);
       if (!submission) {
-        return res.status(404).json({ error: 'Writing submission not found' });
+        return ApiResponse.notFound(res, 'Writing submission');
       }
       res.json(submission);
     } catch (error) {
-      console.error('Error fetching writing submission:', error);
-      res.status(500).json({ error: 'Failed to fetch writing submission' });
+      ApiResponse.serverError(res, 'Failed to fetch writing submission', error);
     }
   });
 
@@ -980,8 +920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const submissions = await storage.getStudentWritingSubmissions(req.params.studentId);
       res.json(submissions);
     } catch (error) {
-      console.error('Error fetching student writing submissions:', error);
-      res.status(500).json({ error: 'Failed to fetch student writing submissions' });
+      ApiResponse.serverError(res, 'Failed to fetch student writing submissions', error);
     }
   });
 
@@ -990,8 +929,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const submission = await storage.updateWritingSubmission(req.params.id, req.body);
       res.json(submission);
     } catch (error) {
-      console.error('Error updating writing submission:', error);
-      res.status(500).json({ error: 'Failed to update writing submission' });
+      ApiResponse.serverError(res, 'Failed to update writing submission', error);
     }
   });
 
@@ -1001,19 +939,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignments = await storage.getAllAssignments();
       res.json(assignments);
     } catch (error) {
-      console.error('Error fetching assignments:', error);
-      res.status(500).json({ error: 'Failed to fetch assignments' });
+      ApiResponse.serverError(res, 'Failed to fetch assignments', error);
     }
   });
 
-  // Live Class Assignments API
   app.get("/api/assignments/live-class", async (req, res) => {
     try {
       const liveClassAssignments = await storage.getLiveClassAssignments();
       res.json(liveClassAssignments);
     } catch (error) {
-      console.error('Error fetching live class assignments:', error);
-      res.status(500).json({ error: 'Failed to fetch live class assignments' });
+      ApiResponse.serverError(res, 'Failed to fetch live class assignments', error);
     }
   });
 
@@ -1022,8 +957,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignment = await storage.createAssignment(req.body);
       res.json(assignment);
     } catch (error) {
-      console.error('Error creating assignment:', error);
-      res.status(500).json({ error: 'Failed to create assignment' });
+      ApiResponse.serverError(res, 'Failed to create assignment', error);
     }
   });
 
@@ -1031,12 +965,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const assignment = await storage.getAssignmentById(req.params.id);
       if (!assignment) {
-        return res.status(404).json({ error: 'Assignment not found' });
+        return ApiResponse.notFound(res, 'Assignment');
       }
       res.json(assignment);
     } catch (error) {
-      console.error('Error fetching assignment:', error);
-      res.status(500).json({ error: 'Failed to fetch assignment' });
+      ApiResponse.serverError(res, 'Failed to fetch assignment', error);
     }
   });
 
@@ -1046,8 +979,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignment = await storage.duplicateAssignment(req.params.id, type);
       res.json(assignment);
     } catch (error) {
-      console.error('Error duplicating assignment:', error);
-      res.status(500).json({ error: 'Failed to duplicate assignment' });
+      ApiResponse.serverError(res, 'Failed to duplicate assignment', error);
     }
   });
 
@@ -1057,8 +989,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignmentStudentTries = await storage.getAllAssignmentStudentTries();
       res.json(assignmentStudentTries);
     } catch (error) {
-      console.error('Error fetching assignment student tries:', error);
-      res.status(500).json({ error: 'Failed to fetch assignment student tries' });
+      ApiResponse.serverError(res, 'Failed to fetch assignment student tries', error);
     }
   });
 
@@ -1067,8 +998,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const assignmentStudentTry = await storage.createAssignmentStudentTry(req.body);
       res.json(assignmentStudentTry);
     } catch (error) {
-      console.error('Error creating assignment student try:', error);
-      res.status(500).json({ error: 'Failed to create assignment student try' });
+      ApiResponse.serverError(res, 'Failed to create assignment student try', error);
     }
   });
 
@@ -1076,24 +1006,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const assignmentStudentTry = await storage.getAssignmentStudentTryById(req.params.id);
       if (!assignmentStudentTry) {
-        return res.status(404).json({ error: 'Assignment student try not found' });
+        return ApiResponse.notFound(res, 'Assignment student try');
       }
       res.json(assignmentStudentTry);
     } catch (error) {
-      console.error('Error fetching assignment student try:', error);
-      res.status(500).json({ error: 'Failed to fetch assignment student try' });
+      ApiResponse.serverError(res, 'Failed to fetch assignment student try', error);
     }
   });
 
   // Student Try API
   app.get("/api/student-tries", async (req, res) => {
     try {
-      // For testing - return all student tries
       const tries = await storage.getAllStudentTries();
       res.json(tries);
     } catch (error) {
-      console.error('Error fetching student tries:', error);
-      res.status(500).json({ error: 'Failed to fetch student tries' });
+      ApiResponse.serverError(res, 'Failed to fetch student tries', error);
     }
   });
 
@@ -1104,8 +1031,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Student try created:', studentTry);
       res.json(studentTry);
     } catch (error) {
-      console.error('Error creating student try:', error);
-      res.status(500).json({ error: 'Failed to create student try' });
+      ApiResponse.serverError(res, 'Failed to create student try', error);
     }
   });
 
@@ -1113,12 +1039,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const studentTry = await storage.getStudentTryById(req.params.id);
       if (!studentTry) {
-        return res.status(404).json({ error: 'Student try not found' });
+        return ApiResponse.notFound(res, 'Student try');
       }
       res.json(studentTry);
     } catch (error) {
-      console.error('Error fetching student try:', error);
-      res.status(500).json({ error: 'Failed to fetch student try' });
+      ApiResponse.serverError(res, 'Failed to fetch student try', error);
     }
   });
 
@@ -1127,8 +1052,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const studentTry = await storage.updateStudentTry(req.params.id, req.body);
       res.json(studentTry);
     } catch (error) {
-      console.error('Error updating student try:', error);
-      res.status(500).json({ error: 'Failed to update student try' });
+      ApiResponse.serverError(res, 'Failed to update student try', error);
     }
   });
 
@@ -1138,8 +1062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.getStudentLearningProgress(req.params.studentId);
       res.json(progress);
     } catch (error) {
-      console.error('Error fetching student learning progress:', error);
-      res.status(500).json({ error: 'Failed to fetch student learning progress' });
+      ApiResponse.serverError(res, 'Failed to fetch student learning progress', error);
     }
   });
 
@@ -1148,8 +1071,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.createLearningProgress(req.body);
       res.json(progress);
     } catch (error) {
-      console.error('Error creating learning progress:', error);
-      res.status(500).json({ error: 'Failed to create learning progress' });
+      ApiResponse.serverError(res, 'Failed to create learning progress', error);
     }
   });
 
@@ -1158,8 +1080,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.updateLearningProgress(req.params.id, req.body);
       res.json(progress);
     } catch (error) {
-      console.error('Error updating learning progress:', error);
-      res.status(500).json({ error: 'Failed to update learning progress' });
+      ApiResponse.serverError(res, 'Failed to update learning progress', error);
     }
   });
 
@@ -1169,8 +1090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const liveAssignments = await storage.getLiveClassAssignments();
       res.json(liveAssignments);
     } catch (error) {
-      console.error('Error fetching live class assignments:', error);
-      res.status(500).json({ error: 'Failed to fetch live class assignments' });
+      ApiResponse.serverError(res, 'Failed to fetch live class assignments', error);
     }
   });
 
@@ -1180,10 +1100,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { studentIds, startTime } = req.query;
       
       if (!studentIds || !startTime) {
-        return res.status(400).json({ error: 'studentIds and startTime are required' });
+        return ApiResponse.badRequest(res, 'studentIds and startTime are required');
       }
 
-      // Parse studentIds from comma-separated string to array
       let studentIdArray: string[];
       if (Array.isArray(studentIds)) {
         studentIdArray = studentIds.map(id => String(id));
@@ -1194,8 +1113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const activities = await storage.getLiveClassActivities(studentIdArray, startTime as string);
       res.json(activities);
     } catch (error) {
-      console.error('Error fetching live class activities:', error);
-      res.status(500).json({ error: 'Failed to fetch live class activities' });
+      ApiResponse.serverError(res, 'Failed to fetch live class activities', error);
     }
   });
 
@@ -1204,8 +1122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.getAssignmentStudentProgress(req.params.assignmentId);
       res.json(progress);
     } catch (error) {
-      console.error('Error fetching assignment student progress:', error);
-      res.status(500).json({ error: 'Failed to fetch assignment student progress' });
+      ApiResponse.serverError(res, 'Failed to fetch assignment student progress', error);
     }
   });
 
@@ -1214,29 +1131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quizProgress = await storage.getStudentQuizProgress(req.params.tryId);
       res.json(quizProgress);
     } catch (error) {
-      console.error('Error fetching student quiz progress:', error);
-      res.status(500).json({ error: 'Failed to fetch student quiz progress' });
-    }
-  });
-
-  // Leaderboard API endpoints
-  app.get("/api/student-tries-leaderboard", async (req, res) => {
-    try {
-      const leaderboard = await storage.getStudentTriesLeaderboard();
-      res.json(leaderboard);
-    } catch (error) {
-      console.error('Error fetching student tries leaderboard:', error);
-      res.status(500).json({ error: 'Failed to fetch student tries leaderboard' });
-    }
-  });
-
-  app.get("/api/leaderboards", async (req, res) => {
-    try {
-      const leaderboards = await storage.getLeaderboards();
-      res.json(leaderboards);
-    } catch (error) {
-      console.error('Error fetching leaderboards:', error);
-      res.status(500).json({ error: 'Failed to fetch leaderboards' });
+      ApiResponse.serverError(res, 'Failed to fetch student quiz progress', error);
     }
   });
 
@@ -1246,8 +1141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const progress = await storage.getContentProgress(req.params.studentId);
       res.json(progress);
     } catch (error) {
-      console.error('Error fetching content progress:', error);
-      res.status(500).json({ error: 'Failed to fetch content progress' });
+      ApiResponse.serverError(res, 'Failed to fetch content progress', error);
     }
   });
 
@@ -1255,10 +1149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/cron/update-student-tracking", async (req, res) => {
     try {
       await storage.updateStudentTryContent();
-      res.json({ message: 'Student tracking updated successfully' });
+      ApiResponse.success(res, {}, 'Student tracking updated successfully');
     } catch (error) {
-      console.error('Error updating student tracking:', error);
-      res.status(500).json({ error: 'Failed to update student tracking' });
+      ApiResponse.serverError(res, 'Failed to update student tracking', error);
     }
   });
 
@@ -1268,8 +1161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const studentTryContentRecords = await storage.getStudentTryContentByStudent(req.params.studentId);
       res.json(studentTryContentRecords);
     } catch (error) {
-      console.error('Error fetching student try content:', error);
-      res.status(500).json({ error: 'Failed to fetch student try content' });
+      ApiResponse.serverError(res, 'Failed to fetch student try content', error);
     }
   });
 
@@ -1278,23 +1170,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const recentRecords = await storage.getRecentStudentTryContent();
       res.json(recentRecords);
     } catch (error) {
-      console.error('Error fetching recent student try content:', error);
-      res.status(500).json({ error: 'Failed to fetch recent student try content' });
-    }
-  });
-
-  // Assignments API (general assignments, not live class)
-  app.get("/api/assignments", async (req, res) => {
-    try {
-      const assignments = await storage.getAllAssignments();
-      res.json(assignments);
-    } catch (error) {
-      console.error('Error fetching assignments:', error);
-      res.status(500).json({ error: 'Failed to fetch assignments' });
+      ApiResponse.serverError(res, 'Failed to fetch recent student try content', error);
     }
   });
 
   const httpServer = createServer(app);
-
   return httpServer;
 }
