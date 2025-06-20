@@ -515,22 +515,22 @@ export default function AcademicEssayPopup({
                 {/* Introduction */}
                 <div className="bg-blue-50 p-4 rounded-lg border">
                   <div className="flex justify-between items-center mb-3">
-                    <div>
-                      <h4 className="font-semibold text-blue-800">Introduction</h4>
-                      <div className="mt-2 space-y-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-2">
+                        <h4 className="font-semibold text-blue-800">Introduction</h4>
                         {outlineData.hook && (
-                          <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
-                            <p className="text-sm font-medium text-blue-800">Hook:</p>
-                            <p className="text-sm text-blue-700 mt-1">{outlineData.hook}</p>
-                          </div>
-                        )}
-                        {outlineData.thesis && (
-                          <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
-                            <p className="text-sm font-medium text-blue-800">Thesis:</p>
-                            <p className="text-sm text-blue-700 mt-1">{outlineData.thesis}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-blue-800">Hook:</span>
+                            <span className="text-sm text-blue-700">{outlineData.hook}</span>
                           </div>
                         )}
                       </div>
+                      {outlineData.thesis && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-blue-800">Thesis:</span>
+                          <span className="text-sm text-blue-700">{outlineData.thesis}</span>
+                        </div>
+                      )}
                     </div>
                     <span className="text-sm text-blue-600">
                       {getWordCount(essayData.introduction)} words
