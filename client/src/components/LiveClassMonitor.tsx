@@ -1,7 +1,3 @@
-` tags. I will ensure that the indentation and formatting of the code are preserved, and that no parts are skipped or omitted.
-
-```typescript
-<replit_final_file>
 import React, { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
