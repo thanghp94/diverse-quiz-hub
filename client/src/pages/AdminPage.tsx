@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Search, Edit, Save, X, Users, BookOpen, FileText, HelpCircle, Target, Plus } from 'lucide-react';
+import { Search, Edit, Save, X, Users, BookOpen, FileText, HelpCircle, Target, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
@@ -72,6 +72,8 @@ const AdminPage = () => {
   const [editData, setEditData] = useState<any>({});
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newItemData, setNewItemData] = useState<any>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Fetch data based on active tab
   const { data: students, isLoading: studentsLoading } = useQuery({
@@ -502,6 +504,17 @@ const AdminPage = () => {
 
   const isLoading = studentsLoading || topicsLoading || contentLoading || questionsLoading || matchingLoading;
   const filteredData = getFilteredData();
+  
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedData = filteredData.slice(startIndex, endIndex);
+
+  // Reset current page when switching tabs or searching
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchTerm]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -601,7 +614,7 @@ const AdminPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredData.map((student: User) => (
+                      {paginatedData.map((student: User) => (
                         <tr key={student.id} className="border-b hover:bg-gray-50">
                           <td className="p-3">{student.id}</td>
                           <td className="p-3">
@@ -665,7 +678,7 @@ const AdminPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredData.map((topic: Topic) => (
+                      {paginatedData.map((topic: Topic) => (
                         <tr key={topic.id} className="border-b hover:bg-gray-50">
                           <td className="p-3">
                             {editingId === topic.id ? (
@@ -729,9 +742,9 @@ const AdminPage = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredData.map((item: Content, index: number) => (
+                      {paginatedData.map((item: Content, index: number) => (
                         <tr key={item.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3 text-center">{index + 1}</td>
+                          <td className="p-3 text-center">{startIndex + index + 1}</td>
                           <td className="p-3">{item.title || 'Untitled'}</td>
                           <td className="p-3 text-sm text-gray-500">{item.topicid}</td>
                           <td className="p-3 max-w-xs truncate">{item.short_blurb || 'N/A'}</td>
@@ -765,7 +778,7 @@ const AdminPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredData.map((question: Question) => (
+                          {paginatedData.map((question: Question) => (
                             <tr key={question.id} className="border-b hover:bg-gray-50">
                               <td className="p-3 max-w-md truncate">{question.question}</td>
                               <td className="p-3">
@@ -808,7 +821,7 @@ const AdminPage = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {filteredData.map((match: Match) => (
+                          {paginatedData.map((match: Match) => (
                             <tr key={match.id} className="border-b hover:bg-gray-50">
                               <td className="p-3">{match.topic || 'N/A'}</td>
                               <td className="p-3">{match.subject || 'N/A'}</td>
@@ -828,6 +841,61 @@ const AdminPage = () => {
                     )}
                   </div>
                 )}
+              </div>
+            )}
+            
+            {/* Pagination Controls */}
+            {filteredData.length > itemsPerPage && (
+              <div className="flex items-center justify-between mt-4 px-4 py-3 border-t">
+                <div className="text-sm text-gray-500">
+                  Showing {startIndex + 1} to {Math.min(endIndex, filteredData.length)} of {filteredData.length} results
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(pageNum)}
+                          className="w-8 h-8 p-0"
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
