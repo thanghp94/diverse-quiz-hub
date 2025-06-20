@@ -275,28 +275,32 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
               />
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+            <div className="max-h-40 overflow-y-auto bg-gray-50 rounded-lg border">
               {studentsLoading ? (
-                <div className="col-span-full text-center text-gray-500">Loading students...</div>
+                <div className="text-center text-gray-500 py-6">Loading students...</div>
               ) : filteredStudents.length === 0 ? (
-                <div className="col-span-full text-center text-gray-500">No students found</div>
+                <div className="text-center text-gray-500 py-6">No students found</div>
               ) : (
-                filteredStudents.map((student: Student) => (
-                  <div key={student.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={student.id}
-                      checked={selectedStudents.includes(student.id)}
-                      onCheckedChange={() => handleStudentToggle(student.id)}
-                    />
-                    <label
-                      htmlFor={student.id}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                      title={student.full_name || `${student.first_name} ${student.last_name}`}
-                    >
-                      {student.full_name || `${student.first_name} ${student.last_name}`}
-                    </label>
-                  </div>
-                ))
+                <div className="divide-y divide-gray-200">
+                  {filteredStudents.map((student: Student) => (
+                    <div key={student.id} className="flex items-center p-3 hover:bg-gray-100 transition-colors">
+                      <Checkbox
+                        id={student.id}
+                        checked={selectedStudents.includes(student.id)}
+                        onCheckedChange={() => handleStudentToggle(student.id)}
+                        className="mr-3"
+                      />
+                      <label
+                        htmlFor={student.id}
+                        className="text-sm cursor-pointer flex-1 truncate font-medium"
+                        title={student.full_name || `${student.first_name} ${student.last_name}`}
+                      >
+                        {student.full_name || `${student.first_name} ${student.last_name}`}
+                      </label>
+                      <span className="text-xs text-gray-400 ml-2">{student.id}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
             {selectedStudents.length > 0 && (
