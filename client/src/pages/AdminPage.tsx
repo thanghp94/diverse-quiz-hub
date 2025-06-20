@@ -385,12 +385,18 @@ const AdminPage = () => {
             </div>
             <div>
               <Label htmlFor="category">Category</Label>
-              <Input
-                id="category"
-                value={newItemData.category || ''}
-                onChange={(e) => setNewItemData({...newItemData, category: e.target.value})}
-                placeholder="student"
-              />
+              <Select
+                value={newItemData.category || "student"}
+                onValueChange={(value) => setNewItemData({...newItemData, category: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">student</SelectItem>
+                  <SelectItem value="teacher">teacher</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="show">Show</Label>
