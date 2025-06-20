@@ -298,7 +298,6 @@ export default function AcademicEssayPopup({
               <p className="text-sm text-gray-700 mt-1">{contentTitle}</p>
             </div>
           )}
-          </div>
         </DialogHeader>
 
         {phase === 'outline' && (
