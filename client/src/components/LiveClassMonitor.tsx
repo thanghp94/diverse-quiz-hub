@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Users, BookOpen, Star, Clock, Filter, Search } from 'lucide-react';
+import { Eye, Users, BookOpen, Star, Clock, Filter, Search, X, ChevronDown, Play, Pause } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Student {
@@ -48,6 +48,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const [activityFilter, setActivityFilter] = useState<string>('all');
   const [minContentViewed, setMinContentViewed] = useState<number>(0);
   const [minContentRated, setMinContentRated] = useState<number>(0);
+  const [showStudentSelector, setShowStudentSelector] = useState(false);
 
   // Fetch all students
   const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
@@ -105,6 +106,17 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     } else {
       setSelectedStudents(filteredStudents.map((s: Student) => s.id));
     }
+  };
+
+  const removeStudent = (studentId: string) => {
+    setSelectedStudents(prev => prev.filter(id => id !== studentId));
+  };
+
+  const getSelectedStudentNames = () => {
+    return selectedStudents.map(id => {
+      const student = (allStudents as Student[]).find((s: Student) => s.id === id);
+      return student ? (student.full_name || `${student.first_name} ${student.last_name}`) : id;
+    });
   };
 
   const handleSelectAllVisible = () => {
@@ -239,75 +251,122 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             </div>
           </div>
 
-          {/* Student Search and Selection */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium">Select Students to Monitor:</label>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSelectAll}
-                  disabled={studentsLoading}
-                >
-                  {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All Filtered'}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSelectAllVisible}
-                  disabled={studentsLoading}
-                >
-                  Add All Visible
-                </Button>
-              </div>
-            </div>
+          {/* Student Selection */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium">Select Students to Monitor</label>
             
-            {/* Student Search Box */}
+            {/* Selected Students Display */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search students by name or ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <div className="max-h-40 overflow-y-auto bg-gray-50 rounded-lg border">
-              {studentsLoading ? (
-                <div className="text-center text-gray-500 py-6">Loading students...</div>
-              ) : filteredStudents.length === 0 ? (
-                <div className="text-center text-gray-500 py-6">No students found</div>
-              ) : (
-                <div className="divide-y divide-gray-200">
-                  {filteredStudents.map((student: Student) => (
-                    <div key={student.id} className="flex items-center p-3 hover:bg-gray-100 transition-colors">
-                      <Checkbox
-                        id={student.id}
-                        checked={selectedStudents.includes(student.id)}
-                        onCheckedChange={() => handleStudentToggle(student.id)}
-                        className="mr-3"
+              <div 
+                className="min-h-12 p-3 border rounded-lg bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setShowStudentSelector(!showStudentSelector)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    {selectedStudents.length === 0 ? (
+                      <span className="text-gray-500">Click to select students...</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-1">
+                        {getSelectedStudentNames().slice(0, 3).map((name, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {name}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeStudent(selectedStudents[index]);
+                              }}
+                              className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                            >
+                              <X className="h-2 w-2" />
+                            </button>
+                          </Badge>
+                        ))}
+                        {selectedStudents.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{selectedStudents.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${showStudentSelector ? 'transform rotate-180' : ''}`} />
+                </div>
+              </div>
+
+              {/* Student Selector Popup */}
+              {showStudentSelector && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
+                  <div className="p-3 space-y-3">
+                    {/* Search Box */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder="Search students..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
                       />
-                      <label
-                        htmlFor={student.id}
-                        className="text-sm cursor-pointer flex-1 truncate font-medium"
-                        title={student.full_name || `${student.first_name} ${student.last_name}`}
-                      >
-                        {student.full_name || `${student.first_name} ${student.last_name}`}
-                      </label>
-                      <span className="text-xs text-gray-400 ml-2">{student.id}</span>
                     </div>
-                  ))}
+                    
+                    {/* Quick Actions */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSelectAll}
+                        disabled={studentsLoading}
+                      >
+                        {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedStudents([])}
+                        disabled={selectedStudents.length === 0}
+                      >
+                        Clear Selection
+                      </Button>
+                    </div>
+                    
+                    {/* Student List */}
+                    <div className="max-h-48 overflow-y-auto bg-gray-50 rounded-lg border">
+                      {studentsLoading ? (
+                        <div className="text-center text-gray-500 py-6">Loading students...</div>
+                      ) : filteredStudents.length === 0 ? (
+                        <div className="text-center text-gray-500 py-6">No students found</div>
+                      ) : (
+                        <div className="divide-y divide-gray-200">
+                          {filteredStudents.map((student: Student) => (
+                            <div key={student.id} className="flex items-center p-3 hover:bg-gray-100 transition-colors">
+                              <Checkbox
+                                id={`popup-${student.id}`}
+                                checked={selectedStudents.includes(student.id)}
+                                onCheckedChange={() => handleStudentToggle(student.id)}
+                                className="mr-3"
+                              />
+                              <label
+                                htmlFor={`popup-${student.id}`}
+                                className="text-sm cursor-pointer flex-1 truncate font-medium"
+                                title={student.full_name || `${student.first_name} ${student.last_name}`}
+                              >
+                                {student.full_name || `${student.first_name} ${student.last_name}`}
+                              </label>
+                              <span className="text-xs text-gray-400 ml-2">{student.id}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Selection Summary */}
+                    <div className="text-xs text-gray-600 text-center">
+                      {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} selected
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
-            {selectedStudents.length > 0 && (
-              <div className="text-xs text-gray-600">
-                Selected: {selectedStudents.length} students
-              </div>
-            )}
           </div>
 
           {/* Activity Filters */}
