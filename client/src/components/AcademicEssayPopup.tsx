@@ -483,6 +483,7 @@ export default function AcademicEssayPopup({
             {/* Writing Phase Header with Sections Navigation */}
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
               <div>
+                <h3 className="text-lg font-semibold">Writing Phase</h3>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   <Button variant="ghost" size="sm" className="text-xs bg-blue-100">
                     Introduction: {getWordCount(essayData.introduction)} words
@@ -513,156 +514,133 @@ export default function AcademicEssayPopup({
             <div className="space-y-6">
                 {/* Introduction */}
                 <div className="bg-blue-50 p-4 rounded-lg border">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Left: Outline Reference */}
+                  <div className="flex justify-between items-center mb-3">
                     <div>
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-semibold text-blue-800">Introduction</h4>
-                        <span className="text-sm text-blue-600">
-                          {getWordCount(essayData.introduction)} words
-                        </span>
-                      </div>
-                      <div className="space-y-3">
-                        <div className="border border-blue-200 rounded p-3 bg-white">
-                          <div className="text-sm font-medium text-blue-700 mb-1">Hook:</div>
-                          <div className="text-sm text-gray-700 bg-blue-50 p-2 rounded border-l-4 border-blue-400">
-                            {outlineData.hook || 'No hook outlined'}
+                      <h4 className="font-semibold text-blue-800">Introduction</h4>
+                      <div className="mt-2 space-y-2">
+                        {outlineData.hook && (
+                          <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
+                            <p className="text-sm font-medium text-blue-800">Hook:</p>
+                            <p className="text-sm text-blue-700 mt-1">{outlineData.hook}</p>
                           </div>
-                        </div>
-                        <div className="border border-blue-200 rounded p-3 bg-white">
-                          <div className="text-sm font-medium text-blue-700 mb-1">Thesis:</div>
-                          <div className="text-sm text-gray-700 bg-blue-50 p-2 rounded border-l-4 border-blue-400">
-                            {outlineData.thesis || 'No thesis outlined'}
+                        )}
+                        {outlineData.thesis && (
+                          <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
+                            <p className="text-sm font-medium text-blue-800">Thesis:</p>
+                            <p className="text-sm text-blue-700 mt-1">{outlineData.thesis}</p>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </div>
-                    
-                    {/* Right: Writing Area */}
-                    <div>
-                      <Label className="text-sm font-medium text-blue-700 mb-2 block">Write Your Introduction:</Label>
-                      <Textarea
-                        placeholder="Write your introduction with hook and thesis..."
-                        value={essayData.introduction}
-                        onChange={(e) => setEssayData(prev => ({ ...prev, introduction: e.target.value }))}
-                        className="min-h-[200px] border-blue-200 w-full"
-                      />
-                    </div>
+                    <span className="text-sm text-blue-600">
+                      {getWordCount(essayData.introduction)} words
+                    </span>
                   </div>
+                  <Textarea
+                    placeholder="Write your introduction with hook and thesis..."
+                    value={essayData.introduction}
+                    onChange={(e) => setEssayData(prev => ({ ...prev, introduction: e.target.value }))}
+                    className="min-h-[150px] border-blue-200 w-full"
+                  />
                 </div>
 
                 {/* Body Sections */}
                 <div className="bg-green-50 p-4 rounded-lg border">
                   <h4 className="font-semibold text-green-800 mb-4">Body Paragraphs</h4>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4">
                     {/* Body 1 */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
                           <Label className="text-sm font-medium text-green-700">Body 1</Label>
-                          <span className="text-sm text-green-600">{getWordCount(essayData.body1)} words</span>
+                          {outlineData.bodyParagraph1 && (
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                              <p className="text-sm text-green-700">{outlineData.bodyParagraph1}</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="border border-green-200 rounded p-3 bg-white">
-                          <div className="text-sm font-medium text-green-700 mb-1">Outline:</div>
-                          <div className="text-sm text-gray-700 bg-green-50 p-2 rounded border-l-4 border-green-400">
-                            {outlineData.bodyParagraph1 || 'No outline for body paragraph 1'}
-                          </div>
-                        </div>
+                        <Button variant="ghost" size="sm" className="text-xs">
+                          {getWordCount(essayData.body1)} words
+                        </Button>
                       </div>
-                      <div>
-                        <Label className="text-sm font-medium text-green-700 mb-2 block">Write Body Paragraph 1:</Label>
-                        <Textarea
-                          placeholder="Write your first body paragraph..."
-                          value={essayData.body1}
-                          onChange={(e) => setEssayData(prev => ({ ...prev, body1: e.target.value }))}
-                          className="min-h-[120px] border-green-200 w-full"
-                        />
-                      </div>
+                      <Textarea
+                        placeholder="Write your first body paragraph..."
+                        value={essayData.body1}
+                        onChange={(e) => setEssayData(prev => ({ ...prev, body1: e.target.value }))}
+                        className="min-h-[120px] border-green-200 w-full"
+                      />
                     </div>
 
                     {/* Body 2 */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
                           <Label className="text-sm font-medium text-green-700">Body 2</Label>
-                          <span className="text-sm text-green-600">{getWordCount(essayData.body2)} words</span>
+                          {outlineData.bodyParagraph2 && (
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                              <p className="text-sm text-green-700">{outlineData.bodyParagraph2}</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="border border-green-200 rounded p-3 bg-white">
-                          <div className="text-sm font-medium text-green-700 mb-1">Outline:</div>
-                          <div className="text-sm text-gray-700 bg-green-50 p-2 rounded border-l-4 border-green-400">
-                            {outlineData.bodyParagraph2 || 'No outline for body paragraph 2'}
-                          </div>
-                        </div>
+                        <Button variant="ghost" size="sm" className="text-xs">
+                          {getWordCount(essayData.body2)} words
+                        </Button>
                       </div>
-                      <div>
-                        <Label className="text-sm font-medium text-green-700 mb-2 block">Write Body Paragraph 2:</Label>
-                        <Textarea
-                          placeholder="Write your second body paragraph..."
-                          value={essayData.body2}
-                          onChange={(e) => setEssayData(prev => ({ ...prev, body2: e.target.value }))}
-                          className="min-h-[120px] border-green-200 w-full"
-                        />
-                      </div>
+                      <Textarea
+                        placeholder="Write your second body paragraph..."
+                        value={essayData.body2}
+                        onChange={(e) => setEssayData(prev => ({ ...prev, body2: e.target.value }))}
+                        className="min-h-[120px] border-green-200 w-full"
+                      />
                     </div>
 
                     {/* Body 3 */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div>
                           <Label className="text-sm font-medium text-green-700">Body 3</Label>
-                          <span className="text-sm text-green-600">{getWordCount(essayData.body3)} words</span>
+                          {outlineData.bodyParagraph3 && (
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                              <p className="text-sm text-green-700">{outlineData.bodyParagraph3}</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="border border-green-200 rounded p-3 bg-white">
-                          <div className="text-sm font-medium text-green-700 mb-1">Outline:</div>
-                          <div className="text-sm text-gray-700 bg-green-50 p-2 rounded border-l-4 border-green-400">
-                            {outlineData.bodyParagraph3 || 'No outline for body paragraph 3'}
-                          </div>
-                        </div>
+                        <Button variant="ghost" size="sm" className="text-xs">
+                          {getWordCount(essayData.body3)} words
+                        </Button>
                       </div>
-                      <div>
-                        <Label className="text-sm font-medium text-green-700 mb-2 block">Write Body Paragraph 3:</Label>
-                        <Textarea
-                          placeholder="Write your third body paragraph..."
-                          value={essayData.body3}
-                          onChange={(e) => setEssayData(prev => ({ ...prev, body3: e.target.value }))}
-                          className="min-h-[120px] border-green-200 w-full"
-                        />
-                      </div>
+                      <Textarea
+                        placeholder="Write your third body paragraph..."
+                        value={essayData.body3}
+                        onChange={(e) => setEssayData(prev => ({ ...prev, body3: e.target.value }))}
+                        className="min-h-[120px] border-green-200 w-full"
+                      />
                     </div>
                   </div>
                 </div>
 
                 {/* Conclusion */}
                 <div className="bg-purple-50 p-4 rounded-lg border">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Left: Outline Reference */}
+                  <div className="flex justify-between items-center mb-3">
                     <div>
-                      <div className="flex justify-between items-center mb-3">
-                        <h4 className="font-semibold text-purple-800">Conclusion</h4>
-                        <span className="text-sm text-purple-600">
-                          {getWordCount(essayData.conclusion)} words
-                        </span>
-                      </div>
-                      <div className="border border-purple-200 rounded p-3 bg-white">
-                        <div className="text-sm font-medium text-purple-700 mb-1">Outline:</div>
-                        <div className="text-sm text-gray-700 bg-purple-50 p-2 rounded border-l-4 border-purple-400">
-                          {outlineData.conclusion || 'No conclusion outlined'}
+                      <h4 className="font-semibold text-purple-800">Conclusion</h4>
+                      {outlineData.conclusion && (
+                        <div className="bg-purple-100 px-3 py-2 rounded-md border-l-4 border-purple-400 mt-2">
+                          <p className="text-sm text-purple-700">{outlineData.conclusion}</p>
                         </div>
-                      </div>
+                      )}
                     </div>
-                    
-                    {/* Right: Writing Area */}
-                    <div>
-                      <Label className="text-sm font-medium text-purple-700 mb-2 block">Write Your Conclusion:</Label>
-                      <Textarea
-                        placeholder="Write your conclusion with summary and final thoughts..."
-                        value={essayData.conclusion}
-                        onChange={(e) => setEssayData(prev => ({ ...prev, conclusion: e.target.value }))}
-                        className="min-h-[150px] border-purple-200 w-full"
-                      />
-                    </div>
+                    <span className="text-sm text-purple-600">
+                      {getWordCount(essayData.conclusion)} words
+                    </span>
                   </div>
+                  <Textarea
+                    placeholder="Write your conclusion with summary and final thoughts..."
+                    value={essayData.conclusion}
+                    onChange={(e) => setEssayData(prev => ({ ...prev, conclusion: e.target.value }))}
+                    className="min-h-[150px] border-purple-200 w-full"
+                  />
                 </div>
               </div>
 
