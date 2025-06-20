@@ -7,9 +7,10 @@ export function getSessionMiddleware() {
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL || "postgresql://neondb_owner:npg_ONSLUx5f2pMo@ep-rapid-dew-ad58cvd6.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require",
-    createTableIfMissing: false,
+    createTableIfMissing: true, // Allow creating table if needed
     ttl: sessionTtl,
     tableName: "sessions",
+    schemaName: "public"
   });
 
   return session({
@@ -17,10 +18,15 @@ export function getSessionMiddleware() {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    name: 'connect.sid',
+    rolling: true, // Reset expiry on each request
     cookie: {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
+      secure: false,
       maxAge: sessionTtl,
+      sameSite: 'lax',
+      path: '/', // Explicitly set path
+      domain: undefined // Let browser determine domain
     },
   });
 }
