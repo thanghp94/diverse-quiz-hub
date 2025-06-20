@@ -319,6 +319,28 @@ const AdminPage = () => {
 
   const handleCreate = () => {
     if (activeTab === 'students') {
+      // Check for duplicate ID or Meraki email
+      const existingUserWithId = (students as User[])?.find(user => user.id === newItemData.id);
+      const existingUserWithEmail = (students as User[])?.find(user => user.meraki_email === newItemData.meraki_email);
+      
+      if (existingUserWithId) {
+        toast({
+          title: "Error",
+          description: `Student ID "${newItemData.id}" is already in use. Please choose a different ID.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (newItemData.meraki_email && existingUserWithEmail) {
+        toast({
+          title: "Error", 
+          description: `Meraki email "${newItemData.meraki_email}" is already in use. Please choose a different email.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
       createUser.mutate(newItemData);
     } else if (activeTab === 'topics') {
       createTopic.mutate(newItemData);
