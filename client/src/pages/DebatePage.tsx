@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -9,6 +9,8 @@ import { Search, ChevronDown, ChevronUp, Play, Image as ImageIcon, MessageSquare
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import Header from '@/components/Header';
 import { useAuth } from '@/hooks/useAuth';
+import ContentPopup from '@/components/ContentPopup';
+import { trackContentAccess, getCurrentUserId } from '@/lib/contentTracking';
 
 interface Topic {
   id: string;
@@ -37,8 +39,9 @@ interface Content {
 
 interface Image {
   id: string;
-  url: string;
-  title?: string;
+  imagelink: string | null;
+  contentid: string | null;
+  default: string | null;
 }
 
 export default function DebatePage() {
@@ -46,6 +49,12 @@ export default function DebatePage() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [openTopics, setOpenTopics] = useState<Set<string>>(new Set());
+  const [selectedContentInfo, setSelectedContentInfo] = useState<{
+    content: Content;
+    contextList: Content[];
+    imageUrl: string | null;
+    quizLevel?: 'easy' | 'hard' | null;
+  } | null>(null);
 
   const { data: bowlChallengeTopics = [], isLoading: bowlTopicsLoading } = useQuery<Topic[]>({
     queryKey: ['/api/topics/bowl-challenge'],
@@ -108,15 +117,33 @@ export default function DebatePage() {
     setOpenTopics(newOpenTopics);
   };
 
-  const handleContentClick = (contentId: string) => {
-    setLocation(`/content/${contentId}`);
+  const findImageUrl = (content: Content): string | null => {
+    if (content.imageid && images) {
+      const image = images.find(img => img.id === content.imageid);
+      if (image && image.imagelink) {
+        return image.imagelink;
+      }
+    }
+    return null;
   };
 
-  const getImageUrl = (imageId: string | null) => {
-    if (!imageId) return null;
-    const image = images.find(img => img.id === imageId);
-    return image?.url || null;
+  const handleContentClick = (content: Content, contextList: Content[]) => {
+    setSelectedContentInfo({
+      content,
+      contextList,
+      imageUrl: findImageUrl(content),
+    });
+    
+    // Track content access when student clicks on content
+    const currentUserId = getCurrentUserId();
+    if (currentUserId) {
+      trackContentAccess(currentUserId, content.id);
+    }
   };
+
+  const closePopup = useCallback(() => {
+    setSelectedContentInfo(null);
+  }, []);
 
   const isLoading = bowlTopicsLoading || allTopicsLoading || contentLoading || imagesLoading;
 
@@ -206,7 +233,7 @@ export default function DebatePage() {
                             {mainTopic.content.map((item) => (
                               <div
                                 key={item.id}
-                                onClick={() => handleContentClick(item.id)}
+                                onClick={() => handleContentClick(item, filteredDebateContent)}
                                 className="bg-white/10 rounded-lg p-4 cursor-pointer hover:bg-white/20 transition-colors border border-white/20"
                               >
                                 <div className="flex items-start gap-4">
@@ -265,7 +292,7 @@ export default function DebatePage() {
                                       {subTopicContent.map((item) => (
                                         <div
                                           key={item.id}
-                                          onClick={() => handleContentClick(item.id)}
+                                          onClick={() => handleContentClick(item, filteredDebateContent)}
                                           className="bg-white/10 rounded p-2 cursor-pointer hover:bg-white/20 transition-colors"
                                         >
                                           <p className="text-white text-sm font-medium">
@@ -299,7 +326,7 @@ export default function DebatePage() {
                         .map((item) => (
                           <div
                             key={item.id}
-                            onClick={() => handleContentClick(item.id)}
+                            onClick={() => handleContentClick(item, filteredDebateContent)}
                             className="bg-white/10 rounded-lg p-4 cursor-pointer hover:bg-white/20 transition-colors border border-white/20"
                           >
                             <div className="flex items-start gap-4">
@@ -344,6 +371,26 @@ export default function DebatePage() {
           )}
         </div>
       </div>
+
+      <ContentPopup
+        isOpen={!!selectedContentInfo}
+        onClose={closePopup}
+        content={selectedContentInfo?.content ?? null}
+        contentList={selectedContentInfo?.contextList ?? []}
+        onContentChange={newContent => {
+          if (selectedContentInfo) {
+            setSelectedContentInfo({ 
+              ...selectedContentInfo, 
+              content: newContent,
+              imageUrl: findImageUrl(newContent),
+            });
+          }
+        }}
+        startQuizDirectly={false}
+        quizLevel={selectedContentInfo?.quizLevel}
+        imageUrl={selectedContentInfo?.imageUrl ?? null}
+        isImageLoading={imagesLoading}
+      />
     </div>
   );
 }
