@@ -40,6 +40,7 @@ interface Image {
 }
 
 const WritingPage = () => {
+  const { user } = useAuth();
   const [location] = useLocation();
   const [openContent, setOpenContent] = useState<string[]>([]);
   const [selectedContentInfo, setSelectedContentInfo] = useState<{
