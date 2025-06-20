@@ -521,12 +521,14 @@ export default function AcademicEssayPopup({
                         <div className="flex gap-2">
                           {outlineData.hook && (
                             <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
-                              <p className="text-sm text-blue-700">{outlineData.hook}</p>
+                              <span className="text-sm font-bold text-blue-800">Hook:</span>
+                              <p className="text-sm text-blue-700 mt-1">{outlineData.hook}</p>
                             </div>
                           )}
                           {outlineData.thesis && (
                             <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
-                              <p className="text-sm text-blue-700">{outlineData.thesis}</p>
+                              <span className="text-sm font-bold text-blue-800">Thesis:</span>
+                              <p className="text-sm text-blue-700 mt-1">{outlineData.thesis}</p>
                             </div>
                           )}
                         </div>
