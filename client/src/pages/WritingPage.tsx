@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { Loader2, PenTool, FileText } from "lucide-react";
+import { Loader2, PenTool, FileText, Clock, BookOpen } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
@@ -42,6 +42,16 @@ interface Image {
 
 const WritingPage = () => {
   const { user } = useAuth();
+
+  // Listen for localStorage changes to update progress buttons
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setForceUpdate(prev => prev + 1);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
   const [location] = useLocation();
   const [openContent, setOpenContent] = useState<string[]>([]);
   const [selectedContentInfo, setSelectedContentInfo] = useState<{
@@ -83,6 +93,7 @@ const WritingPage = () => {
     contentId?: string;
     outlineData?: any;
   }>({ isOpen: false });
+  const [forceUpdate, setForceUpdate] = useState(0);
 
   // Helper functions for group card expansion
   const handleToggleGroupCard = useCallback((groupCardId: string) => {
@@ -281,6 +292,13 @@ const WritingPage = () => {
     setEssayPopupInfo({ isOpen: true, contentTitle, contentId });
   };
 
+  // Check if there's an essay in progress
+  const { data: draftEssay } = useQuery({
+    queryKey: [`/api/writing-submissions/draft/${user?.id}/${essayPopupInfo.contentId}`],
+    enabled: !!user?.id && !!essayPopupInfo.contentId,
+    staleTime: 30000
+  });
+
   const handleCloseEssayPopup = () => {
     setEssayPopupInfo({ isOpen: false });
   };
@@ -462,14 +480,28 @@ const WritingPage = () => {
                     <PenTool className="h-4 w-4 mr-1" />
                     Creative
                   </Button>
-                  <Button
-                    onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    <FileText className="h-4 w-4 mr-1" />
-                    Academic Essay
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <FileText className="h-4 w-4 mr-1" />
+                      Academic Essay
+                    </Button>
+                    
+                    {/* Progress indicator */}
+                    {localStorage.getItem(`essay_${user?.id}_${content.id}`) && (
+                      <Button
+                        onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
+                        size="sm"
+                        variant="outline"
+                        className="border-orange-500 text-orange-600 hover:bg-orange-50"
+                      >
+                        <Clock className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

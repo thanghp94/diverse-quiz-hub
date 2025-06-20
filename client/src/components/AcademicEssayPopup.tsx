@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { X, Save, Clock, FileText, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { X, Edit, FileText, Play, Pause } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AcademicEssayPopupProps {
@@ -27,15 +26,10 @@ interface OutlineData {
 
 interface EssayData {
   introduction: string;
-  hook: string;
-  mainIdea: string;
-  body: string;
+  body1: string;
+  body2: string;
+  body3: string;
   conclusion: string;
-}
-
-interface TimerState {
-  timeRemaining: number; // in seconds
-  isActive: boolean;
 }
 
 export default function AcademicEssayPopup({ 
@@ -45,7 +39,14 @@ export default function AcademicEssayPopup({
   studentId, 
   contentId 
 }: AcademicEssayPopupProps) {
+  const TOTAL_TIME = 15 * 60; // 15 minutes in seconds
+  
   const [phase, setPhase] = useState<'outline' | 'writing'>('outline');
+  const [timeRemaining, setTimeRemaining] = useState(TOTAL_TIME);
+  const [isTimerActive, setIsTimerActive] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
   const [outlineData, setOutlineData] = useState<OutlineData>({
     hook: '',
     thesis: '',
@@ -54,129 +55,144 @@ export default function AcademicEssayPopup({
     bodyParagraph3: '',
     conclusion: ''
   });
+
   const [essayData, setEssayData] = useState<EssayData>({
     introduction: '',
-    hook: '',
-    mainIdea: '',
-    body: '',
+    body1: '',
+    body2: '',
+    body3: '',
     conclusion: ''
   });
-  const [timer, setTimer] = useState<TimerState>({ timeRemaining: 45 * 60, isActive: false });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeSection, setActiveSection] = useState<keyof EssayData>('introduction');
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const { toast } = useToast();
 
-  // Load existing draft when opening
+  // Load saved data on open
   useEffect(() => {
     if (isOpen && studentId && contentId) {
-      loadExistingDraft();
+      const savedData = localStorage.getItem(`essay_${studentId}_${contentId}`);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setPhase(parsed.phase || 'outline');
+          setOutlineData(parsed.outlineData || outlineData);
+          setEssayData(parsed.essayData || essayData);
+          setTimeRemaining(parsed.timeRemaining || TOTAL_TIME);
+          setIsTimerActive(false); // Always start paused when reopening
+        } catch (error) {
+          console.error('Failed to parse saved essay data:', error);
+        }
+      }
     }
   }, [isOpen, studentId, contentId]);
 
-  // Timer management
+  // Timer countdown
   useEffect(() => {
-    if (timer.isActive && timer.timeRemaining > 0) {
-      intervalRef.current = setInterval(() => {
-        setTimer(prev => ({
-          ...prev,
-          timeRemaining: Math.max(0, prev.timeRemaining - 1)
-        }));
+    let interval: NodeJS.Timeout;
+    if (isTimerActive && timeRemaining > 0 && phase === 'outline') {
+      interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            setIsTimerActive(false);
+            // Auto-proceed to writing when outline timer expires
+            if (phase === 'outline') {
+              setPhase('writing');
+              toast({
+                title: "Time's Up!",
+                description: "Outline phase complete. Proceeding to writing phase.",
+              });
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
     }
+    return () => clearInterval(interval);
+  }, [isTimerActive, timeRemaining, phase]);
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+  // Start timer when outline phase begins
+  useEffect(() => {
+    if (phase === 'outline' && isOpen) {
+      setIsTimerActive(true);
+    }
+  }, [phase, isOpen]);
+
+  // Save data when popup closes
+  useEffect(() => {
+    if (!isOpen && phase === 'writing') {
+      const dataToSave = {
+        phase,
+        outlineData,
+        essayData,
+        timeRemaining,
+        isTimerActive: false
+      };
+      localStorage.setItem(`essay_${studentId}_${contentId}`, JSON.stringify(dataToSave));
+      saveToDatabase();
+    }
+  }, [isOpen, phase, outlineData, essayData, timeRemaining, studentId, contentId]);
+
+  // Save data when browser closes
+  useEffect(() => {
+    const saveOnUnload = () => {
+      if (phase === 'writing') {
+        const dataToSave = {
+          phase,
+          outlineData,
+          essayData,
+          timeRemaining,
+          isTimerActive: false
+        };
+        localStorage.setItem(`essay_${studentId}_${contentId}`, JSON.stringify(dataToSave));
+        saveToDatabase();
       }
     };
-  }, [timer.isActive, timer.timeRemaining]);
 
-  // Auto-save when user types or changes phase
-  useEffect(() => {
-    if (isOpen && (outlineData.hook || essayData.introduction)) {
-      const saveTimeout = setTimeout(() => {
-        saveDraft();
-      }, 2000);
-      return () => clearTimeout(saveTimeout);
-    }
-  }, [outlineData, essayData, phase, timer]);
+    window.addEventListener('beforeunload', saveOnUnload);
+    return () => window.removeEventListener('beforeunload', saveOnUnload);
+  }, [phase, outlineData, essayData, timeRemaining, studentId, contentId]);
 
-  const loadExistingDraft = async () => {
+  const saveToDatabase = async () => {
     try {
-      const response = await fetch(`/api/writing-submissions/draft/${studentId}/${contentId}`);
-      if (response.ok) {
-        const draft = await response.json();
-        if (draft.outline_data) {
-          setOutlineData(draft.outline_data);
-        }
-        if (draft.essay_data) {
-          setEssayData(draft.essay_data);
-          setPhase('writing');
-        }
-        if (draft.timer_remaining) {
-          setTimer({
-            timeRemaining: draft.timer_remaining,
-            isActive: draft.phase === 'writing' && !draft.submitted_at
-          });
-        }
-        if (draft.phase) {
-          setPhase(draft.phase);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading draft:', error);
-    }
-  };
-
-  const saveDraft = async () => {
-    if (!studentId || !contentId) return;
-
-    try {
-      await fetch('/api/writing-submissions/draft', {
+      const response = await fetch('/api/writing-submissions/draft', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student_id: studentId,
           content_id: contentId,
           content_title: contentTitle,
-          outline_data: outlineData,
           essay_data: essayData,
           phase,
-          timer_remaining: timer.timeRemaining,
-          timer_active: timer.isActive
+          timer_remaining: timeRemaining,
+          timer_active: isTimerActive
         })
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to save to database');
+      }
     } catch (error) {
-      console.error('Error saving draft:', error);
+      console.error('Database save error:', error);
     }
   };
 
-  const handleOutlineChange = (field: keyof OutlineData, value: string) => {
-    setOutlineData(prev => ({ ...prev, [field]: value }));
+  const getWordCount = (text: string) => {
+    return text.trim() ? text.trim().split(/\s+/).length : 0;
   };
 
-  const handleEssayChange = (field: keyof EssayData, value: string) => {
-    setEssayData(prev => ({ ...prev, [field]: value }));
+  const getTotalWordCount = () => {
+    return getWordCount(essayData.introduction) + 
+           getWordCount(essayData.body1) + 
+           getWordCount(essayData.body2) + 
+           getWordCount(essayData.body3) + 
+           getWordCount(essayData.conclusion);
   };
 
   const proceedToWriting = () => {
-    // Copy outline data to essay structure
-    setEssayData(prev => ({
-      ...prev,
-      hook: outlineData.hook,
-      mainIdea: outlineData.thesis,
-      introduction: `${outlineData.hook}\n\n${outlineData.thesis}`,
-      body: `${outlineData.bodyParagraph1}\n\n${outlineData.bodyParagraph2}\n\n${outlineData.bodyParagraph3}`,
-      conclusion: outlineData.conclusion
-    }));
     setPhase('writing');
-    setTimer(prev => ({ ...prev, isActive: true }));
+    setIsTimerActive(false);
+    toast({
+      title: "Outline Complete",
+      description: "You can now begin writing your essay.",
+    });
   };
 
   const submitEssay = async () => {
@@ -189,9 +205,9 @@ export default function AcademicEssayPopup({
           student_id: studentId,
           content_id: contentId,
           content_title: contentTitle,
-          outline_data: outlineData,
           essay_data: essayData,
-          time_spent: (45 * 60) - timer.timeRemaining,
+          time_spent: TOTAL_TIME - timeRemaining,
+          word_count: getTotalWordCount(),
           submitted_at: new Date().toISOString()
         })
       });
@@ -202,13 +218,16 @@ export default function AcademicEssayPopup({
           description: "Your academic essay has been submitted successfully.",
         });
         
-        // Clear draft and reset form
-        await fetch(`/api/writing-submissions/draft/${studentId}/${contentId}`, {
-          method: 'DELETE'
-        });
+        // Clear localStorage and trigger a page refresh to hide progress button
+        localStorage.removeItem(`essay_${studentId}_${contentId}`);
+        window.dispatchEvent(new Event('storage'));
         
-        resetForm();
         onClose();
+        setPhase('outline');
+        setEssayData({ introduction: '', body1: '', body2: '', body3: '', conclusion: '' });
+        setOutlineData({ hook: '', thesis: '', bodyParagraph1: '', bodyParagraph2: '', bodyParagraph3: '', conclusion: '' });
+        setTimeRemaining(TOTAL_TIME);
+        setIsTimerActive(false);
       } else {
         throw new Error('Failed to submit essay');
       }
@@ -223,316 +242,353 @@ export default function AcademicEssayPopup({
     }
   };
 
-  const resetForm = () => {
-    setOutlineData({
-      hook: '',
-      thesis: '',
-      bodyParagraph1: '',
-      bodyParagraph2: '',
-      bodyParagraph3: '',
-      conclusion: ''
-    });
-    setEssayData({
-      introduction: '',
-      hook: '',
-      mainIdea: '',
-      body: '',
-      conclusion: ''
-    });
-    setPhase('outline');
-    setTimer({ timeRemaining: 45 * 60, isActive: false });
-    setActiveSection('introduction');
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getWordCount = (text: string) => {
-    return text.trim() ? text.trim().split(/\s+/).length : 0;
-  };
-
-  const handleClose = () => {
-    setTimer(prev => ({ ...prev, isActive: false }));
-    saveDraft();
-    onClose();
-  };
-
   if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <div>
+            <div className="flex items-center gap-4">
               <DialogTitle className="text-xl font-bold">Academic Essay</DialogTitle>
+              <Badge 
+                variant={phase === 'outline' ? 'default' : 'secondary'}
+                className="px-6 py-1 text-sm whitespace-nowrap"
+              >
+                {phase === 'outline' ? 'Outline Phase (15 min)' : 'Writing Phase'}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-4">
               {contentTitle && (
                 <p className="text-sm text-gray-600">Topic: {contentTitle}</p>
               )}
-            </div>
-            <div className="flex items-center gap-4">
-              <Badge variant={timer.timeRemaining < 300 ? "destructive" : "secondary"} className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {formatTime(timer.timeRemaining)}
-              </Badge>
-              <Badge variant="outline">
-                {phase === 'outline' ? 'Outline Phase' : 'Writing Phase'}
-              </Badge>
-              <Button variant="ghost" size="sm" onClick={handleClose}>
+              <Button variant="ghost" size="sm" onClick={onClose}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </DialogHeader>
 
-        {phase === 'outline' ? (
+        {phase === 'outline' && (
           <div className="space-y-6 p-4">
-            <div className="text-center mb-6">
+            <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Essay Outline</h3>
-              <p className="text-sm text-gray-600">Plan your essay structure before writing</p>
+              <p className="text-sm text-gray-600 mb-4">Plan your essay structure before writing</p>
+              
+              {/* Timer */}
+              <div className="bg-orange-100 p-3 rounded-lg inline-block">
+                <div className="text-2xl font-mono font-bold text-orange-700">
+                  {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                </div>
+                <p className="text-sm text-orange-600">Time Remaining</p>
+              </div>
             </div>
 
-            {/* Visual Essay Structure */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left side - Visual structure */}
-              <div className="space-y-4">
-                <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
-                  <h4 className="font-semibold text-blue-800 mb-2">Introduction</h4>
-                  <div className="space-y-2">
-                    <div className="bg-white p-2 rounded border">
-                      <Label className="text-xs">Hook</Label>
-                      <Input
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left side - Outline form (2 columns) */}
+              <div className="lg:col-span-2 space-y-4">
+                {/* Introduction */}
+                <div className="bg-blue-50 p-4 rounded-lg border">
+                  <h4 className="font-semibold text-blue-800 mb-3">Introduction</h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium">Hook</Label>
+                      <Textarea
                         placeholder="Attention-grabbing opening..."
                         value={outlineData.hook}
-                        onChange={(e) => handleOutlineChange('hook', e.target.value)}
-                        className="mt-1"
+                        onChange={(e) => setOutlineData(prev => ({ ...prev, hook: e.target.value }))}
+                        className="mt-1 min-h-[60px]"
                       />
                     </div>
-                    <div className="bg-white p-2 rounded border">
-                      <Label className="text-xs">Thesis (Main Idea)</Label>
+                    
+                    <div>
+                      <Label className="text-sm font-medium">Thesis (Main Idea)</Label>
                       <Textarea
                         placeholder="Your main argument..."
                         value={outlineData.thesis}
-                        onChange={(e) => handleOutlineChange('thesis', e.target.value)}
-                        className="mt-1 min-h-[60px]"
+                        onChange={(e) => setOutlineData(prev => ({ ...prev, thesis: e.target.value }))}
+                        className="mt-1 min-h-[80px]"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50">
-                  <h4 className="font-semibold text-green-800 mb-2">Body</h4>
-                  <div className="space-y-2">
-                    <div className="bg-white p-2 rounded border">
-                      <Label className="text-xs">Body Paragraph 1</Label>
+                {/* Body */}
+                <div className="bg-green-50 p-4 rounded-lg border">
+                  <h4 className="font-semibold text-green-800 mb-3">Body</h4>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium">Body Paragraph 1</Label>
                       <Textarea
                         placeholder="First main point..."
                         value={outlineData.bodyParagraph1}
-                        onChange={(e) => handleOutlineChange('bodyParagraph1', e.target.value)}
+                        onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph1: e.target.value }))}
                         className="mt-1 min-h-[60px]"
                       />
                     </div>
-                    <div className="bg-white p-2 rounded border">
-                      <Label className="text-xs">Body Paragraph 2</Label>
+                    
+                    <div>
+                      <Label className="text-sm font-medium">Body Paragraph 2</Label>
                       <Textarea
                         placeholder="Second main point..."
                         value={outlineData.bodyParagraph2}
-                        onChange={(e) => handleOutlineChange('bodyParagraph2', e.target.value)}
+                        onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph2: e.target.value }))}
                         className="mt-1 min-h-[60px]"
                       />
                     </div>
-                    <div className="bg-white p-2 rounded border">
-                      <Label className="text-xs">Body Paragraph 3</Label>
+                    
+                    <div>
+                      <Label className="text-sm font-medium">Body Paragraph 3</Label>
                       <Textarea
                         placeholder="Third main point..."
                         value={outlineData.bodyParagraph3}
-                        onChange={(e) => handleOutlineChange('bodyParagraph3', e.target.value)}
+                        onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph3: e.target.value }))}
                         className="mt-1 min-h-[60px]"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
-                  <h4 className="font-semibold text-purple-800 mb-2">Conclusion</h4>
-                  <div className="bg-white p-2 rounded border">
+                {/* Conclusion */}
+                <div className="bg-purple-50 p-4 rounded-lg border">
+                  <h4 className="font-semibold text-purple-800 mb-3">Conclusion</h4>
+                  
+                  <div>
+                    <Label className="text-sm font-medium">Summary and Final Thoughts</Label>
                     <Textarea
                       placeholder="Summarize and conclude..."
                       value={outlineData.conclusion}
-                      onChange={(e) => handleOutlineChange('conclusion', e.target.value)}
-                      className="min-h-[80px]"
+                      onChange={(e) => setOutlineData(prev => ({ ...prev, conclusion: e.target.value }))}
+                      className="mt-1 min-h-[80px]"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Right side - Structure guide */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-3">Essay Structure Guide</h4>
-                <div className="space-y-3 text-sm">
+              {/* Right side - Essay Structure Guide (1 column) */}
+              <div className="bg-gray-50 p-4 rounded-lg h-fit">
+                <h4 className="font-semibold mb-4">Essay Structure Guide</h4>
+                
+                <div className="space-y-4 text-sm">
                   <div>
-                    <h5 className="font-medium text-blue-600">Introduction</h5>
-                    <ul className="list-disc list-inside text-xs text-gray-600 ml-2">
-                      <li>Hook: Question, quote, or interesting fact</li>
-                      <li>Thesis: Clear main argument or position</li>
+                    <h5 className="font-medium text-blue-600 mb-2">Introduction</h5>
+                    <ul className="space-y-1 text-gray-600 ml-4">
+                      <li>• Hook: Question, quote, or interesting fact</li>
+                      <li>• Thesis: Clear main argument or position</li>
                     </ul>
                   </div>
+                  
                   <div>
-                    <h5 className="font-medium text-green-600">Body Paragraphs</h5>
-                    <ul className="list-disc list-inside text-xs text-gray-600 ml-2">
-                      <li>Topic sentence</li>
-                      <li>Supporting evidence</li>
-                      <li>Analysis and explanation</li>
-                      <li>Transition to next point</li>
+                    <h5 className="font-medium text-green-600 mb-2">Body Paragraphs</h5>
+                    <ul className="space-y-1 text-gray-600 ml-4">
+                      <li>• Topic sentence</li>
+                      <li>• Supporting evidence</li>
+                      <li>• Analysis and explanation</li>
+                      <li>• Transition to next point</li>
                     </ul>
                   </div>
+                  
                   <div>
-                    <h5 className="font-medium text-purple-600">Conclusion</h5>
-                    <ul className="list-disc list-inside text-xs text-gray-600 ml-2">
-                      <li>Restate thesis</li>
-                      <li>Summarize main points</li>
-                      <li>Final thought or call to action</li>
+                    <h5 className="font-medium text-purple-600 mb-2">Conclusion</h5>
+                    <ul className="space-y-1 text-gray-600 ml-4">
+                      <li>• Restate thesis</li>
+                      <li>• Summarize main points</li>
+                      <li>• Final thought or call to action</li>
                     </ul>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={handleClose}>
-                Save Draft & Close
-              </Button>
-              <Button 
-                onClick={proceedToWriting}
-                disabled={!outlineData.hook || !outlineData.thesis}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
+            <div className="flex justify-center pt-4">
+              <Button onClick={proceedToWriting} className="bg-blue-600 hover:bg-blue-700">
+                <Edit className="h-4 w-4 mr-2" />
                 Proceed to Writing
-                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>
-        ) : (
-          <div className="space-y-4 p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Write Your Essay</h3>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPhase('outline')}>
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Back to Outline
-                </Button>
+        )}
+
+        {phase === 'writing' && (
+          <div className="space-y-6 p-4">
+            {/* Writing Phase Header with Sections Navigation */}
+            <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
+              <div>
+                <h3 className="text-lg font-semibold">Writing Phase</h3>
+                <div className="flex gap-2 mt-2">
+                  <Button variant="ghost" size="sm" className="text-xs bg-blue-100">
+                    Introduction: {getWordCount(essayData.introduction)} words
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs bg-green-100">
+                    Body: {getWordCount(essayData.body1) + getWordCount(essayData.body2) + getWordCount(essayData.body3)} words
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs bg-purple-100">
+                    Conclusion: {getWordCount(essayData.conclusion)} words
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="text-right">
+                <div className="text-lg font-semibold text-blue-600">
+                  Total: {getTotalWordCount()} words
+                </div>
+                <p className="text-xs text-gray-600">Keep writing to develop your ideas</p>
               </div>
             </div>
 
-            {/* Section tabs */}
-            <div className="flex gap-2 mb-4">
-              {[
-                { key: 'introduction', label: 'Introduction', count: getWordCount(essayData.introduction) },
-                { key: 'body', label: 'Body', count: getWordCount(essayData.body) },
-                { key: 'conclusion', label: 'Conclusion', count: getWordCount(essayData.conclusion) }
-              ].map((section) => (
-                <Button
-                  key={section.key}
-                  variant={activeSection === section.key ? "default" : "outline"}
-                  onClick={() => setActiveSection(section.key as keyof EssayData)}
-                  className="flex flex-col items-center"
-                  size="sm"
-                >
-                  <span>{section.label}</span>
-                  <span className="text-xs">{section.count} words</span>
-                </Button>
-              ))}
-            </div>
-
-            {/* Reference outline */}
-            <div className="bg-gray-50 p-3 rounded-lg mb-4">
-              <h5 className="font-medium text-sm mb-2">Your Outline Reference:</h5>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
-                <div>
-                  <strong>Hook:</strong> {outlineData.hook || 'Not provided'}
-                </div>
-                <div>
-                  <strong>Main Idea:</strong> {outlineData.thesis || 'Not provided'}
-                </div>
-                <div>
-                  <strong>Body Points:</strong> {[outlineData.bodyParagraph1, outlineData.bodyParagraph2, outlineData.bodyParagraph3].filter(Boolean).join('; ') || 'Not provided'}
-                </div>
-              </div>
-            </div>
-
-            {/* Writing area */}
-            <div className="space-y-4">
-              {activeSection === 'introduction' && (
-                <div>
-                  <Label className="text-base font-medium">Introduction</Label>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Writing Sections (3 columns) */}
+              <div className="lg:col-span-3 space-y-6">
+                {/* Introduction */}
+                <div className="bg-blue-50 p-4 rounded-lg border">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-semibold text-blue-800">Introduction</h4>
+                    <span className="text-sm text-blue-600">
+                      {getWordCount(essayData.introduction)} words
+                    </span>
+                  </div>
                   <Textarea
-                    placeholder="Start with your hook and develop your thesis statement..."
+                    placeholder="Write your introduction with hook and thesis..."
                     value={essayData.introduction}
-                    onChange={(e) => handleEssayChange('introduction', e.target.value)}
-                    className="min-h-[200px] mt-2"
+                    onChange={(e) => setEssayData(prev => ({ ...prev, introduction: e.target.value }))}
+                    className="min-h-[150px] border-blue-200 w-full"
                   />
-                  <div className="text-right text-xs text-gray-500 mt-1">
-                    {getWordCount(essayData.introduction)} words
+                </div>
+
+                {/* Body Sections */}
+                <div className="bg-green-50 p-4 rounded-lg border">
+                  <h4 className="font-semibold text-green-800 mb-4">Body Paragraphs</h4>
+                  
+                  <div className="space-y-4">
+                    {/* Body 1 */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <Label className="text-sm font-medium text-green-700">Body 1</Label>
+                        <Button variant="ghost" size="sm" className="text-xs">
+                          {getWordCount(essayData.body1)} words
+                        </Button>
+                      </div>
+                      <Textarea
+                        placeholder="Write your first body paragraph..."
+                        value={essayData.body1}
+                        onChange={(e) => setEssayData(prev => ({ ...prev, body1: e.target.value }))}
+                        className="min-h-[120px] border-green-200 w-full"
+                      />
+                    </div>
+
+                    {/* Body 2 */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <Label className="text-sm font-medium text-green-700">Body 2</Label>
+                        <Button variant="ghost" size="sm" className="text-xs">
+                          {getWordCount(essayData.body2)} words
+                        </Button>
+                      </div>
+                      <Textarea
+                        placeholder="Write your second body paragraph..."
+                        value={essayData.body2}
+                        onChange={(e) => setEssayData(prev => ({ ...prev, body2: e.target.value }))}
+                        className="min-h-[120px] border-green-200 w-full"
+                      />
+                    </div>
+
+                    {/* Body 3 */}
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <Label className="text-sm font-medium text-green-700">Body 3</Label>
+                        <Button variant="ghost" size="sm" className="text-xs">
+                          {getWordCount(essayData.body3)} words
+                        </Button>
+                      </div>
+                      <Textarea
+                        placeholder="Write your third body paragraph..."
+                        value={essayData.body3}
+                        onChange={(e) => setEssayData(prev => ({ ...prev, body3: e.target.value }))}
+                        className="min-h-[120px] border-green-200 w-full"
+                      />
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {activeSection === 'body' && (
-                <div>
-                  <Label className="text-base font-medium">Body Paragraphs</Label>
-                  <Textarea
-                    placeholder="Develop your main arguments with evidence and analysis..."
-                    value={essayData.body}
-                    onChange={(e) => handleEssayChange('body', e.target.value)}
-                    className="min-h-[300px] mt-2"
-                  />
-                  <div className="text-right text-xs text-gray-500 mt-1">
-                    {getWordCount(essayData.body)} words
+                {/* Conclusion */}
+                <div className="bg-purple-50 p-4 rounded-lg border">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-semibold text-purple-800">Conclusion</h4>
+                    <span className="text-sm text-purple-600">
+                      {getWordCount(essayData.conclusion)} words
+                    </span>
                   </div>
-                </div>
-              )}
-
-              {activeSection === 'conclusion' && (
-                <div>
-                  <Label className="text-base font-medium">Conclusion</Label>
                   <Textarea
-                    placeholder="Summarize your arguments and provide a strong closing..."
+                    placeholder="Write your conclusion with summary and final thoughts..."
                     value={essayData.conclusion}
-                    onChange={(e) => handleEssayChange('conclusion', e.target.value)}
-                    className="min-h-[150px] mt-2"
+                    onChange={(e) => setEssayData(prev => ({ ...prev, conclusion: e.target.value }))}
+                    className="min-h-[150px] border-purple-200 w-full"
                   />
-                  <div className="text-right text-xs text-gray-500 mt-1">
-                    {getWordCount(essayData.conclusion)} words
+                </div>
+              </div>
+
+              {/* Outline Reference (1 column) */}
+              <div className="bg-gray-50 p-4 rounded-lg h-fit">
+                <h4 className="font-semibold mb-4">Outline Reference</h4>
+                
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <h5 className="font-medium text-blue-600 mb-1">Hook:</h5>
+                    <p className="text-gray-600 text-xs">{outlineData.hook || 'Not provided'}</p>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-blue-600 mb-1">Thesis:</h5>
+                    <p className="text-gray-600 text-xs">{outlineData.thesis || 'Not provided'}</p>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-green-600 mb-1">Body 1:</h5>
+                    <p className="text-gray-600 text-xs">{outlineData.bodyParagraph1 || 'Not provided'}</p>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-green-600 mb-1">Body 2:</h5>
+                    <p className="text-gray-600 text-xs">{outlineData.bodyParagraph2 || 'Not provided'}</p>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-green-600 mb-1">Body 3:</h5>
+                    <p className="text-gray-600 text-xs">{outlineData.bodyParagraph3 || 'Not provided'}</p>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-purple-600 mb-1">Conclusion:</h5>
+                    <p className="text-gray-600 text-xs">{outlineData.conclusion || 'Not provided'}</p>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Total word count */}
-            <div className="bg-blue-50 p-3 rounded-lg">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Total Word Count:</span>
-                <span className="text-lg font-bold text-blue-600">
-                  {getWordCount(essayData.introduction) + getWordCount(essayData.body) + getWordCount(essayData.conclusion)} words
-                </span>
               </div>
             </div>
 
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={handleClose}>
-                Save Draft & Close
-              </Button>
-              <Button 
-                onClick={submitEssay}
-                disabled={isSubmitting || !essayData.introduction || !essayData.body || !essayData.conclusion}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Essay'}
-                <FileText className="h-4 w-4 ml-2" />
-              </Button>
+            {/* Action Buttons */}
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <span className="text-lg font-semibold">Total: {getTotalWordCount()} words</span>
+                  <p className="text-sm text-gray-600">Continue developing your essay</p>
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={onClose}>
+                    Save Draft
+                  </Button>
+                  <Button 
+                    onClick={submitEssay}
+                    disabled={isSubmitting || getTotalWordCount() < 100}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Essay'}
+                    <FileText className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         )}
