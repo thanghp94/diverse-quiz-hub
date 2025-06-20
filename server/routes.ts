@@ -52,29 +52,18 @@ class ApiResponse {
 class SessionManager {
   static async saveSession(req: any, res: any, user: any): Promise<boolean> {
     return new Promise((resolve) => {
-      console.log('Attempting to save session for user:', user.id);
+      req.session.userId = user.id;
+      req.session.user = user;
       
-      // Regenerate session ID for security and fresh start
-      req.session.regenerate((regenerateErr: any) => {
-        if (regenerateErr) {
-          console.error('Session regeneration error:', regenerateErr);
-          // Continue with existing session if regeneration fails
+      req.session.save((err: any) => {
+        if (err) {
+          console.error('Session save error:', err);
+          ApiResponse.serverError(res, 'Session save failed');
+          resolve(false);
+        } else {
+          console.log('Session saved successfully for user:', user.id);
+          resolve(true);
         }
-        
-        req.session.userId = user.id;
-        req.session.user = user;
-        
-        req.session.save((saveErr: any) => {
-          if (saveErr) {
-            console.error('Session save error:', saveErr);
-            ApiResponse.serverError(res, 'Session save failed');
-            resolve(false);
-          } else {
-            console.log('Session saved successfully for user:', user.id);
-            console.log('Session ID after save:', req.sessionID);
-            resolve(true);
-          }
-        });
       });
     });
   }
@@ -171,25 +160,20 @@ class AuthRoutes {
   static async getUser(req: any, res: any) {
     try {
       console.log('Auth check - Session ID:', req.sessionID);
-      console.log('Auth check - Session data:', req.session);
       console.log('Auth check - User ID in session:', req.session.userId);
-      console.log('Auth check - Session cookie:', req.headers.cookie);
       
       if (!req.session.userId) {
-        console.log('No userId in session, returning unauthorized');
         return ApiResponse.unauthorized(res);
       }
 
       const user = await storage.getUser(req.session.userId);
       if (!user) {
-        console.log('User not found for ID:', req.session.userId);
         return ApiResponse.unauthorized(res, 'User not found');
       }
 
       console.log('Auth check successful for user:', user.id);
       return res.json(user);
     } catch (error) {
-      console.error('Auth check error:', error);
       return ApiResponse.serverError(res, 'Failed to fetch user', error);
     }
   }
@@ -430,14 +414,6 @@ class SystemRoutes {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up session middleware for authentication
   app.use(getSessionMiddleware());
-
-  // Debug middleware to log session info
-  app.use((req, res, next) => {
-    console.log('Request cookies:', req.headers.cookie);
-    console.log('Session ID:', req.sessionID);
-    console.log('Session data:', req.session);
-    next();
-  });
 
   // Set up Google OAuth authentication
   setupGoogleAuth(app);
