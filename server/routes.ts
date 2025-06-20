@@ -7,6 +7,7 @@ import { getSessionMiddleware, isStudentAuthenticated } from "./sessionAuth";
 import { setupGoogleAuth } from "./googleAuth";
 import { sql } from "drizzle-orm";
 import crypto from 'crypto';
+import { writing_submissions } from "@shared/schema";
 
 // Session type declarations
 declare module 'express-session' {
@@ -1278,6 +1279,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ApiResponse.success(res, { matching: newMatching }, 'Matching activity created successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to create matching activity', error);
+    }
+  });
+
+  // Writing Submissions API
+  app.get("/api/writing-submissions/draft/:studentId/:contentId", async (req, res) => {
+    try {
+      const { studentId, contentId } = req.params;
+      const draft = await db.select()
+        .from(writing_submissions)
+        .where(
+          sql`student_id = ${studentId} AND content_id = ${contentId} AND submitted_at IS NULL`
+        )
+        .limit(1);
+      
+      if (draft.length > 0) {
+        res.json(draft[0]);
+      } else {
+        return ApiResponse.notFound(res, 'Draft');
+      }
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch draft', error);
+    }
+  });
+
+  app.post("/api/writing-submissions/draft", async (req, res) => {
+    try {
+      const { student_id, content_id, content_title, outline_data, essay_data, phase, timer_remaining, timer_active } = req.body;
+      
+      // Check if draft exists
+      const existing = await db.select()
+        .from(writing_submissions)
+        .where(
+          sql`student_id = ${student_id} AND content_id = ${content_id} AND submitted_at IS NULL`
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        // Update existing draft
+        const updated = await db.update(writing_submissions)
+          .set({
+            content_title,
+            outline_data,
+            essay_data,
+            phase,
+            timer_remaining,
+            timer_active,
+            updated_at: new Date()
+          })
+          .where(sql`id = ${existing[0].id}`)
+          .returning();
+        
+        res.json(updated[0]);
+      } else {
+        // Create new draft
+        const created = await db.insert(writing_submissions)
+          .values({
+            id: crypto.randomUUID(),
+            student_id,
+            content_id,
+            content_title,
+            outline_data,
+            essay_data,
+            phase,
+            timer_remaining,
+            timer_active,
+            status: 'draft'
+          })
+          .returning();
+        
+        res.json(created[0]);
+      }
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to save draft', error);
+    }
+  });
+
+  app.delete("/api/writing-submissions/draft/:studentId/:contentId", async (req, res) => {
+    try {
+      const { studentId, contentId } = req.params;
+      await db.delete(writing_submissions)
+        .where(
+          sql`student_id = ${studentId} AND content_id = ${contentId} AND submitted_at IS NULL`
+        );
+      
+      res.json({ success: true });
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to delete draft', error);
+    }
+  });
+
+  app.post("/api/writing-submissions", async (req, res) => {
+    try {
+      const { student_id, content_id, content_title, outline_data, essay_data, time_spent, submitted_at } = req.body;
+      
+      // Calculate word count
+      const wordCount = [
+        essay_data?.introduction || '',
+        essay_data?.body || '',
+        essay_data?.conclusion || ''
+      ].join(' ').trim().split(/\s+/).filter(word => word.length > 0).length;
+
+      const submission = await db.insert(writing_submissions)
+        .values({
+          id: crypto.randomUUID(),
+          student_id,
+          content_id,
+          content_title,
+          outline_data,
+          essay_data,
+          time_spent,
+          word_count: wordCount,
+          status: 'submitted',
+          submitted_at: new Date(submitted_at),
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .returning();
+      
+      res.json(submission[0]);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to submit essay', error);
+    }
+  });
+
+  app.get("/api/writing-submissions/:studentId", async (req, res) => {
+    try {
+      const { studentId } = req.params;
+      const submissions = await db.select()
+        .from(writing_submissions)
+        .where(sql`student_id = ${studentId} AND submitted_at IS NOT NULL`)
+        .orderBy(sql`created_at DESC`);
+      
+      res.json(submissions);
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to fetch submissions', error);
     }
   });
 
