@@ -12,6 +12,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByIdentifier(identifier: string): Promise<User | undefined>;
   updateUserEmail(userId: string, newEmail: string): Promise<User>;
+  updateUser(userId: string, updateData: Partial<User>): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
 
@@ -19,6 +20,7 @@ export interface IStorage {
   getTopics(): Promise<Topic[]>;
   getBowlChallengeTopics(): Promise<Topic[]>;
   getTopicById(id: string): Promise<Topic | undefined>;
+  updateTopic(topicId: string, updateData: Partial<Topic>): Promise<Topic | undefined>;
 
   // Content
   getContent(topicId?: string): Promise<Content[]>;
@@ -1443,6 +1445,29 @@ export class DatabaseStorage implements IStorage {
       }
       
       return results;
+    });
+  }
+
+  // Admin update methods
+  async updateUser(userId: string, updateData: Partial<User>): Promise<User | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      return result[0];
+    });
+  }
+
+  async updateTopic(topicId: string, updateData: Partial<Topic>): Promise<Topic | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db
+        .update(topics)
+        .set(updateData)
+        .where(eq(topics.id, topicId))
+        .returning();
+      return result[0];
     });
   }
 }

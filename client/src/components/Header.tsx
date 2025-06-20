@@ -107,6 +107,14 @@ const Header = () => {
               Live Monitor
             </button>
           )}
+          {user?.id === 'GV0002' && (
+            <button 
+              onClick={() => setLocation('/admin')}
+              className="text-white hover:text-white/80 transition-colors"
+            >
+              Admin
+            </button>
+          )}
           <button 
             onClick={() => setLocation('/leaderboard')}
             className="text-white hover:text-white/80 transition-colors"
