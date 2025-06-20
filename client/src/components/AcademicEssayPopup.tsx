@@ -554,10 +554,10 @@ export default function AcademicEssayPopup({
                     {/* Body 1 */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <div>
+                        <div className="flex items-center gap-4">
                           <Label className="text-sm font-medium text-green-700">Body 1</Label>
                           {outlineData.bodyParagraph1 && (
-                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400">
                               <p className="text-sm text-green-700">{outlineData.bodyParagraph1}</p>
                             </div>
                           )}
@@ -577,10 +577,10 @@ export default function AcademicEssayPopup({
                     {/* Body 2 */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <div>
+                        <div className="flex items-center gap-4">
                           <Label className="text-sm font-medium text-green-700">Body 2</Label>
                           {outlineData.bodyParagraph2 && (
-                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400">
                               <p className="text-sm text-green-700">{outlineData.bodyParagraph2}</p>
                             </div>
                           )}
@@ -600,10 +600,10 @@ export default function AcademicEssayPopup({
                     {/* Body 3 */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <div>
+                        <div className="flex items-center gap-4">
                           <Label className="text-sm font-medium text-green-700">Body 3</Label>
                           {outlineData.bodyParagraph3 && (
-                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400">
                               <p className="text-sm text-green-700">{outlineData.bodyParagraph3}</p>
                             </div>
                           )}
@@ -625,10 +625,10 @@ export default function AcademicEssayPopup({
                 {/* Conclusion */}
                 <div className="bg-purple-50 p-4 rounded-lg border">
                   <div className="flex justify-between items-center mb-3">
-                    <div>
+                    <div className="flex items-center gap-4">
                       <h4 className="font-semibold text-purple-800">Conclusion</h4>
                       {outlineData.conclusion && (
-                        <div className="bg-purple-100 px-3 py-2 rounded-md border-l-4 border-purple-400 mt-2">
+                        <div className="bg-purple-100 px-3 py-2 rounded-md border-l-4 border-purple-400">
                           <p className="text-sm text-purple-700">{outlineData.conclusion}</p>
                         </div>
                       )}
