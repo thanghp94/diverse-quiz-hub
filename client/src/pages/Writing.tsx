@@ -19,6 +19,13 @@ const WritingPage = () => {
         const userData = localStorage.getItem("currentUser");
         if (userData) {
             setCurrentUser(JSON.parse(userData));
+        } else {
+            // Provide a demo user when no user is found in localStorage
+            setCurrentUser({
+                id: 'demo-user',
+                full_name: 'Demo User',
+                first_name: 'Demo'
+            });
         }
     }, []);
 
