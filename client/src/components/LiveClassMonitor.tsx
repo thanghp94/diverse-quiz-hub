@@ -126,10 +126,18 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   // Close popups when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (studentSelectorRef.current && !studentSelectorRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      
+      // Check if click is on a Select dropdown or its content
+      const isSelectDropdown = (target as Element)?.closest('[data-radix-popper-content-wrapper]') || 
+                              (target as Element)?.closest('[role="listbox"]') ||
+                              (target as Element)?.closest('[data-radix-select-trigger]') ||
+                              (target as Element)?.closest('[data-radix-select-content]');
+      
+      if (studentSelectorRef.current && !studentSelectorRef.current.contains(target) && !isSelectDropdown) {
         setShowStudentSelector(false);
       }
-      if (configPopupRef.current && !configPopupRef.current.contains(event.target as Node)) {
+      if (configPopupRef.current && !configPopupRef.current.contains(target) && !isSelectDropdown) {
         setShowConfigPopup(false);
       }
     };
