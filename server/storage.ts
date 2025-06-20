@@ -8,6 +8,8 @@ import crypto from 'crypto';
 // you might need
 
 export interface IStorage {
+  // Add writing_submissions property
+  writingSubmissions: typeof writing_submissions;
   getUser(id: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   getUserByEmail(email: string): Promise<User | undefined>;
@@ -145,6 +147,8 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Expose writing_submissions table
+  writingSubmissions = writing_submissions;
   private async executeWithRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {

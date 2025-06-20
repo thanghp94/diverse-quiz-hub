@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
-import { Loader2, PenTool } from "lucide-react";
+import { Loader2, PenTool, FileText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
 import WritingOutlinePopup from "@/components/WritingOutlinePopup";
+import AcademicEssayPopup from "@/components/AcademicEssayPopup";
 import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
@@ -19,6 +20,7 @@ import { PersonalContentPanel } from "@/components/PersonalContentPanel";
 import { useLocation } from "wouter";
 import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Topic {
   id: string;
@@ -67,6 +69,11 @@ const WritingPage = () => {
   const [outlinePopupInfo, setOutlinePopupInfo] = useState<{
     isOpen: boolean;
     contentTitle?: string;
+  }>({ isOpen: false });
+  const [essayPopupInfo, setEssayPopupInfo] = useState<{
+    isOpen: boolean;
+    contentTitle?: string;
+    contentId?: string;
   }>({ isOpen: false });
 
   // Helper functions for group card expansion
@@ -250,6 +257,14 @@ const WritingPage = () => {
     setOutlinePopupInfo({ isOpen: false });
   };
 
+  const handleOpenEssayPopup = (contentTitle?: string, contentId?: string) => {
+    setEssayPopupInfo({ isOpen: true, contentTitle, contentId });
+  };
+
+  const handleCloseEssayPopup = () => {
+    setEssayPopupInfo({ isOpen: false });
+  };
+
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
     return allTopics.filter(topic => topic.parentid === parentId).sort((a, b) => a.topic.localeCompare(b.topic));
@@ -359,17 +374,30 @@ const WritingPage = () => {
                   isGroupCardExpanded={isGroupCardExpanded}
                   activeContentId={activeContentId}
                   customActions={(content) => (
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenOutlinePopup(content.title || content.short_blurb);
-                      }}
-                      size="sm"
-                      className="bg-purple-600 hover:bg-purple-700 text-white"
-                    >
-                      <PenTool className="h-4 w-4 mr-1" />
-                      Creative
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenOutlinePopup(content.title || content.short_blurb);
+                        }}
+                        size="sm"
+                        className="bg-purple-600 hover:bg-purple-700 text-white"
+                      >
+                        <PenTool className="h-4 w-4 mr-1" />
+                        Creative
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEssayPopup(content.title || content.short_blurb, content.id);
+                        }}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <FileText className="h-4 w-4 mr-1" />
+                        Academic Essay
+                      </Button>
+                    </div>
                   )}
                 />
               );
@@ -409,6 +437,14 @@ const WritingPage = () => {
                   >
                     <PenTool className="h-4 w-4 mr-1" />
                     Creative
+                  </Button>
+                  <Button
+                    onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <FileText className="h-4 w-4 mr-1" />
+                    Academic Essay
                   </Button>
                 </div>
               </div>
@@ -468,6 +504,14 @@ const WritingPage = () => {
         isOpen={outlinePopupInfo.isOpen}
         onClose={handleCloseOutlinePopup}
         contentTitle={outlinePopupInfo.contentTitle}
+      />
+
+      <AcademicEssayPopup
+        isOpen={essayPopupInfo.isOpen}
+        onClose={handleCloseEssayPopup}
+        contentTitle={essayPopupInfo.contentTitle}
+        contentId={essayPopupInfo.contentId}
+        studentId={user?.id || 'GV0002'}
       />
     </div>
   );
