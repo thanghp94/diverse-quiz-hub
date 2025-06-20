@@ -588,6 +588,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             left: triggerPosition.left,
             width: triggerPosition.width,
           }}
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="p-3 space-y-3">
             {/* Search Box */}
