@@ -511,9 +511,9 @@ export default function AcademicEssayPopup({
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-3">
                 {/* Introduction */}
-                <div className="bg-blue-50 p-4 rounded-lg border">
+                <div className="bg-blue-50 p-4 rounded-lg border"></div>
                   <div className="flex justify-between items-center mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-4 mb-3">
