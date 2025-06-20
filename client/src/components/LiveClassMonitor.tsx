@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,7 +52,9 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const [showStudentSelector, setShowStudentSelector] = useState(false);
   const [timePreset, setTimePreset] = useState<string>('now');
   const [showConfigPopup, setShowConfigPopup] = useState(false);
+  const [triggerPosition, setTriggerPosition] = useState<{top: number; left: number; width: number} | null>(null);
   const studentSelectorRef = useRef<HTMLDivElement>(null);
+  const studentSelectorTriggerRef = useRef<HTMLDivElement>(null);
   const configPopupRef = useRef<HTMLDivElement>(null);
 
   // Fetch all students
@@ -104,6 +107,18 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     );
   };
 
+  const toggleStudentSelector = () => {
+    if (!showStudentSelector && studentSelectorTriggerRef.current) {
+      const rect = studentSelectorTriggerRef.current.getBoundingClientRect();
+      setTriggerPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+    setShowStudentSelector(!showStudentSelector);
+  };
+
   const handleSelectAll = () => {
     if (selectedStudents.length === filteredStudents.length) {
       setSelectedStudents([]);
@@ -134,7 +149,12 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                               (target as Element)?.closest('[data-radix-select-trigger]') ||
                               (target as Element)?.closest('[data-radix-select-content]');
       
-      if (studentSelectorRef.current && !studentSelectorRef.current.contains(target) && !isSelectDropdown) {
+      // Check if click is on student selector portal or trigger
+      const isStudentSelectorPortal = (target as Element)?.closest('[data-student-selector-portal]');
+      const isStudentSelectorTrigger = studentSelectorTriggerRef.current?.contains(target);
+      
+      if (studentSelectorRef.current && !studentSelectorRef.current.contains(target) && 
+          !isSelectDropdown && !isStudentSelectorPortal && !isStudentSelectorTrigger) {
         setShowStudentSelector(false);
       }
       if (configPopupRef.current && !configPopupRef.current.contains(target) && !isSelectDropdown) {
@@ -305,10 +325,11 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                     <label className="text-sm font-medium">Select Students to Monitor</label>
                     
                     {/* Selected Students Display */}
-                    <div className="relative" ref={studentSelectorRef}>
+                    <div className="relative">
                       <div 
+                        ref={studentSelectorTriggerRef}
                         className="min-h-12 p-3 border rounded-lg bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-                        onClick={() => setShowStudentSelector(!showStudentSelector)}
+                        onClick={toggleStudentSelector}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
@@ -337,79 +358,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                         </div>
                       </div>
 
-                      {/* Student Selector Popup */}
-                      {showStudentSelector && (
-                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
-                          <div className="p-3 space-y-3">
-                            {/* Search Box */}
-                            <div className="relative">
-                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                              <Input
-                                type="text"
-                                placeholder="Search students..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10"
-                              />
-                            </div>
-                            
-                            {/* Quick Actions */}
-                            <div className="flex gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleSelectAll}
-                                disabled={studentsLoading}
-                              >
-                                {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All'}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedStudents([])}
-                                disabled={selectedStudents.length === 0}
-                              >
-                                Clear Selection
-                              </Button>
-                            </div>
-                            
-                            {/* Student List */}
-                            <div className="max-h-48 overflow-y-auto bg-gray-50 rounded-lg border">
-                              {studentsLoading ? (
-                                <div className="text-center text-gray-500 py-6">Loading students...</div>
-                              ) : filteredStudents.length === 0 ? (
-                                <div className="text-center text-gray-500 py-6">No students found</div>
-                              ) : (
-                                <div className="divide-y divide-gray-200">
-                                  {filteredStudents.map((student: Student) => (
-                                    <div key={student.id} className="flex items-center p-3 hover:bg-gray-100 transition-colors">
-                                      <Checkbox
-                                        id={`popup-${student.id}`}
-                                        checked={selectedStudents.includes(student.id)}
-                                        onCheckedChange={() => handleStudentToggle(student.id)}
-                                        className="mr-3"
-                                      />
-                                      <label
-                                        htmlFor={`popup-${student.id}`}
-                                        className="text-sm cursor-pointer flex-1 truncate font-medium"
-                                        title={student.full_name || `${student.first_name} ${student.last_name}`}
-                                      >
-                                        {student.full_name || `${student.first_name} ${student.last_name}`}
-                                      </label>
-                                      <span className="text-xs text-gray-400 ml-2">{student.id}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Selection Summary */}
-                            <div className="text-xs text-gray-600 text-center">
-                              {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} selected
-                            </div>
-                          </div>
-                        </div>
-                      )}
+
                     </div>
                   </div>
 
@@ -626,6 +575,90 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Student Selector Portal - Renders outside popup */}
+      {showStudentSelector && triggerPosition && createPortal(
+        <div 
+          ref={studentSelectorRef}
+          data-student-selector-portal
+          className="fixed bg-white border rounded-lg shadow-lg z-50"
+          style={{
+            top: triggerPosition.top,
+            left: triggerPosition.left,
+            width: triggerPosition.width,
+          }}
+        >
+          <div className="p-3 space-y-3">
+            {/* Search Box */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search students..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            {/* Quick Actions */}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAll}
+                disabled={studentsLoading}
+              >
+                {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedStudents([])}
+                disabled={selectedStudents.length === 0}
+              >
+                Clear Selection
+              </Button>
+            </div>
+            
+            {/* Student List */}
+            <div className="max-h-48 overflow-y-auto bg-gray-50 rounded-lg border">
+              {studentsLoading ? (
+                <div className="text-center text-gray-500 py-6">Loading students...</div>
+              ) : filteredStudents.length === 0 ? (
+                <div className="text-center text-gray-500 py-6">No students found</div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {filteredStudents.map((student: Student) => (
+                    <div key={student.id} className="flex items-center p-3 hover:bg-gray-100 transition-colors">
+                      <Checkbox
+                        id={`popup-${student.id}`}
+                        checked={selectedStudents.includes(student.id)}
+                        onCheckedChange={() => handleStudentToggle(student.id)}
+                        className="mr-3"
+                      />
+                      <label
+                        htmlFor={`popup-${student.id}`}
+                        className="text-sm cursor-pointer flex-1 truncate font-medium"
+                        title={student.full_name || `${student.first_name} ${student.last_name}`}
+                      >
+                        {student.full_name || `${student.first_name} ${student.last_name}`}
+                      </label>
+                      <span className="text-xs text-gray-400 ml-2">{student.id}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Selection Summary */}
+            <div className="text-xs text-gray-600 text-center">
+              {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} selected
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );
