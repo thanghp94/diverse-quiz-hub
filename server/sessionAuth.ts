@@ -18,12 +18,15 @@ export function getSessionMiddleware() {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    name: 'connect.sid', // Explicitly set session name
+    name: 'connect.sid',
+    rolling: true, // Reset expiry on each request
     cookie: {
       httpOnly: true,
-      secure: false, // Set to true in production with HTTPS
+      secure: false,
       maxAge: sessionTtl,
-      sameSite: 'lax' // Add sameSite for better compatibility
+      sameSite: 'lax',
+      path: '/', // Explicitly set path
+      domain: undefined // Let browser determine domain
     },
   });
 }

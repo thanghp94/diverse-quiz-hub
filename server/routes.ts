@@ -152,6 +152,21 @@ class AuthRoutes {
       const sessionSaved = await SessionManager.saveSession(req, res, student);
       if (!sessionSaved) return; // Response already sent
 
+      // Explicitly regenerate session ID for security
+      req.session.regenerate((err) => {
+        if (err) {
+          console.error('Session regeneration error:', err);
+        } else {
+          req.session.userId = student.id;
+          req.session.user = student;
+          req.session.save((saveErr) => {
+            if (saveErr) {
+              console.error('Session save after regeneration error:', saveErr);
+            }
+          });
+        }
+      });
+
       const needsEmailSetup = !student.email || student.email === student.meraki_email;
       return ApiResponse.success(res, { 
         user: student, 
@@ -424,6 +439,14 @@ class SystemRoutes {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up session middleware for authentication
   app.use(getSessionMiddleware());
+
+  // Debug middleware to log session info
+  app.use((req, res, next) => {
+    console.log('Request cookies:', req.headers.cookie);
+    console.log('Session ID:', req.sessionID);
+    console.log('Session data:', req.session);
+    next();
+  });
 
   // Set up Google OAuth authentication
   setupGoogleAuth(app);
