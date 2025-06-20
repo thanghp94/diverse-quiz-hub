@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Users, BookOpen, Star, Clock, Filter, Search, X, ChevronDown, Play, Pause } from 'lucide-react';
+import { Eye, Users, BookOpen, Star, Clock, Filter, Search, X, ChevronDown, Play, Pause, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Student {
@@ -50,7 +50,9 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const [minContentRated, setMinContentRated] = useState<number>(0);
   const [showStudentSelector, setShowStudentSelector] = useState(false);
   const [timePreset, setTimePreset] = useState<string>('now');
+  const [showConfigPopup, setShowConfigPopup] = useState(false);
   const studentSelectorRef = useRef<HTMLDivElement>(null);
+  const configPopupRef = useRef<HTMLDivElement>(null);
 
   // Fetch all students
   const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
@@ -121,22 +123,25 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     });
   };
 
-  // Close popup when clicking outside
+  // Close popups when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (studentSelectorRef.current && !studentSelectorRef.current.contains(event.target as Node)) {
         setShowStudentSelector(false);
       }
+      if (configPopupRef.current && !configPopupRef.current.contains(event.target as Node)) {
+        setShowConfigPopup(false);
+      }
     };
 
-    if (showStudentSelector) {
+    if (showStudentSelector || showConfigPopup) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showStudentSelector]);
+  }, [showStudentSelector, showConfigPopup]);
 
   const handleSelectAllVisible = () => {
     const visibleStudentIds = filteredStudents.map((s: Student) => s.id);
@@ -240,7 +245,16 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
               <Users className="h-6 w-6" />
               Live Class Monitor
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setShowConfigPopup(!showConfigPopup)}
+                variant="outline"
+                size="sm"
+                className="relative"
+              >
+                <Settings className="mr-2 h-4 w-4" />
+                Configure
+              </Button>
               {!isMonitoring ? (
                 <Button
                   onClick={startMonitoring}
@@ -252,248 +266,244 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                   Start Monitoring ({selectedStudents.length} students)
                 </Button>
               ) : (
-                <div className="flex items-center gap-4">
-                  <Button
-                    onClick={stopMonitoring}
-                    variant="destructive"
-                    size="sm"
-                  >
-                    <Pause className="mr-2 h-4 w-4" />
-                    Stop Monitoring
-                  </Button>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-green-50 rounded-full">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-sm text-green-700">
-                      Live monitoring active - Updates every 5 seconds
-                    </span>
-                  </div>
-                </div>
+                <Button
+                  onClick={stopMonitoring}
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Pause className="mr-2 h-4 w-4" />
+                  Stop Monitoring
+                </Button>
               )}
             </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-
-          {/* Student Selection */}
-          <div className="space-y-3">
-            
-            {/* Selected Students Display */}
-            <div className="relative" ref={studentSelectorRef}>
-              <div 
-                className="min-h-12 p-3 border rounded-lg bg-white cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => setShowStudentSelector(!showStudentSelector)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    {selectedStudents.length === 0 ? (
-                      <span className="text-gray-500">Click to select students...</span>
-                    ) : (
-                      <div className="flex flex-wrap gap-1">
-                        {getSelectedStudentNames().slice(0, 3).map((name, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {name}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeStudent(selectedStudents[index]);
-                              }}
-                              className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
-                            >
-                              <X className="h-2 w-2" />
-                            </button>
-                          </Badge>
-                        ))}
-                        {selectedStudents.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{selectedStudents.length - 3} more
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${showStudentSelector ? 'transform rotate-180' : ''}`} />
+          
+          {/* Configuration Popup */}
+          {showConfigPopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto" ref={configPopupRef}>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold">Monitor Configuration</h3>
+                  <Button variant="outline" size="sm" onClick={() => setShowConfigPopup(false)}>
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-              </div>
+                
+                <div className="space-y-6">
+                  {/* Student Selection */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Select Students to Monitor</label>
+                    
+                    {/* Selected Students Display */}
+                    <div className="relative" ref={studentSelectorRef}>
+                      <div 
+                        className="min-h-12 p-3 border rounded-lg bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => setShowStudentSelector(!showStudentSelector)}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            {selectedStudents.length === 0 ? (
+                              <span className="text-gray-500">Click to select students...</span>
+                            ) : (
+                              <div className="flex flex-wrap gap-1">
+                                {getSelectedStudentNames().map((name, index) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    {name}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        removeStudent(selectedStudents[index]);
+                                      }}
+                                      className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                                    >
+                                      <X className="h-2 w-2" />
+                                    </button>
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <ChevronDown className={`h-4 w-4 transition-transform ${showStudentSelector ? 'transform rotate-180' : ''}`} />
+                        </div>
+                      </div>
 
-              {/* Student Selector Popup */}
-              {showStudentSelector && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
-                  <div className="p-3 space-y-3">
-                    {/* Search Box */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="text"
-                        placeholder="Search students..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                    
-                    {/* Quick Actions */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleSelectAll}
-                        disabled={studentsLoading}
-                      >
-                        {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All'}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedStudents([])}
-                        disabled={selectedStudents.length === 0}
-                      >
-                        Clear Selection
-                      </Button>
-                    </div>
-                    
-                    {/* Student List */}
-                    <div className="max-h-48 overflow-y-auto bg-gray-50 rounded-lg border">
-                      {studentsLoading ? (
-                        <div className="text-center text-gray-500 py-6">Loading students...</div>
-                      ) : filteredStudents.length === 0 ? (
-                        <div className="text-center text-gray-500 py-6">No students found</div>
-                      ) : (
-                        <div className="divide-y divide-gray-200">
-                          {filteredStudents.map((student: Student) => (
-                            <div key={student.id} className="flex items-center p-3 hover:bg-gray-100 transition-colors">
-                              <Checkbox
-                                id={`popup-${student.id}`}
-                                checked={selectedStudents.includes(student.id)}
-                                onCheckedChange={() => handleStudentToggle(student.id)}
-                                className="mr-3"
+                      {/* Student Selector Popup */}
+                      {showStudentSelector && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border rounded-lg shadow-lg z-10">
+                          <div className="p-3 space-y-3">
+                            {/* Search Box */}
+                            <div className="relative">
+                              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                              <Input
+                                type="text"
+                                placeholder="Search students..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="pl-10"
                               />
-                              <label
-                                htmlFor={`popup-${student.id}`}
-                                className="text-sm cursor-pointer flex-1 truncate font-medium"
-                                title={student.full_name || `${student.first_name} ${student.last_name}`}
-                              >
-                                {student.full_name || `${student.first_name} ${student.last_name}`}
-                              </label>
-                              <span className="text-xs text-gray-400 ml-2">{student.id}</span>
                             </div>
-                          ))}
+                            
+                            {/* Quick Actions */}
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSelectAll}
+                                disabled={studentsLoading}
+                              >
+                                {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All'}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedStudents([])}
+                                disabled={selectedStudents.length === 0}
+                              >
+                                Clear Selection
+                              </Button>
+                            </div>
+                            
+                            {/* Student List */}
+                            <div className="max-h-48 overflow-y-auto bg-gray-50 rounded-lg border">
+                              {studentsLoading ? (
+                                <div className="text-center text-gray-500 py-6">Loading students...</div>
+                              ) : filteredStudents.length === 0 ? (
+                                <div className="text-center text-gray-500 py-6">No students found</div>
+                              ) : (
+                                <div className="divide-y divide-gray-200">
+                                  {filteredStudents.map((student: Student) => (
+                                    <div key={student.id} className="flex items-center p-3 hover:bg-gray-100 transition-colors">
+                                      <Checkbox
+                                        id={`popup-${student.id}`}
+                                        checked={selectedStudents.includes(student.id)}
+                                        onCheckedChange={() => handleStudentToggle(student.id)}
+                                        className="mr-3"
+                                      />
+                                      <label
+                                        htmlFor={`popup-${student.id}`}
+                                        className="text-sm cursor-pointer flex-1 truncate font-medium"
+                                        title={student.full_name || `${student.first_name} ${student.last_name}`}
+                                      >
+                                        {student.full_name || `${student.first_name} ${student.last_name}`}
+                                      </label>
+                                      <span className="text-xs text-gray-400 ml-2">{student.id}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Selection Summary */}
+                            <div className="text-xs text-gray-600 text-center">
+                              {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} selected
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
-                    
-                    {/* Selection Summary */}
-                    <div className="text-xs text-gray-600 text-center">
-                      {selectedStudents.length} student{selectedStudents.length !== 1 ? 's' : ''} selected
-                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Monitor Configuration */}
-          <div className="space-y-4">
-            {/* Monitor Start Time & Activity Filters */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Monitor Start Time */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Monitor Start Time
-                  </label>
-                  <div className="grid grid-cols-1 gap-3">
-                    <div>
-                      <label className="text-xs text-gray-600">Time Preset:</label>
-                      <Select value={timePreset} onValueChange={(value) => {
-                        setTimePreset(value);
-                        if (value !== 'custom') {
-                          applyTimePreset(value);
-                        }
-                      }}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="now">Now</SelectItem>
-                          <SelectItem value="4pm_today">4 PM Today</SelectItem>
-                          <SelectItem value="8pm_today">8 PM Today</SelectItem>
-                          <SelectItem value="today">Start of Today</SelectItem>
-                          <SelectItem value="yesterday">Yesterday</SelectItem>
-                          <SelectItem value="7_days_ago">7 Days Ago</SelectItem>
-                          <SelectItem value="custom">Custom Time</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {timePreset === 'custom' && (
-                      <div>
-                        <label className="text-xs text-gray-600">Custom DateTime:</label>
-                        <Input
-                          type="datetime-local"
-                          value={customStartTime}
-                          onChange={(e) => {
-                            setCustomStartTime(e.target.value);
-                            setMonitorStartTime(new Date(e.target.value).toISOString());
-                          }}
-                          className="w-full"
-                        />
+                  {/* Monitor Start Time & Activity Filters */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Monitor Start Time */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Monitor Start Time
+                      </label>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-600">Time Preset:</label>
+                          <Select value={timePreset} onValueChange={(value) => {
+                            setTimePreset(value);
+                            if (value !== 'custom') {
+                              applyTimePreset(value);
+                            }
+                          }}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="now">Now</SelectItem>
+                              <SelectItem value="4pm_today">4 PM Today</SelectItem>
+                              <SelectItem value="8pm_today">8 PM Today</SelectItem>
+                              <SelectItem value="today">Start of Today</SelectItem>
+                              <SelectItem value="yesterday">Yesterday</SelectItem>
+                              <SelectItem value="7_days_ago">7 Days Ago</SelectItem>
+                              <SelectItem value="custom">Custom Time</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {timePreset === 'custom' && (
+                          <div>
+                            <label className="text-xs text-gray-600">Custom DateTime:</label>
+                            <Input
+                              type="datetime-local"
+                              value={customStartTime}
+                              onChange={(e) => {
+                                setCustomStartTime(e.target.value);
+                                setMonitorStartTime(new Date(e.target.value).toISOString());
+                              }}
+                              className="w-full"
+                            />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Current: {format(new Date(monitorStartTime), 'MMM dd, yyyy HH:mm')}
-                  </div>
-                </div>
+                      <div className="text-xs text-gray-500">
+                        Current: {format(new Date(monitorStartTime), 'MMM dd, yyyy HH:mm')}
+                      </div>
+                    </div>
 
-                {/* Activity Filters */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Filter className="h-4 w-4" />
-                    Activity Filters
-                  </label>
-                  <div className="grid grid-cols-1 gap-3">
-                    <div>
-                      <label className="text-xs text-gray-600">Activity Level:</label>
-                      <Select value={activityFilter} onValueChange={setActivityFilter}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Students</SelectItem>
-                          <SelectItem value="active">Active Only</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs text-gray-600">Min Viewed:</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={minContentViewed}
-                          onChange={(e) => setMinContentViewed(parseInt(e.target.value) || 0)}
-                          className="w-full"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-gray-600">Min Rated:</label>
-                        <Input
-                          type="number"
-                          min="0"
-                          value={minContentRated}
-                          onChange={(e) => setMinContentRated(parseInt(e.target.value) || 0)}
-                          className="w-full"
-                        />
+                    {/* Activity Filters */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        Activity Filters
+                      </label>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <label className="text-xs text-gray-600">Activity Level:</label>
+                          <Select value={activityFilter} onValueChange={setActivityFilter}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Students</SelectItem>
+                              <SelectItem value="active">Active Only</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-xs text-gray-600">Min Viewed:</label>
+                            <Input
+                              type="number"
+                              min="0"
+                              value={minContentViewed}
+                              onChange={(e) => setMinContentViewed(parseInt(e.target.value) || 0)}
+                              className="w-full"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs text-gray-600">Min Rated:</label>
+                            <Input
+                              type="number"
+                              min="0"
+                              value={minContentRated}
+                              onChange={(e) => setMinContentRated(parseInt(e.target.value) || 0)}
+                              className="w-full"
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
-
-          </div>
-
+          )}
 
         </CardContent>
       </Card>
@@ -512,13 +522,13 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-3">Student</th>
-                      <th className="text-left p-3">Content Viewed</th>
-                      <th className="text-left p-3">Content Rated</th>
-                      <th className="text-left p-3">Quiz Attempts</th>
-                      <th className="text-left p-3">Quiz Accuracy</th>
-                      <th className="text-left p-3">Last Activity</th>
-                      <th className="text-left p-3">Actions</th>
+                      <th className="text-left p-2">Student</th>
+                      <th className="text-left p-2">Viewed</th>
+                      <th className="text-left p-2">Rated</th>
+                      <th className="text-left p-2">Quiz</th>
+                      <th className="text-left p-2">Accuracy</th>
+                      <th className="text-left p-2">Last Activity</th>
+                      <th className="text-left p-2">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -530,37 +540,26 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                       
                       return (
                         <tr key={studentId} className="border-b hover:bg-gray-50">
-                          <td className="p-3">
-                            <div className="font-medium">{student.first_name} {student.last_name}</div>
-                            <div className="text-sm text-gray-500">{student.id}</div>
+                          <td className="p-2">
+                            <div className="font-medium text-sm">{student.first_name} {student.last_name}</div>
+                            <div className="text-xs text-gray-500">{student.id}</div>
                           </td>
-                          <td className="p-3">
-                            <Badge variant="outline" className="bg-blue-50">
-                              <BookOpen className="w-3 h-3 mr-1" />
-                              {activity?.content_viewed || 0}
-                            </Badge>
+                          <td className="p-2">
+                            <span className="text-sm font-medium">{activity?.content_viewed || 0}</span>
                           </td>
-                          <td className="p-3">
-                            <Badge variant="outline" className="bg-green-50">
-                              <Star className="w-3 h-3 mr-1" />
-                              {activity?.content_rated || 0}
-                            </Badge>
+                          <td className="p-2">
+                            <span className="text-sm font-medium">{activity?.content_rated || 0}</span>
                           </td>
-                          <td className="p-3">
-                            <Badge variant="outline" className="bg-orange-50">
-                              <BookOpen className="w-3 h-3 mr-1" />
-                              {activity?.quiz_attempts || 0}
-                            </Badge>
+                          <td className="p-2">
+                            <span className="text-sm font-medium">{activity?.quiz_attempts || 0}</span>
                           </td>
-                          <td className="p-3">
-                            <Badge variant="outline" className="bg-purple-50">
-                              {activity?.quiz_accuracy ? `${activity.quiz_accuracy}%` : 'N/A'}
-                            </Badge>
+                          <td className="p-2">
+                            <span className="text-sm font-medium">{activity?.quiz_accuracy ? `${activity.quiz_accuracy}%` : 'N/A'}</span>
                           </td>
-                          <td className="p-3 text-sm">
+                          <td className="p-2 text-xs">
                             {activity?.last_activity ? formatTime(activity.last_activity) : 'No activity'}
                           </td>
-                          <td className="p-3">
+                          <td className="p-2">
                             <Button
                               variant="outline"
                               size="sm"
@@ -569,8 +568,8 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                               )}
                               disabled={!activity?.activities?.length}
                             >
-                              <Eye className="w-4 h-4 mr-1" />
-                              View Details
+                              <Eye className="w-3 h-3 mr-1" />
+                              Details
                             </Button>
                           </td>
                         </tr>
