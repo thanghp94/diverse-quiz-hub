@@ -341,30 +341,6 @@ const AdminPage = () => {
               />
             </div>
             <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input
-                id="firstName"
-                value={newItemData.first_name || ''}
-                onChange={(e) => setNewItemData({...newItemData, first_name: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input
-                id="lastName"
-                value={newItemData.last_name || ''}
-                onChange={(e) => setNewItemData({...newItemData, last_name: e.target.value})}
-              />
-            </div>
-            <div>
-              <Label htmlFor="fullName">Full Name</Label>
-              <Input
-                id="fullName"
-                value={newItemData.full_name || ''}
-                onChange={(e) => setNewItemData({...newItemData, full_name: e.target.value})}
-              />
-            </div>
-            <div>
               <Label htmlFor="email">Meraki Email</Label>
               <Input
                 id="email"
@@ -372,6 +348,23 @@ const AdminPage = () => {
                 onChange={(e) => setNewItemData({...newItemData, meraki_email: e.target.value})}
                 placeholder="student@meraki.edu"
               />
+            </div>
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Input
+                id="category"
+                value={newItemData.category || ''}
+                onChange={(e) => setNewItemData({...newItemData, category: e.target.value})}
+                placeholder="student"
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show"
+                checked={newItemData.show || false}
+                onCheckedChange={(checked) => setNewItemData({...newItemData, show: checked})}
+              />
+              <Label htmlFor="show">Show</Label>
             </div>
           </div>
         );
@@ -600,27 +593,16 @@ const AdminPage = () => {
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left p-3">Full Name</th>
                         <th className="text-left p-3">ID</th>
                         <th className="text-left p-3">Meraki Email</th>
                         <th className="text-left p-3">Category</th>
+                        <th className="text-left p-3">Show</th>
                         <th className="text-left p-3">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredData.map((student: User) => (
                         <tr key={student.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3">
-                            {editingId === student.id ? (
-                              <Input
-                                value={editData.full_name || ''}
-                                onChange={(e) => setEditData({...editData, full_name: e.target.value})}
-                                className="w-full"
-                              />
-                            ) : (
-                              student.full_name || `${student.first_name || ''} ${student.last_name || ''}`.trim()
-                            )}
-                          </td>
                           <td className="p-3">{student.id}</td>
                           <td className="p-3">
                             {editingId === student.id ? (
@@ -634,7 +616,20 @@ const AdminPage = () => {
                             )}
                           </td>
                           <td className="p-3">
-                            <Badge variant="secondary">{student.category || 'Unknown'}</Badge>
+                            {editingId === student.id ? (
+                              <Input
+                                value={editData.category || ''}
+                                onChange={(e) => setEditData({...editData, category: e.target.value})}
+                                className="w-full"
+                              />
+                            ) : (
+                              <Badge variant="secondary">{student.category || 'Unknown'}</Badge>
+                            )}
+                          </td>
+                          <td className="p-3">
+                            <Badge variant={student.show ? "default" : "secondary"}>
+                              {student.show ? 'Yes' : 'No'}
+                            </Badge>
                           </td>
                           <td className="p-3">
                             {editingId === student.id ? (
@@ -798,7 +793,8 @@ const AdminPage = () => {
                     {filteredData.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
                         <p>No matching activities found in the database.</p>
-                        <p className="text-sm mt-2">Create some matching activities to see them here.</p>
+                        <p className="text-sm mt-2">The matching table is currently empty. Create some matching activities to see them here.</p>
+                        <p className="text-sm mt-1 text-blue-600">Use the "Add Matching" button above to create your first matching activity.</p>
                       </div>
                     ) : (
                       <table className="w-full border-collapse">
