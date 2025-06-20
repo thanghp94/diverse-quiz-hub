@@ -53,22 +53,28 @@ class SessionManager {
   static async saveSession(req: any, res: any, user: any): Promise<boolean> {
     return new Promise((resolve) => {
       console.log('Attempting to save session for user:', user.id);
-      console.log('Session ID before save:', req.sessionID);
       
-      req.session.userId = user.id;
-      req.session.user = user;
-      
-      req.session.save((err: any) => {
-        if (err) {
-          console.error('Session save error:', err);
-          ApiResponse.serverError(res, 'Session save failed');
-          resolve(false);
-        } else {
-          console.log('Session saved successfully for user:', user.id);
-          console.log('Session ID after save:', req.sessionID);
-          console.log('Session data after save:', req.session);
-          resolve(true);
+      // Regenerate session ID for security and fresh start
+      req.session.regenerate((regenerateErr: any) => {
+        if (regenerateErr) {
+          console.error('Session regeneration error:', regenerateErr);
+          // Continue with existing session if regeneration fails
         }
+        
+        req.session.userId = user.id;
+        req.session.user = user;
+        
+        req.session.save((saveErr: any) => {
+          if (saveErr) {
+            console.error('Session save error:', saveErr);
+            ApiResponse.serverError(res, 'Session save failed');
+            resolve(false);
+          } else {
+            console.log('Session saved successfully for user:', user.id);
+            console.log('Session ID after save:', req.sessionID);
+            resolve(true);
+          }
+        });
       });
     });
   }
@@ -151,21 +157,6 @@ class AuthRoutes {
 
       const sessionSaved = await SessionManager.saveSession(req, res, student);
       if (!sessionSaved) return; // Response already sent
-
-      // Explicitly regenerate session ID for security
-      req.session.regenerate((err) => {
-        if (err) {
-          console.error('Session regeneration error:', err);
-        } else {
-          req.session.userId = student.id;
-          req.session.user = student;
-          req.session.save((saveErr) => {
-            if (saveErr) {
-              console.error('Session save after regeneration error:', saveErr);
-            }
-          });
-        }
-      });
 
       const needsEmailSetup = !student.email || student.email === student.meraki_email;
       return ApiResponse.success(res, { 

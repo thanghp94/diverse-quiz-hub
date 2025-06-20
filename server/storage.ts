@@ -190,7 +190,7 @@ export class DatabaseStorage implements IStorage {
   async getUserByIdentifier(identifier: string): Promise<User | undefined> {
     return this.executeWithRetry(async () => {
       const result = await db.select().from(users).where(
-        sql`${users.id} = ${identifier} OR ${users.meraki_email} = ${identifier}`
+        sql`${users.id} = ${identifier} OR ${users.email} = ${identifier} OR ${users.meraki_email} = ${identifier}`
       );
       return result[0];
     });
