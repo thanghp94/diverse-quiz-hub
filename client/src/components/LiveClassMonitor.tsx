@@ -157,7 +157,8 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
           !isSelectDropdown && !isStudentSelectorPortal && !isStudentSelectorTrigger) {
         setShowStudentSelector(false);
       }
-      if (configPopupRef.current && !configPopupRef.current.contains(target) && !isSelectDropdown) {
+      if (configPopupRef.current && !configPopupRef.current.contains(target) && 
+          !isSelectDropdown && !isStudentSelectorPortal) {
         setShowConfigPopup(false);
       }
     };

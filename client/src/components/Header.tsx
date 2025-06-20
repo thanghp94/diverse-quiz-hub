@@ -18,6 +18,10 @@ const Header = () => {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  // Check if user is teacher or GV0002
+  const isTeacher = user?.id === 'GV0002' || 
+                   (user?.category && user.category.toLowerCase().includes('teacher'));
+
   const handleLogout = async () => {
     try {
       const response = await fetch("/api/auth/logout", {
@@ -95,12 +99,14 @@ const Header = () => {
           >
             Assignments
           </button>
-          <button 
-            onClick={() => setLocation('/live-monitor')}
-            className="text-white hover:text-white/80 transition-colors"
-          >
-            Live Monitor
-          </button>
+          {isTeacher && (
+            <button 
+              onClick={() => setLocation('/live-monitor')}
+              className="text-white hover:text-white/80 transition-colors"
+            >
+              Live Monitor
+            </button>
+          )}
           <button 
             onClick={() => setLocation('/leaderboard')}
             className="text-white hover:text-white/80 transition-colors"

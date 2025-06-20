@@ -4,6 +4,8 @@
 This is an educational platform that provides content management, quizzes, assignments, and student tracking. The project has been successfully migrated from Replit Agent to standard Replit environment with Neon PostgreSQL database.
 
 ## Recent Changes
+- **Teacher Access Control (June 20, 2025)**: Live Monitor button now only visible to user GV0002 or users with Teacher category
+- **Portal Interaction Fix (June 20, 2025)**: Fixed student selector portal to prevent configuration popup from closing when selecting students
 - **Live Monitor Optimization (June 20, 2025)**: Ultra-compact table design with minimal padding, removed student IDs and card title, tiny Details buttons for maximum space efficiency
 - **Select Dropdown Fix (June 20, 2025)**: Fixed time preset selection in configuration popup with proper click-outside detection
 - **Navigation Integration (June 20, 2025)**: Added header navigation to LiveClassPage, removed redundant page header
