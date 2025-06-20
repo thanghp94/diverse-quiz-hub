@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Edit, Save, X, Users, BookOpen, FileText, HelpCircle, Target, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -318,6 +319,28 @@ const AdminPage = () => {
 
   const handleCreate = () => {
     if (activeTab === 'students') {
+      // Check for duplicate ID or Meraki email
+      const existingUserWithId = (students as User[])?.find(user => user.id === newItemData.id);
+      const existingUserWithEmail = (students as User[])?.find(user => user.meraki_email === newItemData.meraki_email);
+      
+      if (existingUserWithId) {
+        toast({
+          title: "Error",
+          description: `Student ID "${newItemData.id}" is already in use. Please choose a different ID.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (newItemData.meraki_email && existingUserWithEmail) {
+        toast({
+          title: "Error", 
+          description: `Meraki email "${newItemData.meraki_email}" is already in use. Please choose a different email.`,
+          variant: "destructive"
+        });
+        return;
+      }
+      
       createUser.mutate(newItemData);
     } else if (activeTab === 'topics') {
       createTopic.mutate(newItemData);
@@ -352,21 +375,43 @@ const AdminPage = () => {
               />
             </div>
             <div>
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="fullName">Full Name</Label>
               <Input
-                id="category"
-                value={newItemData.category || ''}
-                onChange={(e) => setNewItemData({...newItemData, category: e.target.value})}
-                placeholder="student"
+                id="fullName"
+                value={newItemData.full_name || ''}
+                onChange={(e) => setNewItemData({...newItemData, full_name: e.target.value})}
+                placeholder="John Doe"
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="show"
-                checked={newItemData.show || false}
-                onCheckedChange={(checked) => setNewItemData({...newItemData, show: checked})}
-              />
+            <div>
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={newItemData.category || "student"}
+                onValueChange={(value) => setNewItemData({...newItemData, category: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">student</SelectItem>
+                  <SelectItem value="teacher">teacher</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
               <Label htmlFor="show">Show</Label>
+              <Select
+                value={newItemData.show || "challenge"}
+                onValueChange={(value) => setNewItemData({...newItemData, show: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="challenge">challenge</SelectItem>
+                  <SelectItem value="challenge, writing, debate">challenge, writing, debate</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         );
