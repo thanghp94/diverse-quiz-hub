@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,6 +45,56 @@ export default function CreativeWritingPopup({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  // Load saved data on open
+  useEffect(() => {
+    if (isOpen && studentId && contentId) {
+      const storageKey = `creative_story_${studentId}_${contentId}`;
+      const savedData = localStorage.getItem(storageKey);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setWritingData({
+            title: parsed.title || outlineData.title || '',
+            story: parsed.story || ''
+          });
+        } catch (error) {
+          console.error('Failed to parse saved story data:', error);
+          setWritingData({
+            title: outlineData.title || '',
+            story: ''
+          });
+        }
+      } else {
+        // Reset to initial state for new content
+        setWritingData({
+          title: outlineData.title || '',
+          story: ''
+        });
+      }
+    }
+  }, [isOpen, studentId, contentId, outlineData]);
+
+  // Save data when popup closes or story changes
+  useEffect(() => {
+    if (studentId && contentId && (writingData.title.trim() || writingData.story.trim())) {
+      const storageKey = `creative_story_${studentId}_${contentId}`;
+      localStorage.setItem(storageKey, JSON.stringify(writingData));
+    }
+  }, [writingData, studentId, contentId]);
+
+  // Save data when browser closes
+  useEffect(() => {
+    const saveOnUnload = () => {
+      if (studentId && contentId && (writingData.title.trim() || writingData.story.trim())) {
+        const storageKey = `creative_story_${studentId}_${contentId}`;
+        localStorage.setItem(storageKey, JSON.stringify(writingData));
+      }
+    };
+
+    window.addEventListener('beforeunload', saveOnUnload);
+    return () => window.removeEventListener('beforeunload', saveOnUnload);
+  }, [writingData, studentId, contentId]);
+
   const handleStoryChange = (value: string) => {
     setWritingData(prev => ({ ...prev, story: value }));
   };
@@ -54,41 +104,73 @@ export default function CreativeWritingPopup({
   };
 
   const submitStory = async () => {
+    if (!studentId || !contentId) {
+      toast({
+        title: "Submission Failed",
+        description: "Missing student or content information.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const storyWordCount = getWordCount(writingData.story);
+    if (storyWordCount < 50) {
+      toast({
+        title: "Submission Failed",
+        description: "Story must be at least 50 words to submit.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      // Split story into paragraphs for database storage
+      const paragraphs = writingData.story.split('\n\n').filter(p => p.trim());
+      
       const response = await fetch('/api/writing-submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           student_id: studentId,
-          prompt_id: contentId,
-          title: writingData.title,
-          full_essay: writingData.story,
-          opening_paragraph: writingData.story.split('\n\n')[0] || writingData.story.substring(0, 500),
-          body_paragraph_1: writingData.story.substring(500, 1000) || '',
-          body_paragraph_2: writingData.story.substring(1000, 1500) || '',
-          body_paragraph_3: writingData.story.substring(1500, 2000) || '',
-          conclusion_paragraph: writingData.story.split('\n\n').pop() || writingData.story.substring(-500),
-          word_count: getWordCount(writingData.story),
-          status: 'submitted'
+          content_id: contentId,
+          content_title: contentTitle,
+          outline_data: outlineData,
+          essay_data: {
+            introduction: paragraphs[0] || '',
+            body1: paragraphs[1] || '',
+            body2: paragraphs[2] || '',
+            body3: paragraphs[3] || '',
+            conclusion: paragraphs[paragraphs.length - 1] || ''
+          },
+          word_count: storyWordCount,
+          submitted_at: new Date().toISOString()
         })
       });
 
       if (response.ok) {
+        const result = await response.json();
         toast({
           title: "Story Submitted",
-          description: "Your creative writing has been submitted successfully.",
+          description: `Your creative writing has been submitted successfully (${storyWordCount} words).`,
         });
+        
+        // Clear localStorage
+        const storageKey = `creative_story_${studentId}_${contentId}`;
+        localStorage.removeItem(storageKey);
+        window.dispatchEvent(new Event('storage'));
         
         onClose();
         setWritingData({ title: '', story: '' });
       } else {
-        throw new Error('Failed to submit story');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit story');
       }
     } catch (error) {
+      console.error('Submit error:', error);
       toast({
         title: "Submission Failed",
-        description: "There was an error submitting your story. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error submitting your story. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -106,7 +188,9 @@ export default function CreativeWritingPopup({
             <div>
               <DialogTitle className="text-xl font-bold">Creative Writing</DialogTitle>
               {contentTitle && (
-                <p className="text-sm text-gray-600">Topic: {contentTitle}</p>
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
+                  <p className="text-lg font-semibold text-gray-800">{contentTitle}</p>
+                </div>
               )}
             </div>
             <div className="flex items-center gap-4">
@@ -189,7 +273,7 @@ export default function CreativeWritingPopup({
             </Button>
             <Button 
               onClick={submitStory}
-              disabled={isSubmitting || !writingData.title.trim() || !writingData.story.trim()}
+              disabled={isSubmitting || !writingData.title.trim() || !writingData.story.trim() || getWordCount(writingData.story) < 50}
               className="bg-green-600 hover:bg-green-700"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Story'}

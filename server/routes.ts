@@ -1369,14 +1369,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/writing-submissions", async (req, res) => {
     try {
-      const { student_id, content_id, content_title, outline_data, essay_data, time_spent, submitted_at } = req.body;
+      const { student_id, content_id, content_title, outline_data, essay_data, time_spent, word_count, submitted_at } = req.body;
       
-      // Calculate word count
-      const wordCount = [
+      // Calculate word count if not provided
+      const calculatedWordCount = word_count || [
         essay_data?.introduction || '',
-        essay_data?.body || '',
+        essay_data?.body1 || '',
+        essay_data?.body2 || '',
+        essay_data?.body3 || '',
         essay_data?.conclusion || ''
       ].join(' ').trim().split(/\s+/).filter(word => word.length > 0).length;
+
+      // Create full essay text
+      const fullEssayParts = [
+        essay_data?.introduction,
+        essay_data?.body1,
+        essay_data?.body2,
+        essay_data?.body3,
+        essay_data?.conclusion
+      ].filter(Boolean);
 
       const submission = await db.insert(writing_submissions)
         .values({
@@ -1385,10 +1396,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           prompt_id: content_id,
           title: content_title,
           opening_paragraph: essay_data?.introduction || '',
-          body_paragraph_1: essay_data?.body || '',
+          body_paragraph_1: essay_data?.body1 || '',
+          body_paragraph_2: essay_data?.body2 || '',
+          body_paragraph_3: essay_data?.body3 || '',
           conclusion_paragraph: essay_data?.conclusion || '',
-          full_essay: [essay_data?.introduction, essay_data?.body, essay_data?.conclusion].filter(Boolean).join('\n\n'),
-          word_count: wordCount,
+          full_essay: fullEssayParts.join('\n\n'),
+          word_count: calculatedWordCount,
           status: 'submitted',
           created_at: new Date(),
           updated_at: new Date()
