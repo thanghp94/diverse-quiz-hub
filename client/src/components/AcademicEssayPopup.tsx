@@ -438,13 +438,19 @@ export default function AcademicEssayPopup({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              {/* Writing Sections (3 columns) */}
-              <div className="lg:col-span-3 space-y-6">
+            <div className="space-y-6">
                 {/* Introduction */}
                 <div className="bg-blue-50 p-4 rounded-lg border">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-semibold text-blue-800">Introduction</h4>
+                    <div>
+                      <h4 className="font-semibold text-blue-800">Introduction</h4>
+                      {outlineData.hook && (
+                        <p className="text-xs text-blue-600 mt-1">Hook: {outlineData.hook}</p>
+                      )}
+                      {outlineData.thesis && (
+                        <p className="text-xs text-blue-600 mt-1">Thesis: {outlineData.thesis}</p>
+                      )}
+                    </div>
                     <span className="text-sm text-blue-600">
                       {getWordCount(essayData.introduction)} words
                     </span>
@@ -465,7 +471,12 @@ export default function AcademicEssayPopup({
                     {/* Body 1 */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <Label className="text-sm font-medium text-green-700">Body 1</Label>
+                        <div>
+                          <Label className="text-sm font-medium text-green-700">Body 1</Label>
+                          {outlineData.bodyParagraph1 && (
+                            <p className="text-xs text-green-600 mt-1">{outlineData.bodyParagraph1}</p>
+                          )}
+                        </div>
                         <Button variant="ghost" size="sm" className="text-xs">
                           {getWordCount(essayData.body1)} words
                         </Button>
@@ -481,7 +492,12 @@ export default function AcademicEssayPopup({
                     {/* Body 2 */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <Label className="text-sm font-medium text-green-700">Body 2</Label>
+                        <div>
+                          <Label className="text-sm font-medium text-green-700">Body 2</Label>
+                          {outlineData.bodyParagraph2 && (
+                            <p className="text-xs text-green-600 mt-1">{outlineData.bodyParagraph2}</p>
+                          )}
+                        </div>
                         <Button variant="ghost" size="sm" className="text-xs">
                           {getWordCount(essayData.body2)} words
                         </Button>
@@ -497,7 +513,12 @@ export default function AcademicEssayPopup({
                     {/* Body 3 */}
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <Label className="text-sm font-medium text-green-700">Body 3</Label>
+                        <div>
+                          <Label className="text-sm font-medium text-green-700">Body 3</Label>
+                          {outlineData.bodyParagraph3 && (
+                            <p className="text-xs text-green-600 mt-1">{outlineData.bodyParagraph3}</p>
+                          )}
+                        </div>
                         <Button variant="ghost" size="sm" className="text-xs">
                           {getWordCount(essayData.body3)} words
                         </Button>
@@ -515,7 +536,12 @@ export default function AcademicEssayPopup({
                 {/* Conclusion */}
                 <div className="bg-purple-50 p-4 rounded-lg border">
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-semibold text-purple-800">Conclusion</h4>
+                    <div>
+                      <h4 className="font-semibold text-purple-800">Conclusion</h4>
+                      {outlineData.conclusion && (
+                        <p className="text-xs text-purple-600 mt-1">{outlineData.conclusion}</p>
+                      )}
+                    </div>
                     <span className="text-sm text-purple-600">
                       {getWordCount(essayData.conclusion)} words
                     </span>
@@ -528,44 +554,6 @@ export default function AcademicEssayPopup({
                   />
                 </div>
               </div>
-
-              {/* Outline Reference (1 column) */}
-              <div className="bg-gray-50 p-4 rounded-lg h-fit">
-                <h4 className="font-semibold mb-4">Outline Reference</h4>
-                
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <h5 className="font-medium text-blue-600 mb-1">Hook:</h5>
-                    <p className="text-gray-600 text-xs">{outlineData.hook || 'Not provided'}</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium text-blue-600 mb-1">Thesis:</h5>
-                    <p className="text-gray-600 text-xs">{outlineData.thesis || 'Not provided'}</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium text-green-600 mb-1">Body 1:</h5>
-                    <p className="text-gray-600 text-xs">{outlineData.bodyParagraph1 || 'Not provided'}</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium text-green-600 mb-1">Body 2:</h5>
-                    <p className="text-gray-600 text-xs">{outlineData.bodyParagraph2 || 'Not provided'}</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium text-green-600 mb-1">Body 3:</h5>
-                    <p className="text-gray-600 text-xs">{outlineData.bodyParagraph3 || 'Not provided'}</p>
-                  </div>
-                  
-                  <div>
-                    <h5 className="font-medium text-purple-600 mb-1">Conclusion:</h5>
-                    <p className="text-gray-600 text-xs">{outlineData.conclusion || 'Not provided'}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Action Buttons */}
             <div className="bg-gray-50 p-4 rounded-lg">
