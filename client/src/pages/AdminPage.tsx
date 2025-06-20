@@ -375,6 +375,15 @@ const AdminPage = () => {
               />
             </div>
             <div>
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                value={newItemData.full_name || ''}
+                onChange={(e) => setNewItemData({...newItemData, full_name: e.target.value})}
+                placeholder="John Doe"
+              />
+            </div>
+            <div>
               <Label htmlFor="category">Category</Label>
               <Input
                 id="category"
