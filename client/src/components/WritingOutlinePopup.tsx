@@ -10,9 +10,10 @@ interface WritingOutlinePopupProps {
   isOpen: boolean;
   onClose: () => void;
   contentTitle?: string;
+  onProceedToWriting?: (outlineData: OutlineData) => void;
 }
 
-export default function WritingOutlinePopup({ isOpen, onClose, contentTitle }: WritingOutlinePopupProps) {
+export default function WritingOutlinePopup({ isOpen, onClose, contentTitle, onProceedToWriting }: WritingOutlinePopupProps) {
   const [formData, setFormData] = useState({
     title: '',
     directions: '',
