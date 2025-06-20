@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -50,6 +50,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const [minContentRated, setMinContentRated] = useState<number>(0);
   const [showStudentSelector, setShowStudentSelector] = useState(false);
   const [timePreset, setTimePreset] = useState<string>('now');
+  const studentSelectorRef = useRef<HTMLDivElement>(null);
 
   // Fetch all students
   const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
@@ -119,6 +120,23 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       return student ? (student.full_name || `${student.first_name} ${student.last_name}`) : id;
     });
   };
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (studentSelectorRef.current && !studentSelectorRef.current.contains(event.target as Node)) {
+        setShowStudentSelector(false);
+      }
+    };
+
+    if (showStudentSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showStudentSelector]);
 
   const handleSelectAllVisible = () => {
     const visibleStudentIds = filteredStudents.map((s: Student) => s.id);
@@ -229,7 +247,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             <label className="text-sm font-medium">Select Students to Monitor</label>
             
             {/* Selected Students Display */}
-            <div className="relative">
+            <div className="relative" ref={studentSelectorRef}>
               <div 
                 className="min-h-12 p-3 border rounded-lg bg-white cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => setShowStudentSelector(!showStudentSelector)}
