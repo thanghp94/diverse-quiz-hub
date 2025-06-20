@@ -4,6 +4,7 @@
 This is an educational platform that provides content management, quizzes, assignments, and student tracking. The project has been successfully migrated from Replit Agent to standard Replit environment with Neon PostgreSQL database.
 
 ## Recent Changes
+- **Academic Essay System (June 20, 2025)**: Added Academic Essay button next to Creative button with comprehensive essay writing system including outline phase, writing sections (intro, hook, main idea, body, conclusion), 45-minute countdown timer with pause/resume, text persistence, word count mechanism, and database storage
 - **Writing Page (June 20, 2025)**: Created writing page with Topics page structure for challengesubject='Writing' topics and parentid='writing' content, added WritingOutlinePopup component with student form fields, integrated Creative buttons for outline submissions
 - **Debate Page (June 20, 2025)**: Created debate page with topic and content cards, displaying topics with challengesubject='debate' and content with parentid='debate', integrated ContentPopup for content viewing
 - **Admin Pagination (June 20, 2025)**: Added pagination to display 10 rows per table with navigation controls and result counters
