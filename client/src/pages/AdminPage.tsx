@@ -158,7 +158,8 @@ const AdminPage = () => {
     switch (activeTab) {
       case 'students':
         return (students as User[])?.filter(s => 
-          s.category?.toLowerCase().includes('student') &&
+          // Show all users that look like students (have HS prefix or email)
+          (s.id?.startsWith('HS') || s.meraki_email?.includes('student') || s.meraki_email?.includes('@meraki.edu')) &&
           (s.full_name?.toLowerCase().includes(term) || 
            s.first_name?.toLowerCase().includes(term) ||
            s.last_name?.toLowerCase().includes(term) ||
@@ -201,8 +202,11 @@ const AdminPage = () => {
       updateUser.mutate(editData);
     } else if (activeTab === 'topics') {
       updateTopic.mutate(editData);
+    } else if (activeTab === 'content') {
+      // Content update mutation can be added here if needed
+      toast({ title: "Info", description: "Content editing will be implemented", variant: "default" });
+      setEditingId(null);
     }
-    // Add other update mutations as needed
   };
 
   const handleCancel = () => {
@@ -413,22 +417,22 @@ const AdminPage = () => {
                   <table className="w-full border-collapse">
                     <thead>
                       <tr className="border-b">
+                        <th className="text-left p-3">Order</th>
                         <th className="text-left p-3">Title</th>
-                        <th className="text-left p-3">ID</th>
                         <th className="text-left p-3">Topic ID</th>
                         <th className="text-left p-3">Short Blurb</th>
                         <th className="text-left p-3">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredData.map((item: Content) => (
+                      {filteredData.map((item: Content, index: number) => (
                         <tr key={item.id} className="border-b hover:bg-gray-50">
+                          <td className="p-3 text-center">{index + 1}</td>
                           <td className="p-3">{item.title || 'Untitled'}</td>
-                          <td className="p-3 text-sm text-gray-500">{item.id}</td>
                           <td className="p-3 text-sm text-gray-500">{item.topicid}</td>
                           <td className="p-3 max-w-xs truncate">{item.short_blurb || 'N/A'}</td>
                           <td className="p-3">
-                            <Button size="sm" variant="outline">
+                            <Button size="sm" variant="outline" onClick={() => handleEdit(item)}>
                               <Edit className="h-3 w-3" />
                             </Button>
                           </td>
@@ -439,67 +443,85 @@ const AdminPage = () => {
                 )}
 
                 {activeTab === 'questions' && (
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3">Question</th>
-                        <th className="text-left p-3">Level</th>
-                        <th className="text-left p-3">Type</th>
-                        <th className="text-left p-3">Content ID</th>
-                        <th className="text-left p-3">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredData.map((question: Question) => (
-                        <tr key={question.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3 max-w-md truncate">{question.question}</td>
-                          <td className="p-3">
-                            <Badge variant="secondary">{question.level || 'N/A'}</Badge>
-                          </td>
-                          <td className="p-3">
-                            <Badge variant="outline">{question.type || 'N/A'}</Badge>
-                          </td>
-                          <td className="p-3 text-sm text-gray-500">{question.contentid}</td>
-                          <td className="p-3">
-                            <Button size="sm" variant="outline">
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div>
+                    {filteredData.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No questions found in the database.</p>
+                        <p className="text-sm mt-2">Questions may be stored in a different table or format.</p>
+                      </div>
+                    ) : (
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-3">Question</th>
+                            <th className="text-left p-3">Level</th>
+                            <th className="text-left p-3">Type</th>
+                            <th className="text-left p-3">Content ID</th>
+                            <th className="text-left p-3">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredData.map((question: Question) => (
+                            <tr key={question.id} className="border-b hover:bg-gray-50">
+                              <td className="p-3 max-w-md truncate">{question.question}</td>
+                              <td className="p-3">
+                                <Badge variant="secondary">{question.level || 'N/A'}</Badge>
+                              </td>
+                              <td className="p-3">
+                                <Badge variant="outline">{question.type || 'N/A'}</Badge>
+                              </td>
+                              <td className="p-3 text-sm text-gray-500">{question.contentid}</td>
+                              <td className="p-3">
+                                <Button size="sm" variant="outline" onClick={() => handleEdit(question)}>
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
                 )}
 
                 {activeTab === 'matching' && (
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left p-3">Title</th>
-                        <th className="text-left p-3">ID</th>
-                        <th className="text-left p-3">Topic ID</th>
-                        <th className="text-left p-3">Created</th>
-                        <th className="text-left p-3">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredData.map((match: Match) => (
-                        <tr key={match.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3">{match.title}</td>
-                          <td className="p-3 text-sm text-gray-500">{match.id}</td>
-                          <td className="p-3 text-sm text-gray-500">{match.topicid}</td>
-                          <td className="p-3 text-sm text-gray-500">
-                            {match.created_at ? new Date(match.created_at).toLocaleDateString() : 'N/A'}
-                          </td>
-                          <td className="p-3">
-                            <Button size="sm" variant="outline">
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  <div>
+                    {filteredData.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No matching activities found in the database.</p>
+                        <p className="text-sm mt-2">Create some matching activities to see them here.</p>
+                      </div>
+                    ) : (
+                      <table className="w-full border-collapse">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-3">Title</th>
+                            <th className="text-left p-3">ID</th>
+                            <th className="text-left p-3">Topic ID</th>
+                            <th className="text-left p-3">Created</th>
+                            <th className="text-left p-3">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredData.map((match: Match) => (
+                            <tr key={match.id} className="border-b hover:bg-gray-50">
+                              <td className="p-3">{match.title}</td>
+                              <td className="p-3 text-sm text-gray-500">{match.id}</td>
+                              <td className="p-3 text-sm text-gray-500">{match.topicid}</td>
+                              <td className="p-3 text-sm text-gray-500">
+                                {match.created_at ? new Date(match.created_at).toLocaleDateString() : 'N/A'}
+                              </td>
+                              <td className="p-3">
+                                <Button size="sm" variant="outline" onClick={() => handleEdit(match)}>
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+                  </div>
                 )}
               </div>
             )}
