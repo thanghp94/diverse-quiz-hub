@@ -95,22 +95,12 @@ const Header = () => {
           >
             Assignments
           </button>
-          {(user?.id === 'GV0002' || user?.category?.toLowerCase().includes('teacher')) && (
-            <>
-              <button 
-                onClick={() => setLocation('/live-class')}
-                className="text-white hover:text-white/80 transition-colors"
-              >
-                Live Monitor
-              </button>
-              <button 
-                onClick={() => setLocation('/live')}
-                className="text-white hover:text-white/80 transition-colors"
-              >
-                Live Quiz
-              </button>
-            </>
-          )}
+          <button 
+            onClick={() => setLocation('/live-monitor')}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            Live Monitor
+          </button>
           <button 
             onClick={() => setLocation('/leaderboard')}
             className="text-white hover:text-white/80 transition-colors"
@@ -128,11 +118,11 @@ const Header = () => {
             />
           )}
           <div className="relative max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               type="text"
               placeholder="Search Home"
-              className="pl-10 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30 focus:text-white"
+              className="pl-10 bg-white/20 border-white/30 text-white placeholder-white/70 focus:bg-white/30"
             />
           </div>
 
