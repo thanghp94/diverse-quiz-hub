@@ -4,6 +4,7 @@
 This is an educational platform that provides content management, quizzes, assignments, and student tracking. The project has been successfully migrated from Replit Agent to standard Replit environment with Neon PostgreSQL database.
 
 ## Recent Changes
+- **Writing System Fixes (June 20, 2025)**: Fixed content-specific storage for both Academic Essay and Creative Writing components, removed "Topic:" label for cleaner UI, fixed submit button functionality with proper API integration, added word count validation (100+ words for essays, 50+ for stories), and ensured separate data persistence for each content topic
 - **Creative Writing Flow (June 20, 2025)**: Enhanced Creative button to proceed from outline to writing page with outline summary, full story writing interface, word count tracking, and database submission system
 - **Academic Essay System (June 20, 2025)**: Added Academic Essay button next to Creative button with comprehensive essay writing system including outline phase (15-minute timer), writing sections (intro, 3 body paragraphs, conclusion), improved layout with structure guide sidebar, progress tracking button, text persistence, individual word count buttons, and database storage
 - **Writing Page (June 20, 2025)**: Created writing page with Topics page structure for challengesubject='Writing' topics and parentid='writing' content, added WritingOutlinePopup component with student form fields, integrated Creative buttons for outline submissions

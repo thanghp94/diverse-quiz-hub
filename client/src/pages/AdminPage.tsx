@@ -652,6 +652,7 @@ const AdminPage = () => {
                     <thead>
                       <tr className="border-b">
                         <th className="text-left p-3">ID</th>
+                        <th className="text-left p-3">Full Name</th>
                         <th className="text-left p-3">Meraki Email</th>
                         <th className="text-left p-3">Category</th>
                         <th className="text-left p-3">Show</th>
@@ -662,6 +663,17 @@ const AdminPage = () => {
                       {paginatedData.map((student: User) => (
                         <tr key={student.id} className="border-b hover:bg-gray-50">
                           <td className="p-3">{student.id}</td>
+                          <td className="p-3">
+                            {editingId === student.id ? (
+                              <Input
+                                value={editData.full_name || ''}
+                                onChange={(e) => setEditData({...editData, full_name: e.target.value})}
+                                className="w-full"
+                              />
+                            ) : (
+                              student.full_name || 'N/A'
+                            )}
+                          </td>
                           <td className="p-3">
                             {editingId === student.id ? (
                               <Input
