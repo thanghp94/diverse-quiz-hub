@@ -1174,6 +1174,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin API endpoints
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      // Check if user is admin (GV0002)
+      if (!req.session?.userId || req.session.userId !== 'GV0002') {
+        return ApiResponse.unauthorized(res, 'Admin access required');
+      }
+      
+      const userId = req.params.id;
+      const updateData = req.body;
+      
+      const updatedUser = await storage.updateUser(userId, updateData);
+      if (!updatedUser) {
+        return ApiResponse.notFound(res, 'User');
+      }
+      
+      ApiResponse.success(res, { user: updatedUser }, 'User updated successfully');
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to update user', error);
+    }
+  });
+
+  app.put("/api/topics/:id", async (req, res) => {
+    try {
+      // Check if user is admin (GV0002)
+      if (!req.session?.userId || req.session.userId !== 'GV0002') {
+        return ApiResponse.unauthorized(res, 'Admin access required');
+      }
+      
+      const topicId = req.params.id;
+      const updateData = req.body;
+      
+      const updatedTopic = await storage.updateTopic(topicId, updateData);
+      if (!updatedTopic) {
+        return ApiResponse.notFound(res, 'Topic');
+      }
+      
+      ApiResponse.success(res, { topic: updatedTopic }, 'Topic updated successfully');
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to update topic', error);
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -271,8 +271,8 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Users className="h-6 w-6" />
-              Live Class Monitor
+              <Users className="h-6 w-6 text-blue-600" />
+              <span className="text-blue-600">Live Class Monitor</span>
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -477,13 +477,13 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                 <table className="w-full border-collapse">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-2">Student</th>
-                      <th className="text-left p-2">Viewed</th>
-                      <th className="text-left p-2">Rated</th>
-                      <th className="text-left p-2">Quiz</th>
-                      <th className="text-left p-2">Accuracy</th>
-                      <th className="text-left p-2">Last Activity</th>
-                      <th className="text-left p-2">Actions</th>
+                      <th className="text-left p-2 text-blue-600">Student</th>
+                      <th className="text-left p-2 text-blue-600">Viewed</th>
+                      <th className="text-left p-2 text-blue-600">Rated</th>
+                      <th className="text-left p-2 text-blue-600">Quiz</th>
+                      <th className="text-left p-2 text-blue-600">Accuracy</th>
+                      <th className="text-left p-2 text-blue-600">Last Activity</th>
+                      <th className="text-left p-2 text-blue-600">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
