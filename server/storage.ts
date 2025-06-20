@@ -2,6 +2,7 @@ import { users, topics, content, images, questions, matching, videos, matching_a
 import { db } from "./db";
 import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
+import crypto from 'crypto';
 
 // modify the interface with any CRUD methods
 // you might need
@@ -21,11 +22,13 @@ export interface IStorage {
   getBowlChallengeTopics(): Promise<Topic[]>;
   getTopicById(id: string): Promise<Topic | undefined>;
   updateTopic(topicId: string, updateData: Partial<Topic>): Promise<Topic | undefined>;
+  createTopic(topicData: any): Promise<Topic>;
 
   // Content
   getContent(topicId?: string): Promise<Content[]>;
   getContentById(id: string): Promise<Content | undefined>;
   updateContent(id: string, updates: { short_description?: string; short_blurb?: string; imageid?: string; videoid?: string; videoid2?: string }): Promise<Content | undefined>;
+  createContent(contentData: any): Promise<Content>;
 
   // Content Groups
   getContentGroups(): Promise<Array<{ contentgroup: string; url: string; content_count: number }>>;
@@ -43,6 +46,7 @@ export interface IStorage {
   getMatchingActivities(): Promise<Matching[]>;
   getMatchingById(id: string): Promise<Matching | undefined>;
   getMatchingByTopicId(topicId: string): Promise<Matching[]>;
+  createMatching(matchingData: any): Promise<Matching>;
 
   // Videos
   getVideos(): Promise<Video[]>;
@@ -1466,6 +1470,51 @@ export class DatabaseStorage implements IStorage {
         .update(topics)
         .set(updateData)
         .where(eq(topics.id, topicId))
+        .returning();
+      return result[0];
+    });
+  }
+
+  async createTopic(topicData: any): Promise<Topic> {
+    return this.executeWithRetry(async () => {
+      // Generate ID if not provided
+      if (!topicData.id) {
+        topicData.id = crypto.randomBytes(4).toString('hex');
+      }
+      
+      const result = await db
+        .insert(topics)
+        .values(topicData)
+        .returning();
+      return result[0];
+    });
+  }
+
+  async createContent(contentData: any): Promise<Content> {
+    return this.executeWithRetry(async () => {
+      // Generate ID if not provided
+      if (!contentData.id) {
+        contentData.id = crypto.randomBytes(4).toString('hex');
+      }
+      
+      const result = await db
+        .insert(content)
+        .values(contentData)
+        .returning();
+      return result[0];
+    });
+  }
+
+  async createMatching(matchingData: any): Promise<Matching> {
+    return this.executeWithRetry(async () => {
+      // Generate ID if not provided
+      if (!matchingData.id) {
+        matchingData.id = crypto.randomBytes(4).toString('hex');
+      }
+      
+      const result = await db
+        .insert(matching)
+        .values(matchingData)
         .returning();
       return result[0];
     });

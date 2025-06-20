@@ -1196,6 +1196,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/users", async (req, res) => {
+    try {
+      // Check if user is admin (GV0002)
+      if (!req.session?.userId || req.session.userId !== 'GV0002') {
+        return ApiResponse.unauthorized(res, 'Admin access required');
+      }
+      
+      const userData = req.body;
+      const newUser = await storage.createUser(userData);
+      
+      ApiResponse.success(res, { user: newUser }, 'User created successfully');
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to create user', error);
+    }
+  });
+
   app.put("/api/topics/:id", async (req, res) => {
     try {
       // Check if user is admin (GV0002)
@@ -1214,6 +1230,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ApiResponse.success(res, { topic: updatedTopic }, 'Topic updated successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to update topic', error);
+    }
+  });
+
+  app.post("/api/topics", async (req, res) => {
+    try {
+      // Check if user is admin (GV0002)
+      if (!req.session?.userId || req.session.userId !== 'GV0002') {
+        return ApiResponse.unauthorized(res, 'Admin access required');
+      }
+      
+      const topicData = req.body;
+      const newTopic = await storage.createTopic(topicData);
+      
+      ApiResponse.success(res, { topic: newTopic }, 'Topic created successfully');
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to create topic', error);
+    }
+  });
+
+  app.post("/api/content", async (req, res) => {
+    try {
+      // Check if user is admin (GV0002)
+      if (!req.session?.userId || req.session.userId !== 'GV0002') {
+        return ApiResponse.unauthorized(res, 'Admin access required');
+      }
+      
+      const contentData = req.body;
+      const newContent = await storage.createContent(contentData);
+      
+      ApiResponse.success(res, { content: newContent }, 'Content created successfully');
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to create content', error);
+    }
+  });
+
+  app.post("/api/matching", async (req, res) => {
+    try {
+      // Check if user is admin (GV0002)
+      if (!req.session?.userId || req.session.userId !== 'GV0002') {
+        return ApiResponse.unauthorized(res, 'Admin access required');
+      }
+      
+      const matchingData = req.body;
+      const newMatching = await storage.createMatching(matchingData);
+      
+      ApiResponse.success(res, { matching: newMatching }, 'Matching activity created successfully');
+    } catch (error) {
+      ApiResponse.serverError(res, 'Failed to create matching activity', error);
     }
   });
 

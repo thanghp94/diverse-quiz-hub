@@ -4,7 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Edit, Save, X, Users, BookOpen, FileText, HelpCircle, Target } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Search, Edit, Save, X, Users, BookOpen, FileText, HelpCircle, Target, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
@@ -48,8 +52,11 @@ interface Question {
 
 interface Match {
   id: string;
+  type?: string;
+  subject?: string;
+  topic?: string;
+  description?: string;
   topicid: string;
-  title: string;
   created_at?: string;
 }
 
@@ -63,6 +70,8 @@ const AdminPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState<any>({});
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newItemData, setNewItemData] = useState<any>({});
 
   // Fetch data based on active tab
   const { data: students, isLoading: studentsLoading } = useQuery({
@@ -152,6 +161,95 @@ const AdminPage = () => {
     }
   });
 
+  // Create mutations
+  const createUser = useMutation({
+    mutationFn: async (userData: any) => {
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to create user');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setShowAddDialog(false);
+      setNewItemData({});
+      toast({ title: "Success", description: "User created successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create user", variant: "destructive" });
+    }
+  });
+
+  const createTopic = useMutation({
+    mutationFn: async (topicData: any) => {
+      const response = await fetch('/api/topics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(topicData),
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to create topic');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/topics'] });
+      setShowAddDialog(false);
+      setNewItemData({});
+      toast({ title: "Success", description: "Topic created successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create topic", variant: "destructive" });
+    }
+  });
+
+  const createContent = useMutation({
+    mutationFn: async (contentData: any) => {
+      const response = await fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contentData),
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to create content');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/content'] });
+      setShowAddDialog(false);
+      setNewItemData({});
+      toast({ title: "Success", description: "Content created successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create content", variant: "destructive" });
+    }
+  });
+
+  const createMatching = useMutation({
+    mutationFn: async (matchingData: any) => {
+      const response = await fetch('/api/matching', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(matchingData),
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to create matching');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/matching'] });
+      setShowAddDialog(false);
+      setNewItemData({});
+      toast({ title: "Success", description: "Matching activity created successfully" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create matching activity", variant: "destructive" });
+    }
+  });
+
   // Filter data based on search
   const getFilteredData = () => {
     const term = searchTerm.toLowerCase();
@@ -184,7 +282,9 @@ const AdminPage = () => {
         ) || [];
       case 'matching':
         return (matching as Match[])?.filter(m => 
-          m.title?.toLowerCase().includes(term) ||
+          m.topic?.toLowerCase().includes(term) ||
+          m.subject?.toLowerCase().includes(term) ||
+          m.description?.toLowerCase().includes(term) ||
           m.id?.toLowerCase().includes(term)
         ) || [];
       default:
@@ -212,6 +312,191 @@ const AdminPage = () => {
   const handleCancel = () => {
     setEditingId(null);
     setEditData({});
+  };
+
+  const handleCreate = () => {
+    if (activeTab === 'students') {
+      createUser.mutate(newItemData);
+    } else if (activeTab === 'topics') {
+      createTopic.mutate(newItemData);
+    } else if (activeTab === 'content') {
+      createContent.mutate(newItemData);
+    } else if (activeTab === 'matching') {
+      createMatching.mutate(newItemData);
+    }
+  };
+
+  const getAddDialogContent = () => {
+    switch (activeTab) {
+      case 'students':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="id">Student ID</Label>
+              <Input
+                id="id"
+                value={newItemData.id || ''}
+                onChange={(e) => setNewItemData({...newItemData, id: e.target.value})}
+                placeholder="HS0001"
+              />
+            </div>
+            <div>
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                value={newItemData.first_name || ''}
+                onChange={(e) => setNewItemData({...newItemData, first_name: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                value={newItemData.last_name || ''}
+                onChange={(e) => setNewItemData({...newItemData, last_name: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                value={newItemData.full_name || ''}
+                onChange={(e) => setNewItemData({...newItemData, full_name: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="email">Meraki Email</Label>
+              <Input
+                id="email"
+                value={newItemData.meraki_email || ''}
+                onChange={(e) => setNewItemData({...newItemData, meraki_email: e.target.value})}
+                placeholder="student@meraki.edu"
+              />
+            </div>
+          </div>
+        );
+      case 'topics':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="topic">Topic Name</Label>
+              <Input
+                id="topic"
+                value={newItemData.topic || ''}
+                onChange={(e) => setNewItemData({...newItemData, topic: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="summary">Short Summary</Label>
+              <Textarea
+                id="summary"
+                value={newItemData.short_summary || ''}
+                onChange={(e) => setNewItemData({...newItemData, short_summary: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="challengeSubject">Challenge Subject</Label>
+              <Input
+                id="challengeSubject"
+                value={newItemData.challengesubject || ''}
+                onChange={(e) => setNewItemData({...newItemData, challengesubject: e.target.value})}
+              />
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="showStudent"
+                checked={newItemData.showstudent || false}
+                onCheckedChange={(checked) => setNewItemData({...newItemData, showstudent: checked})}
+              />
+              <Label htmlFor="showStudent">Show to Students</Label>
+            </div>
+          </div>
+        );
+      case 'content':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={newItemData.title || ''}
+                onChange={(e) => setNewItemData({...newItemData, title: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="topicId">Topic ID</Label>
+              <Input
+                id="topicId"
+                value={newItemData.topicid || ''}
+                onChange={(e) => setNewItemData({...newItemData, topicid: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="shortBlurb">Short Blurb</Label>
+              <Textarea
+                id="shortBlurb"
+                value={newItemData.short_blurb || ''}
+                onChange={(e) => setNewItemData({...newItemData, short_blurb: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="information">Information</Label>
+              <Textarea
+                id="information"
+                value={newItemData.information || ''}
+                onChange={(e) => setNewItemData({...newItemData, information: e.target.value})}
+              />
+            </div>
+          </div>
+        );
+      case 'matching':
+        return (
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="type">Type</Label>
+              <Input
+                id="type"
+                value={newItemData.type || ''}
+                onChange={(e) => setNewItemData({...newItemData, type: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="subject">Subject</Label>
+              <Input
+                id="subject"
+                value={newItemData.subject || ''}
+                onChange={(e) => setNewItemData({...newItemData, subject: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="topic">Topic</Label>
+              <Input
+                id="topic"
+                value={newItemData.topic || ''}
+                onChange={(e) => setNewItemData({...newItemData, topic: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="topicId">Topic ID</Label>
+              <Input
+                id="topicId"
+                value={newItemData.topicid || ''}
+                onChange={(e) => setNewItemData({...newItemData, topicid: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={newItemData.description || ''}
+                onChange={(e) => setNewItemData({...newItemData, description: e.target.value})}
+              />
+            </div>
+          </div>
+        );
+      default:
+        return <div>No form available</div>;
+    }
   };
 
   const tabs = [
@@ -270,14 +555,38 @@ const AdminPage = () => {
         {/* Data Table */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              {tabs.find(t => t.id === activeTab)?.icon && 
-                React.createElement(tabs.find(t => t.id === activeTab)!.icon, { className: "h-5 w-5" })
-              }
-              {tabs.find(t => t.id === activeTab)?.label}
-              <Badge variant="secondary" className="ml-2">
-                {filteredData.length} items
-              </Badge>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {tabs.find(t => t.id === activeTab)?.icon && 
+                  React.createElement(tabs.find(t => t.id === activeTab)!.icon, { className: "h-5 w-5" })
+                }
+                {tabs.find(t => t.id === activeTab)?.label}
+                <Badge variant="secondary" className="ml-2">
+                  {filteredData.length} items
+                </Badge>
+              </div>
+              <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+                <DialogTrigger asChild>
+                  <Button className="flex items-center gap-2">
+                    <Plus className="h-4 w-4" />
+                    Add {tabs.find(t => t.id === activeTab)?.label.slice(0, -1)}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Add New {tabs.find(t => t.id === activeTab)?.label.slice(0, -1)}</DialogTitle>
+                  </DialogHeader>
+                  {getAddDialogContent()}
+                  <div className="flex gap-2 mt-4">
+                    <Button onClick={handleCreate} disabled={createUser.isPending || createTopic.isPending || createContent.isPending || createMatching.isPending}>
+                      Create
+                    </Button>
+                    <Button variant="outline" onClick={() => {setShowAddDialog(false); setNewItemData({});}}>
+                      Cancel
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -495,22 +804,22 @@ const AdminPage = () => {
                       <table className="w-full border-collapse">
                         <thead>
                           <tr className="border-b">
-                            <th className="text-left p-3">Title</th>
-                            <th className="text-left p-3">ID</th>
-                            <th className="text-left p-3">Topic ID</th>
-                            <th className="text-left p-3">Created</th>
+                            <th className="text-left p-3">Topic</th>
+                            <th className="text-left p-3">Subject</th>
+                            <th className="text-left p-3">Type</th>
+                            <th className="text-left p-3">Description</th>
                             <th className="text-left p-3">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredData.map((match: Match) => (
                             <tr key={match.id} className="border-b hover:bg-gray-50">
-                              <td className="p-3">{match.title}</td>
-                              <td className="p-3 text-sm text-gray-500">{match.id}</td>
-                              <td className="p-3 text-sm text-gray-500">{match.topicid}</td>
-                              <td className="p-3 text-sm text-gray-500">
-                                {match.created_at ? new Date(match.created_at).toLocaleDateString() : 'N/A'}
+                              <td className="p-3">{match.topic || 'N/A'}</td>
+                              <td className="p-3">{match.subject || 'N/A'}</td>
+                              <td className="p-3">
+                                <Badge variant="secondary">{match.type || 'N/A'}</Badge>
                               </td>
+                              <td className="p-3 max-w-xs truncate">{match.description || 'N/A'}</td>
                               <td className="p-3">
                                 <Button size="sm" variant="outline" onClick={() => handleEdit(match)}>
                                   <Edit className="h-3 w-3" />
