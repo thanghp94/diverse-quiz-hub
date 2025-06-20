@@ -158,20 +158,165 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   };
 
   return (
-    <div className="space-y-4">
-      {/* Compact Control Panel */}
+    <div className="space-y-6">
+      {/* Header and Controls */}
       <Card>
-        <CardContent className="pt-6">
-          {/* Activity Filters - Top Section (only when monitoring) */}
-          {isMonitoring && (
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4" />
-                  <span className="text-sm font-medium">Filters:</span>
-                </div>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-6 w-6" />
+            Live Class Monitor
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Time Selection Controls */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Monitor Start Time:</label>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <Input
+                  type="datetime-local"
+                  value={customStartTime}
+                  onChange={(e) => setCustomStartTime(e.target.value)}
+                  className="w-48"
+                />
+                <Button
+                  onClick={handleCustomTimeStart}
+                  disabled={selectedStudents.length === 0}
+                  variant="outline"
+                  size="sm"
+                >
+                  Use Custom Time
+                </Button>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  onClick={() => {
+                    const now = new Date();
+                    now.setHours(16, 0, 0, 0); // 4 PM today
+                    setCustomStartTime(format(now, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  4 PM Today
+                </Button>
+                <Button
+                  onClick={() => {
+                    const now = new Date();
+                    now.setHours(20, 0, 0, 0); // 8 PM today
+                    setCustomStartTime(format(now, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  8 PM Today
+                </Button>
+                <Button
+                  onClick={() => {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    yesterday.setHours(16, 0, 0, 0); // 4 PM yesterday
+                    setCustomStartTime(format(yesterday, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  4 PM Yesterday
+                </Button>
+                <Button
+                  onClick={() => {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    yesterday.setHours(20, 0, 0, 0); // 8 PM yesterday
+                    setCustomStartTime(format(yesterday, 'yyyy-MM-dd\'T\'HH:mm'));
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  8 PM Yesterday
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Student Search and Selection */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Select Students to Monitor:</label>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  disabled={studentsLoading}
+                >
+                  {selectedStudents.length === filteredStudents.length ? 'Deselect All' : 'Select All Filtered'}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAllVisible}
+                  disabled={studentsLoading}
+                >
+                  Add All Visible
+                </Button>
+              </div>
+            </div>
+            
+            {/* Student Search Box */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search students by name or ID..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-48 overflow-y-auto border rounded-lg p-3">
+              {studentsLoading ? (
+                <div className="col-span-full text-center text-gray-500">Loading students...</div>
+              ) : filteredStudents.length === 0 ? (
+                <div className="col-span-full text-center text-gray-500">No students found</div>
+              ) : (
+                filteredStudents.map((student: Student) => (
+                  <div key={student.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={student.id}
+                      checked={selectedStudents.includes(student.id)}
+                      onCheckedChange={() => handleStudentToggle(student.id)}
+                    />
+                    <label
+                      htmlFor={student.id}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      title={student.full_name || `${student.first_name} ${student.last_name}`}
+                    >
+                      {student.full_name || `${student.first_name} ${student.last_name}`}
+                    </label>
+                  </div>
+                ))
+              )}
+            </div>
+            {selectedStudents.length > 0 && (
+              <div className="text-xs text-gray-600">
+                Selected: {selectedStudents.length} students
+              </div>
+            )}
+          </div>
+
+          {/* Activity Filters */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              Activity Filters:
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <label className="text-xs text-gray-600">Activity Level:</label>
                 <Select value={activityFilter} onValueChange={setActivityFilter}>
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -179,109 +324,63 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                     <SelectItem value="active">Active Only</SelectItem>
                   </SelectContent>
                 </Select>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">Min viewed:</span>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={minContentViewed}
-                    onChange={(e) => setMinContentViewed(parseInt(e.target.value) || 0)}
-                    className="w-16 h-8"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">Min rated:</span>
-                  <Input
-                    type="number"
-                    min="0"
-                    value={minContentRated}
-                    onChange={(e) => setMinContentRated(parseInt(e.target.value) || 0)}
-                    className="w-16 h-8"
-                  />
-                </div>
               </div>
-            </div>
-          )}
-
-          <div className="flex items-center justify-between gap-4">
-            {/* Student Selection - Compact */}
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search and select students..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
-                  />
-                </div>
-                
-                {selectedStudents.length > 0 && (
-                  <Badge variant="outline" className="px-2 py-1">
-                    {selectedStudents.length} selected
-                  </Badge>
-                )}
+              <div>
+                <label className="text-xs text-gray-600">Min Content Viewed:</label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minContentViewed}
+                  onChange={(e) => setMinContentViewed(parseInt(e.target.value) || 0)}
+                  className="w-full"
+                />
               </div>
-              
-              {searchTerm && (
-                <div className="mt-2 max-h-32 overflow-y-auto border rounded-lg p-2 bg-white shadow-sm">
-                  {studentsLoading ? (
-                    <div className="text-center text-gray-500 py-2">Loading...</div>
-                  ) : filteredStudents.length === 0 ? (
-                    <div className="text-center text-gray-500 py-2">No students found</div>
-                  ) : (
-                    <div className="space-y-1">
-                      {filteredStudents.map((student: Student) => (
-                        <div key={student.id} className="flex items-center space-x-2 hover:bg-gray-50 p-1 rounded">
-                          <Checkbox
-                            id={student.id}
-                            checked={selectedStudents.includes(student.id)}
-                            onCheckedChange={() => handleStudentToggle(student.id)}
-                          />
-                          <label
-                            htmlFor={student.id}
-                            className="text-sm cursor-pointer flex-1"
-                            title={student.full_name || `${student.first_name} ${student.last_name}`}
-                          >
-                            {student.full_name || `${student.first_name} ${student.last_name}`}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Monitor Controls */}
-            <div className="flex items-center gap-3">
-              {!isMonitoring ? (
-                <Button
-                  onClick={startMonitoring}
-                  disabled={selectedStudents.length === 0}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  Start Monitoring ({selectedStudents.length})
-                </Button>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    Live
-                  </div>
-                  <Button
-                    onClick={stopMonitoring}
-                    variant="destructive"
-                    size="sm"
-                  >
-                    Stop
-                  </Button>
-                </>
-              )}
+              <div>
+                <label className="text-xs text-gray-600">Min Content Rated:</label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={minContentRated}
+                  onChange={(e) => setMinContentRated(parseInt(e.target.value) || 0)}
+                  className="w-full"
+                />
+              </div>
             </div>
           </div>
+
+          {/* Monitor Controls */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4" />
+              <span className="text-sm">Monitor from: {format(new Date(monitorStartTime), 'MMM dd, HH:mm')}</span>
+            </div>
+            
+            {!isMonitoring ? (
+              <Button
+                onClick={startMonitoring}
+                disabled={selectedStudents.length === 0}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Start Monitoring Now ({selectedStudents.length} students)
+              </Button>
+            ) : (
+              <Button
+                onClick={stopMonitoring}
+                variant="destructive"
+              >
+                Stop Monitoring
+              </Button>
+            )}
+          </div>
+
+          {isMonitoring && (
+            <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-sm text-green-700">
+                Live monitoring active - Updates every 5 seconds
+              </span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
