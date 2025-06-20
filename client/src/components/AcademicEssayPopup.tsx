@@ -67,7 +67,7 @@ export default function AcademicEssayPopup({
   // Load saved data on open
   useEffect(() => {
     if (isOpen && studentId && contentId) {
-      const storageKey = `essay_${studentId}_${contentId}`;
+      const storageKey = `academic_essay_${studentId}_${contentId}`;
       const savedData = localStorage.getItem(storageKey);
       if (savedData) {
         try {
@@ -93,6 +93,26 @@ export default function AcademicEssayPopup({
         } catch (error) {
           console.error('Failed to parse saved essay data:', error);
         }
+      } else {
+        // Reset to initial state for new content
+        setPhase('outline');
+        setOutlineData({
+          hook: '',
+          thesis: '',
+          bodyParagraph1: '',
+          bodyParagraph2: '',
+          bodyParagraph3: '',
+          conclusion: ''
+        });
+        setEssayData({
+          introduction: '',
+          body1: '',
+          body2: '',
+          body3: '',
+          conclusion: ''
+        });
+        setTimeRemaining(TOTAL_TIME);
+        setIsTimerActive(false);
       }
     }
   }, [isOpen, studentId, contentId]);
@@ -131,8 +151,8 @@ export default function AcademicEssayPopup({
 
   // Save data when popup closes
   useEffect(() => {
-    if (!isOpen && phase === 'writing' && studentId && contentId) {
-      const storageKey = `essay_${studentId}_${contentId}`;
+    if (!isOpen && studentId && contentId && (phase === 'writing' || Object.values(outlineData).some(val => val.trim()) || Object.values(essayData).some(val => val.trim()))) {
+      const storageKey = `academic_essay_${studentId}_${contentId}`;
       const dataToSave = {
         phase,
         outlineData,
@@ -148,8 +168,8 @@ export default function AcademicEssayPopup({
   // Save data when browser closes
   useEffect(() => {
     const saveOnUnload = () => {
-      if (phase === 'writing' && studentId && contentId) {
-        const storageKey = `essay_${studentId}_${contentId}`;
+      if (studentId && contentId && (phase === 'writing' || Object.values(outlineData).some(val => val.trim()) || Object.values(essayData).some(val => val.trim()))) {
+        const storageKey = `academic_essay_${studentId}_${contentId}`;
         const dataToSave = {
           phase,
           outlineData,
@@ -176,6 +196,7 @@ export default function AcademicEssayPopup({
           content_id: contentId,
           content_title: contentTitle,
           essay_data: essayData,
+          outline_data: outlineData,
           phase,
           timer_remaining: timeRemaining,
           timer_active: isTimerActive
@@ -221,6 +242,16 @@ export default function AcademicEssayPopup({
       return;
     }
 
+    const totalWords = getTotalWordCount();
+    if (totalWords < 100) {
+      toast({
+        title: "Submission Failed",
+        description: "Essay must be at least 100 words to submit.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/writing-submissions', {
@@ -230,25 +261,29 @@ export default function AcademicEssayPopup({
           student_id: studentId,
           content_id: contentId,
           content_title: contentTitle,
+          outline_data: outlineData,
           essay_data: essayData,
           time_spent: TOTAL_TIME - timeRemaining,
-          word_count: getTotalWordCount(),
+          word_count: totalWords,
           submitted_at: new Date().toISOString()
         })
       });
 
       if (response.ok) {
+        const result = await response.json();
         toast({
           title: "Essay Submitted",
-          description: "Your academic essay has been submitted successfully.",
+          description: `Your academic essay has been submitted successfully (${totalWords} words).`,
         });
         
         // Clear localStorage and trigger a page refresh to hide progress button
-        const storageKey = `essay_${studentId}_${contentId}`;
+        const storageKey = `academic_essay_${studentId}_${contentId}`;
         localStorage.removeItem(storageKey);
         window.dispatchEvent(new Event('storage'));
         
         onClose();
+        
+        // Reset form
         setPhase('outline');
         setEssayData({ introduction: '', body1: '', body2: '', body3: '', conclusion: '' });
         setOutlineData({ hook: '', thesis: '', bodyParagraph1: '', bodyParagraph2: '', bodyParagraph3: '', conclusion: '' });
@@ -262,7 +297,7 @@ export default function AcademicEssayPopup({
       console.error('Submit error:', error);
       toast({
         title: "Submission Failed",
-        description: "There was an error submitting your essay. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error submitting your essay. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -293,9 +328,8 @@ export default function AcademicEssayPopup({
             </div>
           </div>
           {contentTitle && (
-            <div className="mt-2 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-              <p className="text-sm font-medium text-gray-800">Topic:</p>
-              <p className="text-sm text-gray-700 mt-1">{contentTitle}</p>
+            <div className="mt-2 p-4 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+              <p className="text-lg font-semibold text-gray-800">{contentTitle}</p>
             </div>
           )}
         </DialogHeader>
