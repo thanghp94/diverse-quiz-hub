@@ -234,7 +234,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     <div className="space-y-6">
       {/* Header and Controls */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2">
             <Users className="h-6 w-6" />
             Live Class Monitor
