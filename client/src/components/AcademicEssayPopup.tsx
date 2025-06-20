@@ -483,7 +483,6 @@ export default function AcademicEssayPopup({
             {/* Writing Phase Header with Sections Navigation */}
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
               <div>
-                <h3 className="text-lg font-semibold">Writing Phase</h3>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   <Button variant="ghost" size="sm" className="text-xs bg-blue-100">
                     Introduction: {getWordCount(essayData.introduction)} words
