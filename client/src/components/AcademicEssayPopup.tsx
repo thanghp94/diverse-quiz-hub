@@ -516,20 +516,22 @@ export default function AcademicEssayPopup({
                 <div className="bg-blue-50 p-4 rounded-lg border">
                   <div className="flex justify-between items-center mb-3">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-blue-800 mb-3">Introduction</h4>
-                      <div className="space-y-2">
-                        {outlineData.hook && (
-                          <div className="bg-blue-100 px-3 py-2 rounded-md border border-blue-200">
-                            <span className="text-sm font-medium text-blue-800">Hook:</span>
-                            <span className="text-sm text-blue-700 ml-2">{outlineData.hook}</span>
-                          </div>
-                        )}
-                        {outlineData.thesis && (
-                          <div className="bg-blue-100 px-3 py-2 rounded-md border border-blue-200">
-                            <span className="text-sm font-medium text-blue-800">Thesis:</span>
-                            <span className="text-sm text-blue-700 ml-2">{outlineData.thesis}</span>
-                          </div>
-                        )}
+                      <div className="flex items-center gap-4 mb-3">
+                        <h4 className="font-semibold text-blue-800">Introduction</h4>
+                        <div className="flex gap-2">
+                          {outlineData.hook && (
+                            <div className="bg-blue-100 px-3 py-2 rounded-md border border-blue-200">
+                              <span className="text-sm font-medium text-blue-800">Hook:</span>
+                              <span className="text-sm text-blue-700 ml-2">{outlineData.hook}</span>
+                            </div>
+                          )}
+                          {outlineData.thesis && (
+                            <div className="bg-blue-100 px-3 py-2 rounded-md border border-blue-200">
+                              <span className="text-sm font-medium text-blue-800">Thesis:</span>
+                              <span className="text-sm text-blue-700 ml-2">{outlineData.thesis}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <span className="text-sm text-blue-600">
