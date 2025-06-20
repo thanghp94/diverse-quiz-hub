@@ -341,6 +341,23 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
             <Label className="text-base font-medium">Video Links</Label>
           </div>
 
+          {/* Image Link */}
+          <div className="space-y-2">
+            <Label htmlFor="imagelink">Image Link</Label>
+            {isEditing ? (
+              <Input
+                id="imagelink"
+                value={editData.imagelink || ''}
+                onChange={(e) => setEditData(prev => ({ ...prev, imagelink: e.target.value }))}
+                placeholder="Enter image link..."
+              />
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                {content.imagelink || 'No image link'}
+              </div>
+            )}
+          </div>
+
           {/* Video 1 */}
           <div className="space-y-2">
             <Label htmlFor="videoid">Video 1 ID</Label>
