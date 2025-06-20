@@ -11,7 +11,7 @@ import Topics from "./pages/Topics";
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
-import DebatePage from "./pages/Debate";
+import DebatePage from "./pages/DebatePage";
 import WritingPage from "./pages/Writing";
 import ChallengeSubject from "./pages/ChallengeSubject";
 import Login from "./pages/Login";
