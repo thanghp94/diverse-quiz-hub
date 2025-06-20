@@ -519,9 +519,6 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       {/* Student Activities */}
       {isMonitoring && (
         <Card>
-          <CardHeader>
-            <CardTitle>Student Activity Dashboard</CardTitle>
-          </CardHeader>
           <CardContent>
             {activitiesLoading ? (
               <div className="text-center py-8">Loading activities...</div>
@@ -548,36 +545,35 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                       
                       return (
                         <tr key={studentId} className="border-b hover:bg-gray-50">
-                          <td className="p-2">
+                          <td className="px-1 py-1">
                             <div className="font-medium text-sm">{student.first_name} {student.last_name}</div>
-                            <div className="text-xs text-gray-500">{student.id}</div>
                           </td>
-                          <td className="p-2">
+                          <td className="px-1 py-1">
                             <span className="text-sm font-medium">{activity?.content_viewed || 0}</span>
                           </td>
-                          <td className="p-2">
+                          <td className="px-1 py-1">
                             <span className="text-sm font-medium">{activity?.content_rated || 0}</span>
                           </td>
-                          <td className="p-2">
+                          <td className="px-1 py-1">
                             <span className="text-sm font-medium">{activity?.quiz_attempts || 0}</span>
                           </td>
-                          <td className="p-2">
+                          <td className="px-1 py-1">
                             <span className="text-sm font-medium">{activity?.quiz_accuracy ? `${activity.quiz_accuracy}%` : 'N/A'}</span>
                           </td>
-                          <td className="p-2 text-xs">
+                          <td className="px-1 py-1 text-xs">
                             {activity?.last_activity ? formatTime(activity.last_activity) : 'No activity'}
                           </td>
-                          <td className="p-2">
+                          <td className="px-1 py-1">
                             <Button
                               variant="outline"
                               size="sm"
+                              className="h-6 px-2 text-xs"
                               onClick={() => setShowActivityDetails(
                                 showActivityDetails === studentId ? null : studentId
                               )}
                               disabled={!activity?.activities?.length}
                             >
-                              <Eye className="w-3 h-3 mr-1" />
-                              Details
+                              <Eye className="w-3 h-3" />
                             </Button>
                           </td>
                         </tr>
