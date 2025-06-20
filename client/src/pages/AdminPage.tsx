@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Edit, Save, X, Users, BookOpen, FileText, HelpCircle, Target, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -360,13 +361,20 @@ const AdminPage = () => {
                 placeholder="student"
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="show"
-                checked={newItemData.show || false}
-                onCheckedChange={(checked) => setNewItemData({...newItemData, show: checked})}
-              />
+            <div>
               <Label htmlFor="show">Show</Label>
+              <Select
+                value={newItemData.show || "challenge"}
+                onValueChange={(value) => setNewItemData({...newItemData, show: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="challenge">challenge</SelectItem>
+                  <SelectItem value="challenge, writing, debate">challenge, writing, debate</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         );
