@@ -67,13 +67,27 @@ export default function AcademicEssayPopup({
   // Load saved data on open
   useEffect(() => {
     if (isOpen && studentId && contentId) {
-      const savedData = localStorage.getItem(`essay_${studentId}_${contentId}`);
+      const storageKey = `essay_${studentId}_${contentId}`;
+      const savedData = localStorage.getItem(storageKey);
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
           setPhase(parsed.phase || 'outline');
-          setOutlineData(parsed.outlineData || outlineData);
-          setEssayData(parsed.essayData || essayData);
+          setOutlineData(parsed.outlineData || {
+            hook: '',
+            thesis: '',
+            bodyParagraph1: '',
+            bodyParagraph2: '',
+            bodyParagraph3: '',
+            conclusion: ''
+          });
+          setEssayData(parsed.essayData || {
+            introduction: '',
+            body1: '',
+            body2: '',
+            body3: '',
+            conclusion: ''
+          });
           setTimeRemaining(parsed.timeRemaining || TOTAL_TIME);
           setIsTimerActive(false); // Always start paused when reopening
         } catch (error) {
@@ -117,7 +131,8 @@ export default function AcademicEssayPopup({
 
   // Save data when popup closes
   useEffect(() => {
-    if (!isOpen && phase === 'writing') {
+    if (!isOpen && phase === 'writing' && studentId && contentId) {
+      const storageKey = `essay_${studentId}_${contentId}`;
       const dataToSave = {
         phase,
         outlineData,
@@ -125,7 +140,7 @@ export default function AcademicEssayPopup({
         timeRemaining,
         isTimerActive: false
       };
-      localStorage.setItem(`essay_${studentId}_${contentId}`, JSON.stringify(dataToSave));
+      localStorage.setItem(storageKey, JSON.stringify(dataToSave));
       saveToDatabase();
     }
   }, [isOpen, phase, outlineData, essayData, timeRemaining, studentId, contentId]);
@@ -133,7 +148,8 @@ export default function AcademicEssayPopup({
   // Save data when browser closes
   useEffect(() => {
     const saveOnUnload = () => {
-      if (phase === 'writing') {
+      if (phase === 'writing' && studentId && contentId) {
+        const storageKey = `essay_${studentId}_${contentId}`;
         const dataToSave = {
           phase,
           outlineData,
@@ -141,7 +157,7 @@ export default function AcademicEssayPopup({
           timeRemaining,
           isTimerActive: false
         };
-        localStorage.setItem(`essay_${studentId}_${contentId}`, JSON.stringify(dataToSave));
+        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
         saveToDatabase();
       }
     };
@@ -196,6 +212,15 @@ export default function AcademicEssayPopup({
   };
 
   const submitEssay = async () => {
+    if (!studentId || !contentId) {
+      toast({
+        title: "Submission Failed",
+        description: "Missing student or content information.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/writing-submissions', {
@@ -219,7 +244,8 @@ export default function AcademicEssayPopup({
         });
         
         // Clear localStorage and trigger a page refresh to hide progress button
-        localStorage.removeItem(`essay_${studentId}_${contentId}`);
+        const storageKey = `essay_${studentId}_${contentId}`;
+        localStorage.removeItem(storageKey);
         window.dispatchEvent(new Event('storage'));
         
         onClose();
@@ -229,9 +255,11 @@ export default function AcademicEssayPopup({
         setTimeRemaining(TOTAL_TIME);
         setIsTimerActive(false);
       } else {
-        throw new Error('Failed to submit essay');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit essay');
       }
     } catch (error) {
+      console.error('Submit error:', error);
       toast({
         title: "Submission Failed",
         description: "There was an error submitting your essay. Please try again.",
@@ -259,13 +287,17 @@ export default function AcademicEssayPopup({
               </Badge>
             </div>
             <div className="flex items-center gap-4">
-              {contentTitle && (
-                <p className="text-sm text-gray-600">Topic: {contentTitle}</p>
-              )}
               <Button variant="ghost" size="sm" onClick={onClose}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
+          </div>
+          {contentTitle && (
+            <div className="mt-2 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+              <p className="text-sm font-medium text-gray-800">Topic:</p>
+              <p className="text-sm text-gray-700 mt-1">{contentTitle}</p>
+            </div>
+          )}
           </div>
         </DialogHeader>
 
@@ -417,12 +449,18 @@ export default function AcademicEssayPopup({
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
               <div>
                 <h3 className="text-lg font-semibold">Writing Phase</h3>
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-2 flex-wrap">
                   <Button variant="ghost" size="sm" className="text-xs bg-blue-100">
                     Introduction: {getWordCount(essayData.introduction)} words
                   </Button>
                   <Button variant="ghost" size="sm" className="text-xs bg-green-100">
-                    Body: {getWordCount(essayData.body1) + getWordCount(essayData.body2) + getWordCount(essayData.body3)} words
+                    Body 1: {getWordCount(essayData.body1)} words
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs bg-green-100">
+                    Body 2: {getWordCount(essayData.body2)} words
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-xs bg-green-100">
+                    Body 3: {getWordCount(essayData.body3)} words
                   </Button>
                   <Button variant="ghost" size="sm" className="text-xs bg-purple-100">
                     Conclusion: {getWordCount(essayData.conclusion)} words
@@ -444,12 +482,20 @@ export default function AcademicEssayPopup({
                   <div className="flex justify-between items-center mb-3">
                     <div>
                       <h4 className="font-semibold text-blue-800">Introduction</h4>
-                      {outlineData.hook && (
-                        <p className="text-xs text-blue-600 mt-1">Hook: {outlineData.hook}</p>
-                      )}
-                      {outlineData.thesis && (
-                        <p className="text-xs text-blue-600 mt-1">Thesis: {outlineData.thesis}</p>
-                      )}
+                      <div className="mt-2 space-y-2">
+                        {outlineData.hook && (
+                          <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
+                            <p className="text-sm font-medium text-blue-800">Hook:</p>
+                            <p className="text-sm text-blue-700 mt-1">{outlineData.hook}</p>
+                          </div>
+                        )}
+                        {outlineData.thesis && (
+                          <div className="bg-blue-100 px-3 py-2 rounded-md border-l-4 border-blue-400">
+                            <p className="text-sm font-medium text-blue-800">Thesis:</p>
+                            <p className="text-sm text-blue-700 mt-1">{outlineData.thesis}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <span className="text-sm text-blue-600">
                       {getWordCount(essayData.introduction)} words
@@ -474,7 +520,9 @@ export default function AcademicEssayPopup({
                         <div>
                           <Label className="text-sm font-medium text-green-700">Body 1</Label>
                           {outlineData.bodyParagraph1 && (
-                            <p className="text-xs text-green-600 mt-1">{outlineData.bodyParagraph1}</p>
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                              <p className="text-sm text-green-700">{outlineData.bodyParagraph1}</p>
+                            </div>
                           )}
                         </div>
                         <Button variant="ghost" size="sm" className="text-xs">
@@ -495,7 +543,9 @@ export default function AcademicEssayPopup({
                         <div>
                           <Label className="text-sm font-medium text-green-700">Body 2</Label>
                           {outlineData.bodyParagraph2 && (
-                            <p className="text-xs text-green-600 mt-1">{outlineData.bodyParagraph2}</p>
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                              <p className="text-sm text-green-700">{outlineData.bodyParagraph2}</p>
+                            </div>
                           )}
                         </div>
                         <Button variant="ghost" size="sm" className="text-xs">
@@ -516,7 +566,9 @@ export default function AcademicEssayPopup({
                         <div>
                           <Label className="text-sm font-medium text-green-700">Body 3</Label>
                           {outlineData.bodyParagraph3 && (
-                            <p className="text-xs text-green-600 mt-1">{outlineData.bodyParagraph3}</p>
+                            <div className="bg-green-100 px-3 py-2 rounded-md border-l-4 border-green-400 mt-2">
+                              <p className="text-sm text-green-700">{outlineData.bodyParagraph3}</p>
+                            </div>
                           )}
                         </div>
                         <Button variant="ghost" size="sm" className="text-xs">
@@ -539,7 +591,9 @@ export default function AcademicEssayPopup({
                     <div>
                       <h4 className="font-semibold text-purple-800">Conclusion</h4>
                       {outlineData.conclusion && (
-                        <p className="text-xs text-purple-600 mt-1">{outlineData.conclusion}</p>
+                        <div className="bg-purple-100 px-3 py-2 rounded-md border-l-4 border-purple-400 mt-2">
+                          <p className="text-sm text-purple-700">{outlineData.conclusion}</p>
+                        </div>
                       )}
                     </div>
                     <span className="text-sm text-purple-600">
