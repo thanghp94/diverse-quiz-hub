@@ -235,9 +235,33 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       {/* Header and Controls */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2">
-            <Users className="h-6 w-6" />
-            Live Class Monitor
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-6 w-6" />
+              Live Class Monitor
+            </div>
+            <div className="flex items-center gap-4">
+              {!isMonitoring ? (
+                <Button
+                  onClick={startMonitoring}
+                  disabled={selectedStudents.length === 0}
+                  className="bg-green-600 hover:bg-green-700"
+                  size="sm"
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Start Monitoring ({selectedStudents.length} students)
+                </Button>
+              ) : (
+                <Button
+                  onClick={stopMonitoring}
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Pause className="mr-2 h-4 w-4" />
+                  Stop Monitoring
+                </Button>
+              )}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -460,27 +484,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
               </div>
             </div>
 
-            {/* Monitor Controls */}
-            <div className="flex items-center gap-4 flex-wrap">
-              {!isMonitoring ? (
-                <Button
-                  onClick={startMonitoring}
-                  disabled={selectedStudents.length === 0}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Play className="mr-2 h-4 w-4" />
-                  Start Monitoring ({selectedStudents.length} students)
-                </Button>
-              ) : (
-                <Button
-                  onClick={stopMonitoring}
-                  variant="destructive"
-                >
-                  <Pause className="mr-2 h-4 w-4" />
-                  Stop Monitoring
-                </Button>
-              )}
-            </div>
+
           </div>
 
           {isMonitoring && (
