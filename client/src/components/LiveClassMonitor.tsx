@@ -252,14 +252,22 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                   Start Monitoring ({selectedStudents.length} students)
                 </Button>
               ) : (
-                <Button
-                  onClick={stopMonitoring}
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Pause className="mr-2 h-4 w-4" />
-                  Stop Monitoring
-                </Button>
+                <div className="flex items-center gap-4">
+                  <Button
+                    onClick={stopMonitoring}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    <Pause className="mr-2 h-4 w-4" />
+                    Stop Monitoring
+                  </Button>
+                  <div className="flex items-center gap-2 px-3 py-1 bg-green-50 rounded-full">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-green-700">
+                      Live monitoring active - Updates every 5 seconds
+                    </span>
+                  </div>
+                </div>
               )}
             </div>
           </CardTitle>
@@ -268,7 +276,6 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
 
           {/* Student Selection */}
           <div className="space-y-3">
-            <label className="text-sm font-medium">Select Students to Monitor</label>
             
             {/* Selected Students Display */}
             <div className="relative" ref={studentSelectorRef}>
@@ -487,14 +494,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
 
           </div>
 
-          {isMonitoring && (
-            <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-sm text-green-700">
-                Live monitoring active - Updates every 5 seconds
-              </span>
-            </div>
-          )}
+
         </CardContent>
       </Card>
 
