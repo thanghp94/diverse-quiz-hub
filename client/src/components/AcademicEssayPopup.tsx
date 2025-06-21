@@ -348,14 +348,16 @@ export default function AcademicEssayPopup({
             <div className="flex items-center gap-4">
               <DialogTitle className="text-xl font-bold">Academic Essay</DialogTitle>
               <Badge 
-                variant={phase === 'outline' ? 'default' : 'secondary'}
+                variant={phase === 'outline' ? 'default' : 'info'}
                 className="px-6 py-1 text-sm whitespace-nowrap"
               >
                 {phase === 'outline' ? 'Outline Phase (15 min)' : 'Writing Phase'}
               </Badge>
               {phase === 'outline' && (
-                <div className="text-lg font-mono font-semibold text-orange-700">
-                  Time remaining: {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                <div className="bg-orange-100 border-l-4 border-orange-500 p-2 rounded-lg">
+                  <div className="text-lg font-bold text-orange-800">
+                    ⏰ Time remaining: {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                  </div>
                 </div>
               )}
             </div>
@@ -388,12 +390,12 @@ export default function AcademicEssayPopup({
             </div>
           </div>
           {contentTitle && (
-            <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="mt-3 p-1.5 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
                 <div className="flex-1">
 
-                  <p className="text-lg font-semibold text-gray-800 leading-relaxed">{contentTitle}</p>
+                  <p className="text-sm font-semibold text-blue-800 leading-relaxed">{contentTitle}</p>
                 </div>
               </div>
             </div>
@@ -401,21 +403,19 @@ export default function AcademicEssayPopup({
         </DialogHeader>
 
         {phase === 'outline' && (
-          <div className="space-y-6 p-4">
+          <div className="space-y-3 p-1">
 
-            <div className="space-y-4">
+            <div className="space-y-1">
               {/* Introduction */}
-              <div className="bg-blue-50 p-4 rounded-lg border">
+              <div className="bg-blue-50 p-2 rounded-lg border">
                 <div className="flex justify-between items-start mb-3">
                   <h4 className="font-semibold text-blue-800">Introduction</h4>
-                  <div className="bg-blue-100 px-3 py-1 rounded-md text-xs text-blue-700">
-                    Hook: Question, quote, or interesting fact • Thesis: Clear main argument or position
-                  </div>
+
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-sm font-medium">Hook</Label>
+                    <Label className="text-sm font-medium">Hook:  Question, quote, or interesting fact</Label>
                     <Textarea
                       placeholder="Attention-grabbing opening..."
                       value={outlineData.hook}
@@ -437,52 +437,49 @@ export default function AcademicEssayPopup({
                           console.log('Saved on blur - hook');
                         }
                       }}
-                      className="mt-1 min-h-[80px]"
+                      className="mt-1 min-h-[50px]"
                     />
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium">Thesis (Main Idea)</Label>
+                    <Label className="text-sm font-medium">Main Idea: Clear main argument or position</Label>
                     <Textarea
                       placeholder="Your main argument..."
                       value={outlineData.thesis}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, thesis: e.target.value }))}
-                      className="mt-1 min-h-[80px]"
+                      className="mt-1 min-h-[60px]"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Body */}
-              <div className="bg-green-50 p-4 rounded-lg border">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-green-800">Body</h4>
-                  <div className="bg-green-100 px-3 py-1 rounded-md text-xs text-green-700">
-                    Topic sentence • Supporting evidence • Analysis and explanation
+              <div className="bg-green-50 p-2 rounded-lg border">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <h4 className="font-semibold text-green-800">Body</h4>
+                    <div className="bg-green-100 px-3 py-1 rounded-md text-xs text-green-700 mb-3">
+                      Topic sentence <br /> Supporting evidence <br /> Analysis and explanation
+                    </div>
                   </div>
-                </div>
-
-                <div className="space-y-3">
                   <div>
                     <Label className="text-sm font-medium">Body Paragraph 1</Label>
                     <Textarea
                       placeholder="First main point..."
                       value={outlineData.bodyParagraph1}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph1: e.target.value }))}
-                      className="mt-1 min-h-[40px]"
+                      className="mt-1 min-h-[30px]"
                     />
                   </div>
-
                   <div>
                     <Label className="text-sm font-medium">Body Paragraph 2</Label>
                     <Textarea
                       placeholder="Second main point..."
                       value={outlineData.bodyParagraph2}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph2: e.target.value }))}
-                      className="mt-1 min-h-[40px]"
+                      className="mt-1 min-h-[30px]"
                     />
                   </div>
-
                   <div>
                     <Label className="text-sm font-medium">Body Paragraph 3</Label>
                     <Textarea
@@ -496,32 +493,28 @@ export default function AcademicEssayPopup({
               </div>
 
               {/* Conclusion */}
-              <div className="bg-purple-50 p-4 rounded-lg border">
+              <div className="bg-purple-50 p-3 rounded-lg border">
                 <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-purple-800">Conclusion</h4>
-                  <div className="bg-purple-100 px-3 py-1 rounded-md text-xs text-purple-700">
-                    Restate thesis • Summarize main points
-                  </div>
+                  
                 </div>
-
-                <div>
-                  <Label className="text-sm font-medium">Summary and Final Thoughts</Label>
-                  <Textarea
-                    placeholder="Summarize and conclude..."
-                    value={outlineData.conclusion}
-                    onChange={(e) => setOutlineData(prev => ({ ...prev, conclusion: e.target.value }))}
-                    className="mt-1 min-h-[50px]"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="text-xs text-purple-800 mb-3">Conclusion<br/>Restate thesis<br/>Summarize main points</div>
+                  <div>
+                    <Textarea
+                      placeholder="Summarize and conclude..."
+                      value={outlineData.conclusion}
+                      onChange={(e) => setOutlineData(prev => ({ ...prev, conclusion: e.target.value }))}
+                      className="mt-1 min-h-[50px]"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            
           </div>
-        )}
-
+        )}  
         {phase === 'writing' && (
-          <div className="space-y-2 p-2">
+          <div className="space-y-1 p-1">
             {/* Writing Phase Header with Sections Navigation */}
             <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
               <div>
