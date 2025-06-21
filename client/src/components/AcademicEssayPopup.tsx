@@ -153,12 +153,12 @@ export default function AcademicEssayPopup({
     return () => clearInterval(interval);
   }, [isTimerActive, timeRemaining, phase]);
 
-  // Start timer when outline phase begins
+  // Start timer when popup opens (regardless of phase)
   useEffect(() => {
-    if (phase === "outline" && isOpen) {
+    if (isOpen && timeRemaining > 0) {
       setIsTimerActive(true);
     }
-  }, [phase, isOpen]);
+  }, [isOpen]);
 
   // Save data continuously when there are changes
   useEffect(() => {
@@ -292,7 +292,7 @@ export default function AcademicEssayPopup({
 
   const proceedToWriting = () => {
     setPhase("writing");
-    setIsTimerActive(false);
+    // Keep timer running when moving to writing phase
 
     // Update localStorage immediately and trigger storage event
     if (studentId && contentId) {
@@ -302,7 +302,7 @@ export default function AcademicEssayPopup({
         outlineData,
         essayData,
         timeRemaining,
-        isTimerActive: false,
+        isTimerActive,
       };
       localStorage.setItem(storageKey, JSON.stringify(dataToSave));
       window.dispatchEvent(new Event("storage"));
@@ -425,8 +425,8 @@ export default function AcademicEssayPopup({
               {phase === "writing" && (
                 <div className="bg-blue-100 border-l-4 border-blue-500 p-2 rounded-lg">
                   <div className="text-lg font-bold text-blue-800">
-                    ⏰ Time left: {Math.floor(timeRemaining / 60)}:
-                    {(timeRemaining % 60).toString().padStart(2, "0")}
+                    ⏰ Time spent: {Math.floor((TOTAL_TIME - timeRemaining) / 60)}:
+                    {((TOTAL_TIME - timeRemaining) % 60).toString().padStart(2, "0")}
                   </div>
                 </div>
               )}
