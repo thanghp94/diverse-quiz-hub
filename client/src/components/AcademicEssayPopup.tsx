@@ -343,7 +343,7 @@ export default function AcademicEssayPopup({
             </div>
           </div>
           {contentTitle && (
-            <div className="mt-3 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="mt-3 p-3 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
                 <div className="flex-1">
