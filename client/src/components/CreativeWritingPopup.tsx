@@ -23,6 +23,7 @@ interface CreativeWritingPopupProps {
     andThen2: string;
     andFinally: string;
   };
+  onBackToOutline?: () => void;
 }
 
 interface WritingData {
@@ -36,7 +37,8 @@ export default function CreativeWritingPopup({
   contentTitle, 
   studentId, 
   contentId,
-  outlineData 
+  outlineData,
+  onBackToOutline 
 }: CreativeWritingPopupProps) {
   const [writingData, setWritingData] = useState<WritingData>({
     title: outlineData.title || '',
@@ -443,6 +445,12 @@ export default function CreativeWritingPopup({
               </div>
 
               <div className="flex gap-2">
+                {onBackToOutline && (
+                  <Button variant="outline" onClick={onBackToOutline} className="border-purple-500 text-purple-600 hover:bg-purple-50">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Back to Outline
+                  </Button>
+                )}
                 <Button variant="outline" onClick={onClose}>
                   Save Draft
                 </Button>

@@ -354,6 +354,16 @@ const WritingPage = () => {
     setCreativeWritingInfo({ isOpen: false });
   };
 
+  const handleBackToOutline = () => {
+    // Close creative writing popup and open outline popup
+    setCreativeWritingInfo({ isOpen: false });
+    setOutlinePopupInfo({ 
+      isOpen: true, 
+      contentTitle: creativeWritingInfo.contentTitle,
+      contentId: creativeWritingInfo.contentId 
+    });
+  };
+
   const handleCloseWritingContent = () => {
     setWritingContentInfo({ isOpen: false, content: null, contextList: [] });
   };
@@ -830,6 +840,7 @@ const WritingPage = () => {
         contentId={creativeWritingInfo.contentId}
         studentId={user?.id || "GV0002"}
         outlineData={creativeWritingInfo.outlineData || {}}
+        onBackToOutline={handleBackToOutline}
       />
 
       <AcademicEssayPopup
