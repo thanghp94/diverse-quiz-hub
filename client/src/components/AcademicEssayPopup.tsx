@@ -371,7 +371,7 @@ export default function AcademicEssayPopup({
                   Back to Outline
                 </Button>
               )}
-              {phase === 'outline' && timeRemaining === 0 && (
+              {phase === 'outline' && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -404,14 +404,6 @@ export default function AcademicEssayPopup({
           <div className="space-y-6 p-4">
 
             <div className="space-y-4">
-              {/* Proceed to Writing Button */}
-              <div className="flex justify-center pb-4">
-                <Button onClick={proceedToWriting} className="bg-blue-600 hover:bg-blue-700">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Proceed to Writing
-                </Button>
-              </div>
-
               {/* Introduction */}
               <div className="bg-blue-50 p-4 rounded-lg border">
                 <div className="flex justify-between items-start mb-3">
