@@ -504,15 +504,35 @@ const WritingPage = () => {
                           <Button
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleOpenOutlinePopup(
-                                content.title || content.short_blurb,
-                                content.id,
-                              );
+                              if (hasCreativeProgress) {
+                                // Load outline data and go directly to writing page
+                                const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
+                                const savedOutlineData = localStorage.getItem(outlineStorageKey);
+                                let outlineData = {};
+                                if (savedOutlineData) {
+                                  try {
+                                    outlineData = JSON.parse(savedOutlineData);
+                                  } catch (error) {
+                                    console.error('Failed to parse outline data:', error);
+                                  }
+                                }
+                                setCreativeWritingInfo({
+                                  isOpen: true,
+                                  contentTitle: content.title || content.short_blurb,
+                                  contentId: content.id,
+                                  outlineData,
+                                });
+                              } else {
+                                handleOpenOutlinePopup(
+                                  content.title || content.short_blurb,
+                                  content.id,
+                                );
+                              }
                             }}
                             size="sm"
                             className={hasCreativeProgress 
-                              ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
-                              : "bg-purple-600 hover:bg-purple-700 text-white"
+                              ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                              : "bg-orange-600 hover:bg-orange-700 text-white"
                             }
                           >
                             <PenTool className="h-4 w-4 mr-1" />
@@ -678,15 +698,35 @@ const WritingPage = () => {
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleOpenOutlinePopup(
-                              content.title || content.short_blurb,
-                              content.id,
-                            );
+                            if (hasCreativeProgress) {
+                              // Load outline data and go directly to writing page
+                              const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
+                              const savedOutlineData = localStorage.getItem(outlineStorageKey);
+                              let outlineData = {};
+                              if (savedOutlineData) {
+                                try {
+                                  outlineData = JSON.parse(savedOutlineData);
+                                } catch (error) {
+                                  console.error('Failed to parse outline data:', error);
+                                }
+                              }
+                              setCreativeWritingInfo({
+                                isOpen: true,
+                                contentTitle: content.title || content.short_blurb,
+                                contentId: content.id,
+                                outlineData,
+                              });
+                            } else {
+                              handleOpenOutlinePopup(
+                                content.title || content.short_blurb,
+                                content.id,
+                              );
+                            }
                           }}
                           size="sm"
                           className={hasCreativeProgress 
-                            ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
-                            : "bg-purple-600 hover:bg-purple-700 text-white"
+                            ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                            : "bg-orange-600 hover:bg-orange-700 text-white"
                           }
                         >
                           <PenTool className="h-4 w-4 mr-1" />
