@@ -511,7 +511,7 @@ const WritingPage = () => {
                             }}
                             size="sm"
                             className={hasCreativeProgress 
-                              ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                              ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
                               : "bg-purple-600 hover:bg-purple-700 text-white"
                             }
                           >
@@ -685,7 +685,7 @@ const WritingPage = () => {
                           }}
                           size="sm"
                           className={hasCreativeProgress 
-                            ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                            ? "bg-indigo-600 hover:bg-indigo-700 text-white" 
                             : "bg-purple-600 hover:bg-purple-700 text-white"
                           }
                         >
