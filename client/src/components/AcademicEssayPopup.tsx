@@ -413,7 +413,7 @@ export default function AcademicEssayPopup({
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium">Hook</Label>
                     <Textarea
@@ -437,7 +437,7 @@ export default function AcademicEssayPopup({
                           console.log('Saved on blur - hook');
                         }
                       }}
-                      className="mt-1 min-h-[40px]"
+                      className="mt-1 min-h-[80px]"
                     />
                   </div>
 
@@ -447,7 +447,7 @@ export default function AcademicEssayPopup({
                       placeholder="Your main argument..."
                       value={outlineData.thesis}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, thesis: e.target.value }))}
-                      className="mt-1 min-h-[50px]"
+                      className="mt-1 min-h-[80px]"
                     />
                   </div>
                 </div>
