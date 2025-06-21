@@ -86,8 +86,24 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
   const leftItems = filteredPairs.map(pair => pair.left);
   const rightItems = filteredPairs.map(pair => pair.right);
-  // Keep right items in consistent order instead of shuffling
-  const fixedRightItems = [...rightItems];
+  
+  // Shuffle right items to randomize the options
+  const [shuffledRightItems, setShuffledRightItems] = useState([...rightItems]);
+
+  useEffect(() => {
+    // Function to shuffle array
+    const shuffleArray = (array: any[]) => {
+      const newArray = [...array];
+      for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+      }
+      return newArray;
+    };
+
+    // Shuffle right items when component mounts or rightItems change
+    setShuffledRightItems(shuffleArray(rightItems));
+  }, [rightItems]);
 
 
 
@@ -389,16 +405,16 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           <div className="flex-1">
             <div 
               className={`grid gap-1 h-[140px] overflow-y-auto ${
-                fixedRightItems.length <= 4 
+                shuffledRightItems.length <= 4 
                   ? 'grid-cols-4' 
-                  : fixedRightItems.length <= 5 
+                  : shuffledRightItems.length <= 5 
                   ? 'grid-cols-5' 
-                  : fixedRightItems.length <= 6 
+                  : shuffledRightItems.length <= 6 
                   ? 'grid-cols-6' 
                   : 'grid-cols-7'
               }`}
             >
-              {fixedRightItems.map((item: string) => {
+              {shuffledRightItems.map((item: string) => {
                 const matchedLeft = Object.keys(matches).find(left => matches[left] === item);
                 const isCorrect = showResults && matchedLeft && correctMatches[matchedLeft];
                 const isIncorrect = showResults && matchedLeft && correctMatches[matchedLeft] === false;
