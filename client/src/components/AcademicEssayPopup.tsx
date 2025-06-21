@@ -404,6 +404,14 @@ export default function AcademicEssayPopup({
           <div className="space-y-6 p-4">
 
             <div className="space-y-4">
+              {/* Proceed to Writing Button */}
+              <div className="flex justify-center pb-4">
+                <Button onClick={proceedToWriting} className="bg-blue-600 hover:bg-blue-700">
+                  <Edit className="h-4 w-4 mr-2" />
+                  Proceed to Writing
+                </Button>
+              </div>
+
               {/* Introduction */}
               <div className="bg-blue-50 p-4 rounded-lg border">
                 <div className="flex justify-between items-start mb-3">
@@ -458,7 +466,7 @@ export default function AcademicEssayPopup({
                 <div className="flex justify-between items-start mb-3">
                   <h4 className="font-semibold text-green-800">Body</h4>
                   <div className="bg-green-100 px-3 py-1 rounded-md text-xs text-green-700">
-                    Topic sentence • Supporting evidence • Analysis and explanation • Transition to next point
+                    Topic sentence • Supporting evidence • Analysis and explanation
                   </div>
                 </div>
 
@@ -500,7 +508,7 @@ export default function AcademicEssayPopup({
                 <div className="flex justify-between items-start mb-3">
                   <h4 className="font-semibold text-purple-800">Conclusion</h4>
                   <div className="bg-purple-100 px-3 py-1 rounded-md text-xs text-purple-700">
-                    Restate thesis • Summarize main points • Final thought or call to action
+                    Restate thesis • Summarize main points
                   </div>
                 </div>
 
@@ -516,12 +524,7 @@ export default function AcademicEssayPopup({
               </div>
             </div>
 
-            <div className="flex justify-center pt-4">
-              <Button onClick={proceedToWriting} className="bg-blue-600 hover:bg-blue-700">
-                <Edit className="h-4 w-4 mr-2" />
-                Proceed to Writing
-              </Button>
-            </div>
+            
           </div>
         )}
 
