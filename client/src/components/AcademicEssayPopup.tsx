@@ -495,7 +495,7 @@ export default function AcademicEssayPopup({
               {/* Conclusion */}
               <div className="bg-purple-50 p-3 rounded-lg border">
                 <div className="flex justify-between items-start mb-3">
-                  
+
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="text-xs text-purple-800 mb-3">Conclusion<br/>Restate thesis<br/>Summarize main points</div>
@@ -515,13 +515,6 @@ export default function AcademicEssayPopup({
         )}  
         {phase === 'writing' && (
           <div className="space-y-1 p-1">
-            {/* Timer at the top */}
-            <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded-lg mb-3 text-center">
-              <div className="text-xl font-bold text-blue-800">
-                ⏰ Time spent: {Math.floor((TOTAL_TIME - timeRemaining) / 60)}:{((TOTAL_TIME - timeRemaining) % 60).toString().padStart(2, '0')}
-              </div>
-            </div>
-            
             {/* Sections Navigation */}
             <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
               <div>
