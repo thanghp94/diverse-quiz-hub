@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,10 +10,23 @@ interface WritingOutlinePopupProps {
   isOpen: boolean;
   onClose: () => void;
   contentTitle?: string;
+  contentId?: string;
+  studentId?: string;
   onProceedToWriting?: (outlineData: OutlineData) => void;
 }
 
-export default function WritingOutlinePopup({ isOpen, onClose, contentTitle, onProceedToWriting }: WritingOutlinePopupProps) {
+interface OutlineData {
+  title: string;
+  directions: string;
+  setting: string;
+  characters: string;
+  first: string;
+  andThen1: string;
+  andThen2: string;
+  andFinally: string;
+}
+
+export default function WritingOutlinePopup({ isOpen, onClose, contentTitle, contentId, studentId, onProceedToWriting }: WritingOutlinePopupProps) {
   const [formData, setFormData] = useState({
     title: '',
     directions: '',
@@ -25,15 +38,65 @@ export default function WritingOutlinePopup({ isOpen, onClose, contentTitle, onP
     andFinally: ''
   });
 
+  // Load saved data when popup opens with specific content
+  useEffect(() => {
+    if (isOpen && studentId && contentId) {
+      const storageKey = `creative_outline_${studentId}_${contentId}`;
+      const savedData = localStorage.getItem(storageKey);
+      if (savedData) {
+        try {
+          const parsed = JSON.parse(savedData);
+          setFormData(parsed);
+        } catch (error) {
+          console.error('Failed to parse saved outline data:', error);
+          // Reset to empty state for new content
+          setFormData({
+            title: '',
+            directions: '',
+            setting: '',
+            characters: '',
+            first: '',
+            andThen1: '',
+            andThen2: '',
+            andFinally: ''
+          });
+        }
+      } else {
+        // Reset to empty state for new content
+        setFormData({
+          title: '',
+          directions: '',
+          setting: '',
+          characters: '',
+          first: '',
+          andThen1: '',
+          andThen2: '',
+          andFinally: ''
+        });
+      }
+    }
+  }, [isOpen, studentId, contentId]);
+
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
+    const updatedData = {
+      ...formData,
       [field]: value
-    }));
+    };
+    setFormData(updatedData);
+    
+    // Auto-save to localStorage if we have studentId and contentId
+    if (studentId && contentId) {
+      const storageKey = `creative_outline_${studentId}_${contentId}`;
+      localStorage.setItem(storageKey, JSON.stringify(updatedData));
+    }
   };
 
   const handleSave = () => {
-    // Here you would typically save the outline data
+    // Save to localStorage if we have studentId and contentId
+    if (studentId && contentId) {
+      const storageKey = `creative_outline_${studentId}_${contentId}`;
+      localStorage.setItem(storageKey, JSON.stringify(formData));
+    }
     console.log('Saving outline:', formData);
     onClose();
   };
