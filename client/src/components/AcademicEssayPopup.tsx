@@ -347,10 +347,7 @@ export default function AcademicEssayPopup({
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
                 <div className="flex-1">
-                  <div className="inline-flex items-center gap-2 mb-2">
-                    <FileText className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-700 uppercase tracking-wide">Essay Prompt</span>
-                  </div>
+               
                   <p className="text-lg font-semibold text-gray-800 leading-relaxed">{contentTitle}</p>
                 </div>
               </div>
@@ -483,7 +480,7 @@ export default function AcademicEssayPopup({
             {/* Writing Phase Header with Sections Navigation */}
             <div className="flex justify-between items-center bg-gray-50 p-4 rounded-lg">
               <div>
-                <h3 className="text-lg font-semibold">Writing Phase</h3>
+             
                 <div className="flex gap-2 mt-2 flex-wrap">
                   <Button variant="ghost" size="sm" className="text-xs bg-blue-100">
                     Introduction: {getWordCount(essayData.introduction)} words
@@ -502,15 +499,14 @@ export default function AcademicEssayPopup({
                   </Button>
                 </div>
               </div>
-              
+        
               <div className="text-right">
                 <div className="text-lg font-semibold text-blue-600">
                   Total: {getTotalWordCount()} words
                 </div>
-                <p className="text-xs text-gray-600">Keep writing to develop your ideas</p>
+
               </div>
             </div>
-
             <div className="space-y-3">
                 {/* Introduction */}
                 <div className="bg-blue-50 p-4 rounded-lg border">
