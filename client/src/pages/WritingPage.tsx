@@ -6,6 +6,7 @@ import ContentPopup from "@/components/ContentPopup";
 import WritingOutlinePopup from "@/components/WritingOutlinePopup";
 import AcademicEssayPopup from "@/components/AcademicEssayPopup";
 import CreativeWritingPopup from "@/components/CreativeWritingPopup";
+import WritingContentPopup from "@/components/WritingContentPopup";
 import { TopicListItem } from "@/components/TopicListItem";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
@@ -95,6 +96,11 @@ const WritingPage = () => {
     outlineData?: any;
   }>({ isOpen: false });
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [writingContentInfo, setWritingContentInfo] = useState<{
+    isOpen: boolean;
+    content: Content | null;
+    contextList: Content[];
+  }>({ isOpen: false, content: null, contextList: [] });
 
   // Helper functions for group card expansion
   const handleToggleGroupCard = useCallback((groupCardId: string) => {
@@ -210,10 +216,10 @@ const WritingPage = () => {
 
   const handleContentClick = (info: { content: Content; contextList: Content[] }) => {
     setActiveContentId(info.content.id);
-    setSelectedContentInfo({
+    setWritingContentInfo({
+      isOpen: true,
       content: info.content,
       contextList: info.contextList,
-      imageUrl: findImageUrl(info.content),
     });
     
     // Track content access when student clicks on content
@@ -306,6 +312,10 @@ const WritingPage = () => {
 
   const handleCloseCreativeWriting = () => {
     setCreativeWritingInfo({ isOpen: false });
+  };
+
+  const handleCloseWritingContent = () => {
+    setWritingContentInfo({ isOpen: false, content: null, contextList: [] });
   };
 
   const getSubtopics = (parentId: string) => {
@@ -580,24 +590,19 @@ const WritingPage = () => {
         </div>
       </div>
 
-      <ContentPopup
-        isOpen={!!selectedContentInfo}
-        onClose={closePopup}
-        content={selectedContentInfo?.content ?? null}
-        contentList={selectedContentInfo?.contextList ?? []}
-        onContentChange={newContent => {
-          if (selectedContentInfo) {
-            setSelectedContentInfo({ 
-              ...selectedContentInfo, 
-              content: newContent,
-              imageUrl: findImageUrl(newContent),
-            });
-          }
+      <WritingContentPopup
+        isOpen={writingContentInfo.isOpen}
+        onClose={handleCloseWritingContent}
+        content={writingContentInfo.content}
+        contentList={writingContentInfo.contextList}
+        onContentChange={(newContent) => {
+          setWritingContentInfo(prev => ({
+            ...prev,
+            content: newContent
+          }));
         }}
-        startQuizDirectly={selectedContentInfo?.content?.id === quizContentId}
-        quizLevel={selectedContentInfo?.quizLevel}
-        imageUrl={selectedContentInfo?.imageUrl ?? null}
-        isImageLoading={isImagesLoading}
+        startQuizDirectly={false}
+        quizLevel={null}
       />
 
       {topicQuizInfo && (

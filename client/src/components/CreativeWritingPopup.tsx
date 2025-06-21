@@ -99,6 +99,12 @@ export default function CreativeWritingPopup({
     setWritingData(prev => ({ ...prev, story: value }));
   };
 
+  const handleSectionChange = (sectionIndex: number, value: string) => {
+    const paragraphs = writingData.story.split('\n\n');
+    paragraphs[sectionIndex] = value;
+    setWritingData(prev => ({ ...prev, story: paragraphs.join('\n\n') }));
+  };
+
   const getWordCount = (text: string) => {
     return text.trim() ? text.trim().split(/\s+/).length : 0;
   };
@@ -204,81 +210,186 @@ export default function CreativeWritingPopup({
           </div>
         </DialogHeader>
 
-        <div className="space-y-6 p-4">
-          {/* Outline Summary */}
-          <div className="bg-blue-50 p-4 rounded-lg border">
-            <h3 className="text-lg font-semibold mb-3 flex items-center">
+        <div className="space-y-2 p-2">
+          {/* Outline Summary - Similar to Academic Essay */}
+          <div className="bg-blue-50 p-3 rounded-lg border">
+            <h3 className="text-lg font-semibold mb-2 flex items-center text-blue-800">
               <FileText className="h-5 w-5 mr-2" />
-              Your Outline Summary
+              Your Creative Writing Outline
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div>
-                <strong>Title:</strong> {outlineData.title || 'Not provided'}
-              </div>
-              <div>
-                <strong>Setting:</strong> {outlineData.setting || 'Not provided'}
-              </div>
-              <div>
-                <strong>Characters:</strong> {outlineData.characters || 'Not provided'}
-              </div>
-              <div>
-                <strong>Directions:</strong> {outlineData.directions || 'Not provided'}
-              </div>
+            
+            {/* Title and Directions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              {outlineData.title && (
+                <div className="bg-blue-100 px-2 py-1 rounded-md border-l-4 border-blue-400">
+                  <span className="text-sm font-bold text-blue-800">Title:</span>
+                  <span className="text-sm text-blue-700 ml-2">{outlineData.title}</span>
+                </div>
+              )}
+              {outlineData.directions && (
+                <div className="bg-blue-100 px-2 py-1 rounded-md border-l-4 border-blue-400">
+                  <span className="text-sm font-bold text-blue-800">Directions:</span>
+                  <span className="text-sm text-blue-700 ml-2">{outlineData.directions}</span>
+                </div>
+              )}
             </div>
             
-            <div className="mt-3">
-              <strong>Story Structure:</strong>
-              <div className="mt-2 space-y-1 text-sm">
-                <div><strong>First:</strong> {outlineData.first || 'Not provided'}</div>
-                <div><strong>And then:</strong> {outlineData.andThen1 || 'Not provided'}</div>
-                <div><strong>And then:</strong> {outlineData.andThen2 || 'Not provided'}</div>
-                <div><strong>And finally:</strong> {outlineData.andFinally || 'Not provided'}</div>
+            {/* Setting and Characters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+              {outlineData.setting && (
+                <div className="bg-green-100 px-2 py-1 rounded-md border-l-4 border-green-400">
+                  <span className="text-sm font-bold text-green-800">Setting:</span>
+                  <span className="text-sm text-green-700 ml-2">{outlineData.setting}</span>
+                </div>
+              )}
+              {outlineData.characters && (
+                <div className="bg-green-100 px-2 py-1 rounded-md border-l-4 border-green-400">
+                  <span className="text-sm font-bold text-green-800">Characters:</span>
+                  <span className="text-sm text-green-700 ml-2">{outlineData.characters}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Story Structure */}
+            <div>
+              <span className="text-sm font-bold text-purple-800">Story Structure:</span>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                {outlineData.first && (
+                  <div className="bg-purple-100 px-2 py-1 rounded-md border-l-4 border-purple-400">
+                    <span className="text-sm font-bold text-purple-800">First:</span>
+                    <span className="text-sm text-purple-700 ml-2">{outlineData.first}</span>
+                  </div>
+                )}
+                {outlineData.andThen1 && (
+                  <div className="bg-purple-100 px-2 py-1 rounded-md border-l-4 border-purple-400">
+                    <span className="text-sm font-bold text-purple-800">Then:</span>
+                    <span className="text-sm text-purple-700 ml-2">{outlineData.andThen1}</span>
+                  </div>
+                )}
+                {outlineData.andThen2 && (
+                  <div className="bg-purple-100 px-2 py-1 rounded-md border-l-4 border-purple-400">
+                    <span className="text-sm font-bold text-purple-800">Then:</span>
+                    <span className="text-sm text-purple-700 ml-2">{outlineData.andThen2}</span>
+                  </div>
+                )}
+                {outlineData.andFinally && (
+                  <div className="bg-purple-100 px-2 py-1 rounded-md border-l-4 border-purple-400">
+                    <span className="text-sm font-bold text-purple-800">Finally:</span>
+                    <span className="text-sm text-purple-700 ml-2">{outlineData.andFinally}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Title Input */}
-          <div>
-            <Label className="text-base font-medium">Story Title</Label>
-            <input
-              type="text"
-              value={writingData.title}
-              onChange={(e) => setWritingData(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full p-3 border rounded-lg text-lg font-medium mt-2"
-              placeholder="Enter your story title..."
-            />
-          </div>
+          {/* Writing sections similar to academic essay */}
+          <div className="space-y-2">
+            {/* Title */}
+            <div className="bg-blue-50 p-3 rounded-lg border">
+              <div className="flex justify-between items-center mb-1">
+                <h4 className="font-semibold text-blue-800">Story Title</h4>
+              </div>
+              <input
+                type="text"
+                value={writingData.title}
+                onChange={(e) => setWritingData(prev => ({ ...prev, title: e.target.value }))}
+                className="w-full p-2 border rounded border-blue-200"
+                placeholder="Enter your story title..."
+              />
+            </div>
 
-          {/* Writing Area */}
-          <div>
-            <Label className="text-base font-medium">Write Your Story</Label>
-            <p className="text-sm text-gray-600 mb-2">
-              Use your outline to guide your creative writing. Tell your story with vivid details and engaging narrative.
-            </p>
-            <Textarea
-              placeholder="Begin writing your story here... Use your outline as a guide to create an engaging narrative with vivid descriptions and character development."
-              value={writingData.story}
-              onChange={(e) => handleStoryChange(e.target.value)}
-              className="min-h-[400px] mt-2 text-base leading-relaxed"
-            />
-            <div className="text-right text-sm text-gray-500 mt-2">
-              {getWordCount(writingData.story)} words
+            {/* Story sections */}
+            <div className="bg-green-50 p-3 rounded-lg border">
+              <h4 className="font-semibold text-green-800 mb-2">Your Creative Story</h4>
+              
+              <div className="space-y-2">
+                {/* Introduction/Opening */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <Label className="text-sm font-medium text-green-700">Introduction (Opening Scene)</Label>
+                    <Button variant="ghost" size="sm" className="text-xs">
+                      {getWordCount(writingData.story.split('\n\n')[0] || '')} words
+                    </Button>
+                  </div>
+                  <Textarea
+                    placeholder="Begin your story with an engaging opening scene..."
+                    value={writingData.story.split('\n\n')[0] || ''}
+                    onChange={(e) => {
+                      const paragraphs = writingData.story.split('\n\n');
+                      paragraphs[0] = e.target.value;
+                      setWritingData(prev => ({ ...prev, story: paragraphs.join('\n\n') }));
+                    }}
+                    className="min-h-[100px] border-green-200 w-full"
+                  />
+                </div>
+
+                {/* Body paragraphs */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <Label className="text-sm font-medium text-green-700">Development (Middle)</Label>
+                    <Button variant="ghost" size="sm" className="text-xs">
+                      {getWordCount((writingData.story.split('\n\n')[1] || '') + ' ' + (writingData.story.split('\n\n')[2] || ''))} words
+                    </Button>
+                  </div>
+                  <Textarea
+                    placeholder="Develop your story with character development and plot progression..."
+                    value={writingData.story.split('\n\n').slice(1, 3).join('\n\n')}
+                    onChange={(e) => {
+                      const paragraphs = writingData.story.split('\n\n');
+                      const newParagraphs = e.target.value.split('\n\n');
+                      paragraphs[1] = newParagraphs[0] || '';
+                      paragraphs[2] = newParagraphs[1] || '';
+                      setWritingData(prev => ({ ...prev, story: paragraphs.join('\n\n') }));
+                    }}
+                    className="min-h-[150px] border-green-200 w-full"
+                  />
+                </div>
+
+                {/* Conclusion */}
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <Label className="text-sm font-medium text-green-700">Conclusion (Ending)</Label>
+                    <Button variant="ghost" size="sm" className="text-xs">
+                      {getWordCount(writingData.story.split('\n\n')[3] || '')} words
+                    </Button>
+                  </div>
+                  <Textarea
+                    placeholder="Conclude your story with a satisfying ending..."
+                    value={writingData.story.split('\n\n')[3] || ''}
+                    onChange={(e) => {
+                      const paragraphs = writingData.story.split('\n\n');
+                      paragraphs[3] = e.target.value;
+                      setWritingData(prev => ({ ...prev, story: paragraphs.join('\n\n') }));
+                    }}
+                    className="min-h-[100px] border-green-200 w-full"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={onClose}>
-              Save Draft & Close
-            </Button>
-            <Button 
-              onClick={submitStory}
-              disabled={isSubmitting || !writingData.title.trim() || !writingData.story.trim() || getWordCount(writingData.story) < 50}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Story'}
-              <Edit className="h-4 w-4 ml-2" />
-            </Button>
+          <div className="bg-gray-50 p-2 rounded-lg">
+            <div className="flex justify-between items-center">
+              <div>
+                <span className="text-lg font-semibold">Total: {getWordCount(writingData.story)} words</span>
+                <p className="text-sm text-gray-600">Continue developing your creative story</p>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={onClose}>
+                  Save Draft
+                </Button>
+                <Button 
+                  onClick={submitStory}
+                  disabled={isSubmitting || !writingData.title.trim() || !writingData.story.trim() || getWordCount(writingData.story) < 50}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Story'}
+                  <FileText className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </DialogContent>
