@@ -1,8 +1,8 @@
 import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, cron_jobs, student_try_content, pending_access_requests, type User, type InsertUser, type UpsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress, type CronJob, type InsertCronJob } from "@shared/schema";
-import { db } from "./db";
 import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import crypto from 'crypto';
+import { db } from "./db";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -120,7 +120,7 @@ export interface IStorage {
 
   // Content Progress
   getContentProgress(studentId: string): Promise<any[]>;
-  
+
   // Personal Content
   getPersonalContent(studentId: string): Promise<any[]>;
 
@@ -129,7 +129,7 @@ export interface IStorage {
   createCronJob(job: InsertCronJob): Promise<CronJob>;
   updateCronJob(jobName: string, lastRun: Date, nextRun: Date): Promise<CronJob>;
   updateStudentTryContent(): Promise<void>;
-  
+
   // Leaderboards
   getStudentTriesLeaderboard(): Promise<any[]>;
   getLeaderboards(): Promise<any>;
@@ -296,7 +296,7 @@ export class DatabaseStorage implements IStorage {
   async getQuestions(contentId?: string, topicId?: string, level?: string) {
     try {
       console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
-      
+
       const conditions = [];
 
       if (contentId) {
@@ -309,10 +309,10 @@ export class DatabaseStorage implements IStorage {
           .select({ id: schema.content.id })
           .from(schema.content)
           .where(eq(schema.content.topicid, topicId));
-        
+
         const contentIds = contentInTopic.map(c => c.id);
         console.log(`Found ${contentIds.length} content items in topic ${topicId}:`, contentIds);
-        
+
         if (contentIds.length > 0) {
           // Filter questions by these content IDs
           conditions.push(inArray(schema.questions.contentid, contentIds));
@@ -342,7 +342,7 @@ export class DatabaseStorage implements IStorage {
       // If we're filtering by level and got no results, let's check what levels are available
       if (level && level !== 'Overview' && questions.length === 0 && (contentId || topicId)) {
         console.log(`No questions found for level "${level}". Checking available levels...`);
-        
+
         let debugQuery;
         if (contentId) {
           debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId));
@@ -352,7 +352,7 @@ export class DatabaseStorage implements IStorage {
             .select({ id: schema.content.id })
             .from(schema.content)
             .where(eq(schema.content.topicid, topicId));
-          
+
           const contentIds = contentInTopic.map(c => c.id);
           if (contentIds.length > 0) {
             debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(inArray(schema.questions.contentid, contentIds));
@@ -365,7 +365,7 @@ export class DatabaseStorage implements IStorage {
           const availableLevels = await debugQuery;
           const uniqueLevels = Array.from(new Set(availableLevels.map(q => q.level).filter(Boolean)));
           console.log(`Available levels for this content/topic:`, uniqueLevels);
-          
+
           // Try to match with available levels case-insensitively
           const matchingLevel = uniqueLevels.find(l => l && l.toLowerCase() === level.toLowerCase());
           if (matchingLevel) {
@@ -476,7 +476,7 @@ export class DatabaseStorage implements IStorage {
       const updateData: any = { updated_at: new Date() };
       if (rating !== undefined) updateData.rating = rating;
       if (personalNote !== undefined) updateData.personal_note = personalNote;
-      
+
       const result = await db.update(content_ratings)
         .set(updateData)
         .where(and(
@@ -754,7 +754,7 @@ export class DatabaseStorage implements IStorage {
       created_at: submission.created_at || new Date(),
       updated_at: submission.updated_at || new Date()
     };
-    
+
     console.log('Storage: Creating writing submission with data:', submissionData);
     const result = await db.insert(writing_submissions).values(submissionData).returning();
     console.log('Storage: Writing submission created:', result[0]);
@@ -827,7 +827,7 @@ export class DatabaseStorage implements IStorage {
 
       const original = originalAssignment[0];
       const newId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Create a duplicate with new type and id
       const newAssignment = {
         ...original,
@@ -885,17 +885,17 @@ export class DatabaseStorage implements IStorage {
     return await this.executeWithRetry(async () => {
       // Get current UTC time
       const now = new Date();
-      
+
       // Calculate 3 hours ago in UTC (assignments created within last 3 hours)
       const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
-      
+
       // Convert to Vietnam timezone for display
       const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-      
+
       console.log('Current UTC time:', now.toISOString());
       console.log('Vietnam time (display):', vietnamTime.toISOString());
       console.log('Looking for assignments created after UTC:', threeHoursAgo.toISOString());
-      
+
       // Query assignments that were created within the last 3 hours
       const result = await db.select()
         .from(assignment)
@@ -903,7 +903,7 @@ export class DatabaseStorage implements IStorage {
           sql`${assignment.created_at} >= ${threeHoursAgo.toISOString()}`
         )
         .orderBy(desc(assignment.created_at));
-      
+
       console.log('Found live assignments:', result.length);
       if (result.length > 0) {
         console.log('Assignment creation dates:', result.map(a => ({ id: a.id, assignmentname: a.assignmentname, created_at: a.created_at })));
@@ -925,7 +925,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(users.id, assignment_student_try.hocsinh_id))
       .where(eq(assignment_student_try.assignmentid, assignmentId))
       .orderBy(assignment_student_try.start_time);
-      
+
       return result;
     });
   }
@@ -937,7 +937,7 @@ export class DatabaseStorage implements IStorage {
         .from(student_try)
         .where(eq(student_try.assignment_student_try_id, assignmentStudentTryId.toString()))
         .orderBy(student_try.time_start);
-      
+
       return result;
     });
   }
@@ -1045,7 +1045,7 @@ export class DatabaseStorage implements IStorage {
         GROUP BY contentgroup, url
         ORDER BY content_count DESC
       `);
-      
+
       return result.rows.map((row: any) => ({
         contentgroup: row.contentgroup,
         url: row.url || '',
@@ -1079,7 +1079,7 @@ export class DatabaseStorage implements IStorage {
         ORDER BY total_tries DESC, accuracy_percentage DESC
         LIMIT 20
       `);
-      
+
       return result.rows.map((row: any, index: number) => ({
         rank: index + 1,
         student_id: row.hocsinh_id,
@@ -1109,7 +1109,7 @@ export class DatabaseStorage implements IStorage {
           AND (cr.personal_note IS NOT NULL AND cr.personal_note != '' OR cr.rating IS NOT NULL)
         ORDER BY cr.updated_at DESC
       `);
-      
+
       return result.rows.map((row: any) => ({
         id: row.id,
         contentId: row.contentId,
@@ -1145,7 +1145,7 @@ export class DatabaseStorage implements IStorage {
         GROUP BY c.id, c.topicid, t.topic, c.title, cr.rating, c.parentid
         ORDER BY c.title
       `);
-      
+
       return result.rows.map((row: any) => ({
         id: row.id,
         topicid: row.topicid,
@@ -1191,7 +1191,7 @@ export class DatabaseStorage implements IStorage {
     return this.executeWithRetry(async () => {
       // Simple approach: get student tries from last 24 hours
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      
+
       // Get all student tries since yesterday
       const result = await db.execute(sql`
         SELECT DISTINCT
@@ -1285,7 +1285,7 @@ export class DatabaseStorage implements IStorage {
   async getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]> {
     return this.executeWithRetry(async () => {
       const results = [];
-      
+
       // Process each student individually to avoid complex query parameter issues
       for (const studentId of studentIds) {
         // Get student info
@@ -1293,11 +1293,11 @@ export class DatabaseStorage implements IStorage {
           SELECT id, COALESCE(full_name, first_name || ' ' || last_name) as student_name
           FROM users WHERE id = ${studentId}
         `);
-        
+
         if (studentInfo.rows.length === 0) continue;
-        
+
         const student = studentInfo.rows[0] as any;
-        
+
         // Get content views count
         const contentViews = await db.execute(sql`
           SELECT COUNT(*) as count 
@@ -1305,7 +1305,7 @@ export class DatabaseStorage implements IStorage {
           WHERE stc.hocsinh_id = ${studentId} 
             AND stc.time_start >= ${startTime}
         `);
-        
+
         // Get content ratings count
         const contentRatings = await db.execute(sql`
           SELECT COUNT(*) as count 
@@ -1313,7 +1313,7 @@ export class DatabaseStorage implements IStorage {
           WHERE cr.student_id = ${studentId} 
             AND cr.created_at >= ${startTime}
         `);
-        
+
         // Get quiz attempts count and accuracy
         const quizStats = await db.execute(sql`
           SELECT 
@@ -1327,12 +1327,12 @@ export class DatabaseStorage implements IStorage {
             AND st.quiz_result IS NOT NULL
             AND st.quiz_result != ''
         `);
-        
+
         const totalQuizzes = parseInt((quizStats.rows[0] as any)?.total_attempts) || 0;
         const correctAnswers = parseInt((quizStats.rows[0] as any)?.correct_answers) || 0;
         const incorrectAnswers = parseInt((quizStats.rows[0] as any)?.incorrect_answers) || 0;
         const quizAccuracy = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : null;
-        
+
         // Debug logging for quiz accuracy
         if (totalQuizzes > 0) {
           console.log(`Student ${studentId} quiz stats:`, {
@@ -1342,10 +1342,10 @@ export class DatabaseStorage implements IStorage {
             accuracy: quizAccuracy
           });
         }
-        
+
         // Get recent activities - simplified approach
         const allActivities: any[] = [];
-        
+
         // Get content view activities
         try {
           const contentViewActivities = await db.execute(sql`
@@ -1357,7 +1357,7 @@ export class DatabaseStorage implements IStorage {
             ORDER BY stc.time_start DESC
             LIMIT 10
           `);
-          
+
           contentViewActivities.rows.forEach((row: any) => {
             allActivities.push({
               type: row.type,
@@ -1383,7 +1383,7 @@ export class DatabaseStorage implements IStorage {
             ORDER BY cr.created_at DESC
             LIMIT 10
           `);
-          
+
           ratingActivities.rows.forEach((row: any) => {
             allActivities.push({
               type: row.type,
@@ -1430,7 +1430,7 @@ export class DatabaseStorage implements IStorage {
             ORDER BY timestamp DESC
             LIMIT 15
           `);
-          
+
           quizActivities.rows.forEach((row: any) => {
             allActivities.push({
               type: row.type,
@@ -1449,7 +1449,7 @@ export class DatabaseStorage implements IStorage {
         // Sort activities by timestamp
         allActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         allActivities.splice(25); // Keep only top 25
-        
+
         results.push({
           student_id: student.id,
           student_name: student.student_name,
@@ -1461,7 +1461,7 @@ export class DatabaseStorage implements IStorage {
           activities: allActivities
         });
       }
-      
+
       return results;
     });
   }
@@ -1495,7 +1495,7 @@ export class DatabaseStorage implements IStorage {
       if (!topicData.id) {
         topicData.id = crypto.randomBytes(4).toString('hex');
       }
-      
+
       const result = await db
         .insert(topics)
         .values(topicData)
@@ -1510,7 +1510,7 @@ export class DatabaseStorage implements IStorage {
       if (!contentData.id) {
         contentData.id = crypto.randomBytes(4).toString('hex');
       }
-      
+
       const result = await db
         .insert(content)
         .values(contentData)
@@ -1525,13 +1525,44 @@ export class DatabaseStorage implements IStorage {
       if (!matchingData.id) {
         matchingData.id = crypto.randomBytes(4).toString('hex');
       }
-      
+
       const result = await db
         .insert(matching)
         .values(matchingData)
         .returning();
       return result[0];
     });
+  }
+
+  // Ensure createWritingSubmission properly maps prompt_id
+  async createWritingSubmission(submissionData: any) {
+    console.log('Storage: Creating writing submission with data:', submissionData);
+
+    // Ensure all required fields are present and properly mapped
+    const cleanedData = {
+      id: submissionData.id || crypto.randomUUID(),
+      student_id: submissionData.student_id,
+      prompt_id: submissionData.prompt_id || submissionData.content_id, // Fallback to content_id if prompt_id not set
+      title: submissionData.title || 'Academic Essay',
+      opening_paragraph: submissionData.opening_paragraph || '',
+      body_paragraph_1: submissionData.body_paragraph_1 || '',
+      body_paragraph_2: submissionData.body_paragraph_2 || '',
+      body_paragraph_3: submissionData.body_paragraph_3 || '',
+      conclusion_paragraph: submissionData.conclusion_paragraph || '',
+      full_essay: submissionData.full_essay || '',
+      word_count: submissionData.word_count || 0,
+      status: submissionData.status || 'submitted',
+      created_at: submissionData.created_at || new Date(),
+      updated_at: submissionData.updated_at || new Date()
+    };
+
+    console.log('Storage: Cleaned submission data:', cleanedData);
+
+    const result = await db.insert(writing_submissions)
+      .values(cleanedData)
+      .returning();
+
+    return result[0];
   }
 }
 
