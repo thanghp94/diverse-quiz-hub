@@ -515,12 +515,10 @@ export default function AcademicEssayPopup({
         )}  
         {phase === 'writing' && (
           <div className="space-y-1 p-1">
-            {/* Writing Phase Header with Timer and Sections Navigation */}
-            <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-2">
-              <div className="bg-blue-100 border-l-4 border-blue-500 p-2 rounded-lg">
-                <div className="text-lg font-bold text-blue-800">
-                  ⏰ Time spent: {Math.floor((TOTAL_TIME - timeRemaining) / 60)}:{((TOTAL_TIME - timeRemaining) % 60).toString().padStart(2, '0')}
-                </div>
+            {/* Timer at the top */}
+            <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded-lg mb-3 text-center">
+              <div className="text-xl font-bold text-blue-800">
+                ⏰ Time spent: {Math.floor((TOTAL_TIME - timeRemaining) / 60)}:{((TOTAL_TIME - timeRemaining) % 60).toString().padStart(2, '0')}
               </div>
             </div>
             
