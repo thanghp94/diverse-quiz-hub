@@ -1,5 +1,12 @@
 import { useState, useCallback, useEffect } from "react";
-import { Loader2, PenTool, FileText, Clock, BookOpen, Edit } from "lucide-react";
+import {
+  Loader2,
+  PenTool,
+  FileText,
+  Clock,
+  BookOpen,
+  Edit,
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useContent, Content } from "@/hooks/useContent";
 import ContentPopup from "@/components/ContentPopup";
@@ -47,11 +54,11 @@ const WritingPage = () => {
   // Listen for localStorage changes to update progress buttons
   useEffect(() => {
     const handleStorageChange = () => {
-      setForceUpdate(prev => prev + 1);
+      setForceUpdate((prev) => prev + 1);
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
   const [location] = useLocation();
   const [openContent, setOpenContent] = useState<string[]>([]);
@@ -59,14 +66,14 @@ const WritingPage = () => {
     content: Content;
     contextList: Content[];
     imageUrl: string | null;
-    quizLevel?: 'easy' | 'hard' | null;
+    quizLevel?: "easy" | "hard" | null;
   } | null>(null);
   const [quizContentId, setQuizContentId] = useState<string | null>(null);
   const [expandedTopicId, setExpandedTopicId] = useState<string | null>(null);
   const [activeTopicId, setActiveTopicId] = useState<string | null>(null);
   const [topicQuizInfo, setTopicQuizInfo] = useState<{
     topicId: string;
-    level: 'Overview' | 'Easy' | 'Hard';
+    level: "Overview" | "Easy" | "Hard";
     topicName: string;
   } | null>(null);
   const [topicMatchingInfo, setTopicMatchingInfo] = useState<{
@@ -77,7 +84,9 @@ const WritingPage = () => {
     matchingId: string;
     matchingTitle: string;
   } | null>(null);
-  const [expandedGroupCards, setExpandedGroupCards] = useState<Set<string>>(new Set());
+  const [expandedGroupCards, setExpandedGroupCards] = useState<Set<string>>(
+    new Set(),
+  );
   const [activeContentId, setActiveContentId] = useState<string | null>(null);
   const [outlinePopupInfo, setOutlinePopupInfo] = useState<{
     isOpen: boolean;
@@ -104,7 +113,7 @@ const WritingPage = () => {
 
   // Helper functions for group card expansion
   const handleToggleGroupCard = useCallback((groupCardId: string) => {
-    setExpandedGroupCards(prev => {
+    setExpandedGroupCards((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(groupCardId)) {
         newSet.delete(groupCardId);
@@ -115,82 +124,89 @@ const WritingPage = () => {
     });
   }, []);
 
-  const isGroupCardExpanded = useCallback((groupCardId: string) => {
-    return expandedGroupCards.has(groupCardId);
-  }, [expandedGroupCards]);
+  const isGroupCardExpanded = useCallback(
+    (groupCardId: string) => {
+      return expandedGroupCards.has(groupCardId);
+    },
+    [expandedGroupCards],
+  );
 
   // Parse URL parameters
-  const urlParams = new URLSearchParams(location.split('?')[1] || '');
-  const activeTab = urlParams.get('tab');
-  const subjectFilter = urlParams.get('subject');
+  const urlParams = new URLSearchParams(location.split("?")[1] || "");
+  const activeTab = urlParams.get("tab");
+  const subjectFilter = urlParams.get("subject");
 
   // Fetch all topics to find writing topics
   const {
     data: allTopics,
     isLoading: allTopicsLoading,
-    error: topicsError
+    error: topicsError,
   } = useQuery({
-    queryKey: ['all-topics'],
+    queryKey: ["all-topics"],
     queryFn: async () => {
-      console.log('Fetching all topics for writing page...');
-      const response = await fetch('/api/topics');
+      console.log("Fetching all topics for writing page...");
+      const response = await fetch("/api/topics");
       if (!response.ok) {
-        throw new Error('Failed to fetch all topics');
+        throw new Error("Failed to fetch all topics");
       }
       const data = await response.json();
-      console.log('All topics fetched:', data);
+      console.log("All topics fetched:", data);
       return data as Topic[];
-    }
+    },
   });
 
   // Filter writing topics (challengesubject = "Writing")
-  const writingTopics = allTopics?.filter(topic => 
-    topic.challengesubject === 'Writing' && 
-    (!topic.parentid || topic.parentid === '')
-  ).sort((a, b) => a.topic.localeCompare(b.topic)) || [];
+  const writingTopics =
+    allTopics
+      ?.filter(
+        (topic) =>
+          topic.challengesubject === "Writing" &&
+          (!topic.parentid || topic.parentid === ""),
+      )
+      .sort((a, b) => a.topic.localeCompare(b.topic)) || [];
 
   // Fetch all content to show related content for each topic
-  const {
-    data: allContent
-  } = useContent();
+  const { data: allContent } = useContent();
 
   // Filter writing content (parentid = "writing")
-  const writingContent = allContent?.filter(content => content.parentid === 'writing') || [];
+  const writingContent =
+    allContent?.filter((content) => content.parentid === "writing") || [];
 
-  const {
-    data: allImages,
-    isLoading: isImagesLoading
-  } = useQuery({
-    queryKey: ['images'],
+  const { data: allImages, isLoading: isImagesLoading } = useQuery({
+    queryKey: ["images"],
     queryFn: async () => {
-      console.log('Fetching all images from API...');
-      const response = await fetch('/api/images');
+      console.log("Fetching all images from API...");
+      const response = await fetch("/api/images");
       if (!response.ok) {
-        throw new Error('Failed to fetch images');
+        throw new Error("Failed to fetch images");
       }
       const data = await response.json();
-      console.log('All images fetched:', data);
+      console.log("All images fetched:", data);
       return data as Image[];
-    }
+    },
   });
 
   const findImageUrl = (content: Content): string | null => {
     if (content.imageid && allImages) {
-      const image = allImages.find(img => img.id === content.imageid);
+      const image = allImages.find((img) => img.id === content.imageid);
       if (image && image.imagelink) {
         return image.imagelink;
       }
     }
     return content.imagelink || null;
-  }
+  };
 
   const handleToggleTopic = (topicId: string) => {
-    setExpandedTopicId(currentId => (currentId === topicId ? null : topicId));
+    setExpandedTopicId((currentId) => (currentId === topicId ? null : topicId));
     setActiveTopicId(topicId);
   };
 
   const toggleContent = (contentKey: string) => {
-    setOpenContent(prev => prev.includes(contentKey) ? prev.filter(key => key !== contentKey) : [...prev, contentKey]);
+    setOpenContent((prev) =>
+      prev.includes(contentKey)
+        ? prev.filter((key) => key !== contentKey)
+        : [...prev, contentKey],
+    );
   };
 
   const handleSubtopicClick = (topicId: string) => {
@@ -203,7 +219,7 @@ const WritingPage = () => {
         contextList: topicContent,
         imageUrl: findImageUrl(firstContent),
       });
-      
+
       // Track content access when student clicks on subtopic
       const currentUserId = getCurrentUserId();
       if (currentUserId) {
@@ -214,14 +230,17 @@ const WritingPage = () => {
     }
   };
 
-  const handleContentClick = (info: { content: Content; contextList: Content[] }) => {
+  const handleContentClick = (info: {
+    content: Content;
+    contextList: Content[];
+  }) => {
     setActiveContentId(info.content.id);
     setWritingContentInfo({
       isOpen: true,
       content: info.content,
       contextList: info.contextList,
     });
-    
+
     // Track content access when student clicks on content
     const currentUserId = getCurrentUserId();
     if (currentUserId) {
@@ -229,10 +248,14 @@ const WritingPage = () => {
     }
   };
 
-  const handleStartQuiz = (content: Content, contextList: Content[], level?: 'Easy' | 'Hard') => {
-    console.log('Starting content quiz for:', content.title, 'Level:', level);
+  const handleStartQuiz = (
+    content: Content,
+    contextList: Content[],
+    level?: "Easy" | "Hard",
+  ) => {
+    console.log("Starting content quiz for:", content.title, "Level:", level);
     // Convert level to database format (lowercase)
-    const dbLevel = level?.toLowerCase() as 'easy' | 'hard' | undefined;
+    const dbLevel = level?.toLowerCase() as "easy" | "hard" | undefined;
     setSelectedContentInfo({
       content,
       contextList,
@@ -247,7 +270,11 @@ const WritingPage = () => {
     setQuizContentId(null);
   }, []);
 
-  const handleStartTopicQuiz = (topicId: string, level: 'Overview' | 'Easy' | 'Hard', topicName: string) => {
+  const handleStartTopicQuiz = (
+    topicId: string,
+    level: "Overview" | "Easy" | "Hard",
+    topicName: string,
+  ) => {
     setTopicQuizInfo({ topicId, level, topicName });
   };
 
@@ -263,7 +290,10 @@ const WritingPage = () => {
     setTopicMatchingInfo(null);
   }, []);
 
-  const handleSelectMatchingActivity = (matchingId: string, matchingTitle: string) => {
+  const handleSelectMatchingActivity = (
+    matchingId: string,
+    matchingTitle: string,
+  ) => {
     setSelectedMatchingActivity({ matchingId, matchingTitle });
   };
 
@@ -271,23 +301,31 @@ const WritingPage = () => {
     setSelectedMatchingActivity(null);
   }, []);
 
-  const handleStartGroupMatching = (matchingId: string, matchingTitle: string) => {
+  const handleStartGroupMatching = (
+    matchingId: string,
+    matchingTitle: string,
+  ) => {
     setSelectedMatchingActivity({ matchingId, matchingTitle });
   };
 
-  const handleOpenOutlinePopup = (contentTitle?: string, contentId?: string) => {
+  const handleOpenOutlinePopup = (
+    contentTitle?: string,
+    contentId?: string,
+  ) => {
     setOutlinePopupInfo({ isOpen: true, contentTitle, contentId });
     setCurrentContentId(contentId);
   };
 
-  const [currentContentId, setCurrentContentId] = useState<string | undefined>();
+  const [currentContentId, setCurrentContentId] = useState<
+    string | undefined
+  >();
 
   const handleProceedToCreativeWriting = (outlineData: any) => {
     setCreativeWritingInfo({
       isOpen: true,
       contentTitle: outlinePopupInfo.contentTitle,
       contentId: currentContentId,
-      outlineData
+      outlineData,
     });
   };
 
@@ -301,9 +339,11 @@ const WritingPage = () => {
 
   // Check if there's an essay in progress
   const { data: draftEssay } = useQuery({
-    queryKey: [`/api/writing-submissions/draft/${user?.id}/${essayPopupInfo.contentId}`],
+    queryKey: [
+      `/api/writing-submissions/draft/${user?.id}/${essayPopupInfo.contentId}`,
+    ],
     enabled: !!user?.id && !!essayPopupInfo.contentId,
-    staleTime: 30000
+    staleTime: 30000,
   });
 
   const handleCloseEssayPopup = () => {
@@ -320,12 +360,14 @@ const WritingPage = () => {
 
   const getSubtopics = (parentId: string) => {
     if (!allTopics) return [];
-    return allTopics.filter(topic => topic.parentid === parentId).sort((a, b) => a.topic.localeCompare(b.topic));
+    return allTopics
+      .filter((topic) => topic.parentid === parentId)
+      .sort((a, b) => a.topic.localeCompare(b.topic));
   };
 
   const getTopicContent = (topicId: string) => {
     if (!allContent) return [];
-    return allContent.filter(content => content.topicid === topicId);
+    return allContent.filter((content) => content.topicid === topicId);
   };
 
   const isLoading = allTopicsLoading;
@@ -338,13 +380,13 @@ const WritingPage = () => {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-6">
               <h1 className="text-3xl font-bold text-white mb-3">Writing</h1>
-              <p className="text-lg text-white/80">
-                Loading writing topics...
-              </p>
+              <p className="text-lg text-white/80">Loading writing topics...</p>
             </div>
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-12 w-12 animate-spin text-white" />
-              <span className="ml-3 text-white text-lg">Loading writing content...</span>
+              <span className="ml-3 text-white text-lg">
+                Loading writing content...
+              </span>
             </div>
           </div>
         </div>
@@ -365,7 +407,9 @@ const WritingPage = () => {
               </p>
             </div>
             <div className="text-center py-12">
-              <p className="text-white">Error loading writing topics. Please try again later.</p>
+              <p className="text-white">
+                Error loading writing topics. Please try again later.
+              </p>
             </div>
           </div>
         </div>
@@ -399,7 +443,7 @@ const WritingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
-            {writingTopics?.map(topic => {
+            {writingTopics?.map((topic) => {
               const subtopics = getSubtopics(topic.id);
               const topicContent = getTopicContent(topic.id);
               const isExpanded = expandedTopicId === topic.id;
@@ -431,7 +475,10 @@ const WritingPage = () => {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenOutlinePopup(content.title || content.short_blurb, content.id);
+                          handleOpenOutlinePopup(
+                            content.title || content.short_blurb,
+                            content.id,
+                          );
                         }}
                         size="sm"
                         className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -442,15 +489,18 @@ const WritingPage = () => {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleOpenEssayPopup(content.title || content.short_blurb, content.id);
+                          handleOpenEssayPopup(
+                            content.title || content.short_blurb,
+                            content.id,
+                          );
                         }}
                         size="sm"
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         <FileText className="h-4 w-4 mr-1" />
-                        Academic Essay
+                        Academic essay
                       </Button>
-                      
+
                       {/* Writing in progress indicator for topic content */}
                       {(() => {
                         const storageKey = `academic_essay_${user?.id}_${content.id}`;
@@ -458,12 +508,15 @@ const WritingPage = () => {
                         if (savedData) {
                           try {
                             const parsed = JSON.parse(savedData);
-                            if (parsed.phase === 'writing') {
+                            if (parsed.phase === "writing") {
                               return (
                                 <Button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleOpenEssayPopup(content.title || content.short_blurb, content.id);
+                                    handleOpenEssayPopup(
+                                      content.title || content.short_blurb,
+                                      content.id,
+                                    );
                                   }}
                                   size="sm"
                                   className="bg-orange-600 hover:bg-orange-700 text-white"
@@ -472,12 +525,20 @@ const WritingPage = () => {
                                   Writing in Progress
                                 </Button>
                               );
-                            } else if (parsed.phase === 'outline' || Object.values(parsed.outlineData || {}).some(val => val.trim())) {
+                            } else if (
+                              parsed.phase === "outline" ||
+                              Object.values(parsed.outlineData || {}).some(
+                                (val) => val.trim(),
+                              )
+                            ) {
                               return (
                                 <Button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleOpenEssayPopup(content.title || content.short_blurb, content.id);
+                                    handleOpenEssayPopup(
+                                      content.title || content.short_blurb,
+                                      content.id,
+                                    );
                                   }}
                                   size="sm"
                                   variant="outline"
@@ -489,7 +550,10 @@ const WritingPage = () => {
                               );
                             }
                           } catch (error) {
-                            console.error('Failed to parse saved essay data:', error);
+                            console.error(
+                              "Failed to parse saved essay data:",
+                              error,
+                            );
                           }
                         }
                         return null;
@@ -501,15 +565,22 @@ const WritingPage = () => {
             })}
 
             {/* Writing Content Cards */}
-            {writingContent.map(content => (
-              <div key={`content-${content.id}`} className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+            {writingContent.map((content) => (
+              <div
+                key={`content-${content.id}`}
+                className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20"
+              >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-white mb-2">
-                      {content.title || content.short_blurb || 'Writing Content'}
+                      {content.title ||
+                        content.short_blurb ||
+                        "Writing Content"}
                     </h3>
                     {content.short_description && (
-                      <p className="text-white/80 text-sm mb-2">{content.short_description}</p>
+                      <p className="text-white/80 text-sm mb-2">
+                        {content.short_description}
+                      </p>
                     )}
                     {content.information && (
                       <p className="text-white/70 text-sm line-clamp-3">
@@ -520,7 +591,12 @@ const WritingPage = () => {
                 </div>
                 <div className="flex gap-2">
                   <Button
-                    onClick={() => handleContentClick({ content, contextList: writingContent })}
+                    onClick={() =>
+                      handleContentClick({
+                        content,
+                        contextList: writingContent,
+                      })
+                    }
                     variant="outline"
                     size="sm"
                     className="border-white/30 text-white hover:bg-white/20"
@@ -528,7 +604,12 @@ const WritingPage = () => {
                     View Content
                   </Button>
                   <Button
-                    onClick={() => handleOpenOutlinePopup(content.title || content.short_blurb, content.id)}
+                    onClick={() =>
+                      handleOpenOutlinePopup(
+                        content.title || content.short_blurb,
+                        content.id,
+                      )
+                    }
                     size="sm"
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
@@ -537,14 +618,19 @@ const WritingPage = () => {
                   </Button>
                   <div className="flex gap-1">
                     <Button
-                      onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
+                      onClick={() =>
+                        handleOpenEssayPopup(
+                          content.title || content.short_blurb,
+                          content.id,
+                        )
+                      }
                       size="sm"
                       className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
                       <FileText className="h-4 w-4 mr-1" />
-                      Academic Essay
+                      Academic
                     </Button>
-                    
+
                     {/* Writing in progress indicator */}
                     {(() => {
                       const storageKey = `academic_essay_${user?.id}_${content.id}`;
@@ -552,10 +638,15 @@ const WritingPage = () => {
                       if (savedData) {
                         try {
                           const parsed = JSON.parse(savedData);
-                          if (parsed.phase === 'writing') {
+                          if (parsed.phase === "writing") {
                             return (
                               <Button
-                                onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
+                                onClick={() =>
+                                  handleOpenEssayPopup(
+                                    content.title || content.short_blurb,
+                                    content.id,
+                                  )
+                                }
                                 size="sm"
                                 className="bg-orange-600 hover:bg-orange-700 text-white"
                               >
@@ -563,10 +654,20 @@ const WritingPage = () => {
                                 Writing in Progress
                               </Button>
                             );
-                          } else if (parsed.phase === 'outline' || Object.values(parsed.outlineData || {}).some(val => val.trim())) {
+                          } else if (
+                            parsed.phase === "outline" ||
+                            Object.values(parsed.outlineData || {}).some(
+                              (val) => val.trim(),
+                            )
+                          ) {
                             return (
                               <Button
-                                onClick={() => handleOpenEssayPopup(content.title || content.short_blurb, content.id)}
+                                onClick={() =>
+                                  handleOpenEssayPopup(
+                                    content.title || content.short_blurb,
+                                    content.id,
+                                  )
+                                }
                                 size="sm"
                                 variant="outline"
                                 className="border-blue-500 text-blue-600 hover:bg-blue-50"
@@ -577,7 +678,10 @@ const WritingPage = () => {
                             );
                           }
                         } catch (error) {
-                          console.error('Failed to parse saved essay data:', error);
+                          console.error(
+                            "Failed to parse saved essay data:",
+                            error,
+                          );
                         }
                       }
                       return null;
@@ -596,9 +700,9 @@ const WritingPage = () => {
         content={writingContentInfo.content}
         contentList={writingContentInfo.contextList}
         onContentChange={(newContent) => {
-          setWritingContentInfo(prev => ({
+          setWritingContentInfo((prev) => ({
             ...prev,
-            content: newContent
+            content: newContent,
           }));
         }}
         startQuizDirectly={false}
@@ -637,7 +741,7 @@ const WritingPage = () => {
         onClose={handleCloseOutlinePopup}
         contentTitle={outlinePopupInfo.contentTitle}
         contentId={outlinePopupInfo.contentId}
-        studentId={user?.id || 'GV0002'}
+        studentId={user?.id || "GV0002"}
         onProceedToWriting={handleProceedToCreativeWriting}
       />
 
@@ -646,7 +750,7 @@ const WritingPage = () => {
         onClose={handleCloseCreativeWriting}
         contentTitle={creativeWritingInfo.contentTitle}
         contentId={creativeWritingInfo.contentId}
-        studentId={user?.id || 'GV0002'}
+        studentId={user?.id || "GV0002"}
         outlineData={creativeWritingInfo.outlineData || {}}
       />
 
@@ -655,7 +759,7 @@ const WritingPage = () => {
         onClose={handleCloseEssayPopup}
         contentTitle={essayPopupInfo.contentTitle}
         contentId={essayPopupInfo.contentId}
-        studentId={user?.id || 'GV0002'}
+        studentId={user?.id || "GV0002"}
       />
     </div>
   );
