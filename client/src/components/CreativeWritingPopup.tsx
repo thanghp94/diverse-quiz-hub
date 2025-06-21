@@ -206,14 +206,9 @@ export default function CreativeWritingPopup({
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-4">
-              <Badge variant="outline">
-                Creative Story
-              </Badge>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </DialogHeader>
 
