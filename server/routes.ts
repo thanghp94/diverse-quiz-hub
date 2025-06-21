@@ -894,15 +894,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Writing Submissions API
-  app.post("/api/writing-submissions", async (req, res) => {
-    try {
-      const submission = await storage.createWritingSubmission(req.body);
-      res.json(submission);
-    } catch (error) {
-      ApiResponse.serverError(res, 'Failed to create writing submission', error);
-    }
-  });
+  // Writing Submissions API (handled later with proper field mapping)
 
   app.get("/api/writing-submissions/:id", async (req, res) => {
     try {
