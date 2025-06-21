@@ -626,19 +626,30 @@ const WritingPage = () => {
                 </div>
                 <div className="flex gap-2">
                   {(() => {
-                    // Check for creative writing outline progress
-                    const creativeStorageKey = `writing_outline_${user?.id}_${content.id}`;
-                    const creativeData = localStorage.getItem(creativeStorageKey);
+                    // Check for creative writing progress
+                    const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
+                    const storyStorageKey = `creative_story_${user?.id}_${content.id}`;
+                    const outlineData = localStorage.getItem(outlineStorageKey);
+                    const storyData = localStorage.getItem(storyStorageKey);
                     let hasCreativeProgress = false;
 
-                    if (creativeData) {
+                    if (outlineData) {
                       try {
-                        const parsed = JSON.parse(creativeData);
+                        const parsed = JSON.parse(outlineData);
                         hasCreativeProgress = Object.values(parsed).some((val: any) => 
                           typeof val === 'string' && val.trim()
                         );
                       } catch (error) {
                         console.error("Failed to parse creative outline data:", error);
+                      }
+                    }
+
+                    if (!hasCreativeProgress && storyData) {
+                      try {
+                        const parsed = JSON.parse(storyData);
+                        hasCreativeProgress = parsed.title?.trim() || parsed.story?.trim();
+                      } catch (error) {
+                        console.error("Failed to parse creative story data:", error);
                       }
                     }
 
