@@ -40,7 +40,7 @@ export default function AcademicEssayPopup({
   contentId 
 }: AcademicEssayPopupProps) {
   const TOTAL_TIME = 15 * 60; // 15 minutes in seconds
-  
+
   const [phase, setPhase] = useState<'outline' | 'writing'>('outline');
   const [timeRemaining, setTimeRemaining] = useState(TOTAL_TIME);
   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -69,6 +69,7 @@ export default function AcademicEssayPopup({
     if (isOpen && studentId && contentId) {
       const storageKey = `academic_essay_${studentId}_${contentId}`;
       const savedData = localStorage.getItem(storageKey);
+      console.log('Loading saved essay data for key:', storageKey);
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
@@ -226,7 +227,7 @@ export default function AcademicEssayPopup({
   const proceedToWriting = () => {
     setPhase('writing');
     setIsTimerActive(false);
-    
+
     // Update localStorage immediately and trigger storage event
     if (studentId && contentId) {
       const storageKey = `academic_essay_${studentId}_${contentId}`;
@@ -240,7 +241,7 @@ export default function AcademicEssayPopup({
       localStorage.setItem(storageKey, JSON.stringify(dataToSave));
       window.dispatchEvent(new Event('storage'));
     }
-    
+
     toast({
       title: "Outline Complete",
       description: "You can now begin writing your essay.",
@@ -290,14 +291,14 @@ export default function AcademicEssayPopup({
           title: "Essay Submitted",
           description: `Your academic essay has been submitted successfully (${totalWords} words).`,
         });
-        
+
         // Clear localStorage and trigger a page refresh to hide progress button
         const storageKey = `academic_essay_${studentId}_${contentId}`;
         localStorage.removeItem(storageKey);
         window.dispatchEvent(new Event('storage'));
-        
+
         onClose();
-        
+
         // Reset form
         setPhase('outline');
         setEssayData({ introduction: '', body1: '', body2: '', body3: '', conclusion: '' });
@@ -347,7 +348,7 @@ export default function AcademicEssayPopup({
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
                 <div className="flex-1">
-               
+
                   <p className="text-lg font-semibold text-gray-800 leading-relaxed">{contentTitle}</p>
                 </div>
               </div>
@@ -360,7 +361,7 @@ export default function AcademicEssayPopup({
             <div className="text-center">
               <h3 className="text-lg font-semibold mb-2">Essay Outline</h3>
               <p className="text-sm text-gray-600 mb-4">Plan your essay structure before writing</p>
-              
+
               {/* Timer */}
               <div className="bg-orange-100 p-3 rounded-lg inline-block">
                 <div className="text-2xl font-mono font-bold text-orange-700">
@@ -379,7 +380,7 @@ export default function AcademicEssayPopup({
                     Hook: Question, quote, or interesting fact • Thesis: Clear main argument or position
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <Label className="text-sm font-medium">Hook</Label>
@@ -390,7 +391,7 @@ export default function AcademicEssayPopup({
                       className="mt-1 min-h-[60px]"
                     />
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Thesis (Main Idea)</Label>
                     <Textarea
@@ -411,7 +412,7 @@ export default function AcademicEssayPopup({
                     Topic sentence • Supporting evidence • Analysis and explanation • Transition to next point
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <Label className="text-sm font-medium">Body Paragraph 1</Label>
@@ -422,7 +423,7 @@ export default function AcademicEssayPopup({
                       className="mt-1 min-h-[60px]"
                     />
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Body Paragraph 2</Label>
                     <Textarea
@@ -432,7 +433,7 @@ export default function AcademicEssayPopup({
                       className="mt-1 min-h-[60px]"
                     />
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Body Paragraph 3</Label>
                     <Textarea
@@ -453,7 +454,7 @@ export default function AcademicEssayPopup({
                     Restate thesis • Summarize main points • Final thought or call to action
                   </div>
                 </div>
-                
+
                 <div>
                   <Label className="text-sm font-medium">Summary and Final Thoughts</Label>
                   <Textarea
@@ -498,7 +499,7 @@ export default function AcademicEssayPopup({
                   </Button>
                 </div>
               </div>
-        
+
               <div className="text-right">
                 <div className="text-lg font-semibold text-blue-600">
                   Total: {getTotalWordCount()} words
@@ -543,7 +544,7 @@ export default function AcademicEssayPopup({
                 {/* Body Sections */}
                 <div className="bg-green-50 p-3 rounded-lg border">
                   <h4 className="font-semibold text-green-800 mb-2">Body Paragraphs</h4>
-                  
+
                   <div className="space-y-2">
                     {/* Body 1 */}
                     <div>
@@ -647,7 +648,7 @@ export default function AcademicEssayPopup({
                   <span className="text-lg font-semibold">Total: {getTotalWordCount()} words</span>
                   <p className="text-sm text-gray-600">Continue developing your essay</p>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={onClose}>
                     Save Draft
