@@ -540,23 +540,6 @@ const WritingPage = () => {
                               {hasCreativeProgress && <Edit className="h-4 w-4 mr-1" />}
                               {hasCreativeProgress ? "Creative writing in progress" : "Creative"}
                             </Button>
-                            {hasCreativeProgress && (
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenOutlinePopup(
-                                    content.title || content.short_blurb,
-                                    content.id,
-                                  );
-                                }}
-                                size="sm"
-                                variant="outline"
-                                className="border-purple-500 text-purple-600 hover:bg-purple-50"
-                              >
-                                <FileText className="h-4 w-4 mr-1" />
-                                Edit Outline
-                              </Button>
-                            )}
                           </>
                         );
                       })()}
@@ -752,23 +735,6 @@ const WritingPage = () => {
                           {hasCreativeProgress && <Edit className="h-4 w-4 mr-1" />}
                           {hasCreativeProgress ? "Creative writing in progress" : "Creative"}
                         </Button>
-                        {hasCreativeProgress && (
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenOutlinePopup(
-                                content.title || content.short_blurb,
-                                content.id,
-                              );
-                            }}
-                            size="sm"
-                            variant="outline"
-                            className="border-purple-500 text-purple-600 hover:bg-purple-50"
-                          >
-                            <FileText className="h-4 w-4 mr-1" />
-                            Edit Outline
-                          </Button>
-                        )}
 
                         <Button
                           onClick={(e) => {
