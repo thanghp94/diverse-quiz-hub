@@ -159,11 +159,6 @@ export default function CreativeWritingPopup({
         throw new Error(errorData.message || 'Failed to submit story');
       }
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(`Failed to submit: ${errorData}`);
-      }
-
       const result = await response.json();
       console.log('Writing submission created successfully:', result);
 
@@ -182,10 +177,6 @@ export default function CreativeWritingPopup({
 
       onClose();
       setWritingData({ title: '', story: '' });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to submit story');
-      }
     } catch (error) {
       console.error('Submit error:', error);
       toast({
