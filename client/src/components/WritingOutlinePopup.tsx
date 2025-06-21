@@ -98,6 +98,11 @@ export default function WritingOutlinePopup({ isOpen, onClose, contentTitle, con
       localStorage.setItem(storageKey, JSON.stringify(formData));
     }
     console.log('Saving outline:', formData);
+    
+    // Proceed to creative writing with the outline data
+    if (onProceedToWriting) {
+      onProceedToWriting(formData);
+    }
     onClose();
   };
 
@@ -242,7 +247,7 @@ export default function WritingOutlinePopup({ isOpen, onClose, contentTitle, con
               </Button>
               <Button onClick={handleSave} className="bg-blue-600 hover:bg-blue-700">
                 <Save className="h-4 w-4 mr-2" />
-                Save Outline
+                Save & Proceed to Writing
               </Button>
             </div>
           </div>
