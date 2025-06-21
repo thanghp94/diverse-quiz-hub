@@ -355,6 +355,28 @@ export default function AcademicEssayPopup({
               </Badge>
             </div>
             <div className="flex items-center gap-4">
+              {phase === 'writing' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPhase('outline')}
+                  className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                >
+                  <FileText className="h-4 w-4 mr-1" />
+                  Back to Outline
+                </Button>
+              )}
+              {phase === 'outline' && timeRemaining === 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPhase('writing')}
+                  className="border-green-500 text-green-600 hover:bg-green-50"
+                >
+                  <Edit className="h-4 w-4 mr-1" />
+                  Go to Writing
+                </Button>
+              )}
               <Button variant="ghost" size="sm" onClick={onClose}>
                 <X className="h-4 w-4" />
               </Button>

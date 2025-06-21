@@ -472,20 +472,94 @@ const WritingPage = () => {
                   activeContentId={activeContentId}
                   customActions={(content) => (
                     <div className="flex gap-1">
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenOutlinePopup(
-                            content.title || content.short_blurb,
-                            content.id,
-                          );
-                        }}
-                        size="sm"
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                      >
-                        <PenTool className="h-4 w-4 mr-1" />
-                        Creative
-                      </Button>
+                      {(() => {
+                        // Check for creative writing progress
+                        const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
+                        const storyStorageKey = `creative_story_${user?.id}_${content.id}`;
+                        const outlineData = localStorage.getItem(outlineStorageKey);
+                        const storyData = localStorage.getItem(storyStorageKey);
+                        let hasCreativeProgress = false;
+
+                        if (outlineData) {
+                          try {
+                            const parsed = JSON.parse(outlineData);
+                            hasCreativeProgress = Object.values(parsed).some((val: any) => 
+                              typeof val === 'string' && val.trim()
+                            );
+                          } catch (error) {
+                            console.error("Failed to parse creative outline data:", error);
+                          }
+                        }
+
+                        if (!hasCreativeProgress && storyData) {
+                          try {
+                            const parsed = JSON.parse(storyData);
+                            hasCreativeProgress = parsed.title?.trim() || parsed.story?.trim();
+                          } catch (error) {
+                            console.error("Failed to parse creative story data:", error);
+                          }
+                        }
+
+                        return (
+                          <>
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (hasCreativeProgress) {
+                                  // Load outline data and go directly to writing page
+                                  const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
+                                  const savedOutlineData = localStorage.getItem(outlineStorageKey);
+                                  let outlineData = {};
+                                  if (savedOutlineData) {
+                                    try {
+                                      outlineData = JSON.parse(savedOutlineData);
+                                    } catch (error) {
+                                      console.error('Failed to parse outline data:', error);
+                                    }
+                                  }
+                                  setCreativeWritingInfo({
+                                    isOpen: true,
+                                    contentTitle: content.title || content.short_blurb,
+                                    contentId: content.id,
+                                    outlineData,
+                                  });
+                                } else {
+                                  handleOpenOutlinePopup(
+                                    content.title || content.short_blurb,
+                                    content.id,
+                                  );
+                                }
+                              }}
+                              size="sm"
+                              className={hasCreativeProgress 
+                                ? "bg-green-600 hover:bg-green-700 text-white" 
+                                : "bg-purple-600 hover:bg-purple-700 text-white"
+                              }
+                            >
+                              <PenTool className="h-4 w-4 mr-1" />
+                              {hasCreativeProgress && <Edit className="h-4 w-4 mr-1" />}
+                              {hasCreativeProgress ? "Creative writing in progress" : "Creative"}
+                            </Button>
+                            {hasCreativeProgress && (
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenOutlinePopup(
+                                    content.title || content.short_blurb,
+                                    content.id,
+                                  );
+                                }}
+                                size="sm"
+                                variant="outline"
+                                className="border-purple-500 text-purple-600 hover:bg-purple-50"
+                              >
+                                <FileText className="h-4 w-4 mr-1" />
+                                Edit Outline
+                              </Button>
+                            )}
+                          </>
+                        );
+                      })()}
                       <Button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -590,103 +664,141 @@ const WritingPage = () => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button
-                    onClick={() =>
-                      handleContentClick({
-                        content,
-                        contextList: writingContent,
-                      })
-                    }
-                    variant="outline"
-                    size="sm"
-                    className="border-white/30 text-white hover:bg-white/20"
-                  >
-                    View Content
-                  </Button>
-                  <Button
-                    onClick={() =>
-                      handleOpenOutlinePopup(
-                        content.title || content.short_blurb,
-                        content.id,
-                      )
-                    }
-                    size="sm"
-                    className="bg-purple-600 hover:bg-purple-700 text-white"
-                  >
-                    <PenTool className="h-4 w-4 mr-1" />
-                    Creative
-                  </Button>
-                  <div className="flex gap-1">
-                    <Button
-                      onClick={() =>
-                        handleOpenEssayPopup(
-                          content.title || content.short_blurb,
-                          content.id,
-                        )
-                      }
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <FileText className="h-4 w-4 mr-1" />
-                      Academic
-                    </Button>
+                  {(() => {
+                    // Check for creative writing progress
+                    const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
+                    const storyStorageKey = `creative_story_${user?.id}_${content.id}`;
+                    const outlineData = localStorage.getItem(outlineStorageKey);
+                    const storyData = localStorage.getItem(storyStorageKey);
+                    let hasCreativeProgress = false;
 
-                    {/* Writing in progress indicator */}
-                    {(() => {
-                      const storageKey = `academic_essay_${user?.id}_${content.id}`;
-                      const savedData = localStorage.getItem(storageKey);
-                      if (savedData) {
-                        try {
-                          const parsed = JSON.parse(savedData);
-                          if (parsed.phase === "writing") {
-                            return (
-                              <Button
-                                onClick={() =>
-                                  handleOpenEssayPopup(
-                                    content.title || content.short_blurb,
-                                    content.id,
-                                  )
-                                }
-                                size="sm"
-                                className="bg-orange-600 hover:bg-orange-700 text-white"
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Writing in Progress
-                              </Button>
-                            );
-                          } else if (
-                            parsed.phase === "outline" ||
-                            Object.values(parsed.outlineData || {}).some(
-                              (val) => val.trim(),
-                            )
-                          ) {
-                            return (
-                              <Button
-                                onClick={() =>
-                                  handleOpenEssayPopup(
-                                    content.title || content.short_blurb,
-                                    content.id,
-                                  )
-                                }
-                                size="sm"
-                                variant="outline"
-                                className="border-blue-500 text-blue-600 hover:bg-blue-50"
-                              >
-                                <Clock className="h-4 w-4 mr-1" />
-                                Draft Saved
-                              </Button>
-                            );
-                          }
-                        } catch (error) {
-                          console.error(
-                            "Failed to parse saved essay data:",
-                            error,
-                          );
-                        }
+                    if (outlineData) {
+                      try {
+                        const parsed = JSON.parse(outlineData);
+                        hasCreativeProgress = Object.values(parsed).some((val: any) => 
+                          typeof val === 'string' && val.trim()
+                        );
+                      } catch (error) {
+                        console.error("Failed to parse creative outline data:", error);
                       }
-                      return null;
-                    })()}
-                  </div>
+                    }
+
+                    if (!hasCreativeProgress && storyData) {
+                      try {
+                        const parsed = JSON.parse(storyData);
+                        hasCreativeProgress = parsed.title?.trim() || parsed.story?.trim();
+                      } catch (error) {
+                        console.error("Failed to parse creative story data:", error);
+                      }
+                    }
+
+                    // Check for academic essay progress
+                    const academicStorageKey = `academic_essay_${user?.id}_${content.id}`;
+                    const academicData = localStorage.getItem(academicStorageKey);
+                    let hasAcademicProgress = false;
+                    let academicPhase = null;
+
+                    if (academicData) {
+                      try {
+                        const parsed = JSON.parse(academicData);
+                        academicPhase = parsed.phase;
+                        hasAcademicProgress = parsed.phase === "writing" || 
+                          parsed.phase === "outline" ||
+                          Object.values(parsed.outlineData || {}).some((val: any) => 
+                            typeof val === 'string' && val.trim()
+                          );
+                      } catch (error) {
+                        console.error("Failed to parse academic essay data:", error);
+                      }
+                    }
+
+                    return (
+                      <>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (hasCreativeProgress) {
+                              // Load outline data and go directly to writing page
+                              const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
+                              const savedOutlineData = localStorage.getItem(outlineStorageKey);
+                              let outlineData = {};
+                              if (savedOutlineData) {
+                                try {
+                                  outlineData = JSON.parse(savedOutlineData);
+                                } catch (error) {
+                                  console.error('Failed to parse outline data:', error);
+                                }
+                              }
+                              setCreativeWritingInfo({
+                                isOpen: true,
+                                contentTitle: content.title || content.short_blurb,
+                                contentId: content.id,
+                                outlineData,
+                              });
+                            } else {
+                              handleOpenOutlinePopup(
+                                content.title || content.short_blurb,
+                                content.id,
+                              );
+                            }
+                          }}
+                          size="sm"
+                          className={hasCreativeProgress 
+                            ? "bg-green-600 hover:bg-green-700 text-white" 
+                            : "bg-purple-600 hover:bg-purple-700 text-white"
+                          }
+                        >
+                          <PenTool className="h-4 w-4 mr-1" />
+                          {hasCreativeProgress && <Edit className="h-4 w-4 mr-1" />}
+                          {hasCreativeProgress ? "Creative writing in progress" : "Creative"}
+                        </Button>
+                        {hasCreativeProgress && (
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenOutlinePopup(
+                                content.title || content.short_blurb,
+                                content.id,
+                              );
+                            }}
+                            size="sm"
+                            variant="outline"
+                            className="border-purple-500 text-purple-600 hover:bg-purple-50"
+                          >
+                            <FileText className="h-4 w-4 mr-1" />
+                            Edit Outline
+                          </Button>
+                        )}
+
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEssayPopup(
+                              content.title || content.short_blurb,
+                              content.id,
+                            );
+                          }}
+                          size="sm"
+                          className={
+                            academicPhase === "writing" 
+                              ? "bg-orange-600 hover:bg-orange-700 text-white"
+                              : hasAcademicProgress
+                                ? "bg-blue-500 hover:bg-blue-600 text-white"
+                                : "bg-blue-600 hover:bg-blue-700 text-white"
+                          }
+                        >
+                          <FileText className="h-4 w-4 mr-1" />
+                          {(academicPhase === "writing" || hasAcademicProgress) && <Edit className="h-4 w-4 mr-1" />}
+                          {academicPhase === "writing" 
+                            ? "Academic writing in progress" 
+                            : hasAcademicProgress 
+                              ? "Academic writing in progress"
+                              : "Academic"
+                          }
+                        </Button>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             ))}
