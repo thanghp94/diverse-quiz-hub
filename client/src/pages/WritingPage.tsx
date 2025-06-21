@@ -354,6 +354,16 @@ const WritingPage = () => {
     setCreativeWritingInfo({ isOpen: false });
   };
 
+  const handleBackToOutline = () => {
+    // Close creative writing popup and open outline popup
+    setCreativeWritingInfo({ isOpen: false });
+    setOutlinePopupInfo({ 
+      isOpen: true, 
+      contentTitle: creativeWritingInfo.contentTitle,
+      contentId: creativeWritingInfo.contentId 
+    });
+  };
+
   const handleCloseWritingContent = () => {
     setWritingContentInfo({ isOpen: false, content: null, contextList: [] });
   };
@@ -540,23 +550,6 @@ const WritingPage = () => {
                               {hasCreativeProgress && <Edit className="h-4 w-4 mr-1" />}
                               {hasCreativeProgress ? "Creative writing in progress" : "Creative"}
                             </Button>
-                            {hasCreativeProgress && (
-                              <Button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleOpenOutlinePopup(
-                                    content.title || content.short_blurb,
-                                    content.id,
-                                  );
-                                }}
-                                size="sm"
-                                variant="outline"
-                                className="border-purple-500 text-purple-600 hover:bg-purple-50"
-                              >
-                                <FileText className="h-4 w-4 mr-1" />
-                                Edit Outline
-                              </Button>
-                            )}
                           </>
                         );
                       })()}
@@ -752,23 +745,6 @@ const WritingPage = () => {
                           {hasCreativeProgress && <Edit className="h-4 w-4 mr-1" />}
                           {hasCreativeProgress ? "Creative writing in progress" : "Creative"}
                         </Button>
-                        {hasCreativeProgress && (
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenOutlinePopup(
-                                content.title || content.short_blurb,
-                                content.id,
-                              );
-                            }}
-                            size="sm"
-                            variant="outline"
-                            className="border-purple-500 text-purple-600 hover:bg-purple-50"
-                          >
-                            <FileText className="h-4 w-4 mr-1" />
-                            Edit Outline
-                          </Button>
-                        )}
 
                         <Button
                           onClick={(e) => {
@@ -864,6 +840,7 @@ const WritingPage = () => {
         contentId={creativeWritingInfo.contentId}
         studentId={user?.id || "GV0002"}
         outlineData={creativeWritingInfo.outlineData || {}}
+        onBackToOutline={handleBackToOutline}
       />
 
       <AcademicEssayPopup
