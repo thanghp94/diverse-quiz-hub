@@ -1534,36 +1534,7 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  // Ensure createWritingSubmission properly maps prompt_id
-  async createWritingSubmission(submissionData: any) {
-    console.log('Storage: Creating writing submission with data:', submissionData);
 
-    // Ensure all required fields are present and properly mapped
-    const cleanedData = {
-      id: submissionData.id || crypto.randomUUID(),
-      student_id: submissionData.student_id,
-      prompt_id: submissionData.prompt_id || submissionData.content_id, // Fallback to content_id if prompt_id not set
-      title: submissionData.title || 'Academic Essay',
-      opening_paragraph: submissionData.opening_paragraph || '',
-      body_paragraph_1: submissionData.body_paragraph_1 || '',
-      body_paragraph_2: submissionData.body_paragraph_2 || '',
-      body_paragraph_3: submissionData.body_paragraph_3 || '',
-      conclusion_paragraph: submissionData.conclusion_paragraph || '',
-      full_essay: submissionData.full_essay || '',
-      word_count: submissionData.word_count || 0,
-      status: submissionData.status || 'submitted',
-      created_at: submissionData.created_at || new Date(),
-      updated_at: submissionData.updated_at || new Date()
-    };
-
-    console.log('Storage: Cleaned submission data:', cleanedData);
-
-    const result = await db.insert(writing_submissions)
-      .values(cleanedData)
-      .returning();
-
-    return result[0];
-  }
 }
 
 export const storage = new DatabaseStorage();
