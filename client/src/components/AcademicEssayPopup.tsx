@@ -495,7 +495,7 @@ export default function AcademicEssayPopup({
               {/* Conclusion */}
               <div className="bg-purple-50 p-3 rounded-lg border">
                 <div className="flex justify-between items-start mb-3">
-                  
+
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   <div className="text-xs text-purple-800 mb-3">Conclusion<br/>Restate thesis<br/>Summarize main points</div>
@@ -514,9 +514,9 @@ export default function AcademicEssayPopup({
           </div>
         )}  
         {phase === 'writing' && (
-          <div className="space-y-1 p-1">
-            {/* Timer styled as a battery at the top */}
-            <div className="bg-blue-100 border-l-4 border-blue-500 p-3 rounded-lg mb-3 text-center flex items-center justify-center">
+          <div className="space-y-1 p-1 relative">
+            {/* Fixed Timer at the top */}
+            <div className="fixed top-0 left-0 right-0 z-50 bg-blue-100 border-l-4 border-blue-500 p-3 text-center flex items-center justify-center shadow-md">
               <div className="bg-blue-800 rounded-full h-4 w-full max-w-xs">
                 <div className="bg-blue-500 h-full rounded-full"
                      style={{ width: `${((TOTAL_TIME - timeRemaining) / TOTAL_TIME) * 100}%` }}>
@@ -527,6 +527,9 @@ export default function AcademicEssayPopup({
                 ⏰ {Math.floor((TOTAL_TIME - timeRemaining) / 60)}:{((TOTAL_TIME - timeRemaining) % 60).toString().padStart(2, '0')}
               </div>
             </div>
+
+            {/* Spacer to account for fixed timer */}
+            <div className="h-16 mb-3"></div>
 
             {/* Sections Navigation */}
             <div className="flex justify-between items-center bg-gray-50 p-2 rounded-lg">
