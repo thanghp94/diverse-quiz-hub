@@ -353,6 +353,11 @@ export default function AcademicEssayPopup({
               >
                 {phase === 'outline' ? 'Outline Phase (15 min)' : 'Writing Phase'}
               </Badge>
+              {phase === 'outline' && (
+                <div className="text-lg font-mono font-semibold text-orange-700">
+                  Time remaining: {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-4">
               {phase === 'writing' && (
@@ -397,15 +402,6 @@ export default function AcademicEssayPopup({
 
         {phase === 'outline' && (
           <div className="space-y-6 p-4">
-            <div className="text-center">
-              {/* Timer */}
-              <div className="bg-orange-100 p-3 rounded-lg inline-block">
-                <div className="text-2xl font-mono font-bold text-orange-700">
-                  {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
-                </div>
-                <p className="text-sm text-orange-600">Time Remaining</p>
-              </div>
-            </div>
 
             <div className="space-y-4">
               {/* Introduction */}
