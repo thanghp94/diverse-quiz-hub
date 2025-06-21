@@ -110,6 +110,7 @@ const WritingPage = () => {
     content: Content | null;
     contextList: Content[];
   }>({ isOpen: false, content: null, contextList: [] });
+  const [highlightedContentId, setHighlightedContentId] = useState<string | null>(null);
 
   // Helper functions for group card expansion
   const handleToggleGroupCard = useCallback((groupCardId: string) => {
@@ -635,7 +636,11 @@ const WritingPage = () => {
             {writingContent.map((content) => (
               <div
                 key={`content-${content.id}`}
-                className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20"
+                className={cn(
+                  "bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20 cursor-pointer transition-all duration-200",
+                  highlightedContentId === content.id && "ring-4 ring-yellow-400/80 border-yellow-400/50 bg-yellow-500/10 shadow-lg shadow-yellow-400/20"
+                )}
+                onClick={() => setHighlightedContentId(content.id)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -710,6 +715,7 @@ const WritingPage = () => {
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
+                            setHighlightedContentId(content.id);
                             if (hasCreativeProgress) {
                               // Load outline data and go directly to writing page
                               const outlineStorageKey = `creative_outline_${user?.id}_${content.id}`;
@@ -749,6 +755,7 @@ const WritingPage = () => {
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
+                            setHighlightedContentId(content.id);
                             handleOpenEssayPopup(
                               content.title || content.short_blurb,
                               content.id,
