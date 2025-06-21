@@ -133,7 +133,7 @@ export default function CreativeWritingPopup({
     try {
       // Split story into paragraphs for database storage
       const paragraphs = writingData.story.split('\n\n').filter(p => p.trim());
-      
+
       const response = await fetch('/api/writing-submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -154,20 +154,34 @@ export default function CreativeWritingPopup({
         })
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        toast({
-          title: "Story Submitted",
-          description: `Your creative writing has been submitted successfully (${storyWordCount} words).`,
-        });
-        
-        // Clear localStorage
-        const storageKey = `creative_story_${studentId}_${contentId}`;
-        localStorage.removeItem(storageKey);
-        window.dispatchEvent(new Event('storage'));
-        
-        onClose();
-        setWritingData({ title: '', story: '' });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to submit story');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Failed to submit: ${errorData}`);
+      }
+
+      const result = await response.json();
+      console.log('Writing submission created successfully:', result);
+
+      // Clear both story and outline data from localStorage after successful submission
+      if (studentId && contentId) {
+        const storyStorageKey = `creative_story_${studentId}_${contentId}`;
+        const outlineStorageKey = `creative_outline_${studentId}_${contentId}`;
+        localStorage.removeItem(storyStorageKey);
+        localStorage.removeItem(outlineStorageKey);
+      }
+
+      toast({
+        title: "Story Submitted",
+        description: `Your creative writing has been submitted successfully (${storyWordCount} words).`,
+      });
+
+      onClose();
+      setWritingData({ title: '', story: '' });
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to submit story');
@@ -217,7 +231,7 @@ export default function CreativeWritingPopup({
               <FileText className="h-5 w-5 mr-2" />
               Your Creative Writing Outline
             </h3>
-            
+
             {/* Title and Directions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               {outlineData.title && (
@@ -233,7 +247,7 @@ export default function CreativeWritingPopup({
                 </div>
               )}
             </div>
-            
+
             {/* Setting and Characters */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
               {outlineData.setting && (
@@ -249,7 +263,7 @@ export default function CreativeWritingPopup({
                 </div>
               )}
             </div>
-            
+
             {/* Story Structure */}
             <div>
               <span className="text-sm font-bold text-purple-800">Story Structure:</span>
@@ -436,7 +450,7 @@ export default function CreativeWritingPopup({
                 <span className="text-lg font-semibold">Total: {getWordCount(writingData.story)} words</span>
                 <p className="text-sm text-gray-600">Continue developing your creative story</p>
               </div>
-              
+
               <div className="flex gap-2">
                 <Button variant="outline" onClick={onClose}>
                   Save Draft
