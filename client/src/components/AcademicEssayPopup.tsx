@@ -353,6 +353,13 @@ export default function AcademicEssayPopup({
               >
                 {phase === 'outline' ? 'Outline Phase (15 min)' : 'Writing Phase'}
               </Badge>
+              {phase === 'writing' && (
+                <div className="bg-blue-100 border-l-4 border-blue-500 p-2 rounded-lg">
+                  <div className="text-lg font-bold text-blue-800">
+                    ⏰ Time spent: {Math.floor((TOTAL_TIME - timeRemaining) / 60)}:{((TOTAL_TIME - timeRemaining) % 60).toString().padStart(2, '0')}
+                  </div>
+                </div>
+              )}
               {phase === 'outline' && (
                 <div className="bg-orange-100 border-l-4 border-orange-500 p-2 rounded-lg">
                   <div className="text-lg font-bold text-orange-800">
