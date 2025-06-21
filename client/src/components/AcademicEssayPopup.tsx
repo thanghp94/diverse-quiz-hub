@@ -150,6 +150,22 @@ export default function AcademicEssayPopup({
     }
   }, [phase, isOpen]);
 
+  // Save data continuously when there are changes
+  useEffect(() => {
+    if (isOpen && studentId && contentId && (phase === 'writing' || Object.values(outlineData).some(val => val.trim()) || Object.values(essayData).some(val => val.trim()))) {
+      const storageKey = `academic_essay_${studentId}_${contentId}`;
+      const dataToSave = {
+        phase,
+        outlineData,
+        essayData,
+        timeRemaining,
+        isTimerActive
+      };
+      localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+      console.log('Saving essay data to localStorage:', storageKey, dataToSave);
+    }
+  }, [phase, outlineData, essayData, timeRemaining, isTimerActive, studentId, contentId, isOpen]);
+
   // Save data when popup closes
   useEffect(() => {
     if (!isOpen && studentId && contentId && (phase === 'writing' || Object.values(outlineData).some(val => val.trim()) || Object.values(essayData).some(val => val.trim()))) {
@@ -162,6 +178,7 @@ export default function AcademicEssayPopup({
         isTimerActive: false
       };
       localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+      console.log('Saving essay data on close:', storageKey, dataToSave);
       saveToDatabase();
     }
   }, [isOpen, phase, outlineData, essayData, timeRemaining, studentId, contentId]);
@@ -387,7 +404,24 @@ export default function AcademicEssayPopup({
                     <Textarea
                       placeholder="Attention-grabbing opening..."
                       value={outlineData.hook}
-                      onChange={(e) => setOutlineData(prev => ({ ...prev, hook: e.target.value }))}
+                      onChange={(e) => {
+                        setOutlineData(prev => ({ ...prev, hook: e.target.value }));
+                      }}
+                      onBlur={() => {
+                        // Save immediately on blur
+                        if (studentId && contentId) {
+                          const storageKey = `academic_essay_${studentId}_${contentId}`;
+                          const dataToSave = {
+                            phase,
+                            outlineData: { ...outlineData, hook: outlineData.hook },
+                            essayData,
+                            timeRemaining,
+                            isTimerActive
+                          };
+                          localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+                          console.log('Saved on blur - hook');
+                        }
+                      }}
                       className="mt-1 min-h-[60px]"
                     />
                   </div>
@@ -536,7 +570,24 @@ export default function AcademicEssayPopup({
                   <Textarea
                     placeholder="Write your introduction with hook and thesis..."
                     value={essayData.introduction}
-                    onChange={(e) => setEssayData(prev => ({ ...prev, introduction: e.target.value }))}
+                    onChange={(e) => {
+                      setEssayData(prev => ({ ...prev, introduction: e.target.value }));
+                    }}
+                    onBlur={() => {
+                      // Save immediately on blur
+                      if (studentId && contentId) {
+                        const storageKey = `academic_essay_${studentId}_${contentId}`;
+                        const dataToSave = {
+                          phase,
+                          outlineData,
+                          essayData: { ...essayData, introduction: essayData.introduction },
+                          timeRemaining,
+                          isTimerActive
+                        };
+                        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+                        console.log('Saved on blur - introduction');
+                      }
+                    }}
                     className="min-h-[120px] border-blue-200 w-full"
                   />
                 </div>
@@ -564,7 +615,24 @@ export default function AcademicEssayPopup({
                       <Textarea
                         placeholder="Write your first body paragraph..."
                         value={essayData.body1}
-                        onChange={(e) => setEssayData(prev => ({ ...prev, body1: e.target.value }))}
+                        onChange={(e) => {
+                          setEssayData(prev => ({ ...prev, body1: e.target.value }));
+                        }}
+                        onBlur={() => {
+                          // Save immediately on blur
+                          if (studentId && contentId) {
+                            const storageKey = `academic_essay_${studentId}_${contentId}`;
+                            const dataToSave = {
+                              phase,
+                              outlineData,
+                              essayData: { ...essayData, body1: essayData.body1 },
+                              timeRemaining,
+                              isTimerActive
+                            };
+                            localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+                            console.log('Saved on blur - body1');
+                          }
+                        }}
                         className="min-h-[100px] border-green-200 w-full"
                       />
                     </div>
@@ -587,7 +655,24 @@ export default function AcademicEssayPopup({
                       <Textarea
                         placeholder="Write your second body paragraph..."
                         value={essayData.body2}
-                        onChange={(e) => setEssayData(prev => ({ ...prev, body2: e.target.value }))}
+                        onChange={(e) => {
+                          setEssayData(prev => ({ ...prev, body2: e.target.value }));
+                        }}
+                        onBlur={() => {
+                          // Save immediately on blur
+                          if (studentId && contentId) {
+                            const storageKey = `academic_essay_${studentId}_${contentId}`;
+                            const dataToSave = {
+                              phase,
+                              outlineData,
+                              essayData: { ...essayData, body2: essayData.body2 },
+                              timeRemaining,
+                              isTimerActive
+                            };
+                            localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+                            console.log('Saved on blur - body2');
+                          }
+                        }}
                         className="min-h-[100px] border-green-200 w-full"
                       />
                     </div>
@@ -610,7 +695,24 @@ export default function AcademicEssayPopup({
                       <Textarea
                         placeholder="Write your third body paragraph..."
                         value={essayData.body3}
-                        onChange={(e) => setEssayData(prev => ({ ...prev, body3: e.target.value }))}
+                        onChange={(e) => {
+                          setEssayData(prev => ({ ...prev, body3: e.target.value }));
+                        }}
+                        onBlur={() => {
+                          // Save immediately on blur
+                          if (studentId && contentId) {
+                            const storageKey = `academic_essay_${studentId}_${contentId}`;
+                            const dataToSave = {
+                              phase,
+                              outlineData,
+                              essayData: { ...essayData, body3: essayData.body3 },
+                              timeRemaining,
+                              isTimerActive
+                            };
+                            localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+                            console.log('Saved on blur - body3');
+                          }
+                        }}
                         className="min-h-[100px] border-green-200 w-full"
                       />
                     </div>
@@ -635,7 +737,24 @@ export default function AcademicEssayPopup({
                   <Textarea
                     placeholder="Write your conclusion with summary and final thoughts..."
                     value={essayData.conclusion}
-                    onChange={(e) => setEssayData(prev => ({ ...prev, conclusion: e.target.value }))}
+                    onChange={(e) => {
+                      setEssayData(prev => ({ ...prev, conclusion: e.target.value }));
+                    }}
+                    onBlur={() => {
+                      // Save immediately on blur
+                      if (studentId && contentId) {
+                        const storageKey = `academic_essay_${studentId}_${contentId}`;
+                        const dataToSave = {
+                          phase,
+                          outlineData,
+                          essayData: { ...essayData, conclusion: essayData.conclusion },
+                          timeRemaining,
+                          isTimerActive
+                        };
+                        localStorage.setItem(storageKey, JSON.stringify(dataToSave));
+                        console.log('Saved on blur - conclusion');
+                      }
+                    }}
                     className="min-h-[120px] border-purple-200 w-full"
                   />
                 </div>
