@@ -437,7 +437,7 @@ export default function AcademicEssayPopup({
                           console.log('Saved on blur - hook');
                         }
                       }}
-                      className="mt-1 min-h-[60px]"
+                      className="mt-1 min-h-[40px]"
                     />
                   </div>
 
@@ -447,7 +447,7 @@ export default function AcademicEssayPopup({
                       placeholder="Your main argument..."
                       value={outlineData.thesis}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, thesis: e.target.value }))}
-                      className="mt-1 min-h-[80px]"
+                      className="mt-1 min-h-[50px]"
                     />
                   </div>
                 </div>
@@ -469,7 +469,7 @@ export default function AcademicEssayPopup({
                       placeholder="First main point..."
                       value={outlineData.bodyParagraph1}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph1: e.target.value }))}
-                      className="mt-1 min-h-[60px]"
+                      className="mt-1 min-h-[40px]"
                     />
                   </div>
 
@@ -479,7 +479,7 @@ export default function AcademicEssayPopup({
                       placeholder="Second main point..."
                       value={outlineData.bodyParagraph2}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph2: e.target.value }))}
-                      className="mt-1 min-h-[60px]"
+                      className="mt-1 min-h-[40px]"
                     />
                   </div>
 
@@ -489,7 +489,7 @@ export default function AcademicEssayPopup({
                       placeholder="Third main point..."
                       value={outlineData.bodyParagraph3}
                       onChange={(e) => setOutlineData(prev => ({ ...prev, bodyParagraph3: e.target.value }))}
-                      className="mt-1 min-h-[60px]"
+                      className="mt-1 min-h-[40px]"
                     />
                   </div>
                 </div>
@@ -510,7 +510,7 @@ export default function AcademicEssayPopup({
                     placeholder="Summarize and conclude..."
                     value={outlineData.conclusion}
                     onChange={(e) => setOutlineData(prev => ({ ...prev, conclusion: e.target.value }))}
-                    className="mt-1 min-h-[80px]"
+                    className="mt-1 min-h-[50px]"
                   />
                 </div>
               </div>
@@ -648,7 +648,7 @@ export default function AcademicEssayPopup({
                             console.log('Saved on blur - body1');
                           }
                         }}
-                        className="min-h-[100px] border-green-200 w-full"
+                        className="min-h-[70px] border-green-200 w-full"
                       />
                     </div>
 
@@ -688,7 +688,7 @@ export default function AcademicEssayPopup({
                             console.log('Saved on blur - body2');
                           }
                         }}
-                        className="min-h-[100px] border-green-200 w-full"
+                        className="min-h-[70px] border-green-200 w-full"
                       />
                     </div>
 
@@ -728,7 +728,7 @@ export default function AcademicEssayPopup({
                             console.log('Saved on blur - body3');
                           }
                         }}
-                        className="min-h-[100px] border-green-200 w-full"
+                        className="min-h-[70px] border-green-200 w-full"
                       />
                     </div>
                   </div>
