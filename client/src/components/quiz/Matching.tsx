@@ -38,7 +38,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   const hasSequentialMatching = questionIdStr.includes('picture-title') || questionIdStr.includes('title-description');
   const isSequentialPictureTitle = questionIdStr.includes('picture-title');
   const isSequentialTitleDescription = questionIdStr.includes('title-description');
-  
+
   // Determine the current phase based on question ID if not explicitly set
   const inferredPhase = isSequentialPictureTitle ? 'picture-title' : isSequentialTitleDescription ? 'title-description' : null;
 
@@ -51,7 +51,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       currentQuizPhase, 
       questionId: question.id 
     });
-    
+
     // Reset all state when:
     // 1. Phase changes in sequential matching
     // 2. Question changes (different question.id)
@@ -63,17 +63,17 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     setCorrectMatches({});
     setDraggedItem(null);
     dragCounter.current = 0;
-    
+
     console.log('State reset completed for phase:', currentQuizPhase);
   }, [currentQuizPhase, hasSequentialMatching, question.id]);
-  
+
   // Filter pairs based on current phase
   const allPairs = question.pairs || [];
   const filteredPairs = hasSequentialMatching && currentQuizPhase 
     ? allPairs.filter(pair => {
         const isImageLeft = isImageItem(pair.left);
         const isImageRight = isImageItem(pair.right);
-        
+
         if (currentQuizPhase === 'picture-title') {
           // Show pairs where either left or right is an image
           return isImageLeft || isImageRight;
@@ -94,7 +94,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   // Get text styling based on matching type and word count
   const getTextStyling = (text: string) => {
     const wordCount = text.split(/\s+/).length;
-    
+
     if (effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description')) {
       // For title-description: smaller text, left aligned for second row
       return {
@@ -110,7 +110,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
         weight: 'font-bold'
       };
     }
-    
+
     // Default styling
     return {
       fontSize: 'text-base',
@@ -202,9 +202,9 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       const normalizedUserMatch = userMatch?.trim().toLowerCase();
       const normalizedCorrectMatch = correctMatch?.trim().toLowerCase();
       const isMatchCorrect = normalizedUserMatch === normalizedCorrectMatch;
-      
+
       console.log(`Checking: "${pair.left}" -> user: "${userMatch}" vs correct: "${correctMatch}" = ${isMatchCorrect}`);
-      
+
       newCorrectMatches[pair.left] = isMatchCorrect;
       if (isMatchCorrect) {
         correctCount++;
@@ -285,9 +285,9 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                         : 'bg-gradient-to-br from-blue-100 to-purple-100 border-blue-400 cursor-move hover:from-blue-200 hover:to-purple-200 hover:border-purple-500 hover:shadow-xl'
                     }`}
                   >
-                    {isUsed && (
+                    {showResults && isUsed && (
                       <div className={`absolute top-1 right-1 text-white rounded-full p-1 z-10 ${
-                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-green-500'
+                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-gray-500'
                       }`}>
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                           {isCorrect ? (
@@ -356,9 +356,9 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                         : 'bg-blue-50 border-blue-300 cursor-move hover:bg-blue-100 hover:border-blue-400'
                     }`}
                   >
-                    {isUsed && (
+                    {showResults && isUsed && (
                       <div className={`absolute top-1 right-1 text-white rounded-full p-1 z-10 ${
-                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-green-500'
+                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-gray-500'
                       }`}>
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                           {isCorrect ? (
@@ -573,7 +573,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             </>
           )}
         </div>
-        
+
         {/* Phase indicator for sequential matching */}
         {hasSequentialMatching && (
           <div className="mt-3 text-center">
@@ -586,7 +586,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             </div>
           </div>
         )}
-        
+
         {isComplete && !isSubmitted && (
           <p className="text-sm text-purple-700 mt-3 text-center font-medium bg-purple-100 p-2 rounded-lg">
             All pairs matched! Click Submit to complete.
