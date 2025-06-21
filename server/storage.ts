@@ -2,6 +2,7 @@ import { users, topics, content, images, questions, matching, videos, matching_a
 import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import crypto from 'crypto';
+import { db } from "./db";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -1532,10 +1533,9 @@ export class DatabaseStorage implements IStorage {
       return result[0];
     });
   }
-}
 
-// Ensure createWritingSubmission properly maps prompt_id
-async createWritingSubmission(submissionData: any) {
+  // Ensure createWritingSubmission properly maps prompt_id
+  async createWritingSubmission(submissionData: any) {
     console.log('Storage: Creating writing submission with data:', submissionData);
 
     // Ensure all required fields are present and properly mapped
@@ -1564,5 +1564,6 @@ async createWritingSubmission(submissionData: any) {
 
     return result[0];
   }
+}
 
 export const storage = new DatabaseStorage();
