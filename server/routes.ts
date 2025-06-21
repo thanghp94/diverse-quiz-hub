@@ -1357,12 +1357,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         console.log('Creating draft with data:', draftData);
 
-        const created = await db.insert(writing_submissions)
-          .values(draftData)
-          .returning();
+        // Use storage method to ensure proper field mapping
+        const created = await storage.createWritingSubmission(draftData);
         
-        console.log('Draft created successfully:', created[0]);
-        res.json(created[0]);
+        console.log('Draft created successfully:', created);
+        res.json(created);
       }
     } catch (error) {
       console.error('Draft save error:', error);
@@ -1414,7 +1413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const submissionData = {
         id: crypto.randomUUID(),
         student_id: student_id,
-        prompt_id: content_id,
+        prompt_id: content_id, // This maps content_id to prompt_id correctly
         title: content_title || 'Academic Essay',
         opening_paragraph: essay_data?.introduction || '',
         body_paragraph_1: essay_data?.body1 || '',
@@ -1430,12 +1429,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log('Creating writing submission with data:', submissionData);
 
-      const submission = await db.insert(writing_submissions)
-        .values(submissionData)
-        .returning();
+      // Use the storage method instead of direct DB insert to ensure proper field mapping
+      const submission = await storage.createWritingSubmission(submissionData);
       
-      console.log('Writing submission created successfully:', submission[0]);
-      res.json(submission[0]);
+      console.log('Writing submission created successfully:', submission);
+      res.json(submission);
     } catch (error) {
       console.error('Writing submission error:', error);
       ApiResponse.serverError(res, 'Failed to create writing submission', error);
