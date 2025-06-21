@@ -398,9 +398,6 @@ export default function AcademicEssayPopup({
         {phase === 'outline' && (
           <div className="space-y-6 p-4">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Essay Outline</h3>
-              <p className="text-sm text-gray-600 mb-4">Plan your essay structure before writing</p>
-
               {/* Timer */}
               <div className="bg-orange-100 p-3 rounded-lg inline-block">
                 <div className="text-2xl font-mono font-bold text-orange-700">
