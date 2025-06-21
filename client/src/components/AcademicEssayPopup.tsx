@@ -130,7 +130,7 @@ export default function AcademicEssayPopup({
   // Timer countdown
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    if (isTimerActive && timeRemaining > 0 && phase === "outline") {
+    if (isTimerActive && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
