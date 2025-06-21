@@ -1307,11 +1307,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { student_id, content_id, content_title, outline_data, essay_data, phase, timer_remaining, timer_active } = req.body;
       
+      // Validate required fields
+      if (!student_id || !content_id) {
+        return ApiResponse.badRequest(res, 'student_id and content_id are required');
+      }
+      
       // Check if draft exists
       const existing = await db.select()
         .from(writing_submissions)
         .where(
-          sql`student_id = ${student_id} AND prompt_id = ${content_id} AND submitted_at IS NULL`
+          sql`student_id = ${student_id} AND prompt_id = ${content_id} AND (status = 'draft' OR submitted_at IS NULL)`
         )
         .limit(1);
 
@@ -1319,11 +1324,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update existing draft
         const updated = await db.update(writing_submissions)
           .set({
-            title: content_title,
+            title: content_title || 'Academic Essay Draft',
             opening_paragraph: essay_data?.introduction || '',
-            body_paragraph_1: essay_data?.body || '',
+            body_paragraph_1: essay_data?.body1 || essay_data?.body || '',
+            body_paragraph_2: essay_data?.body2 || '',
+            body_paragraph_3: essay_data?.body3 || '',
             conclusion_paragraph: essay_data?.conclusion || '',
-            full_essay: [essay_data?.introduction, essay_data?.body, essay_data?.conclusion].filter(Boolean).join('\n\n'),
+            full_essay: [essay_data?.introduction, essay_data?.body1 || essay_data?.body, essay_data?.body2, essay_data?.body3, essay_data?.conclusion].filter(Boolean).join('\n\n'),
             updated_at: new Date()
           })
           .where(sql`id = ${existing[0].id}`)
@@ -1332,23 +1339,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json(updated[0]);
       } else {
         // Create new draft
+        const draftData = {
+          id: crypto.randomUUID(),
+          student_id: student_id,
+          prompt_id: content_id,
+          title: content_title || 'Academic Essay Draft',
+          opening_paragraph: essay_data?.introduction || '',
+          body_paragraph_1: essay_data?.body1 || essay_data?.body || '',
+          body_paragraph_2: essay_data?.body2 || '',
+          body_paragraph_3: essay_data?.body3 || '',
+          conclusion_paragraph: essay_data?.conclusion || '',
+          full_essay: [essay_data?.introduction, essay_data?.body1 || essay_data?.body, essay_data?.body2, essay_data?.body3, essay_data?.conclusion].filter(Boolean).join('\n\n'),
+          status: 'draft',
+          created_at: new Date(),
+          updated_at: new Date()
+        };
+
+        console.log('Creating draft with data:', draftData);
+
         const created = await db.insert(writing_submissions)
-          .values({
-            id: crypto.randomUUID(),
-            student_id,
-            prompt_id: content_id,
-            title: content_title,
-            opening_paragraph: essay_data?.introduction || '',
-            body_paragraph_1: essay_data?.body || '',
-            conclusion_paragraph: essay_data?.conclusion || '',
-            full_essay: [essay_data?.introduction, essay_data?.body, essay_data?.conclusion].filter(Boolean).join('\n\n'),
-            status: 'draft'
-          })
+          .values(draftData)
           .returning();
         
+        console.log('Draft created successfully:', created[0]);
         res.json(created[0]);
       }
     } catch (error) {
+      console.error('Draft save error:', error);
       ApiResponse.serverError(res, 'Failed to save draft', error);
     }
   });
@@ -1371,6 +1388,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { student_id, content_id, content_title, outline_data, essay_data, time_spent, word_count, submitted_at } = req.body;
       
+      // Validate required fields
+      if (!student_id || !content_id) {
+        return ApiResponse.badRequest(res, 'student_id and content_id are required');
+      }
+      
       // Calculate word count if not provided
       const calculatedWordCount = word_count || [
         essay_data?.introduction || '',
@@ -1389,28 +1411,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         essay_data?.conclusion
       ].filter(Boolean);
 
+      const submissionData = {
+        id: crypto.randomUUID(),
+        student_id: student_id,
+        prompt_id: content_id,
+        title: content_title || 'Academic Essay',
+        opening_paragraph: essay_data?.introduction || '',
+        body_paragraph_1: essay_data?.body1 || '',
+        body_paragraph_2: essay_data?.body2 || '',
+        body_paragraph_3: essay_data?.body3 || '',
+        conclusion_paragraph: essay_data?.conclusion || '',
+        full_essay: fullEssayParts.join('\n\n'),
+        word_count: calculatedWordCount,
+        status: 'submitted',
+        created_at: new Date(),
+        updated_at: new Date()
+      };
+
+      console.log('Creating writing submission with data:', submissionData);
+
       const submission = await db.insert(writing_submissions)
-        .values({
-          id: crypto.randomUUID(),
-          student_id,
-          prompt_id: content_id,
-          title: content_title,
-          opening_paragraph: essay_data?.introduction || '',
-          body_paragraph_1: essay_data?.body1 || '',
-          body_paragraph_2: essay_data?.body2 || '',
-          body_paragraph_3: essay_data?.body3 || '',
-          conclusion_paragraph: essay_data?.conclusion || '',
-          full_essay: fullEssayParts.join('\n\n'),
-          word_count: calculatedWordCount,
-          status: 'submitted',
-          created_at: new Date(),
-          updated_at: new Date()
-        })
+        .values(submissionData)
         .returning();
       
+      console.log('Writing submission created successfully:', submission[0]);
       res.json(submission[0]);
     } catch (error) {
-      ApiResponse.serverError(res, 'Failed to submit essay', error);
+      console.error('Writing submission error:', error);
+      ApiResponse.serverError(res, 'Failed to create writing submission', error);
     }
   });
 

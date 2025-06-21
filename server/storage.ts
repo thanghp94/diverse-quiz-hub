@@ -747,7 +747,17 @@ export class DatabaseStorage implements IStorage {
 
   // Writing Submissions
   async createWritingSubmission(submission: InsertWritingSubmission): Promise<WritingSubmission> {
-    const result = await db.insert(writing_submissions).values(submission).returning();
+    // Ensure ID is generated if not provided
+    const submissionData = {
+      ...submission,
+      id: submission.id || crypto.randomUUID(),
+      created_at: submission.created_at || new Date(),
+      updated_at: submission.updated_at || new Date()
+    };
+    
+    console.log('Storage: Creating writing submission with data:', submissionData);
+    const result = await db.insert(writing_submissions).values(submissionData).returning();
+    console.log('Storage: Writing submission created:', result[0]);
     return result[0];
   }
 
