@@ -81,6 +81,7 @@ const WritingPage = () => {
   const [outlinePopupInfo, setOutlinePopupInfo] = useState<{
     isOpen: boolean;
     contentTitle?: string;
+    contentId?: string;
   }>({ isOpen: false });
   const [essayPopupInfo, setEssayPopupInfo] = useState<{
     isOpen: boolean;
@@ -269,7 +270,7 @@ const WritingPage = () => {
   };
 
   const handleOpenOutlinePopup = (contentTitle?: string, contentId?: string) => {
-    setOutlinePopupInfo({ isOpen: true, contentTitle });
+    setOutlinePopupInfo({ isOpen: true, contentTitle, contentId });
     setCurrentContentId(contentId);
   };
 
@@ -630,6 +631,8 @@ const WritingPage = () => {
         isOpen={outlinePopupInfo.isOpen}
         onClose={handleCloseOutlinePopup}
         contentTitle={outlinePopupInfo.contentTitle}
+        contentId={outlinePopupInfo.contentId}
+        studentId={user?.id || 'GV0002'}
         onProceedToWriting={handleProceedToCreativeWriting}
       />
 
