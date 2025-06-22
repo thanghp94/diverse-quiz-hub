@@ -1048,33 +1048,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const studentTry = await storage.createStudentTry(req.body);
       console.log('Student try created:', studentTry);
 
-      // Emit real-time update via WebSocket immediately (async to not block response)
-      setImmediate(async () => {
-        const io = (global as any).io;
-        if (io) {
-          try {
-            // Get question and content details for enriched WebSocket data
-            const question = await storage.getQuestion(studentTry.question_id);
-            const content = question ? await storage.getContentById(question.contentid) : null;
-            
-            const activityData = {
-              type: 'quiz_attempt',
-              student_id: studentTry.hocsinh_id,
-              content_id: question?.contentid || 'unknown',
-              content_title: content?.title || 'Unknown Content',
-              quiz_result: studentTry.quiz_result,
-              score: studentTry.score,
-              timestamp: new Date().toISOString(),
-              question_id: studentTry.question_id
-            };
+      // Emit real-time update via WebSocket immediately (synchronous for fastest delivery)
+      const io = (global as any).io;
+      if (io) {
+        try {
+          // Get question and content details for enriched WebSocket data
+          const question = await storage.getQuestion(studentTry.question_id);
+          const content = question ? await storage.getContentById(question.contentid) : null;
+          
+          const activityData = {
+            type: 'quiz_attempt',
+            student_id: studentTry.hocsinh_id,
+            content_id: question?.contentid || 'unknown',
+            content_title: content?.title || 'Unknown Content',
+            quiz_result: studentTry.quiz_result,
+            score: studentTry.score,
+            timestamp: new Date().toISOString(),
+            question_id: studentTry.question_id
+          };
 
-            console.log('⚡ Emitting immediate quiz-activity WebSocket event:', activityData);
-            io.to('live-monitor').emit('quiz-activity', activityData);
-          } catch (error) {
-            console.error('Error emitting WebSocket event:', error);
-          }
+          console.log('⚡ Emitting immediate quiz-activity WebSocket event:', activityData);
+          
+          // Emit to all connected clients immediately
+          io.emit('quiz-activity', activityData);
+          io.to('live-monitor').emit('quiz-activity', activityData);
+          
+        } catch (error) {
+          console.error('Error emitting WebSocket event:', error);
         }
-      });
+      }
 
       res.json(studentTry);
     } catch (error) {
