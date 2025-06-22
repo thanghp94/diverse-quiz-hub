@@ -1,4 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { wakeUpDatabase } from "./db";
@@ -52,6 +54,30 @@ app.use((req, res, next) => {
   });
   
   const server = await registerRoutes(app);
+  
+  // Setup Socket.IO for real-time updates
+  const io = new SocketIOServer(server, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+
+  // Store the io instance globally for use in routes
+  (global as any).io = io;
+
+  io.on('connection', (socket) => {
+    console.log('Client connected to live monitor:', socket.id);
+    
+    socket.on('join-monitor', (data) => {
+      console.log('Client joined monitor room:', data);
+      socket.join('live-monitor');
+    });
+    
+    socket.on('disconnect', () => {
+      console.log('Client disconnected from live monitor:', socket.id);
+    });
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

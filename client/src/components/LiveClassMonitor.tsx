@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Eye, Users, BookOpen, Star, Clock, Filter, Search, X, ChevronDown, Play, Pause, Settings } from 'lucide-react';
+import { Eye, Users, BookOpen, Star, Clock, Filter, Search, X, ChevronDown, Play, Pause, Settings, Wifi } from 'lucide-react';
 import { format } from 'date-fns';
+import { io, Socket } from 'socket.io-client';
 
 interface Student {
   id: string;
@@ -53,9 +54,13 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const [timePreset, setTimePreset] = useState<string>('now');
   const [showConfigPopup, setShowConfigPopup] = useState(false);
   const [triggerPosition, setTriggerPosition] = useState<{top: number; left: number; width: number} | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [realtimeActivities, setRealtimeActivities] = useState<any[]>([]);
   const studentSelectorRef = useRef<HTMLDivElement>(null);
   const studentSelectorTriggerRef = useRef<HTMLDivElement>(null);
   const configPopupRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const queryClient = useQueryClient();
 
   // Fetch all students
   const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
@@ -79,12 +84,102 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const { data: studentActivities = [], isLoading: activitiesLoading, isFetching } = useQuery<StudentActivity[]>({
     queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
     enabled: isMonitoring && selectedStudents.length > 0,
-    refetchInterval: 10000, // Refresh every 10 seconds to reduce flickering
-    staleTime: 15000, // Keep data fresh for 15 seconds to prevent constant refetching
+    refetchInterval: 30000, // Reduced to 30 seconds since we have real-time updates
+    staleTime: 25000, // Keep data fresh for 25 seconds
     refetchOnWindowFocus: false, // Prevent refetch on window focus
     refetchOnMount: false, // Prevent refetch on component mount
     retry: 1, // Reduce retry attempts
   });
+
+  // Setup WebSocket connection
+  useEffect(() => {
+    if (isMonitoring && selectedStudents.length > 0) {
+      // Connect to WebSocket
+      const socket = io(window.location.origin);
+      socketRef.current = socket;
+      
+      socket.on('connect', () => {
+        console.log('Connected to WebSocket');
+        setSocketConnected(true);
+        socket.emit('join-monitor', { students: selectedStudents });
+      });
+      
+      socket.on('disconnect', () => {
+        console.log('Disconnected from WebSocket');
+        setSocketConnected(false);
+      });
+      
+      socket.on('quiz-activity', (data) => {
+        console.log('Real-time quiz activity:', data);
+        setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]); // Keep last 50 activities
+        
+        // Update the query cache with new data
+        queryClient.setQueryData(['/api/live-class-activities', selectedStudents, monitorStartTime], (oldData: StudentActivity[] | undefined) => {
+          if (!oldData) return oldData;
+          
+          return oldData.map(student => {
+            if (student.student_id === data.student_id) {
+              return {
+                ...student,
+                quiz_attempts: (student.quiz_attempts || 0) + 1,
+                quiz_accuracy: data.quiz_result === '✅' ? 
+                  Math.round(((student.quiz_accuracy || 0) * (student.quiz_attempts || 0) + 100) / ((student.quiz_attempts || 0) + 1)) :
+                  Math.round(((student.quiz_accuracy || 0) * (student.quiz_attempts || 0)) / ((student.quiz_attempts || 0) + 1)),
+                last_activity: data.timestamp,
+                activities: [data, ...(student.activities || []).slice(0, 24)]
+              };
+            }
+            return student;
+          });
+        });
+      });
+      
+      socket.on('content-activity', (data) => {
+        console.log('Real-time content activity:', data);
+        setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]);
+        
+        // Update the query cache with new data
+        queryClient.setQueryData(['/api/live-class-activities', selectedStudents, monitorStartTime], (oldData: StudentActivity[] | undefined) => {
+          if (!oldData) return oldData;
+          
+          return oldData.map(student => {
+            if (student.student_id === data.student_id) {
+              const updatedStudent = { ...student };
+              if (data.type === 'content_view') {
+                updatedStudent.content_viewed = (student.content_viewed || 0) + 1;
+              } else if (data.type === 'content_rating') {
+                updatedStudent.content_rated = (student.content_rated || 0) + 1;
+              }
+              updatedStudent.last_activity = data.timestamp;
+              updatedStudent.activities = [data, ...(student.activities || []).slice(0, 24)];
+              return updatedStudent;
+            }
+            return student;
+          });
+        });
+      });
+      
+      return () => {
+        socket.disconnect();
+        socketRef.current = null;
+        setSocketConnected(false);
+      };
+    } else {
+      // Disconnect when monitoring stops
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setSocketConnected(false);
+      }
+    }
+  }, [isMonitoring, selectedStudents, monitorStartTime, queryClient]);
+
+  // Clear realtime activities when monitoring stops
+  useEffect(() => {
+    if (!isMonitoring) {
+      setRealtimeActivities([]);
+    }
+  }, [isMonitoring]);
 
   // Filter activities based on criteria
   const filteredActivities = useMemo(() => {
@@ -273,6 +368,14 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             <div className="flex items-center gap-2">
               <Users className="h-6 w-6 text-blue-600" />
               <span className="text-blue-600">Live Class Monitor</span>
+              {isMonitoring && (
+                <div className="flex items-center gap-1">
+                  <Wifi className={`h-4 w-4 ${socketConnected ? 'text-green-500' : 'text-red-500'}`} />
+                  <span className={`text-xs ${socketConnected ? 'text-green-500' : 'text-red-500'}`}>
+                    {socketConnected ? 'Live' : 'Offline'}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <Button
@@ -465,6 +568,48 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
 
         </CardContent>
       </Card>
+
+      {/* Real-time Activity Feed */}
+      {isMonitoring && realtimeActivities.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-600">Live Activity Feed</span>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {realtimeActivities.slice(0, 10).map((activity, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
+                  <div className="flex items-center gap-2">
+                    <Badge className={getActivityColor(activity.type)}>
+                      {activity.type.replace('_', ' ')}
+                    </Badge>
+                    <span className="font-medium">
+                      {(allStudents as Student[]).find(s => s.id === activity.student_id)?.first_name || activity.student_id}
+                    </span>
+                    <span>{activity.content_title}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {activity.rating && (
+                      <Badge variant="outline">Rating: {activity.rating}</Badge>
+                    )}
+                    {activity.quiz_result && (
+                      <Badge variant="outline">{activity.quiz_result}</Badge>
+                    )}
+                    <span className="text-xs text-gray-500">
+                      {formatTime(activity.timestamp)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Student Activities */}
       {isMonitoring && (
