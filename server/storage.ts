@@ -767,7 +767,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getStudentWritingSubmissions(```text
-studentId: string): Promise<WritingSubmission[]> {
+studentId:string): Promise<WritingSubmission[]> {
     return await db.select().from(writing_submissions)
       .where(eq(writing_submissions.student_id, studentId))
       .orderBy(desc(writing_submissions.created_at));
@@ -1300,11 +1300,11 @@ studentId: string): Promise<WritingSubmission[]> {
         const student = studentInfo.rows[0] as any;
 
         // Get content views count
-        const contentViews = await db.execute(sql`
+      const contentViews = await db.execute(sql`
         SELECT COUNT(*) as count 
         FROM student_try_content stc
         WHERE stc.hocsinh_id = ${studentId} 
-          AND stc.time_start >= ${startTime}::timestamp
+          AND stc.time_start >= ${startTime}
       `);
 
       // Get content ratings count
@@ -1312,7 +1312,7 @@ studentId: string): Promise<WritingSubmission[]> {
         SELECT COUNT(*) as count 
         FROM content_ratings cr
         WHERE cr.student_id = ${studentId} 
-          AND cr.updated_at >= ${startTime}::timestamp
+          AND cr.updated_at >= ${startTime}
       `);
 
         // Get quiz attempts count and accuracy
