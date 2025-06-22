@@ -766,8 +766,7 @@ export class DatabaseStorage implements IStorage {
     return result[0] || undefined;
   }
 
-  async getStudentWritingSubmissions(```text
-studentId:string): Promise<WritingSubmission[]> {
+  async getStudentWritingSubmissions(studentId: string): Promise<WritingSubmission[]> {
     return await db.select().from(writing_submissions)
       .where(eq(writing_submissions.student_id, studentId))
       .orderBy(desc(writing_submissions.created_at));
@@ -1084,10 +1083,9 @@ studentId:string): Promise<WritingSubmission[]> {
       return result.rows.map((row: any, index: number) => ({
         rank: index + 1,
         student_id: row.hocsinh_id,
-        name: row.hocsinh_id, // Using ID as name for now
         total_tries: parseInt(row.total_tries),
         correct_answers: parseInt(row.correct_answers),
-        accuracy: parseFloat(row.accuracy_percentage) || 0
+        accuracy_percentage: parseFloat(row.accuracy_percentage)
       }));
     });
   }
