@@ -186,12 +186,18 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
           
           return oldData.map(student => {
             if (student.student_id === data.student_id) {
+              const currentAttempts = student.quiz_attempts || 0;
+              const currentAccuracy = student.quiz_accuracy || 0;
+              const currentCorrect = Math.round((currentAccuracy * currentAttempts) / 100);
+              
+              const newAttempts = currentAttempts + 1;
+              const newCorrect = data.quiz_result === '✅' ? currentCorrect + 1 : currentCorrect;
+              const newAccuracy = Math.round((newCorrect / newAttempts) * 100);
+              
               return {
                 ...student,
-                quiz_attempts: (student.quiz_attempts || 0) + 1,
-                quiz_accuracy: data.quiz_result === '✅' ? 
-                  Math.round(((student.quiz_accuracy || 0) * (student.quiz_attempts || 0) + 100) / ((student.quiz_attempts || 0) + 1)) :
-                  Math.round(((student.quiz_accuracy || 0) * (student.quiz_attempts || 0)) / ((student.quiz_attempts || 0) + 1)),
+                quiz_attempts: newAttempts,
+                quiz_accuracy: newAccuracy,
                 last_activity: data.timestamp,
                 activities: [data, ...(student.activities || []).slice(0, 24)]
               };

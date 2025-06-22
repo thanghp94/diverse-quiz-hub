@@ -1075,6 +1075,7 @@ export class DatabaseStorage implements IStorage {
             1
           ) as accuracy_percentage
         FROM student_try 
+        WHERE quiz_result IS NOT NULL AND quiz_result != ''
         GROUP BY hocsinh_id 
         ORDER BY total_tries DESC, accuracy_percentage DESC
         LIMIT 20
@@ -1085,7 +1086,7 @@ export class DatabaseStorage implements IStorage {
         student_id: row.hocsinh_id,
         total_tries: parseInt(row.total_tries),
         correct_answers: parseInt(row.correct_answers),
-        accuracy_percentage: parseFloat(row.accuracy_percentage)
+        accuracy_percentage: parseFloat(row.accuracy_percentage) || 0
       }));
     });
   }
@@ -1314,17 +1315,19 @@ export class DatabaseStorage implements IStorage {
           AND cr.updated_at >= ${startTime}
       `);
 
-        // Get quiz attempts count and accuracy
+        // Get quiz attempts count and accuracy based on quiz_result
         const quizAttempts = await db.execute(sql`
         SELECT COUNT(*) as attempts_count,
-               AVG(CASE WHEN score >= 70 THEN 100 ELSE 0 END) as accuracy
+               COUNT(CASE WHEN quiz_result = '✅' THEN 1 END) as correct_count
         FROM student_try st
         WHERE st.hocsinh_id = ${studentId} 
           AND st.time_start >= ${startTime}::timestamp
+          AND st.quiz_result IS NOT NULL
+          AND st.quiz_result != ''
       `);
 
         const totalQuizzes = parseInt((quizAttempts.rows[0] as any)?.attempts_count) || 0;
-        const correctAnswers = parseInt((quizAttempts.rows[0] as any)?.accuracy) || 0;
+        const correctAnswers = parseInt((quizAttempts.rows[0] as any)?.correct_count) || 0;
         const quizAccuracy = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : null;
 
         results.push({
