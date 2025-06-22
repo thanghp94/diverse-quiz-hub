@@ -117,15 +117,15 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     });
   }, [allStudents, searchTerm]);
 
-  // Fetch student activities (only when monitoring is active)
+  // Fetch student activities (only when monitoring is active) - initial load only, no polling
   const { data: studentActivities = [], isLoading: activitiesLoading, isFetching } = useQuery<StudentActivity[]>({
     queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
     enabled: isMonitoring && selectedStudents.length > 0,
-    refetchInterval: 60000, // Increased to 60 seconds since we rely on real-time updates
-    staleTime: 55000, // Keep data fresh for 55 seconds
-    refetchOnWindowFocus: false, // Prevent refetch on window focus
-    refetchOnMount: false, // Prevent refetch on component mount
-    retry: 1, // Reduce retry attempts
+    refetchInterval: false, // Disable polling - use pure WebSocket events
+    staleTime: Infinity, // Keep data indefinitely - WebSocket will update
+    refetchOnWindowFocus: false,
+    refetchOnMount: true, // Only fetch on initial mount
+    retry: 1,
   });
 
   // Setup WebSocket connection
@@ -133,15 +133,17 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     let socket: Socket | null = null;
     
     if (isMonitoring && selectedStudents.length > 0) {
-      // Create new WebSocket connection
+      // Create new WebSocket connection optimized for real-time updates
       socket = io(window.location.origin, {
-        transports: ['websocket', 'polling'],
-        timeout: 10000, // Reduced timeout for faster connection
-        forceNew: false, // Allow reusing existing connection
+        transports: ['websocket'], // Prefer WebSocket only for fastest connection
+        timeout: 5000, // Faster timeout
+        forceNew: false,
         reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 500, // Faster reconnection
-        reconnectionDelayMax: 2000
+        reconnectionAttempts: 15,
+        reconnectionDelay: 200, // Much faster reconnection
+        reconnectionDelayMax: 1000,
+        upgrade: true,
+        rememberUpgrade: true
       });
       
       socketRef.current = socket;
@@ -178,7 +180,7 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       });
       
       socket.on('quiz-activity', (data) => {
-        console.log('Real-time quiz activity received:', data);
+        console.log('⚡ Real-time quiz activity received:', data);
         
         // Immediately add to realtime activities
         setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]);
@@ -224,16 +226,10 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             return student;
           });
         });
-        
-        // Force immediate re-render by invalidating the query
-        queryClient.invalidateQueries({
-          queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
-          refetchType: 'none' // Don't refetch, just use updated cache
-        });
       });
       
       socket.on('content-activity', (data) => {
-        console.log('Real-time content activity received:', data);
+        console.log('⚡ Real-time content activity received:', data);
         
         // Immediately add to realtime activities
         setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]);
@@ -258,12 +254,6 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             }
             return student;
           });
-        });
-        
-        // Force immediate re-render
-        queryClient.invalidateQueries({
-          queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
-          refetchType: 'none'
         });
       });
     }
