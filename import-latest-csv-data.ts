@@ -136,7 +136,7 @@ async function importQuestions() {
   console.log('Starting questions import...');
 
   try {
-    const questionsPath = path.join(__dirname, 'attached_assets', 'question2_1750578326483.csv');
+    const questionsPath = path.join(__dirname, 'attached_assets', 'question2_1750578488422.csv');
     const csvContent = fs.readFileSync(questionsPath, 'utf-8');
     const questionsData = parseCSV(csvContent);
 
