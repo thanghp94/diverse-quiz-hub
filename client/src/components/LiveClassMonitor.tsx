@@ -41,10 +41,31 @@ interface LiveClassMonitorProps {
 }
 
 export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime }) => {
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [monitorStartTime, setMonitorStartTime] = useState(startTime || new Date().toISOString());
+  const [selectedStudents, setSelectedStudents] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('liveMonitor_selectedStudents');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [monitorStartTime, setMonitorStartTime] = useState(() => {
+    try {
+      const saved = localStorage.getItem('liveMonitor_startTime');
+      return saved || startTime || new Date().toISOString();
+    } catch {
+      return startTime || new Date().toISOString();
+    }
+  });
   const [customStartTime, setCustomStartTime] = useState(format(new Date(), 'yyyy-MM-dd\'T\'HH:mm'));
-  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [isMonitoring, setIsMonitoring] = useState(() => {
+    try {
+      const saved = localStorage.getItem('liveMonitor_isMonitoring');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [showActivityDetails, setShowActivityDetails] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activityFilter, setActivityFilter] = useState<string>('all');
@@ -61,6 +82,19 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const configPopupRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const queryClient = useQueryClient();
+
+  // Persist state to localStorage
+  useEffect(() => {
+    localStorage.setItem('liveMonitor_selectedStudents', JSON.stringify(selectedStudents));
+  }, [selectedStudents]);
+
+  useEffect(() => {
+    localStorage.setItem('liveMonitor_startTime', monitorStartTime);
+  }, [monitorStartTime]);
+
+  useEffect(() => {
+    localStorage.setItem('liveMonitor_isMonitoring', isMonitoring.toString());
+  }, [isMonitoring]);
 
   // Fetch all students
   const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
@@ -93,29 +127,50 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
 
   // Setup WebSocket connection
   useEffect(() => {
+    let socket: Socket | null = null;
+    
     if (isMonitoring && selectedStudents.length > 0) {
-      // Connect to WebSocket with explicit configuration
-      const socket = io(window.location.origin, {
+      // Create new WebSocket connection
+      socket = io(window.location.origin, {
         transports: ['websocket', 'polling'],
         timeout: 20000,
-        forceNew: true
+        forceNew: false, // Allow reusing existing connection
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
       });
+      
       socketRef.current = socket;
       
       socket.on('connect', () => {
         console.log('✅ Connected to WebSocket successfully');
         setSocketConnected(true);
-        socket.emit('join-monitor', { students: selectedStudents });
+        if (socket && selectedStudents.length > 0) {
+          socket.emit('join-monitor', { students: selectedStudents });
+        }
       });
       
       socket.on('disconnect', (reason) => {
         console.log('❌ Disconnected from WebSocket:', reason);
         setSocketConnected(false);
+        
+        // Only log as error if it's not an intentional disconnect
+        if (reason !== 'io client disconnect' && reason !== 'io server disconnect') {
+          console.log('🔄 Will attempt to reconnect...');
+        }
       });
 
       socket.on('connect_error', (error) => {
         console.error('❌ Socket connection error:', error);
         setSocketConnected(false);
+      });
+
+      socket.on('reconnect', (attemptNumber) => {
+        console.log('🔄 Reconnected to WebSocket after', attemptNumber, 'attempts');
+        setSocketConnected(true);
+        if (socket && selectedStudents.length > 0) {
+          socket.emit('join-monitor', { students: selectedStudents });
+        }
       });
       
       socket.on('quiz-activity', (data) => {
@@ -167,20 +222,20 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
           });
         });
       });
-      
-      return () => {
+    }
+    
+    // Cleanup function
+    return () => {
+      if (socket) {
+        console.log('🔌 Cleaning up WebSocket connection');
+        socket.removeAllListeners();
         socket.disconnect();
-        socketRef.current = null;
-        setSocketConnected(false);
-      };
-    } else {
-      // Disconnect when monitoring stops
-      if (socketRef.current) {
-        socketRef.current.disconnect();
+      }
+      if (socketRef.current === socket) {
         socketRef.current = null;
         setSocketConnected(false);
       }
-    }
+    };
   }, [isMonitoring, selectedStudents, monitorStartTime, queryClient]);
 
   // Clear realtime activities when monitoring stops
@@ -189,6 +244,20 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       setRealtimeActivities([]);
     }
   }, [isMonitoring]);
+
+  // Handle component unmount (page navigation)
+  useEffect(() => {
+    return () => {
+      // Clean up socket connection when component unmounts
+      if (socketRef.current) {
+        console.log('🔌 Component unmounting, cleaning up WebSocket');
+        socketRef.current.removeAllListeners();
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setSocketConnected(false);
+      }
+    };
+  }, []);
 
   // Filter activities based on criteria
   const filteredActivities = useMemo(() => {
@@ -339,6 +408,10 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
 
   const stopMonitoring = () => {
     setIsMonitoring(false);
+    // Clear localStorage when stopping monitoring
+    localStorage.removeItem('liveMonitor_selectedStudents');
+    localStorage.removeItem('liveMonitor_startTime');
+    localStorage.removeItem('liveMonitor_isMonitoring');
   };
 
   const getActivityColor = (type: string) => {

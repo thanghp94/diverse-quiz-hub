@@ -334,12 +334,12 @@ class ContentRoutes {
           student_try_id: crypto.randomUUID(),
           time_start: now,
           time_end: now,
-          update: `Content_viewed_at_${Date.now()}`
+          update: now // Use ISO timestamp instead of custom string
         };
 
         await db.execute(sql`
           INSERT INTO student_try_content (id, contentid, hocsinh_id, student_try_id, time_start, time_end, update)
-          VALUES (${studentTryContentRecord.id}, ${content_id}, ${student_id}, ${studentTryContentRecord.student_try_id}, ${now}, ${now}, ${studentTryContentRecord.update})
+          VALUES (${studentTryContentRecord.id}, ${content_id}, ${student_id}, ${studentTryContentRecord.student_try_id}, ${now}, ${now}, ${now})
         `);
         console.log(`Student try content record created for Student ${student_id}, Content ${content_id}`);
       } catch (contentError) {
