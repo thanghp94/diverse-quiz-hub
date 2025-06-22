@@ -1287,9 +1287,10 @@ export class DatabaseStorage implements IStorage {
 
       // Process each student individually to avoid complex query parameter issues
       for (const studentId of studentIds) {
-        // Get student info
+        // Get student info with all necessary fields
         const studentInfo = await db.execute(sql`
-          SELECT id, COALESCE(full_name, first_name || ' ' || last_name) as student_name
+          SELECT id, first_name, last_name, full_name, 
+                 COALESCE(full_name, first_name || ' ' || last_name) as student_name
           FROM users WHERE id = ${studentId}
         `);
 
@@ -1329,6 +1330,9 @@ export class DatabaseStorage implements IStorage {
         results.push({
           student_id: student.id,
           student_name: student.student_name,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          full_name: student.full_name,
           content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
           content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
           quiz_attempts: totalQuizzes,

@@ -21,6 +21,9 @@ interface Student {
 interface StudentActivity {
   student_id: string;
   student_name: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
   content_viewed: number;
   content_rated: number;
   quiz_attempts: number;
@@ -723,7 +726,18 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                       return (
                         <tr key={studentId} className="border-b hover:bg-gray-50">
                           <td className="px-1 py-1">
-                            <div className="font-medium text-sm">{student.first_name} {student.last_name}</div>
+                            <div className="font-medium text-sm">
+                              {activity?.first_name && activity?.last_name 
+                                ? `${activity.first_name} ${activity.last_name}`
+                                : activity?.full_name 
+                                ? activity.full_name
+                                : activity?.student_name
+                                ? activity.student_name
+                                : student?.first_name && student?.last_name
+                                ? `${student.first_name} ${student.last_name}`
+                                : student?.full_name || student?.id || 'Unknown'
+                              }
+                            </div>
                           </td>
                           <td className="px-1 py-1">
                             <span className="text-sm font-medium">{activity?.content_viewed || 0}</span>
