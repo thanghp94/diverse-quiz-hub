@@ -766,7 +766,8 @@ export class DatabaseStorage implements IStorage {
     return result[0] || undefined;
   }
 
-  async getStudentWritingSubmissions(studentId: string): Promise<WritingSubmission[]> {
+  async getStudentWritingSubmissions(```text
+studentId: string): Promise<WritingSubmission[]> {
     return await db.select().from(writing_submissions)
       .where(eq(writing_submissions.student_id, studentId))
       .orderBy(desc(writing_submissions.created_at));
@@ -1300,155 +1301,32 @@ export class DatabaseStorage implements IStorage {
 
         // Get content views count
         const contentViews = await db.execute(sql`
-          SELECT COUNT(*) as count 
-          FROM student_try_content stc
-          WHERE stc.hocsinh_id = ${studentId} 
-            AND stc.time_start >= ${startTime}
-        `);
+        SELECT COUNT(*) as count 
+        FROM student_try_content stc
+        WHERE stc.hocsinh_id = ${studentId} 
+          AND stc.time_start >= ${startTime}::timestamp
+      `);
 
-        // Get content ratings count
-        const contentRatings = await db.execute(sql`
-          SELECT COUNT(*) as count 
-          FROM content_ratings cr
-          WHERE cr.student_id = ${studentId} 
-            AND cr.created_at >= ${startTime}
-        `);
+      // Get content ratings count
+      const contentRatings = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM content_ratings cr
+        WHERE cr.student_id = ${studentId} 
+          AND cr.updated_at >= ${startTime}::timestamp
+      `);
 
         // Get quiz attempts count and accuracy
-        const quizStats = await db.execute(sql`
-          SELECT 
-            COUNT(*) as total_attempts,
-            COUNT(CASE WHEN st.quiz_result = '✅' THEN 1 END) as correct_answers,
-            COUNT(CASE WHEN st.quiz_result = '❌' THEN 1 END) as incorrect_answers
-          FROM student_try st
-          WHERE st.hocsinh_id = ${studentId} 
-            AND st.time_start >= ${startTime}
-            AND st.time_start IS NOT NULL
-            AND st.quiz_result IS NOT NULL
-            AND st.quiz_result != ''
-        `);
+        const quizAttempts = await db.execute(sql`
+        SELECT COUNT(*) as attempts_count,
+               AVG(CASE WHEN score >= 70 THEN 100 ELSE 0 END) as accuracy
+        FROM student_tries st
+        WHERE st.hocsinh_id = ${studentId} 
+          AND st.created_at >= ${startTime}::timestamp
+      `);
 
-        const totalQuizzes = parseInt((quizStats.rows[0] as any)?.total_attempts) || 0;
-        const correctAnswers = parseInt((quizStats.rows[0] as any)?.correct_answers) || 0;
-        const incorrectAnswers = parseInt((quizStats.rows[0] as any)?.incorrect_answers) || 0;
+        const totalQuizzes = parseInt((quizAttempts.rows[0] as any)?.attempts_count) || 0;
+        const correctAnswers = parseInt((quizAttempts.rows[0] as any)?.accuracy) || 0;
         const quizAccuracy = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : null;
-
-        // Debug logging for quiz accuracy
-        if (totalQuizzes > 0) {
-          console.log(`Student ${studentId} quiz stats:`, {
-            total: totalQuizzes,
-            correct: correctAnswers,
-            incorrect: incorrectAnswers,
-            accuracy: quizAccuracy
-          });
-        }
-
-        // Get recent activities - simplified approach
-        const allActivities: any[] = [];
-
-        // Get content view activities
-        try {
-          const contentViewActivities = await db.execute(sql`
-            SELECT 'content_view' as type, c.id as content_id, c.title as content_title, 
-                   stc.time_start as timestamp
-            FROM student_try_content stc
-            JOIN content c ON stc.contentid = c.id
-            WHERE stc.hocsinh_id = ${studentId} AND stc.time_start >= ${startTime}
-            ORDER BY stc.time_start DESC
-            LIMIT 10
-          `);
-
-          contentViewActivities.rows.forEach((row: any) => {
-            allActivities.push({
-              type: row.type,
-              content_id: row.content_id,
-              content_title: row.content_title,
-              timestamp: row.timestamp,
-              rating: null,
-              quiz_score: null
-            });
-          });
-        } catch (e) {
-          console.log('Error fetching content views:', e);
-        }
-
-        // Get rating activities
-        try {
-          const ratingActivities = await db.execute(sql`
-            SELECT 'content_rating' as type, cr.content_id, c.title as content_title,
-                   cr.created_at as timestamp, cr.rating
-            FROM content_ratings cr
-            JOIN content c ON cr.content_id = c.id
-            WHERE cr.student_id = ${studentId} AND cr.created_at >= ${startTime}
-            ORDER BY cr.created_at DESC
-            LIMIT 10
-          `);
-
-          ratingActivities.rows.forEach((row: any) => {
-            allActivities.push({
-              type: row.type,
-              content_id: row.content_id,
-              content_title: row.content_title,
-              timestamp: row.timestamp,
-              rating: row.rating,
-              quiz_score: null
-            });
-          });
-        } catch (e) {
-          console.log('Error fetching ratings:', e);
-        }
-
-        // Get quiz activities with proper timestamp handling
-        try {
-          const quizActivities = await db.execute(sql`
-            SELECT DISTINCT 'quiz_attempt' as type, q.contentid as content_id, c.title as content_title,
-                   CASE 
-                     WHEN st.time_start ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN 
-                       st.time_start::timestamp
-                     WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
-                       (CURRENT_DATE || ' ' || st.time_start)::timestamp
-                     ELSE 
-                       st.time_start::timestamp
-                   END as timestamp,
-                   st.score, st.quiz_result, st.time_start as original_time
-            FROM student_try st
-            JOIN question q ON st.question_id = q.id
-            JOIN content c ON q.contentid = c.id
-            WHERE st.hocsinh_id = ${studentId} 
-              AND st.time_start IS NOT NULL 
-              AND st.time_start != ''
-              AND (
-                CASE 
-                  WHEN st.time_start ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN 
-                    st.time_start::timestamp >= ${startTime}::timestamp
-                  WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
-                    (CURRENT_DATE || ' ' || st.time_start)::timestamp >= ${startTime}::timestamp
-                  ELSE 
-                    st.time_start::timestamp >= ${startTime}::timestamp
-                END
-              )
-            ORDER BY timestamp DESC
-            LIMIT 15
-          `);
-
-          quizActivities.rows.forEach((row: any) => {
-            allActivities.push({
-              type: row.type,
-              content_id: row.content_id,
-              content_title: row.content_title,
-              timestamp: row.timestamp,
-              rating: null,
-              quiz_score: row.score,
-              quiz_result: row.quiz_result
-            });
-          });
-        } catch (e) {
-          console.log('Error fetching quizzes:', e);
-        }
-
-        // Sort activities by timestamp
-        allActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        allActivities.splice(25); // Keep only top 25
 
         results.push({
           student_id: student.id,
@@ -1457,8 +1335,8 @@ export class DatabaseStorage implements IStorage {
           content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
           quiz_attempts: totalQuizzes,
           quiz_accuracy: quizAccuracy,
-          last_activity: allActivities.length > 0 ? allActivities[0].timestamp : null,
-          activities: allActivities
+          last_activity: null,
+          activities: []
         });
       }
 
