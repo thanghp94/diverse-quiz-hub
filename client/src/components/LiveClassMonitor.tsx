@@ -41,10 +41,31 @@ interface LiveClassMonitorProps {
 }
 
 export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime }) => {
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [monitorStartTime, setMonitorStartTime] = useState(startTime || new Date().toISOString());
+  const [selectedStudents, setSelectedStudents] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('liveMonitor_selectedStudents');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [monitorStartTime, setMonitorStartTime] = useState(() => {
+    try {
+      const saved = localStorage.getItem('liveMonitor_startTime');
+      return saved || startTime || new Date().toISOString();
+    } catch {
+      return startTime || new Date().toISOString();
+    }
+  });
   const [customStartTime, setCustomStartTime] = useState(format(new Date(), 'yyyy-MM-dd\'T\'HH:mm'));
-  const [isMonitoring, setIsMonitoring] = useState(false);
+  const [isMonitoring, setIsMonitoring] = useState(() => {
+    try {
+      const saved = localStorage.getItem('liveMonitor_isMonitoring');
+      return saved === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [showActivityDetails, setShowActivityDetails] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activityFilter, setActivityFilter] = useState<string>('all');
@@ -61,6 +82,19 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const configPopupRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const queryClient = useQueryClient();
+
+  // Persist state to localStorage
+  useEffect(() => {
+    localStorage.setItem('liveMonitor_selectedStudents', JSON.stringify(selectedStudents));
+  }, [selectedStudents]);
+
+  useEffect(() => {
+    localStorage.setItem('liveMonitor_startTime', monitorStartTime);
+  }, [monitorStartTime]);
+
+  useEffect(() => {
+    localStorage.setItem('liveMonitor_isMonitoring', isMonitoring.toString());
+  }, [isMonitoring]);
 
   // Fetch all students
   const { data: allStudents = [], isLoading: studentsLoading } = useQuery<Student[]>({
@@ -374,6 +408,10 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
 
   const stopMonitoring = () => {
     setIsMonitoring(false);
+    // Clear localStorage when stopping monitoring
+    localStorage.removeItem('liveMonitor_selectedStudents');
+    localStorage.removeItem('liveMonitor_startTime');
+    localStorage.removeItem('liveMonitor_isMonitoring');
   };
 
   const getActivityColor = (type: string) => {
