@@ -359,6 +359,19 @@ class ContentRoutes {
           view_count: 1
         });
         
+        // Emit real-time update via WebSocket
+        const io = (global as any).io;
+        if (io) {
+          const content = await storage.getContentById(content_id);
+          io.to('live-monitor').emit('content-activity', {
+            type: 'content_view',
+            student_id,
+            content_id,
+            content_title: content?.title || 'Unknown Content',
+            timestamp: new Date().toISOString()
+          });
+        }
+        
         console.log(`Content access recorded: Student ${student_id} viewed content ${content_id}`);
         return ApiResponse.success(res, { record: accessRecord }, 'Content access recorded');
       } else {
@@ -793,6 +806,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.recordDailyActivity(req.params.studentId, 10);
           await storage.updateStudentStreak(req.params.studentId);
+          
+          // Emit real-time update via WebSocket
+          const io = (global as any).io;
+          if (io) {
+            const content = await storage.getContentById(req.params.contentId);
+            io.to('live-monitor').emit('content-activity', {
+              type: 'content_rating',
+              student_id: req.params.studentId,
+              content_id: req.params.contentId,
+              content_title: content?.title || 'Unknown Content',
+              rating: rating,
+              timestamp: new Date().toISOString()
+            });
+          }
         } catch (activityError) {
           console.log('Failed to record activity/streak:', activityError);
         }
@@ -1022,6 +1049,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Creating student try with data:', req.body);
       const studentTry = await storage.createStudentTry(req.body);
       console.log('Student try created:', studentTry);
+      
+      // Emit real-time update via WebSocket
+      const io = (global as any).io;
+      if (io) {
+        io.to('live-monitor').emit('quiz-activity', {
+          type: 'quiz_attempt',
+          student_id: studentTry.hocsinh_id,
+          student_name: studentTry.hocsinh_id, // Will be enriched on client side
+          quiz_result: studentTry.quiz_result,
+          score: studentTry.score,
+          timestamp: new Date().toISOString(),
+          question_id: studentTry.question_id
+        });
+      }
+      
       res.json(studentTry);
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to create student try', error);
