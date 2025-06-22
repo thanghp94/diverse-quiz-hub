@@ -144,6 +144,7 @@ export interface IStorage {
 
   // Live Class Monitoring
   getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]>;
+  getQuestion(questionId: string): Promise<any | null>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -293,6 +294,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Questions
+  async getQuestion(questionId: string): Promise<any | null> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM question 
+        WHERE id = ${questionId}
+        LIMIT 1
+      `);
+
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching question:', error);
+      return null;
+    }
+  }
+
   async getQuestions(contentId?: string, topicId?: string, level?: string) {
     try {
       console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
@@ -1062,6 +1078,22 @@ export class DatabaseStorage implements IStorage {
       return result;
     });
   }
+
+   async getContentById(contentId: string): Promise<any | null> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM content 
+        WHERE id = ${contentId}
+        LIMIT 1
+      `);
+
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching content by ID:', error);
+      return null;
+    }
+  }
+
 
   async getStudentTriesLeaderboard(): Promise<any[]> {
     return this.executeWithRetry(async () => {

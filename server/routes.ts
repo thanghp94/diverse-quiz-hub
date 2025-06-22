@@ -884,8 +884,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const leaderboards = await storage.getLeaderboards();
       res.json(leaderboards);
-    } catch (error) {
-      ApiResponse.serverError(res, 'Failed to fetch leaderboards', error);
+    } catch (error) {ApiResponse.serverError(res, 'Failed to fetch leaderboards', error);
     }
   });
 
