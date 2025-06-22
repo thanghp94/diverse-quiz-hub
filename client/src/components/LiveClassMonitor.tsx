@@ -121,8 +121,8 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   const { data: studentActivities = [], isLoading: activitiesLoading, isFetching } = useQuery<StudentActivity[]>({
     queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
     enabled: isMonitoring && selectedStudents.length > 0,
-    refetchInterval: 30000, // Reduced to 30 seconds since we have real-time updates
-    staleTime: 25000, // Keep data fresh for 25 seconds
+    refetchInterval: 60000, // Increased to 60 seconds since we rely on real-time updates
+    staleTime: 55000, // Keep data fresh for 55 seconds
     refetchOnWindowFocus: false, // Prevent refetch on window focus
     refetchOnMount: false, // Prevent refetch on component mount
     retry: 1, // Reduce retry attempts
@@ -136,11 +136,12 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       // Create new WebSocket connection
       socket = io(window.location.origin, {
         transports: ['websocket', 'polling'],
-        timeout: 20000,
+        timeout: 10000, // Reduced timeout for faster connection
         forceNew: false, // Allow reusing existing connection
         reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000
+        reconnectionAttempts: 10,
+        reconnectionDelay: 500, // Faster reconnection
+        reconnectionDelayMax: 2000
       });
       
       socketRef.current = socket;
@@ -177,58 +178,92 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       });
       
       socket.on('quiz-activity', (data) => {
-        console.log('Real-time quiz activity:', data);
-        setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]); // Keep last 50 activities
+        console.log('Real-time quiz activity received:', data);
         
-        // Update the query cache with new data
+        // Immediately add to realtime activities
+        setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]);
+        
+        // Immediately update the query cache for instant UI updates
         queryClient.setQueryData(['/api/live-class-activities', selectedStudents, monitorStartTime], (oldData: StudentActivity[] | undefined) => {
           if (!oldData) return oldData;
           
           return oldData.map(student => {
             if (student.student_id === data.student_id) {
               const currentAttempts = student.quiz_attempts || 0;
-              const currentAccuracy = student.quiz_accuracy || 0;
-              const currentCorrect = Math.round((currentAccuracy * currentAttempts) / 100);
+              let newCorrect = 0;
+              let newAttempts = currentAttempts + 1;
               
-              const newAttempts = currentAttempts + 1;
-              const newCorrect = data.quiz_result === '✅' ? currentCorrect + 1 : currentCorrect;
-              const newAccuracy = Math.round((newCorrect / newAttempts) * 100);
+              // Recalculate accuracy more precisely
+              if (currentAttempts > 0 && student.quiz_accuracy) {
+                newCorrect = Math.round((student.quiz_accuracy * currentAttempts) / 100);
+              }
+              
+              if (data.quiz_result === '✅') {
+                newCorrect += 1;
+              }
+              
+              const newAccuracy = newAttempts > 0 ? Math.round((newCorrect / newAttempts) * 100) : 0;
+              
+              // Create new activity object
+              const newActivity = {
+                type: 'quiz_attempt' as const,
+                content_id: data.content_id,
+                content_title: data.content_title,
+                timestamp: data.timestamp,
+                quiz_score: data.score
+              };
               
               return {
                 ...student,
                 quiz_attempts: newAttempts,
                 quiz_accuracy: newAccuracy,
                 last_activity: data.timestamp,
-                activities: [data, ...(student.activities || []).slice(0, 24)]
+                activities: [newActivity, ...(student.activities || []).slice(0, 24)]
               };
             }
             return student;
           });
         });
+        
+        // Force immediate re-render by invalidating the query
+        queryClient.invalidateQueries({
+          queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
+          refetchType: 'none' // Don't refetch, just use updated cache
+        });
       });
       
       socket.on('content-activity', (data) => {
-        console.log('Real-time content activity:', data);
+        console.log('Real-time content activity received:', data);
+        
+        // Immediately add to realtime activities
         setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]);
         
-        // Update the query cache with new data
+        // Immediately update the query cache
         queryClient.setQueryData(['/api/live-class-activities', selectedStudents, monitorStartTime], (oldData: StudentActivity[] | undefined) => {
           if (!oldData) return oldData;
           
           return oldData.map(student => {
             if (student.student_id === data.student_id) {
               const updatedStudent = { ...student };
+              
               if (data.type === 'content_view') {
                 updatedStudent.content_viewed = (student.content_viewed || 0) + 1;
               } else if (data.type === 'content_rating') {
                 updatedStudent.content_rated = (student.content_rated || 0) + 1;
               }
+              
               updatedStudent.last_activity = data.timestamp;
               updatedStudent.activities = [data, ...(student.activities || []).slice(0, 24)];
               return updatedStudent;
             }
             return student;
           });
+        });
+        
+        // Force immediate re-render
+        queryClient.invalidateQueries({
+          queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
+          refetchType: 'none'
         });
       });
     }
