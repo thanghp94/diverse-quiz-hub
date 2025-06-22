@@ -1317,9 +1317,9 @@ export class DatabaseStorage implements IStorage {
         const quizAttempts = await db.execute(sql`
         SELECT COUNT(*) as attempts_count,
                AVG(CASE WHEN score >= 70 THEN 100 ELSE 0 END) as accuracy
-        FROM student_tries st
+        FROM student_try st
         WHERE st.hocsinh_id = ${studentId} 
-          AND st.created_at >= ${startTime}::timestamp
+          AND st.time_start >= ${startTime}::timestamp
       `);
 
         const totalQuizzes = parseInt((quizAttempts.rows[0] as any)?.attempts_count) || 0;
