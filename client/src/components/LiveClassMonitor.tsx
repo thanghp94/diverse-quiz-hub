@@ -93,29 +93,50 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
 
   // Setup WebSocket connection
   useEffect(() => {
+    let socket: Socket | null = null;
+    
     if (isMonitoring && selectedStudents.length > 0) {
-      // Connect to WebSocket with explicit configuration
-      const socket = io(window.location.origin, {
+      // Create new WebSocket connection
+      socket = io(window.location.origin, {
         transports: ['websocket', 'polling'],
         timeout: 20000,
-        forceNew: true
+        forceNew: false, // Allow reusing existing connection
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000
       });
+      
       socketRef.current = socket;
       
       socket.on('connect', () => {
         console.log('✅ Connected to WebSocket successfully');
         setSocketConnected(true);
-        socket.emit('join-monitor', { students: selectedStudents });
+        if (socket && selectedStudents.length > 0) {
+          socket.emit('join-monitor', { students: selectedStudents });
+        }
       });
       
       socket.on('disconnect', (reason) => {
         console.log('❌ Disconnected from WebSocket:', reason);
         setSocketConnected(false);
+        
+        // Only log as error if it's not an intentional disconnect
+        if (reason !== 'io client disconnect' && reason !== 'io server disconnect') {
+          console.log('🔄 Will attempt to reconnect...');
+        }
       });
 
       socket.on('connect_error', (error) => {
         console.error('❌ Socket connection error:', error);
         setSocketConnected(false);
+      });
+
+      socket.on('reconnect', (attemptNumber) => {
+        console.log('🔄 Reconnected to WebSocket after', attemptNumber, 'attempts');
+        setSocketConnected(true);
+        if (socket && selectedStudents.length > 0) {
+          socket.emit('join-monitor', { students: selectedStudents });
+        }
       });
       
       socket.on('quiz-activity', (data) => {
@@ -167,20 +188,20 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
           });
         });
       });
-      
-      return () => {
+    }
+    
+    // Cleanup function
+    return () => {
+      if (socket) {
+        console.log('🔌 Cleaning up WebSocket connection');
+        socket.removeAllListeners();
         socket.disconnect();
-        socketRef.current = null;
-        setSocketConnected(false);
-      };
-    } else {
-      // Disconnect when monitoring stops
-      if (socketRef.current) {
-        socketRef.current.disconnect();
+      }
+      if (socketRef.current === socket) {
         socketRef.current = null;
         setSocketConnected(false);
       }
-    }
+    };
   }, [isMonitoring, selectedStudents, monitorStartTime, queryClient]);
 
   // Clear realtime activities when monitoring stops
@@ -189,6 +210,20 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       setRealtimeActivities([]);
     }
   }, [isMonitoring]);
+
+  // Handle component unmount (page navigation)
+  useEffect(() => {
+    return () => {
+      // Clean up socket connection when component unmounts
+      if (socketRef.current) {
+        console.log('🔌 Component unmounting, cleaning up WebSocket');
+        socketRef.current.removeAllListeners();
+        socketRef.current.disconnect();
+        socketRef.current = null;
+        setSocketConnected(false);
+      }
+    };
+  }, []);
 
   // Filter activities based on criteria
   const filteredActivities = useMemo(() => {
