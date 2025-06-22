@@ -94,18 +94,27 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
   // Setup WebSocket connection
   useEffect(() => {
     if (isMonitoring && selectedStudents.length > 0) {
-      // Connect to WebSocket
-      const socket = io(window.location.origin);
+      // Connect to WebSocket with explicit configuration
+      const socket = io(window.location.origin, {
+        transports: ['websocket', 'polling'],
+        timeout: 20000,
+        forceNew: true
+      });
       socketRef.current = socket;
       
       socket.on('connect', () => {
-        console.log('Connected to WebSocket');
+        console.log('✅ Connected to WebSocket successfully');
         setSocketConnected(true);
         socket.emit('join-monitor', { students: selectedStudents });
       });
       
-      socket.on('disconnect', () => {
-        console.log('Disconnected from WebSocket');
+      socket.on('disconnect', (reason) => {
+        console.log('❌ Disconnected from WebSocket:', reason);
+        setSocketConnected(false);
+      });
+
+      socket.on('connect_error', (error) => {
+        console.error('❌ Socket connection error:', error);
         setSocketConnected(false);
       });
       

@@ -1,4 +1,3 @@
-
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -55,7 +54,7 @@ class SessionManager {
     return new Promise((resolve) => {
       req.session.userId = user.id;
       req.session.user = user;
-      
+
       req.session.save((err: any) => {
         if (err) {
           console.error('Session save error:', err);
@@ -86,7 +85,7 @@ class AuthRoutes {
   static async studentLogin(req: any, res: any) {
     try {
       const { identifier } = req.body;
-      
+
       if (!identifier) {
         return ApiResponse.badRequest(res, 'Student ID or Meraki Email is required');
       }
@@ -109,7 +108,7 @@ class AuthRoutes {
   static async emailLogin(req: any, res: any) {
     try {
       const { email } = req.body;
-      
+
       if (!email) {
         return ApiResponse.badRequest(res, 'Email is required');
       }
@@ -162,7 +161,7 @@ class AuthRoutes {
     try {
       console.log('Auth check - Session ID:', req.sessionID);
       console.log('Auth check - User ID in session:', req.session.userId);
-      
+
       if (!req.session.userId) {
         return ApiResponse.unauthorized(res);
       }
@@ -227,7 +226,7 @@ class AuthRoutes {
   static testConfig(req: any, res: any) {
     const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
     const clientId = process.env.GOOGLE_CLIENT_ID;
-    
+
     return res.json({
       domain,
       callbackURL: `https://${domain}/api/auth/google/callback`,
@@ -297,7 +296,7 @@ class ContentRoutes {
     try {
       const { short_description, short_blurb, imageid, videoid, videoid2 } = req.body;
       const updates = { short_description, short_blurb, imageid, videoid, videoid2 };
-      
+
       // Remove undefined fields
       Object.keys(updates).forEach(key => {
         if (updates[key as keyof typeof updates] === undefined) {
@@ -318,9 +317,9 @@ class ContentRoutes {
   static async trackContentAccess(req: any, res: any) {
     try {
       const { student_id, content_id } = req.body;
-      
+
       console.log(`Content access tracking called: Student ${student_id}, Content ${content_id}`);
-      
+
       if (!student_id || !content_id) {
         return ApiResponse.badRequest(res, 'student_id and content_id are required');
       }
@@ -335,7 +334,7 @@ class ContentRoutes {
           student_try_id: crypto.randomUUID(),
           time_start: now,
           time_end: now,
-          update: `Content_viewed_${now}`
+          update: `Content_viewed_at_${Date.now()}`
         };
 
         await db.execute(sql`
@@ -348,7 +347,7 @@ class ContentRoutes {
       }
 
       const existingRating = await storage.getContentRating(student_id, content_id);
-      
+
       if (!existingRating) {
         const accessRecord = await storage.createContentRating({
           id: crypto.randomUUID(),
@@ -358,7 +357,7 @@ class ContentRoutes {
           personal_note: null,
           view_count: 1
         });
-        
+
         // Emit real-time update via WebSocket
         const io = (global as any).io;
         if (io) {
@@ -371,7 +370,7 @@ class ContentRoutes {
             timestamp: new Date().toISOString()
           });
         }
-        
+
         console.log(`Content access recorded: Student ${student_id} viewed content ${content_id}`);
         return ApiResponse.success(res, { record: accessRecord }, 'Content access recorded');
       } else {
@@ -446,7 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/set-personal-email', async (req, res) => {
     try {
       const { identifier, personalEmail } = req.body;
-      
+
       if (!identifier || !personalEmail) {
         return ApiResponse.badRequest(res, 'Both identifier and email are required');
       }
@@ -502,10 +501,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const topicId = req.params.topicId;
       const allContent = await storage.getContent(topicId);
-      
+
       const groupedContent: { [key: string]: any[] } = {};
       const ungroupedContent: any[] = [];
-      
+
       allContent.forEach(content => {
         if (content.contentgroup && content.contentgroup.trim() !== '') {
           if (!groupedContent[content.contentgroup]) {
@@ -516,7 +515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ungroupedContent.push(content);
         }
       });
-      
+
       const response = {
         groups: Object.entries(groupedContent).map(([groupName, content]) => ({
           groupName,
@@ -525,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })),
         ungroupedContent
       };
-      
+
       res.json(response);
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to fetch content groups by topic', error);
@@ -758,15 +757,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { studentId } = req.params;
       const { contentIds } = req.query;
-      
+
       if (!contentIds) {
         return res.json({});
       }
-      
+
       const contentIdArray = typeof contentIds === 'string' ? contentIds.split(',') : Array.isArray(contentIds) ? contentIds : [];
       const allStudentTries = await storage.getAllStudentTries();
       const triesCount: Record<string, number> = {};
-      
+
       allStudentTries
         .filter((studentTry: any) => 
           studentTry.student_id === studentId && 
@@ -778,7 +777,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             triesCount[studentTry.question_id] = (triesCount[studentTry.question_id] || 0) + 1;
           }
         });
-      
+
       res.json(triesCount);
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to fetch student tries count', error);
@@ -801,12 +800,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { rating, personal_note } = req.body;
       const result = await storage.updateContentRating(req.params.studentId, req.params.contentId, rating, personal_note);
-      
+
       if (rating) {
         try {
           await storage.recordDailyActivity(req.params.studentId, 10);
           await storage.updateStudentStreak(req.params.studentId);
-          
+
           // Emit real-time update via WebSocket
           const io = (global as any).io;
           if (io) {
@@ -824,7 +823,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log('Failed to record activity/streak:', activityError);
         }
       }
-      
+
       res.json(result);
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to update content rating', error);
@@ -1049,7 +1048,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Creating student try with data:', req.body);
       const studentTry = await storage.createStudentTry(req.body);
       console.log('Student try created:', studentTry);
-      
+
       // Emit real-time update via WebSocket
       const io = (global as any).io;
       if (io) {
@@ -1063,7 +1062,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           question_id: studentTry.question_id
         });
       }
-      
+
       res.json(studentTry);
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to create student try', error);
@@ -1133,7 +1132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/live-class-activities", async (req, res) => {
     try {
       const { studentIds, startTime } = req.query;
-      
+
       if (!studentIds || !startTime) {
         return ApiResponse.badRequest(res, 'studentIds and startTime are required');
       }
@@ -1144,7 +1143,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         studentIdArray = String(studentIds).split(',');
       }
-      
+
       const activities = await storage.getLiveClassActivities(studentIdArray, startTime as string);
       res.json(activities);
     } catch (error) {
@@ -1216,15 +1215,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId || req.session.userId !== 'GV0002') {
         return ApiResponse.unauthorized(res, 'Admin access required');
       }
-      
+
       const userId = req.params.id;
       const updateData = req.body;
-      
+
       const updatedUser = await storage.updateUser(userId, updateData);
       if (!updatedUser) {
         return ApiResponse.notFound(res, 'User');
       }
-      
+
       ApiResponse.success(res, { user: updatedUser }, 'User updated successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to update user', error);
@@ -1237,10 +1236,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId || req.session.userId !== 'GV0002') {
         return ApiResponse.unauthorized(res, 'Admin access required');
       }
-      
+
       const userData = req.body;
       const newUser = await storage.createUser(userData);
-      
+
       ApiResponse.success(res, { user: newUser }, 'User created successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to create user', error);
@@ -1253,15 +1252,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId || req.session.userId !== 'GV0002') {
         return ApiResponse.unauthorized(res, 'Admin access required');
       }
-      
+
       const topicId = req.params.id;
       const updateData = req.body;
-      
+
       const updatedTopic = await storage.updateTopic(topicId, updateData);
       if (!updatedTopic) {
         return ApiResponse.notFound(res, 'Topic');
       }
-      
+
       ApiResponse.success(res, { topic: updatedTopic }, 'Topic updated successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to update topic', error);
@@ -1274,10 +1273,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId || req.session.userId !== 'GV0002') {
         return ApiResponse.unauthorized(res, 'Admin access required');
       }
-      
+
       const topicData = req.body;
       const newTopic = await storage.createTopic(topicData);
-      
+
       ApiResponse.success(res, { topic: newTopic }, 'Topic created successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to create topic', error);
@@ -1290,10 +1289,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId || req.session.userId !== 'GV0002') {
         return ApiResponse.unauthorized(res, 'Admin access required');
       }
-      
+
       const contentData = req.body;
       const newContent = await storage.createContent(contentData);
-      
+
       ApiResponse.success(res, { content: newContent }, 'Content created successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to create content', error);
@@ -1306,10 +1305,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId || req.session.userId !== 'GV0002') {
         return ApiResponse.unauthorized(res, 'Admin access required');
       }
-      
+
       const matchingData = req.body;
       const newMatching = await storage.createMatching(matchingData);
-      
+
       ApiResponse.success(res, { matching: newMatching }, 'Matching activity created successfully');
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to create matching activity', error);
@@ -1326,7 +1325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sql`student_id = ${studentId} AND prompt_id = ${contentId} AND status = 'draft'`
         )
         .limit(1);
-      
+
       if (draft.length > 0) {
         res.json(draft[0]);
       } else {
@@ -1340,12 +1339,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/writing-submissions/draft", async (req, res) => {
     try {
       const { student_id, content_id, content_title, outline_data, essay_data, phase, timer_remaining, timer_active } = req.body;
-      
+
       // Validate required fields
       if (!student_id || !content_id) {
         return ApiResponse.badRequest(res, 'student_id and content_id are required');
       }
-      
+
       // Check if draft exists
       const existing = await db.select()
         .from(writing_submissions)
@@ -1369,7 +1368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })
           .where(sql`id = ${existing[0].id}`)
           .returning();
-        
+
         res.json(updated[0]);
       } else {
         // Create new draft
@@ -1393,7 +1392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Use storage method to ensure proper field mapping
         const created = await storage.createWritingSubmission(draftData);
-        
+
         console.log('Draft created successfully:', created);
         res.json(created);
       }
@@ -1410,7 +1409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(
           sql`student_id = ${studentId} AND prompt_id = ${contentId} AND status = 'draft'`
         );
-      
+
       res.json({ success: true });
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to delete draft', error);
@@ -1420,12 +1419,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/writing-submissions", async (req, res) => {
     try {
       const { student_id, content_id, content_title, outline_data, essay_data, time_spent, word_count, submitted_at } = req.body;
-      
+
       // Validate required fields
       if (!student_id || !content_id) {
         return ApiResponse.badRequest(res, 'student_id and content_id are required');
       }
-      
+
       // Calculate word count if not provided
       const calculatedWordCount = word_count || [
         essay_data?.introduction || '',
@@ -1465,7 +1464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Use the storage method instead of direct DB insert to ensure proper field mapping
       const submission = await storage.createWritingSubmission(submissionData);
-      
+
       console.log('Writing submission created successfully:', submission);
       res.json(submission);
     } catch (error) {
@@ -1481,7 +1480,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(writing_submissions)
         .where(sql`student_id = ${studentId} AND status = 'submitted'`)
         .orderBy(sql`created_at DESC`);
-      
+
       res.json(submissions);
     } catch (error) {
       ApiResponse.serverError(res, 'Failed to fetch submissions', error);

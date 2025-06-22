@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Search, Edit, Save, X, Users, BookOpen, FileText, HelpCircle, Target, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ContentEditor } from "@/components/ContentEditor";
+import { SocketTest } from "@/components/SocketTest";
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
@@ -322,7 +324,7 @@ const AdminPage = () => {
       // Check for duplicate ID or Meraki email
       const existingUserWithId = (students as User[])?.find(user => user.id === newItemData.id);
       const existingUserWithEmail = (students as User[])?.find(user => user.meraki_email === newItemData.meraki_email);
-      
+
       if (existingUserWithId) {
         toast({
           title: "Error",
@@ -331,7 +333,7 @@ const AdminPage = () => {
         });
         return;
       }
-      
+
       if (newItemData.meraki_email && existingUserWithEmail) {
         toast({
           title: "Error", 
@@ -340,7 +342,7 @@ const AdminPage = () => {
         });
         return;
       }
-      
+
       createUser.mutate(newItemData);
     } else if (activeTab === 'topics') {
       createTopic.mutate(newItemData);
@@ -549,7 +551,7 @@ const AdminPage = () => {
 
   const isLoading = studentsLoading || topicsLoading || contentLoading || questionsLoading || matchingLoading;
   const filteredData = getFilteredData();
-  
+
   // Pagination calculations
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -863,7 +865,7 @@ const AdminPage = () => {
                     {filteredData.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
                         <p>No matching activities found in the database.</p>
-                        <p className="text-sm mt-2">The matching table is currently empty. Create some matching activities to see them here.</p>
+                        <p className="text-sm mt-2">The matching table is currently empty. Create somematching activities to see them here.</p>
                         <p className="text-sm mt-1 text-blue-600">Use the "Add Matching" button above to create your first matching activity.</p>
                       </div>
                     ) : (
@@ -900,7 +902,7 @@ const AdminPage = () => {
                 )}
               </div>
             )}
-            
+
             {/* Pagination Controls */}
             {filteredData.length > itemsPerPage && (
               <div className="flex items-center justify-between mt-4 px-4 py-3 border-t">
@@ -929,7 +931,7 @@ const AdminPage = () => {
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
-                      
+
                       return (
                         <Button
                           key={pageNum}
@@ -957,6 +959,10 @@ const AdminPage = () => {
             )}
           </CardContent>
         </Card>
+          <div className="space-y-6">
+            <SocketTest />
+            <ContentEditor />
+          </div>
       </div>
     </div>
   );
