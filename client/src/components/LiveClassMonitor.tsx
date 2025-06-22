@@ -21,6 +21,9 @@ interface Student {
 interface StudentActivity {
   student_id: string;
   student_name: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
   content_viewed: number;
   content_rated: number;
   quiz_attempts: number;
@@ -114,15 +117,15 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     });
   }, [allStudents, searchTerm]);
 
-  // Fetch student activities (only when monitoring is active)
+  // Fetch student activities (only when monitoring is active) - initial load only, no polling
   const { data: studentActivities = [], isLoading: activitiesLoading, isFetching } = useQuery<StudentActivity[]>({
     queryKey: ['/api/live-class-activities', selectedStudents, monitorStartTime],
     enabled: isMonitoring && selectedStudents.length > 0,
-    refetchInterval: 30000, // Reduced to 30 seconds since we have real-time updates
-    staleTime: 25000, // Keep data fresh for 25 seconds
-    refetchOnWindowFocus: false, // Prevent refetch on window focus
-    refetchOnMount: false, // Prevent refetch on component mount
-    retry: 1, // Reduce retry attempts
+    refetchInterval: false, // Disable polling - use pure WebSocket events
+    staleTime: Infinity, // Keep data indefinitely - WebSocket will update
+    refetchOnWindowFocus: false,
+    refetchOnMount: true, // Only fetch on initial mount
+    retry: 1,
   });
 
   // Setup WebSocket connection
@@ -130,14 +133,17 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     let socket: Socket | null = null;
     
     if (isMonitoring && selectedStudents.length > 0) {
-      // Create new WebSocket connection
+      // Create new WebSocket connection optimized for real-time updates
       socket = io(window.location.origin, {
-        transports: ['websocket', 'polling'],
-        timeout: 20000,
-        forceNew: false, // Allow reusing existing connection
+        transports: ['websocket', 'polling'], // Allow both for reliability
+        timeout: 10000,
+        forceNew: true, // Force new connection to ensure clean state
         reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        upgrade: true,
+        rememberUpgrade: true
       });
       
       socketRef.current = socket;
@@ -147,7 +153,14 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
         setSocketConnected(true);
         if (socket && selectedStudents.length > 0) {
           socket.emit('join-monitor', { students: selectedStudents });
+          
+          // Immediately refresh data when connected
+          queryClient.invalidateQueries(['/api/live-class-activities', selectedStudents, monitorStartTime]);
         }
+      });
+      
+      socket.on('connection-confirmed', (data) => {
+        console.log('✅ WebSocket connection confirmed:', data);
       });
       
       socket.on('disconnect', (reason) => {
@@ -174,46 +187,89 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       });
       
       socket.on('quiz-activity', (data) => {
-        console.log('Real-time quiz activity:', data);
-        setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]); // Keep last 50 activities
+        console.log('⚡ Real-time quiz activity received:', data);
         
-        // Update the query cache with new data
+        // Immediately add to realtime activities with timestamp for sorting
+        setRealtimeActivities(prev => {
+          const newActivities = [{...data, receivedAt: Date.now()}, ...prev.slice(0, 49)];
+          return newActivities.sort((a, b) => (b.receivedAt || 0) - (a.receivedAt || 0));
+        });
+        
+        // Force immediate query data update
         queryClient.setQueryData(['/api/live-class-activities', selectedStudents, monitorStartTime], (oldData: StudentActivity[] | undefined) => {
-          if (!oldData) return oldData;
+          if (!oldData) {
+            // If no data yet, trigger a refetch
+            queryClient.invalidateQueries(['/api/live-class-activities', selectedStudents, monitorStartTime]);
+            return oldData;
+          }
           
-          return oldData.map(student => {
+          const updatedData = oldData.map(student => {
             if (student.student_id === data.student_id) {
+              const currentAttempts = student.quiz_attempts || 0;
+              let newCorrect = 0;
+              let newAttempts = currentAttempts + 1;
+              
+              // Recalculate accuracy more precisely
+              if (currentAttempts > 0 && student.quiz_accuracy) {
+                newCorrect = Math.round((student.quiz_accuracy * currentAttempts) / 100);
+              }
+              
+              if (data.quiz_result === '✅') {
+                newCorrect += 1;
+              }
+              
+              const newAccuracy = newAttempts > 0 ? Math.round((newCorrect / newAttempts) * 100) : 0;
+              
+              // Create new activity object
+              const newActivity = {
+                type: 'quiz_attempt' as const,
+                content_id: data.content_id,
+                content_title: data.content_title,
+                timestamp: data.timestamp,
+                quiz_score: data.score
+              };
+              
               return {
                 ...student,
-                quiz_attempts: (student.quiz_attempts || 0) + 1,
-                quiz_accuracy: data.quiz_result === '✅' ? 
-                  Math.round(((student.quiz_accuracy || 0) * (student.quiz_attempts || 0) + 100) / ((student.quiz_attempts || 0) + 1)) :
-                  Math.round(((student.quiz_accuracy || 0) * (student.quiz_attempts || 0)) / ((student.quiz_attempts || 0) + 1)),
+                quiz_attempts: newAttempts,
+                quiz_accuracy: newAccuracy,
                 last_activity: data.timestamp,
-                activities: [data, ...(student.activities || []).slice(0, 24)]
+                activities: [newActivity, ...(student.activities || []).slice(0, 24)]
               };
             }
             return student;
           });
+          
+          console.log('📊 Updated student activities data:', updatedData);
+          return updatedData;
         });
+        
+        // Also trigger a background refetch to ensure data consistency
+        setTimeout(() => {
+          queryClient.invalidateQueries(['/api/live-class-activities', selectedStudents, monitorStartTime]);
+        }, 1000);
       });
       
       socket.on('content-activity', (data) => {
-        console.log('Real-time content activity:', data);
+        console.log('⚡ Real-time content activity received:', data);
+        
+        // Immediately add to realtime activities
         setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]);
         
-        // Update the query cache with new data
+        // Immediately update the query cache
         queryClient.setQueryData(['/api/live-class-activities', selectedStudents, monitorStartTime], (oldData: StudentActivity[] | undefined) => {
           if (!oldData) return oldData;
           
           return oldData.map(student => {
             if (student.student_id === data.student_id) {
               const updatedStudent = { ...student };
+              
               if (data.type === 'content_view') {
                 updatedStudent.content_viewed = (student.content_viewed || 0) + 1;
               } else if (data.type === 'content_rating') {
                 updatedStudent.content_rated = (student.content_rated || 0) + 1;
               }
+              
               updatedStudent.last_activity = data.timestamp;
               updatedStudent.activities = [data, ...(student.activities || []).slice(0, 24)];
               return updatedStudent;
@@ -723,7 +779,18 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
                       return (
                         <tr key={studentId} className="border-b hover:bg-gray-50">
                           <td className="px-1 py-1">
-                            <div className="font-medium text-sm">{student.first_name} {student.last_name}</div>
+                            <div className="font-medium text-sm">
+                              {activity?.first_name && activity?.last_name 
+                                ? `${activity.first_name} ${activity.last_name}`
+                                : activity?.full_name 
+                                ? activity.full_name
+                                : activity?.student_name
+                                ? activity.student_name
+                                : student?.first_name && student?.last_name
+                                ? `${student.first_name} ${student.last_name}`
+                                : student?.full_name || student?.id || 'Unknown'
+                              }
+                            </div>
                           </td>
                           <td className="px-1 py-1">
                             <span className="text-sm font-medium">{activity?.content_viewed || 0}</span>
