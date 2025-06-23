@@ -260,11 +260,25 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     };
 
     if (isLoading) {
-        return <div className="p-4 text-center">Loading quiz question...</div>;
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                    <div className="text-lg font-semibold">Loading Quiz...</div>
+                    <div className="text-gray-600 mt-2">Preparing your questions...</div>
+                </div>
+            </div>
+        );
     }
 
     if (!currentQuestion) {
-        return <div className="p-4 text-center text-red-500">Question not found. Could not load quiz.</div>;
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center text-red-500">
+                    <div className="text-lg font-semibold">No questions available</div>
+                    <div className="text-gray-600 mt-2">Unable to load quiz questions.</div>
+                </div>
+            </div>
+        );
     }
 
     const choices = [currentQuestion.cau_tra_loi_1, currentQuestion.cau_tra_loi_2, currentQuestion.cau_tra_loi_3, currentQuestion.cau_tra_loi_4].filter((c): c is string => c !== null && c !== '');
