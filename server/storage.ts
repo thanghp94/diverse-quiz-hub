@@ -1,5 +1,5 @@
 import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, cron_jobs, student_try_content, pending_access_requests, type User, type InsertUser, type UpsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress, type CronJob, type InsertCronJob } from "@shared/schema";
-import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
+import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte, isNotNull } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import crypto from 'crypto';
 import { db } from "./db";
@@ -309,12 +309,13 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getQuestions(contentId?: string, topicId?: string, level?: string) {
+  async getQuestions(contentId?: string, topicId?: string, level?: string): Promise<Question[]> {
     try {
       console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
 
-      const conditions = [];
+      const conditions: any[] = [];
 
+      // Handle content/topic filtering
       if (contentId) {
         conditions.push(eq(schema.questions.contentid, contentId));
         console.log(`Added contentId condition: ${contentId}`);
@@ -330,9 +331,12 @@ export class DatabaseStorage implements IStorage {
         console.log(`Found ${contentIds.length} content items in topic ${topicId}:`, contentIds);
 
         if (contentIds.length > 0) {
-          // Filter questions by these content IDs
-          conditions.push(inArray(schema.questions.contentid, contentIds));
-          console.log(`Added content IDs condition for topic: ${topicId}`);
+          // Filter questions by these content IDs - ensure contentid is not null
+          conditions.push(and(
+            inArray(schema.questions.contentid, contentIds),
+            isNotNull(schema.questions.contentid)
+          ));
+          console.log(`Added content IDs condition for topic: ${topicId} with ${contentIds.length} content items`);
         } else {
           console.log(`No content found for topic ${topicId}, returning empty result`);
           return [];

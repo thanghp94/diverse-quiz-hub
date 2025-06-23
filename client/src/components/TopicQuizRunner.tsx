@@ -26,12 +26,26 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
             console.log(`Fetching questions from: ${url}`);
             const response = await fetch(url);
             if (!response.ok) {
-                throw new Error('Failed to fetch questions');
+                throw new Error(`Failed to fetch questions: ${response.status}`);
             }
             const questions = await response.json();
 
+            console.log(`API returned ${questions.length} questions for topic ${topicId}, level ${level}`);
+
             if (!questions || questions.length === 0) {
                 console.log(`No ${level} questions available for topic ${topicId}`);
+                
+                // Try to get debug info about what content exists in this topic
+                try {
+                    const contentResponse = await fetch(`/api/content?topicId=${topicId}`);
+                    if (contentResponse.ok) {
+                        const topicContent = await contentResponse.json();
+                        console.log(`Topic ${topicId} has ${topicContent.length} content items:`, topicContent.map((c: any) => c.id));
+                    }
+                } catch (debugError) {
+                    console.log('Could not fetch debug content info:', debugError);
+                }
+                
                 toast({
                     title: "No Quiz Available",
                     description: `There are no ${level.toLowerCase()} questions for this topic yet. Check back later!`,
