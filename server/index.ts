@@ -3,7 +3,9 @@ import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { registerRoutes } from "./routes";
 import serveStatic from "serve-static";
-import { setupVite, serveStatic as viteServeStatic } from "./vite";
+import { setupVite, serveStatic as viteServeStatic, log } from "./vite";
+import { wakeUpDatabase } from "./db";
+import { cronScheduler } from "./cron-scheduler";
 
 const app = express();
 const server = createServer(app);
