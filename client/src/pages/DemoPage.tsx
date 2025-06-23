@@ -108,10 +108,10 @@ export const DemoPage = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Learning Platform
+                Feature Demo Center
               </h1>
               <p className="text-gray-600">
-                Content rating, streak tracking, leaderboards, and writing system
+                Explore the new content rating, streak tracking, leaderboards, and writing system
               </p>
             </div>
           </div>
