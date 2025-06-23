@@ -347,7 +347,7 @@ export class DatabaseStorage implements IStorage {
           conditions.push(overviewCondition);
           console.log(`Added Overview level condition`);
         } else {
-          // For Easy/Hard, filter by exact level match
+          // For Easy/Hard, filter by exact level match (case insensitive)
           const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
           conditions.push(levelCondition);
           console.log(`Added level condition for: ${level.toLowerCase()}`);
