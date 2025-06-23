@@ -339,11 +339,19 @@ export class DatabaseStorage implements IStorage {
         }
       }
 
-      if (level && level !== 'Overview') {
-        // For level filtering, use case-insensitive comparison
-        const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
-        conditions.push(levelCondition);
-        console.log(`Added level condition for: ${level.toLowerCase()}`);
+      // Handle level filtering properly
+      if (level) {
+        if (level.toLowerCase() === 'overview') {
+          // For Overview, get questions with questionlevel = 'Overview' or null/empty
+          const overviewCondition = sql`(LOWER(TRIM(${schema.questions.questionlevel})) = 'overview' OR ${schema.questions.questionlevel} IS NULL OR TRIM(${schema.questions.questionlevel}) = '')`;
+          conditions.push(overviewCondition);
+          console.log(`Added Overview level condition`);
+        } else {
+          // For Easy/Hard, filter by exact level match
+          const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
+          conditions.push(levelCondition);
+          console.log(`Added level condition for: ${level.toLowerCase()}`);
+        }
       }
 
       let questions;
@@ -356,7 +364,7 @@ export class DatabaseStorage implements IStorage {
       console.log(`Found ${questions.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
 
       // If we're filtering by level and got no results, let's check what levels are available
-      if (level && level !== 'Overview' && questions.length === 0 && (contentId || topicId)) {
+      if (level && questions.length === 0 && (contentId || topicId)) {
         console.log(`No questions found for level "${level}". Checking available levels...`);
 
         let debugQuery;
@@ -381,19 +389,6 @@ export class DatabaseStorage implements IStorage {
           const availableLevels = await debugQuery;
           const uniqueLevels = Array.from(new Set(availableLevels.map(q => q.level).filter(Boolean)));
           console.log(`Available levels for this content/topic:`, uniqueLevels);
-
-          // Try to match with available levels case-insensitively
-          const matchingLevel = uniqueLevels.find(l => l && l.toLowerCase() === level.toLowerCase());
-          if (matchingLevel) {
-            console.log(`Found matching level with different case: "${matchingLevel}"`);
-            // Re-run query with the correctly cased level
-            const correctedConditions = [...conditions];
-            correctedConditions[correctedConditions.length - 1] = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${matchingLevel.toLowerCase()}`;
-            const correctedQuery = db.select().from(schema.questions).where(and(...correctedConditions));
-            const correctedQuestions = await correctedQuery;
-            console.log(`Found ${correctedQuestions.length} questions with corrected level case`);
-            return correctedQuestions;
-          }
         }
       }
 
