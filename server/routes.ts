@@ -1074,6 +1074,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           io.to('live-monitor').emit('quiz-activity', activityData);
           io.to('leaderboard').emit('quiz-activity', activityData);
           
+          // Also emit a specific leaderboard update event
+          io.emit('leaderboard-update', {
+            type: 'quiz_activity',
+            student_id: studentTry.hocsinh_id,
+            timestamp: new Date().toISOString()
+          });
+          
         } catch (error) {
           console.error('Error emitting WebSocket event:', error);
         }

@@ -30,13 +30,17 @@ export const LeaderboardPanel = () => {
   const { data: studentTriesData, isLoading: isLoadingTries } = useQuery({
     queryKey: ['/api/student-tries-leaderboard'],
     queryFn: () => fetch('/api/student-tries-leaderboard').then(res => res.json()),
-    refetchInterval: 30000,
+    refetchInterval: socketConnected ? false : 30000, // Only poll if WebSocket disconnected
+    staleTime: 0, // Always consider data stale for real-time updates
+    refetchOnWindowFocus: true,
   });
   
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardData>({
     queryKey: ['/api/leaderboards'],
     queryFn: () => fetch('/api/leaderboards').then(res => res.json()),
-    refetchInterval: 30000,
+    refetchInterval: socketConnected ? false : 30000, // Only poll if WebSocket disconnected
+    staleTime: 0, // Always consider data stale for real-time updates
+    refetchOnWindowFocus: true,
   });
 
   // Setup WebSocket connection for real-time leaderboard updates
@@ -65,16 +69,25 @@ export const LeaderboardPanel = () => {
     // Listen for quiz activity updates that affect leaderboards
     socket.on('quiz-activity', (data) => {
       console.log('📊 Quiz activity affecting leaderboard:', data);
-      // Invalidate and refetch leaderboard data immediately
-      queryClient.invalidateQueries(['/api/leaderboards']);
-      queryClient.invalidateQueries(['/api/student-tries-leaderboard']);
+      
+      // Immediately update both leaderboard queries
+      queryClient.invalidateQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/student-tries-leaderboard'] });
+      
+      // Force refetch to get latest data
+      queryClient.refetchQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.refetchQueries({ queryKey: ['/api/student-tries-leaderboard'] });
     });
 
     // Listen for direct leaderboard updates
     socket.on('leaderboard-update', (data) => {
       console.log('🏆 Direct leaderboard update:', data);
-      queryClient.invalidateQueries(['/api/leaderboards']);
-      queryClient.invalidateQueries(['/api/student-tries-leaderboard']);
+      queryClient.invalidateQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/student-tries-leaderboard'] });
+      
+      // Force refetch to get latest data
+      queryClient.refetchQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.refetchQueries({ queryKey: ['/api/student-tries-leaderboard'] });
     });
 
     return () => {
