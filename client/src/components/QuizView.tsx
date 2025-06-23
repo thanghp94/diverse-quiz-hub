@@ -37,9 +37,10 @@ interface QuizViewProps {
     assignmentStudentTryId: string;
     studentTryId?: string;
     contentId?: string;
+    topicId?: string;
 }
 
-const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTryId, contentId }: QuizViewProps) => {
+const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTryId, contentId, topicId }: QuizViewProps) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -159,7 +160,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     };
 
     const handleContentRating = async (rating: string) => {
-        if (!contentId) return;
+        if (!contentId && !topicId) return;
 
         try {
             // Get current user for tracking
@@ -178,7 +179,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     student_id: currentUser.id,
-                    content_id: contentId,
+                    content_id: contentId || topicId,
                     rating: rating
                 })
             });

@@ -12,7 +12,7 @@ import { ContentBody } from "./content-popup/ContentBody";
 import { ContentRatingButtons } from "./ContentRatingButtons";
 import { ContentEditor } from "./ContentEditor";
 import MarkdownRenderer from "./MarkdownRenderer";
-
+import { useQuiz } from "@/hooks/useQuiz";
 import { useContentMedia } from "@/hooks/useContentMedia";
 import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
 import { useAuth } from "@/hooks/useAuth";
@@ -55,11 +55,16 @@ const ContentPopup = ({
            Object.values(dict as Record<string, unknown>).every(val => typeof val === 'string');
   };
 
-  // Quiz state management
-  const [quizMode, setQuizMode] = useState(false);
-  const [assignmentTry, setAssignmentTry] = useState<any>(null);
-  const [questionIds, setQuestionIds] = useState<string[]>([]);
-  const [isQuizLoading, setIsQuizLoading] = useState(false);
+  // All hooks must be called before any conditional returns
+  const {
+    quizMode,
+    assignmentTry,
+    studentTry,
+    questionIds,
+    startQuiz,
+    closeQuiz,
+    setStudentTry,
+  } = useQuiz({ content, onClose, startQuizDirectly, level: quizLevel });
 
   const {
     videoData,
@@ -68,110 +73,12 @@ const ContentPopup = ({
     video2EmbedUrl,
   } = useContentMedia(content);
 
-  const startQuiz = async (level: 'easy' | 'hard') => {
-    if (!content) return;
-    
-    setIsQuizLoading(true);
-    
-    try {
-      // Fetch questions for this content with proper level parameter
-      const url = `/api/questions?contentId=${content.id}&level=${level}`;
-      
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error('Failed to fetch questions');
-      }
-      const questions = await response.json();
-
-      if (!questions || questions.length === 0) {
-        console.log(`No ${level} questions available for content ${content.id}`);
-        return;
-      }
-
-      const randomizedQuestionIds = questions.map((q: any) => q.id).sort(() => Math.random() - 0.5);
-      
-      // Get current user from localStorage
-      const currentUser = localStorage.getItem('currentUser');
-      const studentId = currentUser ? JSON.parse(currentUser).id : 'GV0002'; // Default fallback
-      
-      if (!studentId) {
-        return;
-      }
-
-      // Create assignment_student_try directly
-      const assignmentTryResponse = await fetch('/api/assignment-student-tries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hocsinh_id: studentId,
-          contentID: content.id,
-          questionIDs: JSON.stringify(randomizedQuestionIds),
-          start_time: new Date().toISOString(),
-          typeoftaking: level
-        })
-      });
-
-      if (!assignmentTryResponse.ok) {
-        throw new Error('Failed to create assignment student try');
-      }
-
-      const assignmentStudentTry = await assignmentTryResponse.json();
-
-      // Create student try
-      console.log('Creating student try with assignment_student_try_id:', assignmentStudentTry.id);
-      
-      const studentTryResponse = await fetch('/api/student-tries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          assignment_student_try_id: assignmentStudentTry.id,
-          hocsinh_id: studentId
-        })
-      });
-
-      if (!studentTryResponse.ok) {
-        const errorText = await studentTryResponse.text();
-        console.error('Failed to create student try:', errorText);
-        throw new Error(`Failed to create student try: ${errorText}`);
-      }
-
-      const studentTry = await studentTryResponse.json();
-      console.log('Student try created successfully:', studentTry);
-      
-      const newAssignmentTry = {
-        id: assignmentStudentTry.id,
-        student_id: studentId,
-        contentID: content.id,
-        questionIDs: JSON.stringify(randomizedQuestionIds),
-        level: level,
-        studentTryId: studentTry.id
-      };
-
-      console.log('Content quiz started with database tracking:', newAssignmentTry);
-      console.log('Created student_try:', studentTry);
-
-      setAssignmentTry(newAssignmentTry);
-      setQuestionIds(randomizedQuestionIds);
-      setQuizMode(true);
-    } catch (error) {
-      console.error("Error starting content quiz:", error);
-    } finally {
-      setIsQuizLoading(false);
-    }
-  };
-
-  const closeQuiz = () => {
-    setQuizMode(false);
-    setAssignmentTry(null);
-    setQuestionIds([]);
-  };
-
   useEffect(() => {
     if (isOpen && startQuizDirectly && quizLevel && content) {
       console.log('Starting quiz directly with level:', quizLevel);
       startQuiz(quizLevel);
     }
-  }, [isOpen, startQuizDirectly, quizLevel, content]);
+  }, [isOpen, startQuizDirectly, quizLevel, content, startQuiz]);
 
   // Track content access when popup opens
   useEffect(() => {
@@ -245,12 +152,12 @@ const ContentPopup = ({
         } 
       }}>
         <DialogContent className={cn("max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-7xl h-[90vh]")}>
-          {quizMode && questionIds.length > 0 && assignmentTry ? (
+          {(quizMode || startQuizDirectly) && questionIds.length > 0 && assignmentTry ? (
             <QuizView 
               questionIds={questionIds} 
               onQuizFinish={closeQuiz}
               assignmentStudentTryId={assignmentTry.id.toString()}
-              studentTryId={assignmentTry.studentTryId}
+              studentTryId={studentTry?.id}
               contentId={content?.id}
             />
           ) : (
