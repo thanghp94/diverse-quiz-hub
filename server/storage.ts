@@ -1,17 +1,21 @@
 import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, cron_jobs, student_try_content, pending_access_requests, type User, type InsertUser, type UpsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress, type CronJob, type InsertCronJob } from "@shared/schema";
-import { db } from "./db";
-import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
+import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte, isNotNull } from "drizzle-orm";
 import * as schema from "@shared/schema";
+import crypto from 'crypto';
+import { db } from "./db";
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
+  // Add writing_submissions property
+  writingSubmissions: typeof writing_submissions;
   getUser(id: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByIdentifier(identifier: string): Promise<User | undefined>;
   updateUserEmail(userId: string, newEmail: string): Promise<User>;
+  updateUser(userId: string, updateData: Partial<User>): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
 
@@ -19,11 +23,14 @@ export interface IStorage {
   getTopics(): Promise<Topic[]>;
   getBowlChallengeTopics(): Promise<Topic[]>;
   getTopicById(id: string): Promise<Topic | undefined>;
+  updateTopic(topicId: string, updateData: Partial<Topic>): Promise<Topic | undefined>;
+  createTopic(topicData: any): Promise<Topic>;
 
   // Content
   getContent(topicId?: string): Promise<Content[]>;
   getContentById(id: string): Promise<Content | undefined>;
   updateContent(id: string, updates: { short_description?: string; short_blurb?: string; imageid?: string; videoid?: string; videoid2?: string }): Promise<Content | undefined>;
+  createContent(contentData: any): Promise<Content>;
 
   // Content Groups
   getContentGroups(): Promise<Array<{ contentgroup: string; url: string; content_count: number }>>;
@@ -41,6 +48,7 @@ export interface IStorage {
   getMatchingActivities(): Promise<Matching[]>;
   getMatchingById(id: string): Promise<Matching | undefined>;
   getMatchingByTopicId(topicId: string): Promise<Matching[]>;
+  createMatching(matchingData: any): Promise<Matching>;
 
   // Videos
   getVideos(): Promise<Video[]>;
@@ -112,7 +120,7 @@ export interface IStorage {
 
   // Content Progress
   getContentProgress(studentId: string): Promise<any[]>;
-  
+
   // Personal Content
   getPersonalContent(studentId: string): Promise<any[]>;
 
@@ -121,7 +129,7 @@ export interface IStorage {
   createCronJob(job: InsertCronJob): Promise<CronJob>;
   updateCronJob(jobName: string, lastRun: Date, nextRun: Date): Promise<CronJob>;
   updateStudentTryContent(): Promise<void>;
-  
+
   // Leaderboards
   getStudentTriesLeaderboard(): Promise<any[]>;
   getLeaderboards(): Promise<any>;
@@ -136,9 +144,12 @@ export interface IStorage {
 
   // Live Class Monitoring
   getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]>;
+  getQuestion(questionId: string): Promise<any | null>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // Expose writing_submissions table
+  writingSubmissions = writing_submissions;
   private async executeWithRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
@@ -283,12 +294,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Questions
-  async getQuestions(contentId?: string, topicId?: string, level?: string) {
+  async getQuestion(questionId: string): Promise<any | null> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM question 
+        WHERE id = ${questionId}
+        LIMIT 1
+      `);
+
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching question:', error);
+      return null;
+    }
+  }
+
+  async getQuestions(contentId?: string, topicId?: string, level?: string): Promise<Question[]> {
     try {
       console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
-      
-      const conditions = [];
 
+      const conditions: any[] = [];
+
+      // Handle content/topic filtering
       if (contentId) {
         conditions.push(eq(schema.questions.contentid, contentId));
         console.log(`Added contentId condition: ${contentId}`);
@@ -299,25 +326,36 @@ export class DatabaseStorage implements IStorage {
           .select({ id: schema.content.id })
           .from(schema.content)
           .where(eq(schema.content.topicid, topicId));
-        
+
         const contentIds = contentInTopic.map(c => c.id);
         console.log(`Found ${contentIds.length} content items in topic ${topicId}:`, contentIds);
-        
+
         if (contentIds.length > 0) {
-          // Filter questions by these content IDs
-          conditions.push(inArray(schema.questions.contentid, contentIds));
-          console.log(`Added content IDs condition for topic: ${topicId}`);
+          // Filter questions by these content IDs - ensure contentid is not null
+          conditions.push(and(
+            inArray(schema.questions.contentid, contentIds),
+            isNotNull(schema.questions.contentid)
+          ));
+          console.log(`Added content IDs condition for topic: ${topicId} with ${contentIds.length} content items`);
         } else {
           console.log(`No content found for topic ${topicId}, returning empty result`);
           return [];
         }
       }
 
-      if (level && level !== 'Overview') {
-        // For level filtering, use case-insensitive comparison
-        const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
-        conditions.push(levelCondition);
-        console.log(`Added level condition for: ${level.toLowerCase()}`);
+      // Handle level filtering properly
+      if (level) {
+        if (level.toLowerCase() === 'overview') {
+          // For Overview, get questions with questionlevel = 'Overview' or null/empty
+          const overviewCondition = sql`(LOWER(TRIM(${schema.questions.questionlevel})) = 'overview' OR ${schema.questions.questionlevel} IS NULL OR TRIM(${schema.questions.questionlevel}) = '')`;
+          conditions.push(overviewCondition);
+          console.log(`Added Overview level condition`);
+        } else {
+          // For Easy/Hard, filter by exact level match (case insensitive)
+          const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
+          conditions.push(levelCondition);
+          console.log(`Added level condition for: ${level.toLowerCase()}`);
+        }
       }
 
       let questions;
@@ -330,9 +368,9 @@ export class DatabaseStorage implements IStorage {
       console.log(`Found ${questions.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
 
       // If we're filtering by level and got no results, let's check what levels are available
-      if (level && level !== 'Overview' && questions.length === 0 && (contentId || topicId)) {
+      if (level && questions.length === 0 && (contentId || topicId)) {
         console.log(`No questions found for level "${level}". Checking available levels...`);
-        
+
         let debugQuery;
         if (contentId) {
           debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId));
@@ -342,7 +380,7 @@ export class DatabaseStorage implements IStorage {
             .select({ id: schema.content.id })
             .from(schema.content)
             .where(eq(schema.content.topicid, topicId));
-          
+
           const contentIds = contentInTopic.map(c => c.id);
           if (contentIds.length > 0) {
             debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(inArray(schema.questions.contentid, contentIds));
@@ -355,19 +393,6 @@ export class DatabaseStorage implements IStorage {
           const availableLevels = await debugQuery;
           const uniqueLevels = Array.from(new Set(availableLevels.map(q => q.level).filter(Boolean)));
           console.log(`Available levels for this content/topic:`, uniqueLevels);
-          
-          // Try to match with available levels case-insensitively
-          const matchingLevel = uniqueLevels.find(l => l && l.toLowerCase() === level.toLowerCase());
-          if (matchingLevel) {
-            console.log(`Found matching level with different case: "${matchingLevel}"`);
-            // Re-run query with the correctly cased level
-            const correctedConditions = [...conditions];
-            correctedConditions[correctedConditions.length - 1] = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${matchingLevel.toLowerCase()}`;
-            const correctedQuery = db.select().from(schema.questions).where(and(...correctedConditions));
-            const correctedQuestions = await correctedQuery;
-            console.log(`Found ${correctedQuestions.length} questions with corrected level case`);
-            return correctedQuestions;
-          }
         }
       }
 
@@ -466,7 +491,7 @@ export class DatabaseStorage implements IStorage {
       const updateData: any = { updated_at: new Date() };
       if (rating !== undefined) updateData.rating = rating;
       if (personalNote !== undefined) updateData.personal_note = personalNote;
-      
+
       const result = await db.update(content_ratings)
         .set(updateData)
         .where(and(
@@ -737,7 +762,17 @@ export class DatabaseStorage implements IStorage {
 
   // Writing Submissions
   async createWritingSubmission(submission: InsertWritingSubmission): Promise<WritingSubmission> {
-    const result = await db.insert(writing_submissions).values(submission).returning();
+    // Ensure ID is generated if not provided
+    const submissionData = {
+      ...submission,
+      id: submission.id || crypto.randomUUID(),
+      created_at: submission.created_at || new Date(),
+      updated_at: submission.updated_at || new Date()
+    };
+
+    console.log('Storage: Creating writing submission with data:', submissionData);
+    const result = await db.insert(writing_submissions).values(submissionData).returning();
+    console.log('Storage: Writing submission created:', result[0]);
     return result[0];
   }
 
@@ -807,7 +842,7 @@ export class DatabaseStorage implements IStorage {
 
       const original = originalAssignment[0];
       const newId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // Create a duplicate with new type and id
       const newAssignment = {
         ...original,
@@ -865,17 +900,17 @@ export class DatabaseStorage implements IStorage {
     return await this.executeWithRetry(async () => {
       // Get current UTC time
       const now = new Date();
-      
+
       // Calculate 3 hours ago in UTC (assignments created within last 3 hours)
       const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
-      
+
       // Convert to Vietnam timezone for display
       const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
-      
+
       console.log('Current UTC time:', now.toISOString());
       console.log('Vietnam time (display):', vietnamTime.toISOString());
       console.log('Looking for assignments created after UTC:', threeHoursAgo.toISOString());
-      
+
       // Query assignments that were created within the last 3 hours
       const result = await db.select()
         .from(assignment)
@@ -883,7 +918,7 @@ export class DatabaseStorage implements IStorage {
           sql`${assignment.created_at} >= ${threeHoursAgo.toISOString()}`
         )
         .orderBy(desc(assignment.created_at));
-      
+
       console.log('Found live assignments:', result.length);
       if (result.length > 0) {
         console.log('Assignment creation dates:', result.map(a => ({ id: a.id, assignmentname: a.assignmentname, created_at: a.created_at })));
@@ -905,7 +940,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(users.id, assignment_student_try.hocsinh_id))
       .where(eq(assignment_student_try.assignmentid, assignmentId))
       .orderBy(assignment_student_try.start_time);
-      
+
       return result;
     });
   }
@@ -917,7 +952,7 @@ export class DatabaseStorage implements IStorage {
         .from(student_try)
         .where(eq(student_try.assignment_student_try_id, assignmentStudentTryId.toString()))
         .orderBy(student_try.time_start);
-      
+
       return result;
     });
   }
@@ -1025,7 +1060,7 @@ export class DatabaseStorage implements IStorage {
         GROUP BY contentgroup, url
         ORDER BY content_count DESC
       `);
-      
+
       return result.rows.map((row: any) => ({
         contentgroup: row.contentgroup,
         url: row.url || '',
@@ -1043,30 +1078,54 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+   async getContentById(contentId: string): Promise<any | null> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM content 
+        WHERE id = ${contentId}
+        LIMIT 1
+      `);
+
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching content by ID:', error);
+      return null;
+    }
+  }
+
+
   async getStudentTriesLeaderboard(): Promise<any[]> {
     return this.executeWithRetry(async () => {
       const result = await db.execute(sql`
         SELECT 
-          hocsinh_id,
+          st.hocsinh_id,
           COUNT(*) as total_tries,
-          SUM(CASE WHEN quiz_result = '✅' THEN 1 ELSE 0 END) as correct_answers,
+          SUM(CASE WHEN st.quiz_result = '✅' THEN 1 ELSE 0 END) as correct_answers,
           ROUND(
-            (SUM(CASE WHEN quiz_result = '✅' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 
+            (SUM(CASE WHEN st.quiz_result = '✅' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 
             1
-          ) as accuracy_percentage
-        FROM student_try 
-        GROUP BY hocsinh_id 
+          ) as accuracy_percentage,
+          COALESCE(u.full_name, CONCAT(u.first_name, ' ', u.last_name), 'Unknown Student') as full_name
+        FROM student_try st
+        LEFT JOIN users u ON st.hocsinh_id = u.id
+        WHERE st.quiz_result IS NOT NULL 
+          AND st.quiz_result != '' 
+          AND st.quiz_result IN ('✅', '❌')
+          AND st.question_id IS NOT NULL
+          AND st.question_id != ''
+        GROUP BY st.hocsinh_id, u.full_name, u.first_name, u.last_name
+        HAVING COUNT(*) > 0
         ORDER BY total_tries DESC, accuracy_percentage DESC
         LIMIT 20
       `);
-      
+
       return result.rows.map((row: any, index: number) => ({
         rank: index + 1,
         student_id: row.hocsinh_id,
-        name: row.hocsinh_id, // Using ID as name for now
         total_tries: parseInt(row.total_tries),
         correct_answers: parseInt(row.correct_answers),
-        accuracy: parseFloat(row.accuracy_percentage) || 0
+        accuracy_percentage: parseFloat(row.accuracy_percentage) || 0,
+        full_name: row.full_name
       }));
     });
   }
@@ -1089,7 +1148,7 @@ export class DatabaseStorage implements IStorage {
           AND (cr.personal_note IS NOT NULL AND cr.personal_note != '' OR cr.rating IS NOT NULL)
         ORDER BY cr.updated_at DESC
       `);
-      
+
       return result.rows.map((row: any) => ({
         id: row.id,
         contentId: row.contentId,
@@ -1125,7 +1184,7 @@ export class DatabaseStorage implements IStorage {
         GROUP BY c.id, c.topicid, t.topic, c.title, cr.rating, c.parentid
         ORDER BY c.title
       `);
-      
+
       return result.rows.map((row: any) => ({
         id: row.id,
         topicid: row.topicid,
@@ -1171,7 +1230,7 @@ export class DatabaseStorage implements IStorage {
     return this.executeWithRetry(async () => {
       // Simple approach: get student tries from last 24 hours
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      
+
       // Get all student tries since yesterday
       const result = await db.execute(sql`
         SELECT DISTINCT
@@ -1265,186 +1324,139 @@ export class DatabaseStorage implements IStorage {
   async getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]> {
     return this.executeWithRetry(async () => {
       const results = [];
-      
+
       // Process each student individually to avoid complex query parameter issues
       for (const studentId of studentIds) {
-        // Get student info
+        // Get student info with all necessary fields
         const studentInfo = await db.execute(sql`
-          SELECT id, COALESCE(full_name, first_name || ' ' || last_name) as student_name
+          SELECT id, first_name, last_name, full_name, 
+                 COALESCE(full_name, first_name || ' ' || last_name) as student_name
           FROM users WHERE id = ${studentId}
         `);
-        
+
         if (studentInfo.rows.length === 0) continue;
-        
+
         const student = studentInfo.rows[0] as any;
-        
+
         // Get content views count
-        const contentViews = await db.execute(sql`
-          SELECT COUNT(*) as count 
-          FROM student_try_content stc
-          WHERE stc.hocsinh_id = ${studentId} 
-            AND stc.time_start >= ${startTime}
-        `);
-        
-        // Get content ratings count
-        const contentRatings = await db.execute(sql`
-          SELECT COUNT(*) as count 
-          FROM content_ratings cr
-          WHERE cr.student_id = ${studentId} 
-            AND cr.created_at >= ${startTime}
-        `);
-        
-        // Get quiz attempts count and accuracy
-        const quizStats = await db.execute(sql`
-          SELECT 
-            COUNT(*) as total_attempts,
-            COUNT(CASE WHEN st.quiz_result = '✅' THEN 1 END) as correct_answers,
-            COUNT(CASE WHEN st.quiz_result = '❌' THEN 1 END) as incorrect_answers
-          FROM student_try st
-          WHERE st.hocsinh_id = ${studentId} 
-            AND st.time_start >= ${startTime}
-            AND st.time_start IS NOT NULL
-            AND st.quiz_result IS NOT NULL
-            AND st.quiz_result != ''
-        `);
-        
-        const totalQuizzes = parseInt((quizStats.rows[0] as any)?.total_attempts) || 0;
-        const correctAnswers = parseInt((quizStats.rows[0] as any)?.correct_answers) || 0;
-        const incorrectAnswers = parseInt((quizStats.rows[0] as any)?.incorrect_answers) || 0;
+      const contentViews = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM student_try_content stc
+        WHERE stc.hocsinh_id = ${studentId} 
+          AND stc.time_start >= ${startTime}
+      `);
+
+      // Get content ratings count
+      const contentRatings = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM content_ratings cr
+        WHERE cr.student_id = ${studentId} 
+          AND cr.updated_at >= ${startTime}
+      `);
+
+        // Get quiz attempts count and accuracy based on quiz_result
+        const quizAttempts = await db.execute(sql`
+        SELECT COUNT(*) as attempts_count,
+               COUNT(CASE WHEN quiz_result = '✅' THEN 1 END) as correct_count
+        FROM student_try st
+        WHERE st.hocsinh_id = ${studentId} 
+          AND st.time_start >= ${startTime}::timestamp
+          AND st.quiz_result IS NOT NULL
+          AND st.quiz_result != ''
+      `);
+
+        const totalQuizzes = parseInt((quizAttempts.rows[0] as any)?.attempts_count) || 0;
+        const correctAnswers = parseInt((quizAttempts.rows[0] as any)?.correct_count) || 0;
         const quizAccuracy = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : null;
-        
-        // Debug logging for quiz accuracy
-        if (totalQuizzes > 0) {
-          console.log(`Student ${studentId} quiz stats:`, {
-            total: totalQuizzes,
-            correct: correctAnswers,
-            incorrect: incorrectAnswers,
-            accuracy: quizAccuracy
-          });
-        }
-        
-        // Get recent activities - simplified approach
-        const allActivities: any[] = [];
-        
-        // Get content view activities
-        try {
-          const contentViewActivities = await db.execute(sql`
-            SELECT 'content_view' as type, c.id as content_id, c.title as content_title, 
-                   stc.time_start as timestamp
-            FROM student_try_content stc
-            JOIN content c ON stc.contentid = c.id
-            WHERE stc.hocsinh_id = ${studentId} AND stc.time_start >= ${startTime}
-            ORDER BY stc.time_start DESC
-            LIMIT 10
-          `);
-          
-          contentViewActivities.rows.forEach((row: any) => {
-            allActivities.push({
-              type: row.type,
-              content_id: row.content_id,
-              content_title: row.content_title,
-              timestamp: row.timestamp,
-              rating: null,
-              quiz_score: null
-            });
-          });
-        } catch (e) {
-          console.log('Error fetching content views:', e);
-        }
 
-        // Get rating activities
-        try {
-          const ratingActivities = await db.execute(sql`
-            SELECT 'content_rating' as type, cr.content_id, c.title as content_title,
-                   cr.created_at as timestamp, cr.rating
-            FROM content_ratings cr
-            JOIN content c ON cr.content_id = c.id
-            WHERE cr.student_id = ${studentId} AND cr.created_at >= ${startTime}
-            ORDER BY cr.created_at DESC
-            LIMIT 10
-          `);
-          
-          ratingActivities.rows.forEach((row: any) => {
-            allActivities.push({
-              type: row.type,
-              content_id: row.content_id,
-              content_title: row.content_title,
-              timestamp: row.timestamp,
-              rating: row.rating,
-              quiz_score: null
-            });
-          });
-        } catch (e) {
-          console.log('Error fetching ratings:', e);
-        }
-
-        // Get quiz activities with proper timestamp handling
-        try {
-          const quizActivities = await db.execute(sql`
-            SELECT DISTINCT 'quiz_attempt' as type, q.contentid as content_id, c.title as content_title,
-                   CASE 
-                     WHEN st.time_start ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN 
-                       st.time_start::timestamp
-                     WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
-                       (CURRENT_DATE || ' ' || st.time_start)::timestamp
-                     ELSE 
-                       st.time_start::timestamp
-                   END as timestamp,
-                   st.score, st.quiz_result, st.time_start as original_time
-            FROM student_try st
-            JOIN question q ON st.question_id = q.id
-            JOIN content c ON q.contentid = c.id
-            WHERE st.hocsinh_id = ${studentId} 
-              AND st.time_start IS NOT NULL 
-              AND st.time_start != ''
-              AND (
-                CASE 
-                  WHEN st.time_start ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T' THEN 
-                    st.time_start::timestamp >= ${startTime}::timestamp
-                  WHEN st.time_start ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}$' THEN 
-                    (CURRENT_DATE || ' ' || st.time_start)::timestamp >= ${startTime}::timestamp
-                  ELSE 
-                    st.time_start::timestamp >= ${startTime}::timestamp
-                END
-              )
-            ORDER BY timestamp DESC
-            LIMIT 15
-          `);
-          
-          quizActivities.rows.forEach((row: any) => {
-            allActivities.push({
-              type: row.type,
-              content_id: row.content_id,
-              content_title: row.content_title,
-              timestamp: row.timestamp,
-              rating: null,
-              quiz_score: row.score,
-              quiz_result: row.quiz_result
-            });
-          });
-        } catch (e) {
-          console.log('Error fetching quizzes:', e);
-        }
-
-        // Sort activities by timestamp
-        allActivities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        allActivities.splice(25); // Keep only top 25
-        
         results.push({
           student_id: student.id,
           student_name: student.student_name,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          full_name: student.full_name,
           content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
           content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
           quiz_attempts: totalQuizzes,
           quiz_accuracy: quizAccuracy,
-          last_activity: allActivities.length > 0 ? allActivities[0].timestamp : null,
-          activities: allActivities
+          last_activity: null,
+          activities: []
         });
       }
-      
+
       return results;
     });
   }
+
+  // Admin update methods
+  async updateUser(userId: string, updateData: Partial<User>): Promise<User | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db
+        .update(users)
+        .set(updateData)
+        .where(eq(users.id, userId))
+        .returning();
+      return result[0];
+    });
+  }
+
+  async updateTopic(topicId: string, updateData: Partial<Topic>): Promise<Topic | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db
+        .update(topics)
+        .set(updateData)
+        .where(eq(topics.id, topicId))
+        .returning();
+      return result[0];
+    });
+  }
+
+  async createTopic(topicData: any): Promise<Topic> {
+    return this.executeWithRetry(async () => {
+      // Generate ID if not provided
+      if (!topicData.id) {
+        topicData.id = crypto.randomBytes(4).toString('hex');
+      }
+
+      const result = await db
+        .insert(topics)
+        .values(topicData)
+        .returning();
+      return result[0];
+    });
+  }
+
+  async createContent(contentData: any): Promise<Content> {
+    return this.executeWithRetry(async () => {
+      // Generate ID if not provided
+      if (!contentData.id) {
+        contentData.id = crypto.randomBytes(4).toString('hex');
+      }
+
+      const result = await db
+        .insert(content)
+        .values(contentData)
+        .returning();
+      return result[0];
+    });
+  }
+
+  async createMatching(matchingData: any): Promise<Matching> {
+    return this.executeWithRetry(async () => {
+      // Generate ID if not provided
+      if (!matchingData.id) {
+        matchingData.id = crypto.randomBytes(4).toString('hex');
+      }
+
+      const result = await db
+        .insert(matching)
+        .values(matchingData)
+        .returning();
+      return result[0];
+    });
+  }
+
+
 }
 
 export const storage = new DatabaseStorage();

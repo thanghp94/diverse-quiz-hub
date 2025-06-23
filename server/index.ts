@@ -1,10 +1,50 @@
 import express, { type Request, Response, NextFunction } from "express";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import serveStatic from "serve-static";
+import { setupVite, serveStatic as viteServeStatic, log } from "./vite";
 import { wakeUpDatabase } from "./db";
 import { cronScheduler } from "./cron-scheduler";
 
 const app = express();
+const server = createServer(app);
+
+// Set up Socket.IO server for real-time monitoring
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  },
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000,
+  pingInterval: 25000
+});
+
+// Make io available globally for routes
+(global as any).io = io;
+
+// Handle WebSocket connections for live monitoring
+io.on('connection', (socket) => {
+  console.log('Client connected to live monitor:', socket.id);
+
+  socket.on('join-monitor', (data) => {
+    console.log('Client joined monitor room:', data);
+    socket.join('live-monitor');
+    socket.emit('connection-confirmed', { message: 'Joined live monitor room', timestamp: new Date().toISOString() });
+  });
+
+  socket.on('join-leaderboard', () => {
+    console.log('Client joined leaderboard room');
+    socket.join('leaderboard');
+    socket.emit('connection-confirmed', { message: 'Joined leaderboard room', timestamp: new Date().toISOString() });
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('Client disconnected from live monitor:', socket.id);
+  });
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -50,8 +90,24 @@ app.use((req, res, next) => {
   }).catch(error => {
     console.error('Database wake up failed, but continuing server startup:', error);
   });
-  
-  const server = await registerRoutes(app);
+
+  const serverRoutes = await registerRoutes(app);
+  // Setup Socket.IO for real-time updates
+  // Store the io instance globally for use in routes
+  //(global as any).io = io;
+
+  //io.on('connection', (socket) => {
+  //  console.log('Client connected to live monitor:', socket.id);
+
+  //  socket.on('join-monitor', (data) => {
+  //    console.log('Client joined monitor room:', data);
+  //    socket.join('live-monitor');
+  //  });
+
+  //  socket.on('disconnect', () => {
+  //    console.log('Client disconnected from live monitor:', socket.id);
+  //  });
+  //});
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -67,9 +123,9 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    await setupVite(app, server);
+    await setupVite(app, serverRoutes);
   } else {
-    serveStatic(app);
+    viteServeStatic(app);
   }
 
   // ALWAYS serve the app on port 5000
@@ -82,7 +138,7 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
-    
+
     // Start the daily student tracking cron job
     cronScheduler.startDailyStudentTracking();
   });

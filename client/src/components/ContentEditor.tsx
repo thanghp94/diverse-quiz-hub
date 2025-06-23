@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -55,6 +56,7 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const updateMutation = useMutation({
     mutationFn: async (updates: typeof editData) => {
@@ -136,8 +138,7 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
   };
 
   // Check if current user is GV0002
-  const currentUser = localStorage.getItem('currentUser');
-  const isAuthorized = currentUser ? JSON.parse(currentUser).id === 'GV0002' : false;
+  const isAuthorized = user?.id === 'GV0002';
 
   if (!isAuthorized) {
     return null;
@@ -338,6 +339,23 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
           <div className="flex items-center gap-2">
             <Video className="h-5 w-5 text-red-600" />
             <Label className="text-base font-medium">Video Links</Label>
+          </div>
+
+          {/* Image Link */}
+          <div className="space-y-2">
+            <Label htmlFor="imagelink">Image Link</Label>
+            {isEditing ? (
+              <Input
+                id="imagelink"
+                value={editData.imagelink || ''}
+                onChange={(e) => setEditData(prev => ({ ...prev, imagelink: e.target.value }))}
+                placeholder="Enter image link..."
+              />
+            ) : (
+              <div className="p-3 bg-gray-50 rounded-lg text-sm">
+                {content.imagelink || 'No image link'}
+              </div>
+            )}
           </div>
 
           {/* Video 1 */}

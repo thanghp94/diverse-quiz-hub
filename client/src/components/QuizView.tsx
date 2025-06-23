@@ -37,9 +37,10 @@ interface QuizViewProps {
     assignmentStudentTryId: string;
     studentTryId?: string;
     contentId?: string;
+    topicId?: string;
 }
 
-const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTryId, contentId }: QuizViewProps) => {
+const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTryId, contentId, topicId }: QuizViewProps) => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -159,7 +160,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     };
 
     const handleContentRating = async (rating: string) => {
-        if (!contentId) return;
+        if (!contentId && !topicId) return;
 
         try {
             // Get current user for tracking
@@ -178,7 +179,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     student_id: currentUser.id,
-                    content_id: contentId,
+                    content_id: contentId || topicId,
                     rating: rating
                 })
             });
@@ -259,11 +260,25 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     };
 
     if (isLoading) {
-        return <div className="p-4 text-center">Loading quiz question...</div>;
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                    <div className="text-lg font-semibold">Loading Quiz...</div>
+                    <div className="text-gray-600 mt-2">Preparing your questions...</div>
+                </div>
+            </div>
+        );
     }
 
     if (!currentQuestion) {
-        return <div className="p-4 text-center text-red-500">Question not found. Could not load quiz.</div>;
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center text-red-500">
+                    <div className="text-lg font-semibold">No questions available</div>
+                    <div className="text-gray-600 mt-2">Unable to load quiz questions.</div>
+                </div>
+            </div>
+        );
     }
 
     const choices = [currentQuestion.cau_tra_loi_1, currentQuestion.cau_tra_loi_2, currentQuestion.cau_tra_loi_3, currentQuestion.cau_tra_loi_4].filter((c): c is string => c !== null && c !== '');
@@ -273,8 +288,8 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     const incorrectPercentage = totalQuestions > 0 ? Math.round((incorrectAnswersCount / totalQuestions) * 100) : 0;
 
     return (
-        <div className="p-6 h-full">
-            <Card className="border-gray-200 shadow-lg h-full">
+        <div className="w-full h-full overflow-hidden">
+            <Card className="border-gray-200 shadow-lg h-full w-full">
                 <CardHeader className="pb-6">
                     <div className="flex flex-col gap-4">
                         {/* Question Title */}
@@ -334,7 +349,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                     </div>
                     <CardDescription className="text-2xl font-semibold text-blue-600 pt-2 leading-relaxed">{currentQuestion.noi_dung}</CardDescription>
                 </CardHeader>
-                <CardContent className="pb-8">
+                <CardContent className="pb-8 flex-1 overflow-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {choices.map((choice, index) => {
                             const choiceLetter = String.fromCharCode(65 + index);

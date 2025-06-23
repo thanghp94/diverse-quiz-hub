@@ -11,14 +11,15 @@ import Topics from "./pages/Topics";
 import Content from "./pages/Content";
 import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
-import DebatePage from "./pages/Debate";
-import WritingPage from "./pages/Writing";
+import DebatePage from "./pages/DebatePage";
+import WritingPage from "./pages/WritingPage";
 import ChallengeSubject from "./pages/ChallengeSubject";
 import Login from "./pages/Login";
 import { DemoPage } from "./pages/DemoPage";
 import AssignmentPage from "./pages/AssignmentPage";
 import LiveClass from "./pages/LiveClass";
 import LiveClassPage from "./pages/LiveClassPage";
+import AdminPage from "./pages/AdminPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +83,7 @@ function AppRouter() {
           <Route path="/assignments" component={AssignmentPage} />
           <Route path="/live-class" component={LiveClass} />
           <Route path="/live-monitor" component={LiveClassPage} />
+          <Route path="/admin" component={AdminPage} />
           <Route path="/demo" component={DemoPage} />
         </>
       )}

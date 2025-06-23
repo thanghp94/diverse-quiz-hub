@@ -1,178 +1,170 @@
-import { useState, useEffect, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
-import QuizApp from "@/components/QuizApp";
-import { Loader2 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
+import QuizView from './QuizView';
 
 interface TopicQuizRunnerProps {
     topicId: string;
     level: 'Overview' | 'Easy' | 'Hard';
-    onClose: () => void;
     topicName: string;
+    onClose: () => void;
 }
 
-const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunnerProps) => {
+const TopicQuizRunner: React.FC<TopicQuizRunnerProps> = ({
+    topicId,
+    level,
+    topicName,
+    onClose
+}) => {
     const [assignmentTry, setAssignmentTry] = useState<any>(null);
+    const [studentTry, setStudentTry] = useState<any>(null);
     const [questionIds, setQuestionIds] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const { toast } = useToast();
-
-    const startQuiz = useCallback(async () => {
-        setIsLoading(true);
-        
-        try {
-            // Fetch questions for this topic
-            const url = level === 'Overview' 
-                ? `/api/questions?topicId=${topicId}`
-                : `/api/questions?topicId=${topicId}&level=${level.toLowerCase()}`;
-            
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error('Failed to fetch questions');
-            }
-            const questions = await response.json();
-
-            if (!questions || questions.length === 0) {
-                console.log(`No ${level} questions available for topic ${topicId}`);
-                toast({
-                    title: "No Quiz Available",
-                    description: `There are no ${level.toLowerCase()} questions for this topic yet. Check back later!`,
-                });
-                onClose();
-                return;
-            }
-
-            const randomizedQuestionIds = questions.map((q: any) => q.id).sort(() => Math.random() - 0.5);
-            
-            // Get current user from localStorage
-            const currentUser = localStorage.getItem('currentUser');
-            const studentId = currentUser ? JSON.parse(currentUser).id : 'GV0002'; // Default fallback
-            
-            if (!studentId) {
-                toast({
-                    title: "Authentication Required", 
-                    description: "Please log in to take quizzes.",
-                    variant: "destructive",
-                });
-                onClose();
-                return;
-            }
-
-            // Create assignment_student_try directly
-            const assignmentTryResponse = await fetch('/api/assignment-student-tries', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    hocsinh_id: studentId,
-                    questionids: JSON.stringify(randomizedQuestionIds),
-                    start_time: new Date().toISOString(),
-                    typeoftaking: level
-                })
-            });
-
-            if (!assignmentTryResponse.ok) {
-                throw new Error('Failed to create assignment student try');
-            }
-
-            const assignmentStudentTry = await assignmentTryResponse.json();
-
-            // Create student try
-            console.log('Creating student try with assignment_student_try_id:', assignmentStudentTry.id);
-            
-            const studentTryResponse = await fetch('/api/student-tries', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    assignment_student_try_id: assignmentStudentTry.id,
-                    hocsinh_id: studentId
-                })
-            });
-
-            if (!studentTryResponse.ok) {
-                const errorText = await studentTryResponse.text();
-                console.error('Failed to create student try:', errorText);
-                throw new Error(`Failed to create student try: ${errorText}`);
-            }
-
-            const studentTry = await studentTryResponse.json();
-            console.log('Student try created successfully:', studentTry);
-            
-            const newAssignmentTry = {
-                id: assignmentStudentTry.id,
-                student_id: studentId,
-                topicID: topicId,
-                questionIDs: JSON.stringify(randomizedQuestionIds),
-                level: level,
-                studentTryId: studentTry.id
-            };
-
-            console.log('Topic quiz started with database tracking:', newAssignmentTry);
-            console.log('Created student_try:', studentTry);
-
-            setAssignmentTry(newAssignmentTry);
-            setQuestionIds(randomizedQuestionIds);
-        } catch (error) {
-            console.error("Error starting topic quiz:", error);
-            toast({
-                title: "Error Starting Quiz",
-                description: "Could not start the quiz due to a server error. Please try again.",
-                variant: "destructive",
-            });
-            onClose();
-        } finally {
-            setIsLoading(false);
-        }
-    }, [topicId, level, toast, onClose]);
 
     useEffect(() => {
-        startQuiz();
-    }, [startQuiz]);
+        const fetchTopicQuiz = async () => {
+            try {
+                setIsLoading(true);
+                console.log(`Fetching questions for topic ${topicId} with level ${level}`);
+
+                // Fetch questions for the topic and level
+                const response = await fetch(`/api/questions?topicId=${topicId}&level=${level}`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch questions');
+                }
+                const questions = await response.json();
+                console.log(`Found ${questions.length} questions for level: ${level}`);
+
+                if (questions.length === 0) {
+                    console.log(`No ${level} questions available for topic ${topicId}`);
+                    onClose();
+                    return;
+                }
+
+                const questionIds = questions.map((q: any) => q.id);
+                setQuestionIds(questionIds);
+
+                // Create assignment_student_try
+                const getCurrentUser = () => {
+                    const storedUser = localStorage.getItem('currentUser');
+                    if (storedUser) {
+                        return JSON.parse(storedUser);
+                    }
+                    return { id: 'GV0002', name: 'Default User' };
+                };
+
+                const currentUser = getCurrentUser();
+                const tryResponse = await fetch('/api/assignment-student-tries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        hocsinh_id: currentUser.id,
+                        questionids: JSON.stringify(questionIds),
+                        start_time: new Date().toISOString(),
+                        typeoftaking: level
+                    })
+                });
+
+                if (!tryResponse.ok) {
+                    throw new Error('Failed to create assignment try');
+                }
+
+                const assignmentTryResult = await tryResponse.json();
+                console.log('Topic quiz started with database tracking:', assignmentTryResult);
+                setAssignmentTry(assignmentTryResult);
+
+                // Create student_try
+                const studentTryResponse = await fetch('/api/student-tries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        assignment_student_try_id: assignmentTryResult.id,
+                        hocsinh_id: currentUser.id
+                    })
+                });
+
+                if (!studentTryResponse.ok) {
+                    throw new Error('Failed to create student try');
+                }
+
+                const studentTryResult = await studentTryResponse.json();
+                console.log('Created student_try:', studentTryResult);
+                setStudentTry(studentTryResult);
+
+            } catch (error) {
+                console.error('Error setting up topic quiz:', error);
+                onClose();
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (topicId && level) {
+            fetchTopicQuiz();
+        }
+    }, [topicId, level, onClose]);
 
     const handleQuizFinish = () => {
-        // Clean up local state
-        setAssignmentTry(null);
-        setQuestionIds([]);
-        setIsLoading(false);
-        
-        // Call the parent's onClose function
         onClose();
     };
 
     if (isLoading) {
         return (
-            <Dialog open onOpenChange={onClose}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Loading Quiz</DialogTitle>
-                        <DialogDescription>
-                            Preparing your {level.toLowerCase()} quiz for {topicName}...
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex justify-center py-8">
-                        <Loader2 className="h-8 w-8 animate-spin" />
+            <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+                <DialogContent className="max-w-4xl h-[80vh]">
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                            <div className="text-lg font-semibold">Loading {level} Quiz...</div>
+                            <div className="text-gray-600 mt-2">Preparing questions for {topicName}</div>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>
         );
     }
 
-    if (!assignmentTry || questionIds.length === 0) {
-        return null;
+    if (!assignmentTry || !studentTry || questionIds.length === 0) {
+        return (
+            <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+                <DialogContent className="max-w-4xl h-[80vh]">
+                    <div className="flex items-center justify-center h-full">
+                        <div className="text-center">
+                            <div className="text-lg font-semibold">No questions available</div>
+                            <div className="text-gray-600 mt-2">Unable to load {level} quiz for {topicName}</div>
+                            <Button onClick={onClose} className="mt-4">Close</Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        );
     }
 
     return (
-        <QuizApp
-            questionIds={questionIds}
-            onFinish={handleQuizFinish}
-            assignmentTry={assignmentTry}
-            studentTryId={assignmentTry.studentTryId}
-        />
+        <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-7xl h-[90vh] overflow-hidden">
+                <DialogHeader>
+                    <div className="flex items-center justify-between">
+                        <DialogTitle className="text-xl font-semibold">
+                            {topicName} - {level} Quiz
+                        </DialogTitle>
+                        <Button variant="ghost" size="sm" onClick={onClose}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </DialogHeader>
+
+                <div className="h-[calc(90vh-4rem)] w-full overflow-hidden">
+                    <QuizView
+                        questionIds={questionIds}
+                        onQuizFinish={handleQuizFinish}
+                        assignmentStudentTryId={assignmentTry.id.toString()}
+                        studentTryId={studentTry.id}
+                        topicId={topicId}
+                    />
+                </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 

@@ -241,6 +241,7 @@ interface TopicListItemProps {
     onToggleGroupCard: (groupCardId: string) => void;
     isGroupCardExpanded: (groupCardId: string) => boolean;
     activeContentId: string | null;
+    customActions?: (content: Content) => React.ReactNode;
 }
 
 const getContentIcon = (content: any) => {
@@ -307,11 +308,12 @@ const formatDescription = (description: string) => {
 };
 
 // Shared ContentCard component
-const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: { 
+const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz, customActions }: { 
   content: Content; 
   topicContent: Content[];
   onContentClick: (info: { content: Content; contextList: Content[] }) => void;
   onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
+  customActions?: (content: Content) => React.ReactNode;
 }) => {
   const { videoData, video2Data, videoEmbedUrl, video2EmbedUrl } = useContentMedia(content);
   const [videoPopupOpen, setVideoPopupOpen] = useState(false);
@@ -385,6 +387,7 @@ const ContentCard = ({ content, topicContent, onContentClick, onStartQuiz }: {
                         <Play className="h-3 w-3" />
                       </Button>
                     )}
+                    {customActions && customActions(content)}
                   </div>
                 </div>
               </div>
@@ -573,6 +576,7 @@ const GroupedContentDisplay = ({
                   topicContent={topicContent}
                   onContentClick={onContentClick}
                   onStartQuiz={onStartQuiz}
+                  customActions={customActions}
                 />
               </div>
             ))}
@@ -817,6 +821,7 @@ const TopicContentWithMatching = ({
                             topicContent={topicContent}
                             onContentClick={onContentClick}
                             onStartQuiz={onStartQuiz}
+                            customActions={customActions}
                           />
                         ))}
                       </div>
@@ -860,7 +865,8 @@ const TopicListItem = ({
     onStartGroupMatching,
     onToggleGroupCard,
     isGroupCardExpanded,
-    activeContentId
+    activeContentId,
+    customActions
 }: TopicListItemProps) => {
     const { matchingActivities, hasMatchingActivities, isLoading: isMatchingLoading } = useTopicMatching(topic.id);
 
@@ -1238,6 +1244,7 @@ const TopicListItem = ({
                                                           </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                       </DropdownMenu>
+                                                      {customActions && customActions(content)}
                                                     </div>
                                                   </div>
                                                   <div className="flex items-center gap-2 mb-2">

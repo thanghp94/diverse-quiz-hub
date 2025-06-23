@@ -7,7 +7,8 @@ import { Link } from 'wouter';
 
 interface WritingJournalProps {
   studentId: string;
-  studentName?: string;
+  studentName: string;
+  onCategorySelect?: (categoryId: string) => void;
 }
 
 interface WritingCategory {
@@ -56,7 +57,7 @@ const categories: WritingCategory[] = [
   }
 ];
 
-export const WritingJournal = ({ studentId, studentName }: WritingJournalProps) => {
+export const WritingJournal = ({ studentId, studentName, onCategorySelect }: WritingJournalProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const handleCategorySelect = (categoryId: string) => {
@@ -100,7 +101,7 @@ export const WritingJournal = ({ studentId, studentName }: WritingJournalProps) 
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
             <div className="bg-purple-500 rounded-full p-2">
               <User className="w-6 h-6 text-white" />
@@ -118,7 +119,7 @@ export const WritingJournal = ({ studentId, studentName }: WritingJournalProps) 
               Choose a category below to find an exciting topic for today's journal entry!
             </p>
           </CardHeader>
-          
+
           <CardContent className="p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {categories.map((category) => (

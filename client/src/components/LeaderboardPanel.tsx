@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trophy, Users } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Trophy, Users, Wifi, WifiOff } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { io, Socket } from 'socket.io-client';
 
 interface LeaderboardData {
   totalPoints: Array<{
@@ -22,18 +23,80 @@ interface LeaderboardData {
 
 export const LeaderboardPanel = () => {
   const [activeTab, setActiveTab] = useState<'points' | 'tries'>('points');
+  const [socketConnected, setSocketConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const queryClient = useQueryClient();
   
   const { data: studentTriesData, isLoading: isLoadingTries } = useQuery({
     queryKey: ['/api/student-tries-leaderboard'],
     queryFn: () => fetch('/api/student-tries-leaderboard').then(res => res.json()),
-    refetchInterval: 30000,
+    refetchInterval: socketConnected ? false : 30000, // Only poll if WebSocket disconnected
+    staleTime: 0, // Always consider data stale for real-time updates
+    refetchOnWindowFocus: true,
   });
   
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useQuery<LeaderboardData>({
     queryKey: ['/api/leaderboards'],
     queryFn: () => fetch('/api/leaderboards').then(res => res.json()),
-    refetchInterval: 30000,
+    refetchInterval: socketConnected ? false : 30000, // Only poll if WebSocket disconnected
+    staleTime: 0, // Always consider data stale for real-time updates
+    refetchOnWindowFocus: true,
   });
+
+  // Setup WebSocket connection for real-time leaderboard updates
+  useEffect(() => {
+    const socket = io(window.location.origin, {
+      transports: ['websocket', 'polling'],
+      timeout: 10000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.log('✅ Leaderboard WebSocket connected');
+      setSocketConnected(true);
+      socket.emit('join-leaderboard');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Leaderboard WebSocket disconnected');
+      setSocketConnected(false);
+    });
+
+    // Listen for quiz activity updates that affect leaderboards
+    socket.on('quiz-activity', (data) => {
+      console.log('📊 Quiz activity affecting leaderboard:', data);
+      
+      // Immediately update both leaderboard queries
+      queryClient.invalidateQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/student-tries-leaderboard'] });
+      
+      // Force refetch to get latest data
+      queryClient.refetchQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.refetchQueries({ queryKey: ['/api/student-tries-leaderboard'] });
+    });
+
+    // Listen for direct leaderboard updates
+    socket.on('leaderboard-update', (data) => {
+      console.log('🏆 Direct leaderboard update:', data);
+      queryClient.invalidateQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/student-tries-leaderboard'] });
+      
+      // Force refetch to get latest data
+      queryClient.refetchQueries({ queryKey: ['/api/leaderboards'] });
+      queryClient.refetchQueries({ queryKey: ['/api/student-tries-leaderboard'] });
+    });
+
+    return () => {
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+      }
+    };
+  }, [queryClient]);
 
   const isLoading = isLoadingTries || isLoadingLeaderboard;
 
@@ -101,6 +164,11 @@ export const LeaderboardPanel = () => {
         >
           <Trophy className="h-4 w-4 mr-1" />
           Leaderboard
+          {socketConnected ? (
+            <Wifi className="h-3 w-3 ml-1 text-green-400" />
+          ) : (
+            <WifiOff className="h-3 w-3 ml-1 text-red-400" />
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md bg-gray-900 border-gray-700">
