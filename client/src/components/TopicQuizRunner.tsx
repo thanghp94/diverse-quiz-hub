@@ -165,6 +165,7 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
                     onQuizFinish={handleQuizFinish}
                     assignmentStudentTryId={assignmentTry.assignmentStudentTryId || assignmentTry.id}
                     studentTryId={assignmentTry.studentTryId}
+                    contentId={undefined}
                 />
             </DialogContent>
         </Dialog>
