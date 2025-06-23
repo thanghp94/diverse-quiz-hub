@@ -3,9 +3,9 @@ import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { registerRoutes } from "./routes";
 import serveStatic from "serve-static";
-import { setupVite, serveStatic as viteServeStatic } from "./vite";
+import { setupVite, serveStatic as viteServeStatic, log } from "./vite";
 import { wakeUpDatabase } from "./db";
-import * as cronScheduler from "./cron-scheduler";
+import { cronScheduler } from "./cron-scheduler";
 
 const app = express();
 const server = createServer(app);
@@ -31,7 +31,13 @@ io.on('connection', (socket) => {
   socket.on('join-monitor', (data) => {
     console.log('Client joined monitor room:', data);
     socket.join('live-monitor');
-    socket.emit('connection-confirmed', { status: 'connected' });
+    socket.emit('connection-confirmed', { message: 'Joined live monitor room', timestamp: new Date().toISOString() });
+  });
+
+  socket.on('join-leaderboard', () => {
+    console.log('Client joined leaderboard room');
+    socket.join('leaderboard');
+    socket.emit('connection-confirmed', { message: 'Joined leaderboard room', timestamp: new Date().toISOString() });
   });
 
   socket.on('disconnect', (reason) => {
@@ -65,7 +71,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      console.log(logLine);
+      log(logLine);
     }
   });
 
@@ -131,12 +137,10 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    console.log(`6:${new Date().toLocaleTimeString().split(':')[1]}:${new Date().toLocaleTimeString().split(':')[2]} AM [express] serving on port ${port}`);
+    log(`serving on port ${port}`);
 
-    // Start the daily student tracking cron job if available
-    if (cronScheduler && typeof cronScheduler.startDailyStudentTracking === 'function') {
-      cronScheduler.startDailyStudentTracking();
-    }
+    // Start the daily student tracking cron job
+    cronScheduler.startDailyStudentTracking();
   });
 
   // Graceful shutdown
