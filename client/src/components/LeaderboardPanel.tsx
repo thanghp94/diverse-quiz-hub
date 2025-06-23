@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Trophy, Users } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { Trophy, Users, Wifi, WifiOff } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { io, Socket } from 'socket.io-client';
 
 interface LeaderboardData {
   totalPoints: Array<{
@@ -22,6 +23,9 @@ interface LeaderboardData {
 
 export const LeaderboardPanel = () => {
   const [activeTab, setActiveTab] = useState<'points' | 'tries'>('points');
+  const [socketConnected, setSocketConnected] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const queryClient = useQueryClient();
   
   const { data: studentTriesData, isLoading: isLoadingTries } = useQuery({
     queryKey: ['/api/student-tries-leaderboard'],
@@ -34,6 +38,52 @@ export const LeaderboardPanel = () => {
     queryFn: () => fetch('/api/leaderboards').then(res => res.json()),
     refetchInterval: 30000,
   });
+
+  // Setup WebSocket connection for real-time leaderboard updates
+  useEffect(() => {
+    const socket = io(window.location.origin, {
+      transports: ['websocket', 'polling'],
+      timeout: 10000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 2000
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.log('✅ Leaderboard WebSocket connected');
+      setSocketConnected(true);
+      socket.emit('join-leaderboard');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('❌ Leaderboard WebSocket disconnected');
+      setSocketConnected(false);
+    });
+
+    // Listen for quiz activity updates that affect leaderboards
+    socket.on('quiz-activity', (data) => {
+      console.log('📊 Quiz activity affecting leaderboard:', data);
+      // Invalidate and refetch leaderboard data immediately
+      queryClient.invalidateQueries(['/api/leaderboards']);
+      queryClient.invalidateQueries(['/api/student-tries-leaderboard']);
+    });
+
+    // Listen for direct leaderboard updates
+    socket.on('leaderboard-update', (data) => {
+      console.log('🏆 Direct leaderboard update:', data);
+      queryClient.invalidateQueries(['/api/leaderboards']);
+      queryClient.invalidateQueries(['/api/student-tries-leaderboard']);
+    });
+
+    return () => {
+      if (socket) {
+        socket.removeAllListeners();
+        socket.disconnect();
+      }
+    };
+  }, [queryClient]);
 
   const isLoading = isLoadingTries || isLoadingLeaderboard;
 
@@ -101,6 +151,11 @@ export const LeaderboardPanel = () => {
         >
           <Trophy className="h-4 w-4 mr-1" />
           Leaderboard
+          {socketConnected ? (
+            <Wifi className="h-3 w-3 ml-1 text-green-400" />
+          ) : (
+            <WifiOff className="h-3 w-3 ml-1 text-red-400" />
+          )}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md bg-gray-900 border-gray-700">

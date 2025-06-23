@@ -1072,6 +1072,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Emit to all connected clients immediately
           io.emit('quiz-activity', activityData);
           io.to('live-monitor').emit('quiz-activity', activityData);
+          io.to('leaderboard').emit('quiz-activity', activityData);
           
         } catch (error) {
           console.error('Error emitting WebSocket event:', error);

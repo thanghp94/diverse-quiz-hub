@@ -29,7 +29,13 @@ io.on('connection', (socket) => {
   socket.on('join-monitor', (data) => {
     console.log('Client joined monitor room:', data);
     socket.join('live-monitor');
-    socket.emit('connection-confirmed', { status: 'connected' });
+    socket.emit('connection-confirmed', { message: 'Joined live monitor room', timestamp: new Date().toISOString() });
+  });
+
+  socket.on('join-leaderboard', () => {
+    console.log('Client joined leaderboard room');
+    socket.join('leaderboard');
+    socket.emit('connection-confirmed', { message: 'Joined leaderboard room', timestamp: new Date().toISOString() });
   });
 
   socket.on('disconnect', (reason) => {
