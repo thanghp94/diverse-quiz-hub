@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { BookOpen, Target, HelpCircle } from "lucide-react";
 import { Topic } from "@/hooks/useTopics";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TopicQuizRunner from "./TopicQuizRunner";
 
 interface TopicCardProps {
@@ -18,8 +18,41 @@ const TopicCard = ({ topic }: TopicCardProps) => {
     level: "Overview" | "Easy" | "Hard";
     topicName: string;
   } | null>(null);
+  
+  const [availableQuizLevels, setAvailableQuizLevels] = useState<{
+    Overview: boolean;
+    Easy: boolean;
+    Hard: boolean;
+  }>({ Overview: false, Easy: false, Hard: false });
+
+  useEffect(() => {
+    const checkAvailableQuizLevels = async () => {
+      const levels = ["Overview", "Easy", "Hard"] as const;
+      const availability = { Overview: false, Easy: false, Hard: false };
+      
+      for (const level of levels) {
+        try {
+          const response = await fetch(`/api/questions?topicId=${topic.id}&level=${level}`);
+          if (response.ok) {
+            const questions = await response.json();
+            availability[level] = questions && questions.length > 0;
+          }
+        } catch (error) {
+          console.error(`Error checking ${level} questions for topic ${topic.id}:`, error);
+        }
+      }
+      
+      setAvailableQuizLevels(availability);
+    };
+    
+    checkAvailableQuizLevels();
+  }, [topic.id]);
 
   const handleStartTopicQuiz = (level: "Overview" | "Easy" | "Hard") => {
+    if (!availableQuizLevels[level]) {
+      return; // Don't start quiz if no questions available
+    }
+    
     setTopicQuizInfo({
       topicId: topic.id,
       level: level,
@@ -56,50 +89,58 @@ const TopicCard = ({ topic }: TopicCardProps) => {
           </div>
         </Link>
 
-        {/* Quiz Buttons */}
-        <div className="flex gap-1 mt-3 pt-2 border-t border-gray-100">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-blue-600 hover:bg-blue-50 border-blue-200 text-xs px-2 py-1 h-6 flex-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStartTopicQuiz("Overview");
-            }}
-            title="Overview Quiz"
-          >
-            <HelpCircle className="h-3 w-3 mr-1" />
-            Overview
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-green-600 hover:bg-green-50 border-green-200 text-xs px-2 py-1 h-6 flex-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStartTopicQuiz("Easy");
-            }}
-            title="Easy Quiz"
-          >
-            <HelpCircle className="h-3 w-3 mr-1" />
-            Easy
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-red-600 hover:bg-red-50 border-red-200 text-xs px-2 py-1 h-6 flex-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleStartTopicQuiz("Hard");
-            }}
-            title="Hard Quiz"
-          >
-            <HelpCircle className="h-3 w-3 mr-1" />
-            Hard
-          </Button>
-        </div>
+        {/* Quiz Buttons - Only show if any quiz level has questions */}
+        {(availableQuizLevels.Overview || availableQuizLevels.Easy || availableQuizLevels.Hard) && (
+          <div className="flex gap-1 mt-3 pt-2 border-t border-gray-100">
+            {availableQuizLevels.Overview && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-blue-600 hover:bg-blue-50 border-blue-200 text-xs px-2 py-1 h-6 flex-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStartTopicQuiz("Overview");
+                }}
+                title="Overview Quiz"
+              >
+                <HelpCircle className="h-3 w-3 mr-1" />
+                Overview
+              </Button>
+            )}
+            
+            {availableQuizLevels.Easy && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-green-600 hover:bg-green-50 border-green-200 text-xs px-2 py-1 h-6 flex-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStartTopicQuiz("Easy");
+                }}
+                title="Easy Quiz"
+              >
+                <HelpCircle className="h-3 w-3 mr-1" />
+                Easy
+              </Button>
+            )}
+            
+            {availableQuizLevels.Hard && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:bg-red-50 border-red-200 text-xs px-2 py-1 h-6 flex-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleStartTopicQuiz("Hard");
+                }}
+                title="Hard Quiz"
+              >
+                <HelpCircle className="h-3 w-3 mr-1" />
+                Hard
+              </Button>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Topic Quiz Runner */}
