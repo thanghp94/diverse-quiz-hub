@@ -1099,16 +1099,23 @@ export class DatabaseStorage implements IStorage {
     return this.executeWithRetry(async () => {
       const result = await db.execute(sql`
         SELECT 
-          hocsinh_id,
+          st.hocsinh_id,
           COUNT(*) as total_tries,
-          SUM(CASE WHEN quiz_result = '✅' THEN 1 ELSE 0 END) as correct_answers,
+          SUM(CASE WHEN st.quiz_result = '✅' THEN 1 ELSE 0 END) as correct_answers,
           ROUND(
-            (SUM(CASE WHEN quiz_result = '✅' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 
+            (SUM(CASE WHEN st.quiz_result = '✅' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 
             1
-          ) as accuracy_percentage
-        FROM student_try 
-        WHERE quiz_result IS NOT NULL AND quiz_result != ''
-        GROUP BY hocsinh_id 
+          ) as accuracy_percentage,
+          COALESCE(u.full_name, CONCAT(u.first_name, ' ', u.last_name), 'Unknown Student') as full_name
+        FROM student_try st
+        LEFT JOIN users u ON st.hocsinh_id = u.id
+        WHERE st.quiz_result IS NOT NULL 
+          AND st.quiz_result != '' 
+          AND st.quiz_result IN ('✅', '❌')
+          AND st.question_id IS NOT NULL
+          AND st.question_id != ''
+        GROUP BY st.hocsinh_id, u.full_name, u.first_name, u.last_name
+        HAVING COUNT(*) > 0
         ORDER BY total_tries DESC, accuracy_percentage DESC
         LIMIT 20
       `);
@@ -1118,7 +1125,8 @@ export class DatabaseStorage implements IStorage {
         student_id: row.hocsinh_id,
         total_tries: parseInt(row.total_tries),
         correct_answers: parseInt(row.correct_answers),
-        accuracy_percentage: parseFloat(row.accuracy_percentage) || 0
+        accuracy_percentage: parseFloat(row.accuracy_percentage) || 0,
+        full_name: row.full_name
       }));
     });
   }
