@@ -170,7 +170,7 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
                 <QuizApp
                     questionIds={questionIds}
                     onFinish={handleQuizFinish}
-                    assignmentTry={assignmentTry}
+                    assignmentStudentTryId={assignmentTry.id.toString()}
                     studentTryId={assignmentTry.studentTryId}
                 />
             </DialogContent>
