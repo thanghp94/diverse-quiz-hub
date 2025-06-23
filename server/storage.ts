@@ -1,11 +1,14 @@
-// Backup of working storage implementation
 import { users, topics, content, images, questions, matching, videos, matching_attempts, content_ratings, student_streaks, daily_activities, writing_prompts, writing_submissions, assignment, assignment_student_try, student_try, learning_progress, cron_jobs, student_try_content, pending_access_requests, type User, type InsertUser, type UpsertUser, type Topic, type Content, type Image, type Question, type Matching, type Video, type MatchingAttempt, type InsertMatchingAttempt, type ContentRating, type InsertContentRating, type StudentStreak, type InsertStudentStreak, type DailyActivity, type InsertDailyActivity, type WritingPrompt, type InsertWritingPrompt, type WritingSubmission, type InsertWritingSubmission, type LearningProgress, type InsertLearningProgress, type CronJob, type InsertCronJob } from "@shared/schema";
 import { eq, isNull, ne, asc, sql, and, desc, inArray, gte, lte } from "drizzle-orm";
 import * as schema from "@shared/schema";
 import crypto from 'crypto';
 import { db } from "./db";
 
+// modify the interface with any CRUD methods
+// you might need
+
 export interface IStorage {
+  // Add writing_submissions property
   writingSubmissions: typeof writing_submissions;
   getUser(id: string): Promise<User | undefined>;
   getAllUsers(): Promise<User[]>;
@@ -16,40 +19,49 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
 
+  // Topics
   getTopics(): Promise<Topic[]>;
   getBowlChallengeTopics(): Promise<Topic[]>;
   getTopicById(id: string): Promise<Topic | undefined>;
   updateTopic(topicId: string, updateData: Partial<Topic>): Promise<Topic | undefined>;
   createTopic(topicData: any): Promise<Topic>;
 
+  // Content
   getContent(topicId?: string): Promise<Content[]>;
   getContentById(id: string): Promise<Content | undefined>;
-  updateContent(id: string, updates: any): Promise<Content | undefined>;
+  updateContent(id: string, updates: { short_description?: string; short_blurb?: string; imageid?: string; videoid?: string; videoid2?: string }): Promise<Content | undefined>;
   createContent(contentData: any): Promise<Content>;
 
+  // Content Groups
   getContentGroups(): Promise<Array<{ contentgroup: string; url: string; content_count: number }>>;
   getContentByGroup(contentgroup: string): Promise<Content[]>;
 
+  // Images
   getImages(): Promise<Image[]>;
   getImageById(id: string): Promise<Image | undefined>;
 
+  // Questions
   getQuestions(contentId?: string, topicId?: string, level?: string): Promise<Question[]>;
   getQuestionById(id: string): Promise<Question | undefined>;
 
+  // Matching
   getMatchingActivities(): Promise<Matching[]>;
   getMatchingById(id: string): Promise<Matching | undefined>;
   getMatchingByTopicId(topicId: string): Promise<Matching[]>;
   createMatching(matchingData: any): Promise<Matching>;
 
+  // Videos
   getVideos(): Promise<Video[]>;
   getVideoById(id: string): Promise<Video | undefined>;
   getVideosByContentId(contentId: string): Promise<Video[]>;
 
+  // Matching Attempts
   createMatchingAttempt(attempt: InsertMatchingAttempt): Promise<MatchingAttempt>;
   getMatchingAttempts(studentId: string, matchingId?: string): Promise<MatchingAttempt[]>;
   getMatchingAttemptById(id: string): Promise<MatchingAttempt | undefined>;
   updateMatchingAttempt(id: string, updates: Partial<MatchingAttempt>): Promise<MatchingAttempt>;
 
+  // Content Ratings
   createContentRating(rating: InsertContentRating): Promise<ContentRating>;
   getContentRating(studentId: string, contentId: string): Promise<ContentRating | null>;
   getContentRatingsByStudent(studentId: string): Promise<ContentRating[]>;
@@ -57,70 +69,99 @@ export interface IStorage {
   incrementContentViewCount(studentId: string, contentId: string): Promise<ContentRating>;
   getContentRatingStats(contentId: string): Promise<{ easy: number; normal: number; hard: number }>;
 
+  // Student Streaks
   getStudentStreak(studentId: string): Promise<StudentStreak | undefined>;
   updateStudentStreak(studentId: string): Promise<StudentStreak>;
   getStreakLeaderboard(limit?: number): Promise<StudentStreak[]>;
 
+  // Daily Activities
   recordDailyActivity(studentId: string, points: number): Promise<DailyActivity>;
   getDailyActivity(studentId: string, date: Date): Promise<DailyActivity | undefined>;
-  getLeaderboards(): Promise<any>;
+  getLeaderboards(): Promise<{
+    totalPoints: Array<{ student_id: string; total_points: number; full_name?: string }>;
+    bestStreak: Array<{ student_id: string; longest_streak: number; full_name?: string }>;
+    todayQuizzes: Array<{ student_id: string; today_count: number; full_name?: string }>;
+    weeklyQuizzes: Array<{ student_id: string; weekly_count: number; full_name?: string }>;
+  }>;
 
+  // Writing Prompts
   getWritingPrompts(): Promise<WritingPrompt[]>;
   getWritingPromptById(id: string): Promise<WritingPrompt | undefined>;
   getWritingPromptsByCategory(category: string): Promise<WritingPrompt[]>;
 
+  // Writing Submissions
   createWritingSubmission(submission: InsertWritingSubmission): Promise<WritingSubmission>;
   getWritingSubmission(id: string): Promise<WritingSubmission | undefined>;
   getStudentWritingSubmissions(studentId: string): Promise<WritingSubmission[]>;
   updateWritingSubmission(id: string, updates: Partial<WritingSubmission>): Promise<WritingSubmission>;
 
+  // Assignments
   createAssignment(assignment: any): Promise<any>;
   getAssignmentById(id: string): Promise<any>;
   getAllAssignments(): Promise<any[]>;
   getLiveClassAssignments(): Promise<any[]>;
   duplicateAssignment(id: string, newType: string): Promise<any>;
 
+  // Assignment Student Tries
   createAssignmentStudentTry(assignmentStudentTryData: any): Promise<any>;
   getAssignmentStudentTryById(id: string): Promise<any>;
   getAllAssignmentStudentTries(): Promise<any[]>;
 
+  // Student Tries
   createStudentTry(studentTry: any): Promise<any>;
   getStudentTryById(id: string): Promise<any>;
   getAllStudentTries(): Promise<any[]>;
   updateStudentTry(id: string, updates: any): Promise<any>;
 
+  // Learning Progress
   getStudentLearningProgress(studentId: string): Promise<any[]>;
   createLearningProgress(progress: any): Promise<any>;
   updateLearningProgress(id: string, updates: any): Promise<any>;
 
+  // Content Progress
   getContentProgress(studentId: string): Promise<any[]>;
+
+  // Personal Content
   getPersonalContent(studentId: string): Promise<any[]>;
 
+  // Cron Jobs
   getCronJob(jobName: string): Promise<CronJob | undefined>;
   createCronJob(job: InsertCronJob): Promise<CronJob>;
   updateCronJob(jobName: string, lastRun: Date, nextRun: Date): Promise<CronJob>;
   updateStudentTryContent(): Promise<void>;
 
+  // Leaderboards
   getStudentTriesLeaderboard(): Promise<any[]>;
+  getLeaderboards(): Promise<any>;
+
+  // Access Requests
   createPendingAccessRequest(request: any): Promise<any>;
+
+  // Student Try Content
   createStudentTryContent(record: any): Promise<any>;
   getStudentTryContentByStudent(studentId: string): Promise<any[]>;
   getRecentStudentTryContent(): Promise<any[]>;
+
+  // Live Class Monitoring
   getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]>;
+  getQuestion(questionId: string): Promise<any | null>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // Expose writing_submissions table
   writingSubmissions = writing_submissions;
-  
   private async executeWithRetry<T>(operation: () => Promise<T>, retries = 3): Promise<T> {
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         return await operation();
       } catch (error: any) {
         console.error(`Database operation failed (attempt ${attempt}/${retries}):`, error?.message || error);
+
         if (attempt === retries) {
           throw error;
         }
+
+        // If it's a connection issue, wait and retry
         if (error?.message?.includes('endpoint is disabled') || 
             error?.message?.includes('connection') ||
             error?.code === 'XX000') {
@@ -135,30 +176,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUser(id: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).where(eq(users.id, id));
+      return result[0];
+    });
   }
 
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users);
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).orderBy(asc(users.first_name));
+      return result;
+    });
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email));
-    return result[0];
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).where(
+        sql`${users.email} = ${email} OR ${users.meraki_email} = ${email}`
+      );
+      return result[0];
+    });
   }
 
   async getUserByIdentifier(identifier: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, identifier));
-    return result[0];
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(users).where(
+        sql`${users.id} = ${identifier} OR ${users.meraki_email} = ${identifier}`
+      );
+      return result[0];
+    });
   }
 
   async updateUserEmail(userId: string, newEmail: string): Promise<User> {
-    const result = await db.update(users)
-      .set({ email: newEmail })
-      .where(eq(users.id, userId))
-      .returning();
-    return result[0];
+    return this.executeWithRetry(async () => {
+      const [updatedUser] = await db
+        .update(users)
+        .set({ email: newEmail })
+        .where(eq(users.id, userId))
+        .returning();
+      return updatedUser;
+    });
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -167,30 +224,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    return this.executeWithRetry(async () => {
-      const existing = await this.getUserByIdentifier(userData.id);
-      if (existing) {
-        const result = await db.update(users)
-          .set({ ...userData, updated_at: new Date() })
-          .where(eq(users.id, userData.id))
-          .returning();
-        return result[0];
-      } else {
-        const result = await db.insert(users).values(userData).returning();
-        return result[0];
-      }
+    return await this.executeWithRetry(async () => {
+      const [user] = await db
+        .insert(users)
+        .values(userData)
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            email: userData.email,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+          },
+        })
+        .returning();
+      return user;
     });
   }
 
+  // Topics
   async getTopics(): Promise<Topic[]> {
     return this.executeWithRetry(async () => {
-      return await db.select().from(topics);
+      return await db.select().from(topics).orderBy(asc(topics.topic));
     });
   }
 
   async getBowlChallengeTopics(): Promise<Topic[]> {
     return this.executeWithRetry(async () => {
-      return await db.select().from(topics).where(isNull(topics.parentid));
+      return await db.select().from(topics)
+        .where(
+          sql`${topics.parentid} IS NULL 
+          AND ${topics.topic} IS NOT NULL 
+          AND ${topics.topic} != ''
+          AND ${topics.topic} NOT IN ('Art', 'Bowl', 'Challenge', 'Debate', 'History', 'Literature', 'Media', 'Music', 'Science and Technology', 'Social Studies', 'Special areas', 'Teaching lesson', 'Writing')`
+        )
+        .orderBy(asc(topics.topic));
     });
   }
 
@@ -199,6 +266,7 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Content
   async getContent(topicId?: string): Promise<Content[]> {
     return this.executeWithRetry(async () => {
       if (topicId) {
@@ -213,6 +281,7 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Images
   async getImages(): Promise<Image[]> {
     return this.executeWithRetry(async () => {
       return await db.select().from(images);
@@ -224,21 +293,115 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Questions
+  async getQuestion(questionId: string): Promise<any | null> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM question 
+        WHERE id = ${questionId}
+        LIMIT 1
+      `);
+
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching question:', error);
+      return null;
+    }
+  }
+
   async getQuestions(contentId?: string, topicId?: string, level?: string) {
-    return this.executeWithRetry(async () => {
-      let query = db.select().from(questions);
-      
-      const conditions: any[] = [];
-      if (contentId) conditions.push(eq(questions.contentid, contentId));
-      if (topicId) conditions.push(eq(questions.topicid, topicId));
-      if (level) conditions.push(eq(questions.level, level));
-      
-      if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+    try {
+      console.log(`Storage: getQuestions called with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
+
+      const conditions = [];
+
+      if (contentId) {
+        conditions.push(eq(schema.questions.contentid, contentId));
+        console.log(`Added contentId condition: ${contentId}`);
+      } else if (topicId) {
+        // For topic-level queries, first get all content IDs for this topic
+        console.log(`Getting content IDs for topicId: ${topicId}`);
+        const contentInTopic = await db
+          .select({ id: schema.content.id })
+          .from(schema.content)
+          .where(eq(schema.content.topicid, topicId));
+
+        const contentIds = contentInTopic.map(c => c.id);
+        console.log(`Found ${contentIds.length} content items in topic ${topicId}:`, contentIds);
+
+        if (contentIds.length > 0) {
+          // Filter questions by these content IDs
+          conditions.push(inArray(schema.questions.contentid, contentIds));
+          console.log(`Added content IDs condition for topic: ${topicId}`);
+        } else {
+          console.log(`No content found for topic ${topicId}, returning empty result`);
+          return [];
+        }
       }
-      
-      return await query;
-    });
+
+      if (level && level !== 'Overview') {
+        // For level filtering, use case-insensitive comparison
+        const levelCondition = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${level.toLowerCase()}`;
+        conditions.push(levelCondition);
+        console.log(`Added level condition for: ${level.toLowerCase()}`);
+      }
+
+      let questions;
+      if (conditions.length === 0) {
+        questions = await db.select().from(schema.questions);
+      } else {
+        questions = await db.select().from(schema.questions).where(and(...conditions));
+      }
+
+      console.log(`Found ${questions.length} questions for contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
+
+      // If we're filtering by level and got no results, let's check what levels are available
+      if (level && level !== 'Overview' && questions.length === 0 && (contentId || topicId)) {
+        console.log(`No questions found for level "${level}". Checking available levels...`);
+
+        let debugQuery;
+        if (contentId) {
+          debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(eq(schema.questions.contentid, contentId));
+        } else if (topicId) {
+          // For topic-level debug, check levels across all content in the topic
+          const contentInTopic = await db
+            .select({ id: schema.content.id })
+            .from(schema.content)
+            .where(eq(schema.content.topicid, topicId));
+
+          const contentIds = contentInTopic.map(c => c.id);
+          if (contentIds.length > 0) {
+            debugQuery = db.select({ level: schema.questions.questionlevel }).from(schema.questions).where(inArray(schema.questions.contentid, contentIds));
+          } else {
+            return [];
+          }
+        }
+
+        if (debugQuery) {
+          const availableLevels = await debugQuery;
+          const uniqueLevels = Array.from(new Set(availableLevels.map(q => q.level).filter(Boolean)));
+          console.log(`Available levels for this content/topic:`, uniqueLevels);
+
+          // Try to match with available levels case-insensitively
+          const matchingLevel = uniqueLevels.find(l => l && l.toLowerCase() === level.toLowerCase());
+          if (matchingLevel) {
+            console.log(`Found matching level with different case: "${matchingLevel}"`);
+            // Re-run query with the correctly cased level
+            const correctedConditions = [...conditions];
+            correctedConditions[correctedConditions.length - 1] = sql`LOWER(TRIM(${schema.questions.questionlevel})) = ${matchingLevel.toLowerCase()}`;
+            const correctedQuery = db.select().from(schema.questions).where(and(...correctedConditions));
+            const correctedQuestions = await correctedQuery;
+            console.log(`Found ${correctedQuestions.length} questions with corrected level case`);
+            return correctedQuestions;
+          }
+        }
+      }
+
+      return questions;
+    } catch (error) {
+      console.error('Error fetching questions:', error);
+      throw error;
+    }
   }
 
   async getQuestionById(id: string): Promise<Question | undefined> {
@@ -246,10 +409,9 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Matching
   async getMatchingActivities(): Promise<Matching[]> {
-    return this.executeWithRetry(async () => {
-      return await db.select().from(matching);
-    });
+    return await db.select().from(matching);
   }
 
   async getMatchingById(id: string): Promise<Matching | undefined> {
@@ -258,24 +420,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMatchingByTopicId(topicId: string): Promise<Matching[]> {
-    const result = await db.select().from(matching).where(eq(matching.topicid, topicId));
-    return result;
+    return await db.select().from(matching).where(eq(matching.topicid, topicId));
   }
 
   async getVideos(): Promise<Video[]> {
-    return this.executeWithRetry(async () => {
-      return await db.select().from(videos);
-    });
+    return await db.select().from(videos);
   }
 
   async getVideoById(id: string): Promise<Video | undefined> {
     const result = await db.select().from(videos).where(eq(videos.id, id));
-    return result[0];
+    return result[0] || undefined;
   }
 
   async getVideosByContentId(contentId: string): Promise<Video[]> {
-    const result = await db.select().from(videos).where(eq(videos.contentid, contentId));
-    return result;
+    return await db.select().from(videos).where(eq(videos.contentid, contentId));
   }
 
   async createMatchingAttempt(attempt: InsertMatchingAttempt): Promise<MatchingAttempt> {
@@ -284,18 +442,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMatchingAttempts(studentId: string, matchingId?: string): Promise<MatchingAttempt[]> {
-    let query = db.select().from(matching_attempts).where(eq(matching_attempts.student_id, studentId));
-    
     if (matchingId) {
-      query = query.where(eq(matching_attempts.matching_id, matchingId));
+      return await db.select().from(matching_attempts)
+        .where(and(
+          eq(matching_attempts.student_id, studentId),
+          eq(matching_attempts.matching_id, matchingId)
+        ))
+        .orderBy(desc(matching_attempts.created_at));
     }
-    
-    return await query.orderBy(desc(matching_attempts.time_start));
+
+    return await db.select().from(matching_attempts)
+      .where(eq(matching_attempts.student_id, studentId))
+      .orderBy(desc(matching_attempts.created_at));
   }
 
   async getMatchingAttemptById(id: string): Promise<MatchingAttempt | undefined> {
     const result = await db.select().from(matching_attempts).where(eq(matching_attempts.id, id));
-    return result[0];
+    return result[0] || undefined;
   }
 
   async updateMatchingAttempt(id: string, updates: Partial<MatchingAttempt>): Promise<MatchingAttempt> {
@@ -306,313 +469,301 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Content Ratings
   async createContentRating(rating: InsertContentRating): Promise<ContentRating> {
     const result = await db.insert(content_ratings).values(rating).returning();
     return result[0];
   }
 
   async getContentRating(studentId: string, contentId: string): Promise<ContentRating | null> {
-    const result = await db.select().from(content_ratings)
-      .where(and(
-        eq(content_ratings.student_id, studentId),
-        eq(content_ratings.content_id, contentId)
-      ));
-    return result[0] || null;
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(content_ratings)
+        .where(and(
+          eq(content_ratings.student_id, studentId),
+          eq(content_ratings.content_id, contentId)
+        ));
+      return result[0] || null;
+    });
   }
 
   async updateContentRating(studentId: string, contentId: string, rating?: string, personalNote?: string): Promise<ContentRating> {
-    return this.executeWithRetry(async () => {
-      const existing = await this.getContentRating(studentId, contentId);
-      
-      if (existing) {
-        const updateData: any = { updated_at: new Date() };
-        if (rating !== undefined) updateData.rating = rating;
-        if (personalNote !== undefined) updateData.personal_note = personalNote;
-        
-        const result = await db.update(content_ratings)
-          .set(updateData)
-          .where(and(
-            eq(content_ratings.student_id, studentId),
-            eq(content_ratings.content_id, contentId)
-          ))
-          .returning();
-        return result[0];
-      } else {
-        const newRating: InsertContentRating = {
-          id: crypto.randomUUID(),
-          student_id: studentId,
-          content_id: contentId,
-          rating: rating || null,
-          personal_note: personalNote || null,
-          view_count: 1,
-          created_at: new Date(),
-          updated_at: new Date()
-        };
-        return await this.createContentRating(newRating);
-      }
-    });
+    const existing = await this.getContentRating(studentId, contentId);
+    if (existing) {
+      const updateData: any = { updated_at: new Date() };
+      if (rating !== undefined) updateData.rating = rating;
+      if (personalNote !== undefined) updateData.personal_note = personalNote;
+
+      const result = await db.update(content_ratings)
+        .set(updateData)
+        .where(and(
+          eq(content_ratings.student_id, studentId),
+          eq(content_ratings.content_id, contentId)
+        ))
+        .returning();
+      return result[0];
+    } else {
+      return await this.createContentRating({
+        id: crypto.randomUUID(),
+        student_id: studentId,
+        content_id: contentId,
+        rating: rating || 'normal',
+        personal_note: personalNote
+      });
+    }
   }
 
   async incrementContentViewCount(studentId: string, contentId: string): Promise<ContentRating> {
-    return this.executeWithRetry(async () => {
-      const existing = await this.getContentRating(studentId, contentId);
-      
-      if (existing) {
-        const result = await db.update(content_ratings)
-          .set({ 
-            view_count: (existing.view_count || 0) + 1,
-            updated_at: new Date()
-          })
-          .where(and(
-            eq(content_ratings.student_id, studentId),
-            eq(content_ratings.content_id, contentId)
-          ))
-          .returning();
-        return result[0];
-      } else {
-        const newRating: InsertContentRating = {
-          id: crypto.randomUUID(),
-          student_id: studentId,
-          content_id: contentId,
-          view_count: 1,
-          created_at: new Date(),
-          updated_at: new Date()
-        };
-        return await this.createContentRating(newRating);
-      }
-    });
+    const existing = await this.getContentRating(studentId, contentId);
+    if (existing) {
+      const currentCount = existing.view_count || 1;
+      const result = await db.update(content_ratings)
+        .set({
+          view_count: currentCount + 1,
+          updated_at: new Date(),
+        })
+        .where(and(
+          eq(content_ratings.student_id, studentId),
+          eq(content_ratings.content_id, contentId)
+        ))
+        .returning();
+      return result[0];
+    } else {
+      return await this.createContentRating({
+        id: crypto.randomUUID(),
+        student_id: studentId,
+        content_id: contentId,
+        rating: 'viewed',
+        personal_note: null,
+        view_count: 1,
+      });
+    }
   }
 
   async getContentRatingsByStudent(studentId: string): Promise<ContentRating[]> {
-    const result = await db.select().from(content_ratings)
-      .where(eq(content_ratings.student_id, studentId))
-      .orderBy(desc(content_ratings.updated_at));
-    return result;
+    const ratings = await db.select().from(content_ratings)
+      .where(eq(content_ratings.student_id, studentId));
+    return ratings;
   }
 
   async getContentRatingStats(contentId: string): Promise<{ easy: number; normal: number; hard: number }> {
-    const result = await db.select().from(content_ratings)
+    const ratings = await db.select().from(content_ratings)
       .where(eq(content_ratings.content_id, contentId));
-    
-    const stats = { easy: 0, normal: 0, hard: 0 };
-    result.forEach(rating => {
-      if (rating.rating === 'easy') stats.easy++;
-      else if (rating.rating === 'normal') stats.normal++;
-      else if (rating.rating === 'hard') stats.hard++;
-    });
-    
-    return stats;
+
+    return {
+      easy: ratings.filter(r => r.rating === 'ok').length,
+      normal: ratings.filter(r => r.rating === 'normal').length,
+      hard: ratings.filter(r => r.rating === 'really_bad').length
+    };
   }
 
+  // Student Streaks
   async getStudentStreak(studentId: string): Promise<StudentStreak | undefined> {
-    const result = await db.select().from(student_streaks).where(eq(student_streaks.student_id, studentId));
-    return result[0];
+    const result = await db.select().from(student_streaks)
+      .where(eq(student_streaks.student_id, studentId));
+    return result[0] || undefined;
   }
 
   async updateStudentStreak(studentId: string): Promise<StudentStreak> {
-    return this.executeWithRetry(async () => {
-      const existing = await this.getStudentStreak(studentId);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      if (existing) {
-        const lastActivityDate = existing.last_activity_date ? new Date(existing.last_activity_date) : null;
-        lastActivityDate?.setHours(0, 0, 0, 0);
-        
-        let newCurrentStreak = existing.current_streak || 0;
-        let newLongestStreak = existing.longest_streak || 0;
-        
-        if (lastActivityDate) {
-          const daysDiff = Math.floor((today.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24));
-          
-          if (daysDiff === 1) {
-            newCurrentStreak += 1;
-          } else if (daysDiff > 1) {
-            newCurrentStreak = 1;
-          }
-        } else {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await this.getStudentStreak(studentId);
+    const todayActivity = await this.getDailyActivity(studentId, today);
+
+    if (!existing) {
+      const result = await db.insert(student_streaks).values({
+        id: crypto.randomUUID(),
+        student_id: studentId,
+        current_streak: todayActivity ? 1 : 0,
+        longest_streak: todayActivity ? 1 : 0,
+        last_activity_date: todayActivity ? today : null
+      }).returning();
+      return result[0];
+    }
+
+    let newCurrentStreak = existing.current_streak || 0;
+    let newLongestStreak = existing.longest_streak || 0;
+
+    if (todayActivity) {
+      const lastActivity = existing.last_activity_date;
+      if (lastActivity) {
+        const lastDate = new Date(lastActivity);
+        lastDate.setHours(0, 0, 0, 0);
+        const daysDiff = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff === 1) {
+          newCurrentStreak += 1;
+        } else if (daysDiff > 1) {
           newCurrentStreak = 1;
         }
-        
-        if (newCurrentStreak > newLongestStreak) {
-          newLongestStreak = newCurrentStreak;
-        }
-        
-        const result = await db.update(student_streaks)
-          .set({
-            current_streak: newCurrentStreak,
-            longest_streak: newLongestStreak,
-            last_activity_date: today,
-            updated_at: new Date()
-          })
-          .where(eq(student_streaks.student_id, studentId))
-          .returning();
-        return result[0];
       } else {
-        const newStreak: InsertStudentStreak = {
-          id: crypto.randomUUID(),
-          student_id: studentId,
-          current_streak: 1,
-          longest_streak: 1,
-          last_activity_date: today,
-          total_points: 0,
-          created_at: new Date(),
-          updated_at: new Date()
-        };
-        const result = await db.insert(student_streaks).values(newStreak).returning();
-        return result[0];
+        newCurrentStreak = 1;
       }
-    });
-  }
 
-  async getStreakLeaderboard(limit: number = 10): Promise<StudentStreak[]> {
-    const result = await db.select().from(student_streaks)
-      .orderBy(desc(student_streaks.longest_streak), desc(student_streaks.current_streak))
-      .limit(limit);
-    return result;
-  }
+      newLongestStreak = Math.max(newLongestStreak, newCurrentStreak);
+    }
 
-  async recordDailyActivity(studentId: string, points: number): Promise<DailyActivity> {
-    return this.executeWithRetry(async () => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const existing = await this.getDailyActivity(studentId, today);
-      
-      if (existing) {
-        const result = await db.update(daily_activities)
-          .set({
-            total_points: (existing.total_points || 0) + points,
-            quiz_count: (existing.quiz_count || 0) + 1,
-            updated_at: new Date()
-          })
-          .where(and(
-            eq(daily_activities.student_id, studentId),
-            eq(daily_activities.activity_date, today)
-          ))
-          .returning();
-        return result[0];
-      } else {
-        const newActivity: InsertDailyActivity = {
-          id: crypto.randomUUID(),
-          student_id: studentId,
-          activity_date: today,
-          total_points: points,
-          quiz_count: 1,
-          created_at: new Date(),
-          updated_at: new Date()
-        };
-        const result = await db.insert(daily_activities).values(newActivity).returning();
-        return result[0];
-      }
-    });
-  }
-
-  async getDailyActivity(studentId: string, date: Date): Promise<DailyActivity | undefined> {
-    const result = await db.select().from(daily_activities)
-      .where(and(
-        eq(daily_activities.student_id, studentId),
-        eq(daily_activities.activity_date, date)
-      ));
+    const result = await db.update(student_streaks)
+      .set({
+        current_streak: newCurrentStreak,
+        longest_streak: newLongestStreak,
+        last_activity_date: todayActivity ? today : existing.last_activity_date,
+        updated_at: new Date()
+      })
+      .where(eq(student_streaks.student_id, studentId))
+      .returning();
     return result[0];
   }
 
-  async getLeaderboards(): Promise<any> {
-    return this.executeWithRetry(async () => {
-      const totalPointsResult = await db.execute(sql`
-        SELECT 
-          da.student_id,
-          SUM(da.total_points) as total_points,
-          u.full_name
-        FROM daily_activities da
-        LEFT JOIN users u ON da.student_id = u.id
-        GROUP BY da.student_id, u.full_name
-        ORDER BY total_points DESC
-        LIMIT 10
-      `);
-
-      const bestStreakResult = await db.execute(sql`
-        SELECT 
-          ss.student_id,
-          ss.longest_streak,
-          u.full_name
-        FROM student_streaks ss
-        LEFT JOIN users u ON ss.student_id = u.id
-        ORDER BY ss.longest_streak DESC
-        LIMIT 10
-      `);
-
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const todayQuizzesResult = await db.execute(sql`
-        SELECT 
-          da.student_id,
-          da.quiz_count as today_count,
-          u.full_name
-        FROM daily_activities da
-        LEFT JOIN users u ON da.student_id = u.id
-        WHERE da.activity_date = ${today}
-        ORDER BY da.quiz_count DESC
-        LIMIT 10
-      `);
-
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - 7);
-      
-      const weeklyQuizzesResult = await db.execute(sql`
-        SELECT 
-          da.student_id,
-          SUM(da.quiz_count) as weekly_count,
-          u.full_name
-        FROM daily_activities da
-        LEFT JOIN users u ON da.student_id = u.id
-        WHERE da.activity_date >= ${weekStart}
-        GROUP BY da.student_id, u.full_name
-        ORDER BY weekly_count DESC
-        LIMIT 10
-      `);
-
-      return {
-        totalPoints: totalPointsResult.rows.map((row: any) => ({
-          student_id: row.student_id,
-          total_points: parseInt(row.total_points || 0),
-          full_name: row.full_name
-        })),
-        bestStreak: bestStreakResult.rows.map((row: any) => ({
-          student_id: row.student_id,
-          longest_streak: parseInt(row.longest_streak || 0),
-          full_name: row.full_name
-        })),
-        todayQuizzes: todayQuizzesResult.rows.map((row: any) => ({
-          student_id: row.student_id,
-          today_count: parseInt(row.today_count || 0),
-          full_name: row.full_name
-        })),
-        weeklyQuizzes: weeklyQuizzesResult.rows.map((row: any) => ({
-          student_id: row.student_id,
-          weekly_count: parseInt(row.weekly_count || 0),
-          full_name: row.full_name
-        }))
-      };
-    });
+  async getStreakLeaderboard(limit: number = 10): Promise<StudentStreak[]> {
+    return await db.select().from(student_streaks)
+      .orderBy(desc(student_streaks.longest_streak))
+      .limit(limit);
   }
 
+  // Daily Activities
+  async recordDailyActivity(studentId: string, points: number): Promise<DailyActivity> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await this.getDailyActivity(studentId, today);
+
+    if (existing) {
+      const result = await db.update(daily_activities)
+        .set({
+          activities_count: (existing.activities_count || 0) + 1,
+          points_earned: (existing.points_earned || 0) + points
+        })
+        .where(eq(daily_activities.id, existing.id))
+        .returning();
+      return result[0];
+    } else {
+      const result = await db.insert(daily_activities).values({
+        id: crypto.randomUUID(),
+        student_id: studentId,
+        activity_date: today,
+        activities_count: 1,
+        points_earned: points
+      }).returning();
+      return result[0];
+    }
+  }
+
+  async getDailyActivity(studentId: string, date: Date): Promise<DailyActivity | undefined> {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+
+    const result = await db.select().from(daily_activities)
+      .where(and(
+        eq(daily_activities.student_id, studentId),
+        eq(daily_activities.activity_date, targetDate)
+      ));
+    return result[0] || undefined;
+  }
+
+  async getLeaderboards(): Promise<{
+    totalPoints: Array<{ student_id: string; total_points: number; full_name?: string }>;
+    bestStreak: Array<{ student_id: string; longest_streak: number; full_name?: string }>;
+    todayQuizzes: Array<{ student_id: string; today_count: number; full_name?: string }>;
+    weeklyQuizzes: Array<{ student_id: string; weekly_count: number; full_name?: string }>;
+  }> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    // Total points leaderboard
+    const totalPointsResult = await db.select({
+      student_id: daily_activities.student_id,
+      total_points: sql<number>`SUM(${daily_activities.points_earned})`,
+      full_name: users.full_name
+    })
+    .from(daily_activities)
+    .leftJoin(users, eq(daily_activities.student_id, users.id))
+    .groupBy(daily_activities.student_id, users.full_name)
+    .orderBy(desc(sql`SUM(${daily_activities.points_earned})`))
+    .limit(10);
+
+    // Best streak leaderboard
+    const bestStreakResult = await db.select({
+      student_id: student_streaks.student_id,
+      longest_streak: student_streaks.longest_streak,
+      full_name: users.full_name
+    })
+    .from(student_streaks)
+    .leftJoin(users, eq(student_streaks.student_id, users.id))
+    .orderBy(desc(student_streaks.longest_streak))
+    .limit(10);
+
+    // Today's quizzes leaderboard
+    const todayQuizzesResult = await db.select({
+      student_id: daily_activities.student_id,
+      today_count: daily_activities.activities_count,
+      full_name: users.full_name
+    })
+    .from(daily_activities)
+    .leftJoin(users, eq(daily_activities.student_id, users.id))
+    .where(eq(daily_activities.activity_date, today))
+    .orderBy(desc(daily_activities.activities_count))
+    .limit(10);
+
+    // Weekly quizzes leaderboard
+    const weeklyQuizzesResult = await db.select({
+      student_id: daily_activities.student_id,
+      weekly_count: sql<number>`SUM(${daily_activities.activities_count})`,
+      full_name: users.full_name
+    })
+    .from(daily_activities)
+    .leftJoin(users, eq(daily_activities.student_id, users.id))
+    .where(sql`${daily_activities.activity_date} >= ${weekAgo}`)
+    .groupBy(daily_activities.student_id, users.full_name)
+    .orderBy(desc(sql`SUM(${daily_activities.activities_count})`))
+    .limit(10);
+
+    return {
+      totalPoints: totalPointsResult.map(r => ({
+        student_id: r.student_id,
+        total_points: r.total_points,
+        full_name: r.full_name || undefined
+      })),
+      bestStreak: bestStreakResult.map(r => ({
+        student_id: r.student_id,
+        longest_streak: r.longest_streak || 0,
+        full_name: r.full_name || undefined
+      })),
+      todayQuizzes: todayQuizzesResult.map(r => ({
+        student_id: r.student_id,
+        today_count: r.today_count || 0,
+        full_name: r.full_name || undefined
+      })),
+      weeklyQuizzes: weeklyQuizzesResult.map(r => ({
+        student_id: r.student_id,
+        weekly_count: r.weekly_count,
+        full_name: r.full_name || undefined
+      }))
+    };
+  }
+
+  // Writing Prompts
   async getWritingPrompts(): Promise<WritingPrompt[]> {
-    return await db.select().from(writing_prompts);
+    return await db.select().from(writing_prompts).orderBy(asc(writing_prompts.category));
   }
 
   async getWritingPromptById(id: string): Promise<WritingPrompt | undefined> {
     const result = await db.select().from(writing_prompts).where(eq(writing_prompts.id, id));
-    return result[0];
+    return result[0] || undefined;
   }
 
   async getWritingPromptsByCategory(category: string): Promise<WritingPrompt[]> {
-    const result = await db.select().from(writing_prompts).where(eq(writing_prompts.category, category));
-    return result;
+    return await db.select().from(writing_prompts)
+      .where(eq(writing_prompts.category, category))
+      .orderBy(asc(writing_prompts.title));
   }
 
+  // Writing Submissions
   async createWritingSubmission(submission: InsertWritingSubmission): Promise<WritingSubmission> {
+    // Ensure ID is generated if not provided
     const submissionData = {
       ...submission,
       id: submission.id || crypto.randomUUID(),
@@ -645,6 +796,7 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  // Assignments
   async createAssignment(assignmentInput: any): Promise<any> {
     const assignmentData = {
       id: assignmentInput.id || `assignment_${Date.now()}`,
@@ -661,6 +813,7 @@ export class DatabaseStorage implements IStorage {
       return result[0] || assignmentData;
     } catch (error) {
       console.error('Error creating assignment:', error);
+      // Return a simple assignment object if database insert fails
       return {
         ...assignmentData,
         created_at: new Date()
@@ -682,6 +835,7 @@ export class DatabaseStorage implements IStorage {
 
   async duplicateAssignment(id: string, newType: string): Promise<any> {
     return await this.executeWithRetry(async () => {
+      // First get the original assignment
       const originalAssignment = await db.select().from(assignment).where(eq(assignment.id, id));
       if (!originalAssignment[0]) {
         throw new Error('Assignment not found');
@@ -690,6 +844,7 @@ export class DatabaseStorage implements IStorage {
       const original = originalAssignment[0];
       const newId = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+      // Create a duplicate with new type and id
       const newAssignment = {
         ...original,
         id: newId,
@@ -704,25 +859,28 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  // Assignment Student Tries
   async createAssignmentStudentTry(assignmentStudentTryData: any): Promise<any> {
+    console.log('Creating assignment_student_try with input:', assignmentStudentTryData);
+
     const data = {
-      assignmentid: assignmentStudentTryData.assignmentid,
+      assignmentid: assignmentStudentTryData.assignmentid || null,
+      contentid: assignmentStudentTryData.contentid || assignmentStudentTryData.contentID || null,
       hocsinh_id: assignmentStudentTryData.hocsinh_id,
+      questionids: assignmentStudentTryData.questionids || assignmentStudentTryData.questionIDs || JSON.stringify([]),
       start_time: assignmentStudentTryData.start_time || new Date().toISOString(),
-      contentID: assignmentStudentTryData.contentID,
-      questionIDs: assignmentStudentTryData.questionIDs || '',
-      typeoftaking: assignmentStudentTryData.typeoftaking || 'live_class'
+      typeoftaking: assignmentStudentTryData.typeoftaking || 'Overview'
     };
+
+    console.log('Inserting assignment_student_try data:', data);
 
     try {
       const result = await db.insert(assignment_student_try).values(data).returning();
+      console.log('Assignment_student_try created successfully:', result[0]);
       return result[0];
     } catch (error) {
       console.error('Error creating assignment_student_try:', error);
-      return {
-        ...data,
-        id: Date.now()
-      };
+      throw error;
     }
   }
 
@@ -738,71 +896,94 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+  // Live Class Assignment Methods
   async getLiveClassAssignments(): Promise<any[]> {
     return await this.executeWithRetry(async () => {
-      const threeHoursAgo = new Date();
-      threeHoursAgo.setHours(threeHoursAgo.getHours() - 3);
-      
-      const result = await db.execute(sql`
-        SELECT * FROM assignment 
-        WHERE created_at >= ${threeHoursAgo}
-        ORDER BY created_at DESC
-      `);
-      
-      return result.rows;
+      // Get current UTC time
+      const now = new Date();
+
+      // Calculate 3 hours ago in UTC (assignments created within last 3 hours)
+      const threeHoursAgo = new Date(now.getTime() - (3 * 60 * 60 * 1000));
+
+      // Convert to Vietnam timezone for display
+      const vietnamTime = new Date(now.getTime() + (7 * 60 * 60 * 1000));
+
+      console.log('Current UTC time:', now.toISOString());
+      console.log('Vietnam time (display):', vietnamTime.toISOString());
+      console.log('Looking for assignments created after UTC:', threeHoursAgo.toISOString());
+
+      // Query assignments that were created within the last 3 hours
+      const result = await db.select()
+        .from(assignment)
+        .where(
+          sql`${assignment.created_at} >= ${threeHoursAgo.toISOString()}`
+        )
+        .orderBy(desc(assignment.created_at));
+
+      console.log('Found live assignments:', result.length);
+      if (result.length > 0) {
+        console.log('Assignment creation dates:', result.map(a => ({ id: a.id, assignmentname: a.assignmentname, created_at: a.created_at })));
+      }
+      return result;
     });
   }
 
   async getAssignmentStudentProgress(assignmentId: string): Promise<any[]> {
     return await this.executeWithRetry(async () => {
-      const result = await db.execute(sql`
-        SELECT 
-          ast.*,
-          COUNT(st.id) as completed_questions,
-          AVG(CASE WHEN st.quiz_result = '✅' THEN 1.0 ELSE 0.0 END) as accuracy
-        FROM assignment_student_try ast
-        LEFT JOIN student_try st ON ast.id = st.assignment_student_try_id
-        WHERE ast.assignmentid = ${assignmentId}
-        GROUP BY ast.id
-        ORDER BY ast.start_time DESC
-      `);
-      
-      return result.rows;
+      // Get all student tries for this assignment with student details
+      const result = await db.select({
+        assignment_student_try: assignment_student_try,
+        student_tries: student_try,
+        user: users
+      })
+      .from(assignment_student_try)
+      .leftJoin(student_try, eq(student_try.assignment_student_try_id, assignment_student_try.id))
+      .leftJoin(users, eq(users.id, assignment_student_try.hocsinh_id))
+      .where(eq(assignment_student_try.assignmentid, assignmentId))
+      .orderBy(assignment_student_try.start_time);
+
+      return result;
     });
   }
 
   async getStudentQuizProgress(assignmentStudentTryId: string): Promise<any[]> {
     return await this.executeWithRetry(async () => {
+      // Get detailed quiz progress for a specific assignment student try
       const result = await db.select()
         .from(student_try)
-        .where(eq(student_try.assignment_student_try_id, assignmentStudentTryId))
-        .orderBy(desc(student_try.time_start));
-      
+        .where(eq(student_try.assignment_student_try_id, assignmentStudentTryId.toString()))
+        .orderBy(student_try.time_start);
+
       return result;
     });
   }
 
+  // Student Tries
   async createStudentTry(studentTry: any): Promise<any> {
-    const data = {
-      id: studentTry.id || crypto.randomUUID(),
-      hocsinh_id: studentTry.hocsinh_id,
-      question_id: studentTry.question_id,
-      assignment_student_try_id: studentTry.assignment_student_try_id,
-      answer_choice: studentTry.answer_choice,
-      quiz_result: studentTry.quiz_result,
-      score: studentTry.score,
-      time_start: studentTry.time_start || new Date(),
-      time_end: studentTry.time_end,
-      writing_answer: studentTry.writing_answer
-    };
+    return this.executeWithRetry(async () => {
+      // Create student_try record with all question response data
+      const studentTryData = {
+        id: `try_${Date.now()}`,
+        assignment_student_try_id: studentTry.assignment_student_try_id?.toString() || null,
+        hocsinh_id: studentTry.hocsinh_id,
+        question_id: studentTry.question_id || null,
+        answer_choice: studentTry.answer_choice || null,
+        quiz_result: studentTry.quiz_result || null,
+        score: studentTry.score ? parseInt(studentTry.score) : null,
+        time_start: studentTry.time_start ? (studentTry.time_start instanceof Date ? studentTry.time_start : new Date(studentTry.time_start)) : null,
+        time_end: studentTry.time_end ? (studentTry.time_end instanceof Date ? studentTry.time_end : new Date(studentTry.time_end)) : null,
+        currentindex: studentTry.currentindex ? parseInt(studentTry.currentindex) : null,
+        showcontent: studentTry.showcontent?.toString() || null,
+        writing_answer: studentTry.writing_answer || null,
+        update: new Date()
+      };
 
-    try {
-      const result = await db.insert(student_try).values(data).returning();
-      return result[0];
-    } catch (error) {
-      console.error('Error creating student_try:', error);
-      return data;
-    }
+      console.log('Creating student_try with data:', studentTryData);
+
+      const studentTryResult = await db.insert(student_try).values(studentTryData).returning();
+      console.log('Student_try created successfully:', studentTryResult[0]);
+      return studentTryResult[0];
+    });
   }
 
   async getStudentTryById(id: string): Promise<any> {
@@ -811,67 +992,60 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllStudentTries(): Promise<any[]> {
-    return await this.executeWithRetry(async () => {
-      const result = await db.select().from(student_try);
-      return result;
-    });
+    const result = await db.select().from(student_try);
+    return result;
   }
 
   async updateStudentTry(id: string, updates: any): Promise<any> {
     const result = await db.update(student_try)
-      .set({ ...updates, update: new Date() })
+      .set({ ...updates, updated_at: new Date() })
       .where(eq(student_try.id, id))
       .returning();
     return result[0];
   }
 
+  // Learning Progress Methods
   async getStudentLearningProgress(studentId: string): Promise<any[]> {
     return await this.executeWithRetry(async () => {
       const result = await db.select()
-        .from(learning_progress)
-        .where(eq(learning_progress.student_id, studentId))
-        .orderBy(desc(learning_progress.updated_at));
+        .from(schema.learning_progress)
+        .where(eq(schema.learning_progress.student_id, studentId));
       return result;
     });
   }
 
   async createLearningProgress(progress: any): Promise<any> {
-    const data = {
-      id: progress.id || crypto.randomUUID(),
-      student_id: progress.student_id,
-      content_id: progress.content_id,
-      progress_percentage: progress.progress_percentage || 0,
-      time_spent_minutes: progress.time_spent_minutes || 0,
-      last_accessed: progress.last_accessed || new Date(),
-      created_at: new Date(),
-      updated_at: new Date()
-    };
-
-    const result = await db.insert(learning_progress).values(data).returning();
-    return result[0];
+    return await this.executeWithRetry(async () => {
+      const result = await db.insert(schema.learning_progress)
+        .values(progress)
+        .returning();
+      return result[0];
+    });
   }
 
   async updateLearningProgress(id: string, updates: any): Promise<any> {
-    const result = await db.update(learning_progress)
-      .set({ ...updates, updated_at: new Date() })
-      .where(eq(learning_progress.id, id))
-      .returning();
-    return result[0];
+    return await this.executeWithRetry(async () => {
+      const result = await db.update(schema.learning_progress)
+        .set({ ...updates, updated_at: new Date() })
+        .where(eq(schema.learning_progress.id, id))
+        .returning();
+      return result[0];
+    });
   }
 
   async updateContent(id: string, updates: { 
     short_description?: string; 
-    short_blurb?: string; 
-    imageid?: string; 
-    videoid?: string; 
-    videoid2?: string; 
+    short_blurb?: string;
+    imageid?: string;
+    videoid?: string;
+    videoid2?: string;
   }): Promise<Content | undefined> {
     return this.executeWithRetry(async () => {
       const result = await db.update(content)
         .set(updates)
         .where(eq(content.id, id))
         .returning();
-      return result[0];
+      return result[0] || undefined;
     });
   }
 
@@ -905,6 +1079,22 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
+   async getContentById(contentId: string): Promise<any | null> {
+    try {
+      const result = await db.execute(sql`
+        SELECT * FROM content 
+        WHERE id = ${contentId}
+        LIMIT 1
+      `);
+
+      return result.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching content by ID:', error);
+      return null;
+    }
+  }
+
+
   async getStudentTriesLeaderboard(): Promise<any[]> {
     return this.executeWithRetry(async () => {
       const result = await db.execute(sql`
@@ -917,6 +1107,7 @@ export class DatabaseStorage implements IStorage {
             1
           ) as accuracy_percentage
         FROM student_try 
+        WHERE quiz_result IS NOT NULL AND quiz_result != ''
         GROUP BY hocsinh_id 
         ORDER BY total_tries DESC, accuracy_percentage DESC
         LIMIT 20
@@ -927,7 +1118,7 @@ export class DatabaseStorage implements IStorage {
         student_id: row.hocsinh_id,
         total_tries: parseInt(row.total_tries),
         correct_answers: parseInt(row.correct_answers),
-        accuracy_percentage: parseFloat(row.accuracy_percentage)
+        accuracy_percentage: parseFloat(row.accuracy_percentage) || 0
       }));
     });
   }
@@ -946,7 +1137,7 @@ export class DatabaseStorage implements IStorage {
         FROM content_ratings cr
         JOIN content c ON cr.content_id = c.id
         LEFT JOIN topic t ON c.topicid = t.id
-        WHERE cr.student_id = '${studentId}'
+        WHERE cr.student_id = ${studentId}
           AND (cr.personal_note IS NOT NULL AND cr.personal_note != '' OR cr.rating IS NOT NULL)
         ORDER BY cr.updated_at DESC
       `);
@@ -975,183 +1166,227 @@ export class DatabaseStorage implements IStorage {
           (SELECT COUNT(*) FROM question q WHERE q.contentid = c.id) as question_count,
           MAX(st.update) as completed_at,
           c.parentid,
-          COUNT(CASE WHEN cr.rating = 'easy' THEN 1 END) as ok_count,
-          COUNT(CASE WHEN cr.rating = 'hard' THEN 1 END) as really_bad_count
+          COUNT(CASE WHEN cr.rating = 'ok' THEN 1 END) as ok_count,
+          COUNT(CASE WHEN cr.rating = 'really_bad' THEN 1 END) as really_bad_count
         FROM content c
         LEFT JOIN topic t ON c.topicid = t.id
-        LEFT JOIN content_ratings cr ON cr.content_id = c.id AND cr.student_id = '${studentId}'
+        LEFT JOIN content_ratings cr ON cr.content_id = c.id AND cr.student_id = ${studentId}
         LEFT JOIN question q ON q.contentid = c.id
-        LEFT JOIN student_try st ON st.question_id = q.id AND st.hocsinh_id = '${studentId}'
-        WHERE c.parentid IN ARRAY['1', '2', '3', '4', '5', '6', '7']
+        LEFT JOIN student_try st ON st.question_id = q.id AND st.hocsinh_id = ${studentId}
+        WHERE c.challengesubject && ARRAY['Art', 'Music', 'Literature', 'Social Studies', 'Science and Technology', 'Media', 'History', 'Special Areas']
         GROUP BY c.id, c.topicid, t.topic, c.title, cr.rating, c.parentid
         ORDER BY c.title
       `);
 
-      return result.rows;
-    });
-  }
-
-  async getCronJob(jobName: string): Promise<CronJob | undefined> {
-    const result = await db.select().from(cron_jobs).where(eq(cron_jobs.job_name, jobName));
-    return result[0];
-  }
-
-  async createCronJob(job: InsertCronJob): Promise<CronJob> {
-    const result = await db.insert(cron_jobs).values(job).returning();
-    return result[0];
-  }
-
-  async updateCronJob(jobName: string, lastRun: Date, nextRun: Date): Promise<CronJob> {
-    const result = await db.update(cron_jobs)
-      .set({ last_run: lastRun, next_run: nextRun })
-      .where(eq(cron_jobs.job_name, jobName))
-      .returning();
-    return result[0];
-  }
-
-  async updateStudentTryContent(): Promise<void> {
-    return this.executeWithRetry(async () => {
-      console.log('Starting student try content update...');
-      
-      const studentContentCombinations = await db.execute(sql`
-        SELECT DISTINCT
-          st.hocsinh_id,
-          q.contentid,
-          STRING_AGG(st.question_id ORDER BY st.time_start, ',') as question_ids
-        FROM student_try st
-        INNER JOIN question q ON q.id = st.question_id
-        WHERE st.time_start >= ${new Date(Date.now() - 24 * 60 * 60 * 1000)}
-          AND q.contentid IS NOT NULL
-        GROUP BY st.hocsinh_id, q.contentid
-      `);
-
-      console.log(`Processing ${studentContentCombinations.rows.length} student-content combinations for question tracking`);
-      
-      for (const row of studentContentCombinations.rows) {
-        const currentQuestionIds = row.question_ids;
-        
-        const existingRecord = await db.execute(sql`
-          SELECT * FROM student_try_content 
-          WHERE hocsinh_id = '${row.hocsinh_id}' 
-            AND contentid = '${row.contentid}'
-        `);
-
-        if (existingRecord.rows.length > 0) {
-          const newQuestionIds = currentQuestionIds;
-          const timeEnd = new Date().toISOString();
-          
-          await db.execute(sql`
-            UPDATE student_try_content 
-            SET update = '${newQuestionIds}', time_end = '${timeEnd}'
-            WHERE hocsinh_id = '${row.hocsinh_id}' 
-              AND contentid = '${row.contentid}'
-          `);
-          
-          console.log(`Updated existing record for student ${row.hocsinh_id}, content ${row.contentid}`);
-        } else {
-          await db.execute(sql`
-            INSERT INTO student_try_content (id, contentid, hocsinh_id, student_try_id, time_start, time_end, update)
-            VALUES (
-              '${crypto.randomUUID()}',
-              '${row.contentid}',
-              '${row.hocsinh_id}',
-              '${row.student_try_id}',
-              '${new Date().toISOString()}',
-              '${new Date().toISOString()}',
-              '${row.question_ids}'
-            )
-          `);
-          
-          console.log(`Created new tracking record for student ${row.hocsinh_id}, content ${row.contentid}`);
-        }
-      }
-      
-      console.log(`Updated student try content tracking for ${studentContentCombinations.rows.length} records`);
-    });
-  }
-
-  async createPendingAccessRequest(request: any): Promise<any> {
-    const data = {
-      id: crypto.randomUUID(),
-      ...request
-    };
-    const result = await db.insert(pending_access_requests).values(data).returning();
-    return result[0];
-  }
-
-  async createStudentTryContent(record: any): Promise<any> {
-    const data = {
-      id: crypto.randomUUID(),
-      ...record
-    };
-    const result = await db.insert(student_try_content).values(data).returning();
-    return result[0];
-  }
-
-  async getStudentTryContentByStudent(studentId: string): Promise<any[]> {
-    const result = await db.select()
-      .from(student_try_content)
-      .where(eq(student_try_content.hocsinh_id, studentId));
-    return result;
-  }
-
-  async getRecentStudentTryContent(): Promise<any[]> {
-    const result = await db.select()
-      .from(student_try_content)
-      .orderBy(desc(student_try_content.time_start))
-      .limit(100);
-    return result;
-  }
-
-  async getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]> {
-    return this.executeWithRetry(async () => {
-      const studentIdsList = studentIds.map(id => `'${id}'`).join(',');
-      
-      const activitiesResult = await db.execute(sql`
-        SELECT 
-          u.id,
-          COALESCE(u.full_name, u.first_name || ' ' || u.last_name, u.id) as student_name,
-          -- Content viewed count
-          (SELECT COUNT(*) FROM student_try_content stc 
-           WHERE stc.hocsinh_id = u.id 
-           AND stc.time_start >= '${startTime}') as content_viewed,
-          -- Content rated count  
-          (SELECT COUNT(*) FROM content_ratings cr 
-           WHERE cr.student_id = u.id 
-           AND cr.updated_at >= '${startTime}') as content_rated,
-          -- Quiz accuracy (null for now)
-          (SELECT COUNT(*) as attempts_count,
-           AVG(CASE WHEN score > 0 THEN 1.0 ELSE 0.0 END) as accuracy
-           FROM student_tries st 
-           WHERE st.hocsinh_id = u.id 
-           AND st.timestamp >= '${startTime}') as quiz_accuracy,
-          -- Last activity timestamp
-          GREATEST(
-            (SELECT MAX(time_start) FROM student_try_content stc WHERE stc.hocsinh_id = u.id),
-            (SELECT MAX(updated_at) FROM content_ratings cr WHERE cr.student_id = u.id),
-            (SELECT MAX(timestamp) FROM student_tries st WHERE st.hocsinh_id = u.id)
-          ) as last_activity
-        FROM users u 
-        WHERE u.id = ANY(ARRAY[${studentIdsList}])
-        ORDER BY u.id
-      `);
-
-      return activitiesResult.rows.map((row: any) => ({
-        student_id: row.id,
-        student_name: row.student_name,
-        content_viewed: parseInt(row.content_viewed || 0),
-        content_rated: parseInt(row.content_rated || 0),
-        quiz_accuracy: null,
-        last_activity: row.last_activity,
-        activities: []
+      return result.rows.map((row: any) => ({
+        id: row.id,
+        topicid: row.topicid,
+        topic: row.topic,
+        title: row.title,
+        difficulty_rating: row.difficulty_rating,
+        question_count: parseInt(row.question_count) || 0,
+        completed_at: row.completed_at,
+        parentid: row.parentid,
+        ok_count: parseInt(row.ok_count) || 0,
+        really_bad_count: parseInt(row.really_bad_count) || 0
       }));
     });
   }
 
+  // Cron Jobs
+  async getCronJob(jobName: string): Promise<CronJob | undefined> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select().from(cron_jobs)
+        .where(eq(cron_jobs.job_name, jobName));
+      return result[0] || undefined;
+    });
+  }
+
+  async createCronJob(job: InsertCronJob): Promise<CronJob> {
+    return this.executeWithRetry(async () => {
+      const result = await db.insert(cron_jobs).values(job).returning();
+      return result[0];
+    });
+  }
+
+  async updateCronJob(jobName: string, lastRun: Date, nextRun: Date): Promise<CronJob> {
+    return this.executeWithRetry(async () => {
+      const result = await db.update(cron_jobs)
+        .set({ last_run: lastRun, next_run: nextRun })
+        .where(eq(cron_jobs.job_name, jobName))
+        .returning();
+      return result[0];
+    });
+  }
+
+  async updateStudentTryContent(): Promise<void> {
+    return this.executeWithRetry(async () => {
+      // Simple approach: get student tries from last 24 hours
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+      // Get all student tries since yesterday
+      const result = await db.execute(sql`
+        SELECT DISTINCT
+          st.hocsinh_id,
+          q.contentid,
+          STRING_AGG(st.question_id, ', ' ORDER BY st.question_id) as question_ids
+        FROM student_try st
+        INNER JOIN question q ON q.id = st.question_id
+        WHERE st.time_start > ${yesterday.toISOString()}
+        AND q.contentid IS NOT NULL
+        GROUP BY st.hocsinh_id, q.contentid
+      `);
+
+      console.log(`Processing ${result.rows.length} student-content combinations for question tracking`);
+
+      // Update or create student_try_content records
+      for (const row of result.rows) {
+        try {
+          const existingRecord = await db.execute(sql`
+            SELECT * FROM student_try_content 
+            WHERE hocsinh_id = ${row.hocsinh_id} AND contentid = ${row.contentid}
+          `);
+
+          if (existingRecord.rows.length > 0) {
+            // Append new question IDs to existing record
+            const currentQuestionIds = existingRecord.rows[0].update || '';
+            const newQuestionIds = currentQuestionIds 
+              ? `${currentQuestionIds}, ${row.question_ids}`
+              : row.question_ids;
+
+            await db.execute(sql`
+              UPDATE student_try_content 
+              SET update = ${newQuestionIds}, time_end = ${new Date().toISOString()}
+              WHERE hocsinh_id = ${row.hocsinh_id} AND contentid = ${row.contentid}
+            `);
+          } else {
+            // Create new record
+            await db.execute(sql`
+              INSERT INTO student_try_content (id, contentid, hocsinh_id, student_try_id, time_start, time_end, update)
+              VALUES (${crypto.randomUUID()}, ${row.contentid}, ${row.hocsinh_id}, ${crypto.randomUUID()}, ${new Date().toISOString()}, ${new Date().toISOString()}, ${row.question_ids})
+            `);
+          }
+        } catch (error) {
+          console.error(`Error updating record for student ${row.hocsinh_id}, content ${row.contentid}:`, error);
+        }
+      }
+
+      console.log(`Updated student try content tracking for ${result.rows.length} records`);
+    });
+  }
+
+  async createPendingAccessRequest(request: any): Promise<any> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(pending_access_requests)
+        .values(request)
+        .returning();
+      return result;
+    });
+  }
+
+  async createStudentTryContent(record: any): Promise<any> {
+    return this.executeWithRetry(async () => {
+      const [result] = await db.insert(student_try_content)
+        .values(record)
+        .returning();
+      return result;
+    });
+  }
+
+  async getStudentTryContentByStudent(studentId: string): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select()
+        .from(student_try_content)
+        .where(eq(student_try_content.hocsinh_id, studentId))
+        .orderBy(desc(student_try_content.time_start))
+        .limit(20);
+      return result;
+    });
+  }
+
+  async getRecentStudentTryContent(): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const result = await db.select()
+        .from(student_try_content)
+        .orderBy(desc(student_try_content.time_start))
+        .limit(10);
+      return result;
+    });
+  }
+
+  async getLiveClassActivities(studentIds: string[], startTime: string): Promise<any[]> {
+    return this.executeWithRetry(async () => {
+      const results = [];
+
+      // Process each student individually to avoid complex query parameter issues
+      for (const studentId of studentIds) {
+        // Get student info with all necessary fields
+        const studentInfo = await db.execute(sql`
+          SELECT id, first_name, last_name, full_name, 
+                 COALESCE(full_name, first_name || ' ' || last_name) as student_name
+          FROM users WHERE id = ${studentId}
+        `);
+
+        if (studentInfo.rows.length === 0) continue;
+
+        const student = studentInfo.rows[0] as any;
+
+        // Get content views count
+      const contentViews = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM student_try_content stc
+        WHERE stc.hocsinh_id = ${studentId} 
+          AND stc.time_start >= ${startTime}
+      `);
+
+      // Get content ratings count
+      const contentRatings = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM content_ratings cr
+        WHERE cr.student_id = ${studentId} 
+          AND cr.updated_at >= ${startTime}
+      `);
+
+        // Get quiz attempts count and accuracy based on quiz_result
+        const quizAttempts = await db.execute(sql`
+        SELECT COUNT(*) as attempts_count,
+               COUNT(CASE WHEN quiz_result = '✅' THEN 1 END) as correct_count
+        FROM student_try st
+        WHERE st.hocsinh_id = ${studentId} 
+          AND st.time_start >= ${startTime}::timestamp
+          AND st.quiz_result IS NOT NULL
+          AND st.quiz_result != ''
+      `);
+
+        const totalQuizzes = parseInt((quizAttempts.rows[0] as any)?.attempts_count) || 0;
+        const correctAnswers = parseInt((quizAttempts.rows[0] as any)?.correct_count) || 0;
+        const quizAccuracy = totalQuizzes > 0 ? Math.round((correctAnswers / totalQuizzes) * 100) : null;
+
+        results.push({
+          student_id: student.id,
+          student_name: student.student_name,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          full_name: student.full_name,
+          content_viewed: parseInt((contentViews.rows[0] as any)?.count) || 0,
+          content_rated: parseInt((contentRatings.rows[0] as any)?.count) || 0,
+          quiz_attempts: totalQuizzes,
+          quiz_accuracy: quizAccuracy,
+          last_activity: null,
+          activities: []
+        });
+      }
+
+      return results;
+    });
+  }
+
+  // Admin update methods
   async updateUser(userId: string, updateData: Partial<User>): Promise<User | undefined> {
     return this.executeWithRetry(async () => {
-      const result = await db.update(users)
-        .set({ ...updateData, updated_at: new Date() })
+      const result = await db
+        .update(users)
+        .set(updateData)
         .where(eq(users.id, userId))
         .returning();
       return result[0];
@@ -1160,7 +1395,8 @@ export class DatabaseStorage implements IStorage {
 
   async updateTopic(topicId: string, updateData: Partial<Topic>): Promise<Topic | undefined> {
     return this.executeWithRetry(async () => {
-      const result = await db.update(topics)
+      const result = await db
+        .update(topics)
         .set(updateData)
         .where(eq(topics.id, topicId))
         .returning();
@@ -1170,6 +1406,7 @@ export class DatabaseStorage implements IStorage {
 
   async createTopic(topicData: any): Promise<Topic> {
     return this.executeWithRetry(async () => {
+      // Generate ID if not provided
       if (!topicData.id) {
         topicData.id = crypto.randomBytes(4).toString('hex');
       }
@@ -1184,6 +1421,7 @@ export class DatabaseStorage implements IStorage {
 
   async createContent(contentData: any): Promise<Content> {
     return this.executeWithRetry(async () => {
+      // Generate ID if not provided
       if (!contentData.id) {
         contentData.id = crypto.randomBytes(4).toString('hex');
       }
@@ -1198,6 +1436,7 @@ export class DatabaseStorage implements IStorage {
 
   async createMatching(matchingData: any): Promise<Matching> {
     return this.executeWithRetry(async () => {
+      // Generate ID if not provided
       if (!matchingData.id) {
         matchingData.id = crypto.randomBytes(4).toString('hex');
       }
@@ -1209,6 +1448,8 @@ export class DatabaseStorage implements IStorage {
       return result[0];
     });
   }
+
+
 }
 
 export const storage = new DatabaseStorage();
