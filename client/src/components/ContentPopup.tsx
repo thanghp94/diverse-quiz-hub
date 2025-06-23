@@ -74,10 +74,11 @@ const ContentPopup = ({
   } = useContentMedia(content);
 
   useEffect(() => {
-    if (isOpen && startQuizDirectly && !quizMode && quizLevel && content) {
+    if (isOpen && startQuizDirectly && quizLevel && content) {
+      console.log('Starting quiz directly with level:', quizLevel);
       startQuiz(quizLevel);
     }
-  }, [isOpen, startQuizDirectly, quizMode, startQuiz, quizLevel, content]);
+  }, [isOpen, startQuizDirectly, quizLevel, content, startQuiz]);
 
   // Track content access when popup opens
   useEffect(() => {
@@ -151,7 +152,7 @@ const ContentPopup = ({
         } 
       }}>
         <DialogContent className={cn("max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-7xl h-[90vh]")}>
-          {quizMode && questionIds.length > 0 && assignmentTry ? (
+          {(quizMode || startQuizDirectly) && questionIds.length > 0 && assignmentTry ? (
             <QuizView 
               questionIds={questionIds} 
               onQuizFinish={closeQuiz}
