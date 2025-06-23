@@ -165,12 +165,16 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
     }
 
     return (
-        <QuizApp
-            questionIds={questionIds}
-            onFinish={handleQuizFinish}
-            assignmentTry={assignmentTry}
-            studentTryId={assignmentTry.studentTryId}
-        />
+        <Dialog open onOpenChange={handleQuizFinish}>
+            <DialogContent className="max-w-7xl w-[95vw] h-[90vh] overflow-hidden p-0">
+                <QuizApp
+                    questionIds={questionIds}
+                    onFinish={handleQuizFinish}
+                    assignmentTry={assignmentTry}
+                    studentTryId={assignmentTry.studentTryId}
+                />
+            </DialogContent>
+        </Dialog>
     );
 };
 
