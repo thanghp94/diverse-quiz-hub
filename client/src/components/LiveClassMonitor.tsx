@@ -135,13 +135,13 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
     if (isMonitoring && selectedStudents.length > 0) {
       // Create new WebSocket connection optimized for real-time updates
       socket = io(window.location.origin, {
-        transports: ['websocket'], // Prefer WebSocket only for fastest connection
-        timeout: 5000, // Faster timeout
-        forceNew: false,
+        transports: ['websocket', 'polling'], // Allow both for reliability
+        timeout: 10000,
+        forceNew: true, // Force new connection to ensure clean state
         reconnection: true,
-        reconnectionAttempts: 15,
-        reconnectionDelay: 200, // Much faster reconnection
-        reconnectionDelayMax: 1000,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
         upgrade: true,
         rememberUpgrade: true
       });
@@ -153,7 +153,14 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
         setSocketConnected(true);
         if (socket && selectedStudents.length > 0) {
           socket.emit('join-monitor', { students: selectedStudents });
+          
+          // Immediately refresh data when connected
+          queryClient.invalidateQueries(['/api/live-class-activities', selectedStudents, monitorStartTime]);
         }
+      });
+      
+      socket.on('connection-confirmed', (data) => {
+        console.log('✅ WebSocket connection confirmed:', data);
       });
       
       socket.on('disconnect', (reason) => {
@@ -182,14 +189,21 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
       socket.on('quiz-activity', (data) => {
         console.log('⚡ Real-time quiz activity received:', data);
         
-        // Immediately add to realtime activities
-        setRealtimeActivities(prev => [data, ...prev.slice(0, 49)]);
+        // Immediately add to realtime activities with timestamp for sorting
+        setRealtimeActivities(prev => {
+          const newActivities = [{...data, receivedAt: Date.now()}, ...prev.slice(0, 49)];
+          return newActivities.sort((a, b) => (b.receivedAt || 0) - (a.receivedAt || 0));
+        });
         
-        // Immediately update the query cache for instant UI updates
+        // Force immediate query data update
         queryClient.setQueryData(['/api/live-class-activities', selectedStudents, monitorStartTime], (oldData: StudentActivity[] | undefined) => {
-          if (!oldData) return oldData;
+          if (!oldData) {
+            // If no data yet, trigger a refetch
+            queryClient.invalidateQueries(['/api/live-class-activities', selectedStudents, monitorStartTime]);
+            return oldData;
+          }
           
-          return oldData.map(student => {
+          const updatedData = oldData.map(student => {
             if (student.student_id === data.student_id) {
               const currentAttempts = student.quiz_attempts || 0;
               let newCorrect = 0;
@@ -225,7 +239,15 @@ export const LiveClassMonitor: React.FC<LiveClassMonitorProps> = ({ startTime })
             }
             return student;
           });
+          
+          console.log('📊 Updated student activities data:', updatedData);
+          return updatedData;
         });
+        
+        // Also trigger a background refetch to ensure data consistency
+        setTimeout(() => {
+          queryClient.invalidateQueries(['/api/live-class-activities', selectedStudents, monitorStartTime]);
+        }, 1000);
       });
       
       socket.on('content-activity', (data) => {
