@@ -27,10 +27,8 @@ const TopicQuizRunner = ({ topicId, level, onClose, topicName }: TopicQuizRunner
         setIsLoading(true);
         
         try {
-            // Fetch questions for this topic
-            const url = level === 'Overview' 
-                ? `/api/questions?topicId=${topicId}`
-                : `/api/questions?topicId=${topicId}&level=${level.toLowerCase()}`;
+            // Fetch questions for this topic with proper level parameter
+            const url = `/api/questions?topicId=${topicId}&level=${level}`;
             
             const response = await fetch(url);
             if (!response.ok) {
