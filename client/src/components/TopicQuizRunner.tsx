@@ -154,7 +154,7 @@ const TopicQuizRunner: React.FC<TopicQuizRunnerProps> = ({
                     </div>
                 </DialogHeader>
 
-                <div className="h-[calc(90vh-4rem)]">
+                <div className="h-[calc(90vh-4rem)] w-full overflow-hidden">
                     <QuizView
                         questionIds={questionIds}
                         onQuizFinish={handleQuizFinish}

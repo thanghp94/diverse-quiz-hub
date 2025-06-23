@@ -288,8 +288,8 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     const incorrectPercentage = totalQuestions > 0 ? Math.round((incorrectAnswersCount / totalQuestions) * 100) : 0;
 
     return (
-        <div className="p-6 h-full">
-            <Card className="border-gray-200 shadow-lg h-full">
+        <div className="w-full h-full overflow-hidden">
+            <Card className="border-gray-200 shadow-lg h-full w-full">
                 <CardHeader className="pb-6">
                     <div className="flex flex-col gap-4">
                         {/* Question Title */}
@@ -349,7 +349,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
                     </div>
                     <CardDescription className="text-2xl font-semibold text-blue-600 pt-2 leading-relaxed">{currentQuestion.noi_dung}</CardDescription>
                 </CardHeader>
-                <CardContent className="pb-8">
+                <CardContent className="pb-8 flex-1 overflow-auto">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {choices.map((choice, index) => {
                             const choiceLetter = String.fromCharCode(65 + index);
