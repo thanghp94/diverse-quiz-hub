@@ -338,6 +338,104 @@ CREATE TABLE IF NOT EXISTS wsc.pending_access_requests (
     processed_by TEXT
 );
 
+-- Create content_views table
+CREATE TABLE IF NOT EXISTS wsc.content_views (
+    id TEXT PRIMARY KEY,
+    student_id TEXT NOT NULL,
+    content_id TEXT NOT NULL,
+    view_date TIMESTAMPTZ DEFAULT NOW(),
+    duration_seconds INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create enhanced_content_ratings table
+CREATE TABLE IF NOT EXISTS wsc.enhanced_content_ratings (
+    id TEXT PRIMARY KEY,
+    student_id TEXT NOT NULL,
+    content_id TEXT NOT NULL,
+    rating TEXT NOT NULL,
+    feedback TEXT,
+    difficulty_score INTEGER,
+    engagement_score INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create quiz_attempts table
+CREATE TABLE IF NOT EXISTS wsc.quiz_attempts (
+    id TEXT PRIMARY KEY,
+    student_id TEXT NOT NULL,
+    question_id TEXT NOT NULL,
+    answer_choice TEXT,
+    is_correct BOOLEAN,
+    time_start TIMESTAMPTZ,
+    time_end TIMESTAMPTZ,
+    score INTEGER,
+    attempt_number INTEGER DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create session_activities table
+CREATE TABLE IF NOT EXISTS wsc.session_activities (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    student_id TEXT NOT NULL,
+    activity_type TEXT NOT NULL,
+    activity_data JSONB,
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create session_participants table
+CREATE TABLE IF NOT EXISTS wsc.session_participants (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    student_id TEXT NOT NULL,
+    joined_at TIMESTAMPTZ DEFAULT NOW(),
+    left_at TIMESTAMPTZ,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create sessions table
+CREATE TABLE IF NOT EXISTS wsc.sessions (
+    id TEXT PRIMARY KEY,
+    session_name TEXT NOT NULL,
+    teacher_id TEXT,
+    start_time TIMESTAMPTZ,
+    end_time TIMESTAMPTZ,
+    is_active BOOLEAN DEFAULT true,
+    session_type TEXT,
+    description TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create student_badges table
+CREATE TABLE IF NOT EXISTS wsc.student_badges (
+    id TEXT PRIMARY KEY,
+    student_id TEXT NOT NULL,
+    badge_type TEXT NOT NULL,
+    badge_name TEXT NOT NULL,
+    description TEXT,
+    earned_at TIMESTAMPTZ DEFAULT NOW(),
+    criteria_met JSONB,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create teaching_sessions table
+CREATE TABLE IF NOT EXISTS wsc.teaching_sessions (
+    id TEXT PRIMARY KEY,
+    teacher_id TEXT NOT NULL,
+    session_name TEXT NOT NULL,
+    topic_id TEXT,
+    start_time TIMESTAMPTZ,
+    end_time TIMESTAMPTZ,
+    participant_count INTEGER DEFAULT 0,
+    session_status TEXT DEFAULT 'scheduled',
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Create employees table (for the policy example)
 CREATE TABLE IF NOT EXISTS wsc.employees (
     id TEXT PRIMARY KEY,
@@ -368,6 +466,14 @@ ALTER TABLE wsc.writing_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wsc.learning_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wsc.cron_jobs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wsc.pending_access_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.content_views ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.enhanced_content_ratings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.quiz_attempts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.session_activities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.session_participants ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.student_badges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wsc.teaching_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wsc.employees ENABLE ROW LEVEL SECURITY;
 
 -- Create policy for the employees table
