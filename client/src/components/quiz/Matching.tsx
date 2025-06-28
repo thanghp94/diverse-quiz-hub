@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -44,15 +44,15 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
   const effectiveMatchingType = currentQuizPhase || inferredPhase || question.type;
 
-  // Store question ID to prevent infinite re-renders
-  const questionId = question?.id;
+  // Use useMemo to create a stable reference for question ID
+  const stableQuestionId = useMemo(() => question?.id, [question?.id]);
   
   // Reset state when phase changes for sequential matching or when question changes
   useEffect(() => {
     console.log('State reset triggered:', { 
       hasSequentialMatching, 
       currentQuizPhase, 
-      questionId 
+      questionId: stableQuestionId 
     });
 
     // Reset all state when:
@@ -68,7 +68,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     dragCounter.current = 0;
 
     console.log('State reset completed for phase:', currentQuizPhase);
-  }, [currentQuizPhase, hasSequentialMatching, questionId]);
+  }, [currentQuizPhase, hasSequentialMatching, stableQuestionId]);
 
   // Filter pairs based on current phase
   const allPairs = question.pairs || [];
