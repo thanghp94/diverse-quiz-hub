@@ -151,16 +151,22 @@ const ContentPopup = ({
           onClose(); 
         } 
       }}>
-        <DialogContent className={cn("max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto", quizMode && "max-w-7xl h-[90vh]")}>
+        <DialogContent className={cn(
+          "max-w-6xl w-[95vw] max-h-[95vh] overflow-hidden flex flex-col", 
+          quizMode && "max-w-7xl max-h-[95vh]"
+        )}>
           {(quizMode || startQuizDirectly) && questionIds.length > 0 && assignmentTry ? (
-            <QuizView 
-              questionIds={questionIds} 
-              onQuizFinish={closeQuiz}
-              assignmentStudentTryId={assignmentTry.id.toString()}
-              studentTryId={studentTry?.id}
-              contentId={content?.id}
-            />
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <QuizView 
+                questionIds={questionIds} 
+                onQuizFinish={closeQuiz}
+                assignmentStudentTryId={assignmentTry.id.toString()}
+                studentTryId={studentTry?.id}
+                contentId={content?.id}
+              />
+            </div>
           ) : (
+            <div className="flex-1 overflow-y-auto min-h-0">
             <>
               {/* Two-column layout: Title/Content + Media */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-3">
@@ -450,7 +456,7 @@ const ContentPopup = ({
                   </div>
                 );
               })()}
-            </>
+            </div>
           )}
         </DialogContent>
       </Dialog>
