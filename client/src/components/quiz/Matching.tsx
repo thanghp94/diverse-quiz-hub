@@ -294,9 +294,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       <CardContent className="flex-1 overflow-hidden p-2">
         <div className="flex flex-col gap-1 h-full">
           {/* Top Row - Left Items */}
-          <div className="flex-1">
+          <div className={effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description') ? 'flex-[0.4]' : 'flex-1'}>
             <div 
-              className={`grid gap-2 h-[320px] overflow-y-auto ${
+              className={`grid gap-2 overflow-y-auto ${
+                effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description') 
+                  ? 'h-[200px]' 
+                  : 'h-[320px]'
+              } ${
                 leftItems.length <= 4 
                   ? 'grid-cols-4' 
                   : leftItems.length <= 5 
@@ -386,9 +390,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           </div>
 
           {/* Bottom Row - Right Items (Drop Zones) */}
-          <div className="flex-1">
+          <div className={effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description') ? 'flex-[0.6]' : 'flex-1'}>
             <div 
-              className={`grid gap-1 h-[300px] overflow-y-auto ${
+              className={`grid gap-1 overflow-y-auto ${
+                effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description') 
+                  ? 'h-[400px]' 
+                  : 'h-[300px]'
+              } ${
                 shuffledRightItems.length <= 4 
                   ? 'grid-cols-4' 
                   : shuffledRightItems.length <= 5 
