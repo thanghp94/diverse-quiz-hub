@@ -480,9 +480,9 @@ const GroupedContentDisplay = ({
   } | null>(null);
 
   // Organize content according to specifications:
-  // 1. Content with prompt != "groupcard" and blank contentgroup shows on top
+  // 1. All content with prompt != "groupcard" shows in Individual Content section
   // 2. Content with prompt = "groupcard" becomes group headers
-  // 3. Content with contentgroup = groupContent.id becomes related items
+  // 3. Content with contentgroup = groupContent.id becomes related items for group expansion
   const organizedContent = React.useMemo(() => {
     const ungroupedContent: Content[] = [];
     const groupCards: Content[] = [];
@@ -496,17 +496,17 @@ const GroupedContentDisplay = ({
       if (content.prompt === "groupcard") {
         // This is a group header card - always goes to group cards
         allGroupCards.push(content);
-      } else if (!content.contentgroup || content.contentgroup.trim() === '') {
-        // This is ungrouped content - only add if it's not a groupcard
-        if (content.prompt !== "groupcard") {
-          allUngroupedContent.push(content);
-        }
       } else {
-        // This content belongs to a group - exclude from ungrouped
-        if (!groupedContentMap[content.contentgroup]) {
-          groupedContentMap[content.contentgroup] = [];
+        // This is regular content - add to individual content regardless of contentgroup
+        allUngroupedContent.push(content);
+        
+        // If it has a contentgroup, also add it to the grouped content map for group expansion
+        if (content.contentgroup && content.contentgroup.trim() !== '') {
+          if (!groupedContentMap[content.contentgroup]) {
+            groupedContentMap[content.contentgroup] = [];
+          }
+          groupedContentMap[content.contentgroup].push(content);
         }
-        groupedContentMap[content.contentgroup].push(content);
       }
     });
 
@@ -563,10 +563,10 @@ const GroupedContentDisplay = ({
 
   return (
     <div className="space-y-4">
-      {/* Display ungrouped content first (content with blank contentgroup and prompt != "groupcard") */}
+      {/* Display all content first (content with prompt != "groupcard") */}
       {organizedContent.ungroupedContent.length > 0 && (
         <div className="space-y-3">
-          <h4 className="text-white/80 text-sm font-medium">Individual Content</h4>
+          <h4 className="text-white/80 text-sm font-medium">Content</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {organizedContent.ungroupedContent.map((content: Content) => (
               <div key={content.id} className={cn(
