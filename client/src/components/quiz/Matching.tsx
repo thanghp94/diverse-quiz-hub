@@ -229,7 +229,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   return (
     <Card className="bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 border-2 border-purple-200 shadow-2xl h-full flex flex-col">
       <CardHeader className="pb-3 pt-4 bg-white/80 backdrop-blur-sm border-b-2 border-purple-200">
-        <div className="flex justify-start items-center mb-2">
+        <div className="flex justify-between items-center mb-2">
           <Button 
             variant="outline" 
             size="sm" 
@@ -238,6 +238,29 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           >
             ← Go Back
           </Button>
+          
+          {!isSubmitted && (
+            <Button
+              onClick={handleCheckResults}
+              disabled={!isComplete || isSubmitting}
+              size="sm"
+              className={`text-sm py-2 px-4 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
+                isComplete
+                  ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
+                  : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
+              }`}
+              variant="default"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Checking...
+                </span>
+              ) : (
+                'Check Results'
+              )}
+            </Button>
+          )}
         </div>
         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           {question.question}
@@ -248,7 +271,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           {/* Top Row - Left Items */}
           <div className="flex-1">
             <div 
-              className={`grid gap-2 h-[160px] overflow-y-auto ${
+              className={`grid gap-2 h-[240px] overflow-y-auto ${
                 leftItems.length <= 4 
                   ? 'grid-cols-4' 
                   : leftItems.length <= 5 
@@ -316,7 +339,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           {/* Bottom Row - Right Items (Drop Zones) */}
           <div className="flex-1">
             <div 
-              className={`grid gap-1 h-[140px] overflow-y-auto ${
+              className={`grid gap-1 h-[220px] overflow-y-auto ${
                 shuffledRightItems.length <= 4 
                   ? 'grid-cols-4' 
                   : shuffledRightItems.length <= 5 
@@ -416,28 +439,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       </CardContent>
       <div className="p-6 border-t-2 border-purple-200 bg-white/80 backdrop-blur-sm">
         <div className="space-y-3">
-          {!isSubmitted && (
-            <Button
-              onClick={handleCheckResults}
-              disabled={!isComplete || isSubmitting}
-              className={`w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
-                isComplete
-                  ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
-                  : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
-              }`}
-              variant="default"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Submitting...
-                </span>
-              ) : (
-                'Check Results'
-              )}
-            </Button>
-          )}
-
           {isSubmitted && (
             <>
               {hasSequentialMatching && currentQuizPhase === 'picture-title' ? (
