@@ -247,26 +247,33 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             )}
 
             {!isSubmitted && (
-              <Button
-                onClick={handleCheckResults}
-                disabled={!isComplete || isSubmitting}
-                size="sm"
-                className={`text-sm py-2 px-4 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
-                  isComplete
-                    ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
-                    : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
-                }`}
-                variant="default"
-              >
-                {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Checking...
-                  </span>
-                ) : (
-                  'Check Results'
+              <div className="flex flex-col items-center gap-2">
+                <Button
+                  onClick={handleCheckResults}
+                  disabled={!isComplete || isSubmitting}
+                  size="sm"
+                  className={`text-sm py-2 px-4 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
+                    isComplete
+                      ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
+                      : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
+                  }`}
+                  variant="default"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Checking...
+                    </span>
+                  ) : (
+                    'Check Results'
+                  )}
+                </Button>
+                {isComplete && !isSubmitting && (
+                  <p className="text-xs text-purple-700 font-medium bg-purple-100 px-2 py-1 rounded">
+                    All pairs matched! Click to complete.
+                  </p>
                 )}
-              </Button>
+              </div>
             )}
           </div>
         </div>
@@ -478,11 +485,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           </div>
         )}
 
-        {isComplete && !isSubmitted && (
-          <p className="text-sm text-purple-700 mt-3 text-center font-medium bg-purple-100 p-2 rounded-lg">
-            All pairs matched! Click Check Results to complete.
-          </p>
-        )}
+        
       </div>
     </Card>
   );
