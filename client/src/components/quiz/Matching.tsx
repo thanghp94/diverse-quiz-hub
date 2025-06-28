@@ -244,8 +244,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           </Button>
 
           <div className="flex items-center gap-3">
-            {!isSubmitted && (
-              <div className="flex flex-col items-center gap-2">
+            {!isSubmitted ? (
+              <div className="flex items-center gap-2">
+                {isComplete && !isSubmitting && (
+                  <p className="text-xs text-purple-700 font-medium bg-purple-100 px-2 py-1 rounded">
+                    All pairs matched! Click to complete.
+                  </p>
+                )}
                 <Button
                   onClick={handleCheckResults}
                   disabled={!isComplete || isSubmitting}
@@ -266,10 +271,25 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                     'Check Results'
                   )}
                 </Button>
-                {isComplete && !isSubmitting && (
-                  <p className="text-xs text-purple-700 font-medium bg-purple-100 px-2 py-1 rounded">
-                    All pairs matched! Click to complete.
-                  </p>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                {hasSequentialMatching && currentQuizPhase === 'picture-title' ? (
+                  <Button
+                    onClick={onNextPhase}
+                    className="text-sm py-2 px-4 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-2 border-blue-400 hover:scale-105 hover:shadow-xl"
+                    variant="default"
+                  >
+                    Continue to Title-Description Matching →
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={onNextActivity}
+                    className="text-sm py-2 px-4 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-2 border-green-400 hover:scale-105 hover:shadow-xl"
+                    variant="default"
+                  >
+                    Next Activity →
+                  </Button>
                 )}
               </div>
             )}
@@ -472,33 +492,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
         </div>
       </CardContent>
       <div className="p-6 border-t-2 border-purple-200 bg-white/80 backdrop-blur-sm">
-        <div className="space-y-3">
-          {isSubmitted && (
-            <>
-              {hasSequentialMatching && currentQuizPhase === 'picture-title' ? (
-                <Button
-                  onClick={onNextPhase}
-                  className="w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-2 border-blue-400 hover:scale-105 hover:shadow-xl"
-                  variant="default"
-                >
-                  Continue to Title-Description Matching →
-                </Button>
-              ) : (
-                <Button
-                  onClick={onNextActivity}
-                  className="w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-2 border-green-400 hover:scale-105 hover:shadow-xl"
-                  variant="default"
-                >
-                  Next Activity →
-                </Button>
-              )}
-            </>
-          )}
-        </div>
-
-
-
-
+        {/* This section can now be used for other content if needed */}
       </div>
     </Card>
   );
