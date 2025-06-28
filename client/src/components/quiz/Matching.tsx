@@ -109,27 +109,41 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     }
   }, [question?.id, currentQuizPhase, hasSequentialMatching, rightItems.join(',')]); // Include rightItems serialized to detect changes
 
-  const getTextStyling = (text: string) => {
+  const getTextStyling = (text: string, isInDropZone: boolean = false) => {
     const wordCount = text.split(/\s+/).length;
+    const charCount = text.length;
 
     if (effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description')) {
-      return {
-        fontSize: wordCount > 30 ? 'text-xs' : wordCount > 20 ? 'text-sm' : 'text-base',
-        alignment: 'text-left',
-        weight: 'font-medium'
-      };
+      if (isInDropZone) {
+        // For drop zones, make text bigger and more responsive
+        return {
+          fontSize: charCount > 200 ? 'text-sm' : charCount > 100 ? 'text-base' : charCount > 50 ? 'text-lg' : 'text-xl',
+          alignment: 'text-left',
+          weight: 'font-medium',
+          lineHeight: 'leading-relaxed'
+        };
+      } else {
+        return {
+          fontSize: wordCount > 30 ? 'text-xs' : wordCount > 20 ? 'text-sm' : 'text-base',
+          alignment: 'text-left',
+          weight: 'font-medium',
+          lineHeight: 'leading-tight'
+        };
+      }
     } else if (effectiveMatchingType === 'picture-title' || effectiveMatchingType?.includes('picture-title')) {
       return {
         fontSize: wordCount > 15 ? 'text-lg' : wordCount > 10 ? 'text-xl' : 'text-2xl',
         alignment: 'text-center',
-        weight: 'font-bold'
+        weight: 'font-bold',
+        lineHeight: 'leading-tight'
       };
     }
 
     return {
       fontSize: 'text-base',
       alignment: 'text-left',
-      weight: 'font-medium'
+      weight: 'font-medium',
+      lineHeight: 'leading-tight'
     };
   };
 
@@ -417,47 +431,19 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                     onDragOver={!showResults ? handleDragOver : undefined}
                     onDragEnter={!showResults ? handleDragEnter : undefined}
                     onDrop={!showResults ? (e) => handleDrop(e, item) : undefined}
-                    className={`p-1 rounded-lg text-black border-2 border-dashed transition-all duration-300 ${
+                    className={`p-1 rounded-lg text-black border-2 border-dashed transition-all duration-300 flex flex-col ${
                       isCorrect
                         ? 'bg-green-100 border-green-400 shadow-lg'
-                        : isIncorrect
+                        : isIncorrected
                         ? 'bg-red-100 border-red-400 shadow-lg'
                         : matchedLeft 
                         ? 'bg-gray-100 border-gray-400 shadow-lg' 
                         : 'bg-purple-50 border-purple-300 hover:border-purple-400 hover:bg-purple-100'
                     }`}
                   >
-                    {isImageItem(item) ? (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <div className="w-full h-full flex items-center justify-center">
-                            <img 
-                              src={item} 
-                              alt="Matching target" 
-                              className="w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
-                            />
-                          </div>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
-                          <img 
-                            src={item} 
-                            alt="Full size matching target" 
-                            className="max-w-full max-h-full object-contain"
-                          />
-                        </DialogContent>
-                      </Dialog>
-                    ) : (
-                      (() => {
-                        const styling = getTextStyling(item);
-                        return (
-                          <div className={`${styling.weight} ${styling.fontSize} leading-tight whitespace-pre-line ${styling.alignment}`}>
-                            {item}
-                          </div>
-                        );
-                      })()
-                    )}
+                    {/* Match indicator at top */}
                     {matchedLeft && (
-                      <div className={`flex flex-col gap-2 text-xs mt-1 p-2 rounded border ${
+                      <div className={`flex flex-col gap-2 text-xs mb-2 p-2 rounded border order-first ${
                         isCorrect 
                           ? 'text-green-700 bg-green-200 border-green-300'
                           : isIncorrect
@@ -497,6 +483,39 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                         )}
                       </div>
                     )}
+
+                    {/* Main content */}
+                    <div className="flex-1 flex items-center justify-center">
+                      {isImageItem(item) ? (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <div className="w-full h-full flex items-center justify-center">
+                              <img 
+                                src={item} 
+                                alt="Matching target" 
+                                className="w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                              />
+                            </div>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
+                            <img 
+                              src={item} 
+                              alt="Full size matching target" 
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          </DialogContent>
+                        </Dialog>
+                      ) : (
+                        (() => {
+                          const styling = getTextStyling(item, true);
+                          return (
+                            <div className={`${styling.weight} ${styling.fontSize} ${styling.lineHeight} whitespace-pre-line ${styling.alignment} w-full h-full flex items-center p-2`}>
+                              {item}
+                            </div>
+                          );
+                        })()
+                      )}
+                    </div>
                   </div>
                 );
               })}
