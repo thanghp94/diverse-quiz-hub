@@ -181,12 +181,28 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     const relevantPairs = filteredPairs;
     const newCorrectMatches: {[key: string]: boolean} = {};
 
+    console.log('Checking results for pairs:', relevantPairs);
+    console.log('User matches:', matches);
+
     relevantPairs.forEach(pair => {
       const userMatch = matches[pair.left];
       const correctMatch = pair.right;
-      const normalizedUserMatch = userMatch?.trim().toLowerCase();
-      const normalizedCorrectMatch = correctMatch?.trim().toLowerCase();
-      const isMatchCorrect = normalizedUserMatch === normalizedCorrectMatch;
+      
+      let isMatchCorrect = false;
+      
+      // For image comparisons, compare URLs directly
+      if (isImageItem(userMatch) || isImageItem(correctMatch)) {
+        isMatchCorrect = userMatch === correctMatch;
+      } else {
+        // For text comparisons, normalize and compare
+        const normalizedUserMatch = userMatch?.trim().toLowerCase();
+        const normalizedCorrectMatch = correctMatch?.trim().toLowerCase();
+        isMatchCorrect = normalizedUserMatch === normalizedCorrectMatch;
+      }
+
+      console.log(`Pair: ${pair.left} -> ${pair.right}`);
+      console.log(`User matched: ${userMatch}`);
+      console.log(`Correct: ${isMatchCorrect}`);
 
       newCorrectMatches[pair.left] = isMatchCorrect;
       if (isMatchCorrect) {
@@ -197,6 +213,8 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     const totalPairs = relevantPairs.length;
     const score = Math.round((correctCount / totalPairs) * 100);
     const isCorrect = correctCount === totalPairs;
+
+    console.log(`Score: ${correctCount}/${totalPairs} = ${score}%`);
 
     setCorrectMatches(newCorrectMatches);
     setShowResults(true);
@@ -368,7 +386,18 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                           : 'text-blue-700 bg-blue-200 border-blue-300'
                       }`}>
                         <span className="font-medium">Matched with:</span>
-                        <span className="font-semibold text-sm">{isImageItem(matchedLeft) ? 'Image' : matchedLeft}</span>
+                        {isImageItem(matchedLeft) ? (
+                          <div className="flex items-center gap-1">
+                            <img 
+                              src={matchedLeft} 
+                              alt="Matched item" 
+                              className="w-6 h-6 object-cover rounded border"
+                            />
+                            <span className="font-semibold text-sm">Image</span>
+                          </div>
+                        ) : (
+                          <span className="font-semibold text-sm">{matchedLeft}</span>
+                        )}
                         {isSubmitted && (
                           <div className={`ml-auto text-sm font-bold ${
                             isCorrect ? 'text-green-600' : 'text-red-600'
