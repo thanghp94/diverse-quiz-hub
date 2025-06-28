@@ -240,12 +240,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           </Button>
 
           <div className="flex items-center gap-3">
-            {hasSequentialMatching && (
-              <div className="text-sm font-medium text-purple-700 bg-purple-100 px-3 py-1 rounded-lg border border-purple-300">
-                {currentQuizPhase === 'picture-title' ? 'Phase 1: Picture-Title Matching' : 'Phase 2: Title-Description Matching'}
-              </div>
-            )}
-
             {!isSubmitted && (
               <div className="flex flex-col items-center gap-2">
                 <Button
@@ -323,7 +317,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                             <img 
                               src={item} 
                               alt="Matching item" 
-                              className="max-w-full max-h-36 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                              className="w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
                             />
                           </div>
                         </DialogTrigger>
@@ -392,7 +386,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                             <img 
                               src={item} 
                               alt="Matching target" 
-                              className="w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                              className="w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
                             />
                           </div>
                         </DialogTrigger>
@@ -415,28 +409,26 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                       })()
                     )}
                     {matchedLeft && (
-                      <div className={`flex items-center gap-1 text-xs mt-1 p-1 rounded border ${
+                      <div className={`flex items-center gap-2 text-xs mt-1 p-2 rounded border ${
                         isCorrect 
                           ? 'text-green-700 bg-green-200 border-green-300'
                           : isIncorrect
                           ? 'text-red-700 bg-red-200 border-red-300'
                           : 'text-blue-700 bg-blue-200 border-blue-300'
                       }`}>
-                        <span className="font-medium">Matched with:</span>
                         {isImageItem(matchedLeft) ? (
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-2 flex-1">
                             <img 
                               src={matchedLeft} 
                               alt="Matched item" 
-                              className="w-6 h-6 object-cover rounded border"
+                              className="w-12 h-12 object-cover rounded border flex-shrink-0"
                             />
-                            <span className="font-semibold text-sm">Image</span>
                           </div>
                         ) : (
-                          <span className="font-semibold text-sm">{matchedLeft}</span>
+                          <span className="font-semibold text-sm flex-1">{matchedLeft}</span>
                         )}
                         {isSubmitted && (
-                          <div className={`ml-auto text-sm font-bold ${
+                          <div className={`text-sm font-bold ${
                             isCorrect ? 'text-green-600' : 'text-red-600'
                           }`}>
                             {isCorrect ? '✓ Correct' : '✗ Incorrect'}
@@ -476,14 +468,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           )}
         </div>
 
-        {hasSequentialMatching && (
-          <div className="mt-3 text-center">
-            <div className="flex justify-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${currentQuizPhase === 'picture-title' ? 'bg-purple-600' : 'bg-purple-300'}`}></div>
-              <div className={`w-3 h-3 rounded-full ${currentQuizPhase === 'title-description' ? 'bg-purple-600' : 'bg-purple-300'}`}></div>
-            </div>
-          </div>
-        )}
+        
 
         
       </div>
