@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
 import QuizView from '@/components/QuizView';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Assignment {
   id: string;
@@ -46,19 +47,11 @@ const AssignmentPage: React.FC = () => {
   const [assignmentStudentTryId, setAssignmentStudentTryId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  // Get current user from localStorage or use default
-  const getCurrentUser = () => {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      return JSON.parse(storedUser);
-    }
-    // Default fallback user
-    return { id: 'GV0002', email: 'thanghuynh@meraki.edu.vn' };
-  };
-  
-  const currentUser = getCurrentUser();
-  const isTeacher = currentUser.id === 'GV0002' || currentUser.email === 'thanghuynh@meraki.edu.vn';
+  // Use authenticated user instead of hardcoded fallback
+  const currentUserId = user?.id || 'GUEST';
+  const isTeacher = user?.id === 'GV0002' || user?.email === 'thanghuynh@meraki.edu.vn';
 
   // Fetch all assignments
   const { data: assignments = [], isLoading: loadingAssignments } = useQuery({
@@ -225,7 +218,7 @@ const AssignmentPage: React.FC = () => {
       // Create assignment student try
       const studentTryData = {
         assignmentid: assignment.id,
-        hocsinh_id: currentUser.id,
+        hocsinh_id: currentUserId,
         contentid: assignment.contentid || '',
         questionids: JSON.stringify(selectedQuestionIds),
         start_time: new Date().toISOString(),
