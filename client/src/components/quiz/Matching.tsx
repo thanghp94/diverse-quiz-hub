@@ -187,9 +187,9 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     relevantPairs.forEach(pair => {
       const userMatch = matches[pair.left];
       const correctMatch = pair.right;
-      
+
       let isMatchCorrect = false;
-      
+
       // For image comparisons, compare URLs directly
       if (isImageItem(userMatch) || isImageItem(correctMatch)) {
         isMatchCorrect = userMatch === correctMatch;
@@ -238,7 +238,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           >
             ← Go Back
           </Button>
-          
+
           {!isSubmitted && (
             <Button
               onClick={handleCheckResults}
@@ -359,7 +359,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                     key={item}
                     onDragOver={!showResults ? handleDragOver : undefined}
                     onDragEnter={!showResults ? handleDragEnter : undefined}
-                    onDragLeave={!showResults ? handleDragLeave : undefined}
                     onDrop={!showResults ? (e) => handleDrop(e, item) : undefined}
                     className={`p-1 rounded-lg text-black border-2 border-dashed transition-all duration-300 ${
                       isCorrect
