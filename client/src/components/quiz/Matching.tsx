@@ -449,7 +449,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                       })()
                     )}
                     {matchedLeft && (
-                      <div className={`flex items-center gap-2 text-xs mt-1 p-2 rounded border ${
+                      <div className={`flex flex-col gap-2 text-xs mt-1 p-2 rounded border ${
                         isCorrect 
                           ? 'text-green-700 bg-green-200 border-green-300'
                           : isIncorrect
@@ -457,21 +457,34 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                           : 'text-blue-700 bg-blue-200 border-blue-300'
                       }`}>
                         {isImageItem(matchedLeft) ? (
-                          <div className="flex items-center gap-2 flex-1">
+                          <div className="flex flex-col items-center gap-2 w-full">
                             <img 
                               src={matchedLeft} 
                               alt="Matched item" 
-                              className="w-12 h-12 object-cover rounded border flex-shrink-0"
+                              className="max-w-full max-h-32 object-contain rounded border"
+                              style={{
+                                minHeight: '80px',
+                                minWidth: '80px'
+                              }}
                             />
+                            {isSubmitted && (
+                              <div className={`text-sm font-bold ${
+                                isCorrect ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                              </div>
+                            )}
                           </div>
                         ) : (
-                          <span className="font-semibold text-sm flex-1">{matchedLeft}</span>
-                        )}
-                        {isSubmitted && (
-                          <div className={`text-sm font-bold ${
-                            isCorrect ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                          <div className="flex items-center justify-between w-full">
+                            <span className="font-semibold text-sm flex-1">{matchedLeft}</span>
+                            {isSubmitted && (
+                              <div className={`text-sm font-bold ${
+                                isCorrect ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
