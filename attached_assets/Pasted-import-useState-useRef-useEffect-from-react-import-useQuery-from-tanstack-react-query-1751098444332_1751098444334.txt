@@ -71,7 +71,7 @@ const shuffleArray = (array: any[]): any[] => {
 const transformToQuestions = async (activity: MatchingActivityData): Promise<Question[]> => {
   const questions: Question[] = [];
   const types = activity.type?.split(', ') || [];
-
+  
   // Debug logging for content ID verification
   console.log('🔍 Activity data:', activity);
   console.log('📋 Content IDs from prompts:', {
@@ -82,7 +82,7 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
     prompt5: activity.prompt5,
     prompt6: activity.prompt6,
   });
-
+  
   if (types.length === 0) {
     // Fallback to original behavior if no type specified
     const pairs = [];
@@ -102,20 +102,20 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
   const [content, images] = await Promise.all([fetchContent(), fetchImages()]);
   console.log('📚 Total content items loaded:', content.length);
   console.log('🖼️ Total images loaded:', images.length);
-
+  
   // First, collect and validate all content IDs for the activity
   const allContentIds = [];
   for (let i = 1; i <= 6; i++) {
     const contentId = activity[`prompt${i}`];
     if (contentId) allContentIds.push(contentId);
   }
-
+  
   console.log(`🔗 Activity ${activity.id} has ${allContentIds.length} content IDs: ${allContentIds.join(', ')}`);
-
+  
   // Find valid content items that exist in the database
   const validContentItems = [];
   const missingContentIds = [];
-
+  
   for (const contentId of allContentIds) {
     const contentItem = content.find(c => c.id === contentId);
     if (contentItem) {
@@ -124,7 +124,7 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
       missingContentIds.push(contentId);
     }
   }
-
+  
   console.log(`📊 Content validation: ${validContentItems.length} found, ${missingContentIds.length} missing`);
   if (missingContentIds.length > 0) {
     console.log(`❌ Missing content IDs: ${missingContentIds.join(', ')}`);
@@ -133,7 +133,7 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
   for (const type of types) {
     if (type === 'picture-title') {
       const pairs = [];
-
+      
       // Process valid content items for picture-title matching
       for (const { id: contentId, item: contentItem } of validContentItems) {
         // Find image for this content
@@ -141,7 +141,7 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
           img.contentid === contentId || 
           img.id === contentItem.imageid
         );
-
+        
         if (image && image.imagelink && contentItem.title && contentItem.title.trim()) {
           console.log(`✅ Adding picture-title pair: "${contentItem.title}" with image`);
           pairs.push({ 
@@ -153,9 +153,9 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
           console.log(`⚠️ Skipping content ${contentId}: missing ${!image?.imagelink ? 'image' : 'title'}`);
         }
       }
-
+      
       console.log('🎯 Picture-title pairs generated:', pairs.length);
-
+      
       if (pairs.length > 0) {
         // Randomize the order of right column items while keeping left items in order
         const rightItems = pairs.map(pair => pair.right);
@@ -164,7 +164,7 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
           ...pair,
           right: shuffledRightItems[index]
         }));
-
+        
         questions.push({
           id: `${activity.id}-picture-title`,
           question: 'Match the images with their corresponding titles.',
@@ -173,12 +173,12 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
         });
       }
     }
-
+    
     if (type === 'title-description') {
       const pairs = [];
-
+      
       console.log(`📝 Processing ${validContentItems.length} valid content items for title-description matching`);
-
+      
       for (const { id: contentId, item: contentItem } of validContentItems) {
         if (contentItem.title && contentItem.title.trim() && 
             contentItem.short_description && contentItem.short_description.trim()) {
@@ -194,9 +194,9 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
           console.log(`⚠️ Skipping content ${contentId}: missing ${missing.join(' and ')}`);
         }
       }
-
+      
       console.log('📋 Title-description pairs generated:', pairs.length);
-
+      
       if (pairs.length > 0) {
         // Randomize the order of right column items while keeping left items in order
         const rightItems = pairs.map(pair => pair.right);
@@ -205,7 +205,7 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
           ...pair,
           right: shuffledRightItems[index]
         }));
-
+        
         questions.push({
           id: `${activity.id}-title-description`,
           question: 'Match the titles with their descriptions.',
@@ -215,7 +215,7 @@ const transformToQuestions = async (activity: MatchingActivityData): Promise<Que
       }
     }
   }
-
+  
   console.log('🎮 Total questions generated:', questions.length);
   return questions;
 };
@@ -247,11 +247,11 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
         .then(generatedQuestions => {
           setQuestions(generatedQuestions);
           setCurrentQuestionIndex(0);
-
+          
           // Determine initial quiz phase for sequential matching
           const matchingTypes = (activity.type || '').split(', ');
           const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
-
+          
           if (hasSequentialMatching) {
             setCurrentQuizPhase('picture-title');
           } else {
@@ -290,7 +290,7 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
   const handleNextPhase = () => {
     const matchingTypes = (activity?.type || '').split(', ');
     const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
-
+    
     if (hasSequentialMatching && currentQuizPhase === 'picture-title') {
       // Move to the next question (title-description phase) 
       setCurrentQuestionIndex(prev => prev + 1);
@@ -304,12 +304,12 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
 
   const handleAnswer = (answer: any, isCorrect: boolean) => {
     console.log('Answer submitted', { answer, isCorrect });
-
+    
     // Calculate score details for display
     const currentQuestion = questions[currentQuestionIndex];
     const totalPairs = currentQuestion?.pairs?.length || Object.keys(answer).length;
     let correctCount = 0;
-
+    
     if (currentQuestion?.pairs) {
       currentQuestion.pairs.forEach((pair: any) => {
         if (answer[pair.left] === pair.right) {
@@ -317,23 +317,23 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
         }
       });
     }
-
+    
     const score = totalPairs > 0 ? Math.round((correctCount / totalPairs) * 100) : 0;
-
+    
     // For sequential matching, don't auto-advance - let user click "Continue"
     const matchingTypes = (activity?.type || '').split(', ');
     const hasSequentialMatching = matchingTypes.includes('picture-title') && matchingTypes.includes('title-description');
-
+    
     // Check if there are more questions to complete
     const isLastQuestion = currentQuestionIndex >= questions.length - 1;
     const isFirstPhaseOfSequential = hasSequentialMatching && currentQuizPhase === 'picture-title';
-
+    
     if (isLastQuestion && !isFirstPhaseOfSequential) {
       // Only complete if it's truly the last activity
       if (trackerRef.current && currentAttemptId) {
         trackerRef.current.completeAttempt(answer, score, 100);
       }
-
+      
       toast({
         title: isCorrect ? 'Perfect Match!' : 'Activity Complete!',
         description: isCorrect 
@@ -341,7 +341,7 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
           : `You got ${correctCount} out of ${totalPairs} matches correct (${score}%). Keep practicing!`,
         variant: isCorrect ? 'default' : 'destructive',
       });
-
+      
       // Don't auto-close - let user manually close the popup
     } else if (isFirstPhaseOfSequential) {
       // For first phase of sequential matching, show feedback but don't auto-advance
@@ -392,7 +392,7 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
             <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
-
+        
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Main Activity Area */}
           <div className="flex-1 flex flex-col">
@@ -431,7 +431,7 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
               </div>
             )}
           </div>
-
+          
           {/* Hidden Activity Tracker for functionality */}
           <div className="hidden">
             <MatchingActivityTracker

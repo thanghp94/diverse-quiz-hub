@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -33,26 +33,39 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
   };
 
-  // Memoize calculated values to prevent infinite re-renders
-  const { questionIdStr, hasSequentialMatching, isSequentialPictureTitle, isSequentialTitleDescription, inferredPhase, effectiveMatchingType } = useMemo(() => {
-    const questionIdStr = String(question.id);
-    const hasSequentialMatching = questionIdStr.includes('picture-title') || questionIdStr.includes('title-description');
-    const isSequentialPictureTitle = questionIdStr.includes('picture-title');
-    const isSequentialTitleDescription = questionIdStr.includes('title-description');
-    const inferredPhase = isSequentialPictureTitle ? 'picture-title' : isSequentialTitleDescription ? 'title-description' : null;
-    const effectiveMatchingType = currentQuizPhase || inferredPhase || question.type;
-    
-    return {
-      questionIdStr,
-      hasSequentialMatching,
-      isSequentialPictureTitle,
-      isSequentialTitleDescription,
-      inferredPhase,
-      effectiveMatchingType
-    };
-  }, [question.id, question.type, currentQuizPhase]);
+  // Check if this is a sequential matching quiz - look for both types in question id
+  const questionIdStr = String(question.id);
+  const hasSequentialMatching = questionIdStr.includes('picture-title') || questionIdStr.includes('title-description');
+  const isSequentialPictureTitle = questionIdStr.includes('picture-title');
+  const isSequentialTitleDescription = questionIdStr.includes('title-description');
 
+  // Determine the current phase based on question ID if not explicitly set
+  const inferredPhase = isSequentialPictureTitle ? 'picture-title' : isSequentialTitleDescription ? 'title-description' : null;
 
+  const effectiveMatchingType = currentQuizPhase || inferredPhase || question.type;
+
+  // Reset state when phase changes for sequential matching or when question changes
+  useEffect(() => {
+    console.log('State reset triggered:', { 
+      hasSequentialMatching, 
+      currentQuizPhase, 
+      questionId: question.id 
+    });
+
+    // Reset all state when:
+    // 1. Phase changes in sequential matching
+    // 2. Question changes (different question.id)
+    // 3. Component first loads
+    setMatches({});
+    setShowResults(false);
+    setIsSubmitted(false);
+    setIsSubmitting(false);
+    setCorrectMatches({});
+    setDraggedItem(null);
+    dragCounter.current = 0;
+
+    console.log('State reset completed for phase:', currentQuizPhase);
+  }, [currentQuizPhase, hasSequentialMatching, question.id]);
 
   // Filter pairs based on current phase
   const allPairs = question.pairs || [];
@@ -73,7 +86,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
   const leftItems = filteredPairs.map(pair => pair.left);
   const rightItems = filteredPairs.map(pair => pair.right);
-  
+
   // Shuffle right items to randomize the options
   const [shuffledRightItems, setShuffledRightItems] = useState([...rightItems]);
 

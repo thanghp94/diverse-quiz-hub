@@ -63,19 +63,19 @@ const fetchImages = async (): Promise<ImageData[]> => {
 
 const generateTopicBasedQuestions = async (topicId: string, activities: MatchingActivityData[]): Promise<Question[]> => {
   const questions: Question[] = [];
-
+  
   const [content, images] = await Promise.all([fetchContent(), fetchImages()]);
-
+  
   // Filter content for this specific topic
   const topicContent = content.filter(c => c.topicid === topicId);
-
+  
   if (topicContent.length === 0) {
     console.log(`No content found for topic ${topicId}`);
     return questions;
   }
-
+  
   console.log(`Found ${topicContent.length} content items for topic ${topicId}`);
-
+  
   // Create picture-title matching from topic content
   const pairs = [];
   for (const contentItem of topicContent) {
@@ -83,7 +83,7 @@ const generateTopicBasedQuestions = async (topicId: string, activities: Matching
       img.contentid === contentItem.id || 
       img.id === contentItem.imageid
     );
-
+    
     if (image && image.imagelink && contentItem.title && contentItem.title.trim()) {
       pairs.push({ 
         left: image.imagelink, 
@@ -91,7 +91,7 @@ const generateTopicBasedQuestions = async (topicId: string, activities: Matching
       });
     }
   }
-
+  
   if (pairs.length > 0) {
     questions.push({
       id: `topic-matching-${topicId}`,
@@ -100,7 +100,7 @@ const generateTopicBasedQuestions = async (topicId: string, activities: Matching
       pairs: pairs.map(pair => ({ left: pair.left, right: pair.right }))
     });
   }
-
+  
   console.log(`Generated ${questions.length} questions for topic ${topicId}`);
   return questions;
 };
@@ -162,12 +162,12 @@ export const TopicMatchingPopup = ({ isOpen, onClose, topicId, topicName }: Topi
 
   const handleAnswer = (answer: any, isCorrect: boolean) => {
     console.log('Topic matching answer submitted', { answer, isCorrect });
-
+    
     // Calculate score details for display
     const currentQuestion = questions[currentQuestionIndex];
     const totalPairs = currentQuestion?.pairs?.length || Object.keys(answer).length;
     let correctCount = 0;
-
+    
     if (currentQuestion?.pairs) {
       currentQuestion.pairs.forEach((pair: any) => {
         if (answer[pair.left] === pair.right) {
@@ -175,18 +175,18 @@ export const TopicMatchingPopup = ({ isOpen, onClose, topicId, topicName }: Topi
         }
       });
     }
-
+    
     const score = totalPairs > 0 ? Math.round((correctCount / totalPairs) * 100) : 0;
-
+    
     // Check if there are more questions to complete
     const isLastQuestion = currentQuestionIndex >= questions.length - 1;
-
+    
     if (isLastQuestion) {
       // Save the attempt with final scoring details
       if (trackerRef.current && currentAttemptId) {
         trackerRef.current.completeAttempt(answer, score, 100);
       }
-
+      
       toast({
         title: isCorrect ? 'Perfect Match!' : 'Activity Complete!',
         description: isCorrect 
@@ -194,7 +194,7 @@ export const TopicMatchingPopup = ({ isOpen, onClose, topicId, topicName }: Topi
           : `You got ${correctCount} out of ${totalPairs} matches correct (${score}%). Keep practicing!`,
         variant: isCorrect ? 'default' : 'destructive',
       });
-
+      
       // Close popup after completion
       setTimeout(() => {
         onClose();
@@ -236,7 +236,7 @@ export const TopicMatchingPopup = ({ isOpen, onClose, topicId, topicName }: Topi
             <X className="h-4 w-4" />
           </Button>
         </DialogHeader>
-
+        
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex-1 flex flex-col">
             {isLoading || isLoadingQuestions ? (
@@ -274,7 +274,7 @@ export const TopicMatchingPopup = ({ isOpen, onClose, topicId, topicName }: Topi
               </div>
             )}
           </div>
-
+          
           {/* Hidden Activity Tracker for functionality */}
           <div className="hidden">
             <MatchingActivityTracker
