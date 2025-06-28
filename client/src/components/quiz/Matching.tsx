@@ -239,28 +239,36 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             ← Go Back
           </Button>
 
-          {!isSubmitted && (
-            <Button
-              onClick={handleCheckResults}
-              disabled={!isComplete || isSubmitting}
-              size="sm"
-              className={`text-sm py-2 px-4 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
-                isComplete
-                  ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
-                  : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
-              }`}
-              variant="default"
-            >
-              {isSubmitting ? (
-                <span className="flex items-center gap-2">
-                  <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Checking...
-                </span>
-              ) : (
-                'Check Results'
-              )}
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            {hasSequentialMatching && (
+              <div className="text-sm font-medium text-purple-700 bg-purple-100 px-3 py-1 rounded-lg border border-purple-300">
+                {currentQuizPhase === 'picture-title' ? 'Phase 1: Picture-Title Matching' : 'Phase 2: Title-Description Matching'}
+              </div>
+            )}
+
+            {!isSubmitted && (
+              <Button
+                onClick={handleCheckResults}
+                disabled={!isComplete || isSubmitting}
+                size="sm"
+                className={`text-sm py-2 px-4 font-bold rounded-xl shadow-lg transform transition-all duration-300 ${
+                  isComplete
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white border-2 border-purple-400 hover:scale-105 hover:shadow-xl"
+                    : "bg-gradient-to-r from-gray-400 to-gray-500 text-white border-2 border-gray-300 cursor-not-allowed"
+                }`}
+                variant="default"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Checking...
+                  </span>
+                ) : (
+                  'Check Results'
+                )}
+              </Button>
+            )}
+          </div>
         </div>
         <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           {question.question}
@@ -463,10 +471,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
         {hasSequentialMatching && (
           <div className="mt-3 text-center">
-            <div className="text-sm font-medium text-purple-700">
-              {currentQuizPhase === 'picture-title' ? 'Phase 1: Picture-Title Matching' : 'Phase 2: Title-Description Matching'}
-            </div>
-            <div className="flex justify-center mt-2 gap-2">
+            <div className="flex justify-center gap-2">
               <div className={`w-3 h-3 rounded-full ${currentQuizPhase === 'picture-title' ? 'bg-purple-600' : 'bg-purple-300'}`}></div>
               <div className={`w-3 h-3 rounded-full ${currentQuizPhase === 'title-description' ? 'bg-purple-600' : 'bg-purple-300'}`}></div>
             </div>
