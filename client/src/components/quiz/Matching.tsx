@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -17,6 +17,7 @@ interface MatchingProps {
 }
 
 const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, currentQuizPhase, onNextPhase }: MatchingProps) => {
+  // Simple state - no complex objects or computed values in state
   const [matches, setMatches] = useState<{[key: string]: string}>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,84 +25,50 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   const [showResults, setShowResults] = useState(false);
   const [correctMatches, setCorrectMatches] = useState<{[key: string]: boolean}>({});
   const [startTime] = useState(new Date());
+  const [shuffledRightItems, setShuffledRightItems] = useState<string[]>([]);
+
+  // Use refs to store values that shouldn't trigger re-renders
   const dragCounter = useRef(0);
+  const hasInitialized = useRef(false);
+  const lastQuestionId = useRef<string | undefined>(undefined);
+  const lastPhase = useRef<string | null | undefined>(undefined);
+
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  // Check if any items are images
+  // Helper functions (these are stable and won't cause re-renders)
   const isImageItem = (item: string) => {
     return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
   };
 
-  // Check if this is a sequential matching quiz - look for both types in question id
+  const shuffleArray = (array: string[]) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
+
+  // Check if this is a sequential matching quiz
   const questionIdStr = String(question.id);
   const hasSequentialMatching = questionIdStr.includes('picture-title') || questionIdStr.includes('title-description');
   const isSequentialPictureTitle = questionIdStr.includes('picture-title');
   const isSequentialTitleDescription = questionIdStr.includes('title-description');
 
-  // Determine the current phase based on question ID if not explicitly set
+  // Determine the current phase
   const inferredPhase = isSequentialPictureTitle ? 'picture-title' : isSequentialTitleDescription ? 'title-description' : null;
-
   const effectiveMatchingType = currentQuizPhase || inferredPhase || question.type;
 
-  // Use refs to track previous values and prevent unnecessary resets
-  const prevQuestionIdRef = useRef<string | undefined>();
-  const prevPhaseRef = useRef<string | null | undefined>();
-  
-  // Stable reset function using useCallback
-  const resetState = useCallback(() => {
-    console.log('State reset triggered');
-    setMatches({});
-    setShowResults(false);
-    setIsSubmitted(false);
-    setIsSubmitting(false);
-    setCorrectMatches({});
-    setDraggedItem(null);
-    dragCounter.current = 0;
-    console.log('State reset completed');
-  }, []);
-
-  // Only reset when question ID or phase actually changes
-  useEffect(() => {
-    const currentQuestionId = question?.id;
-    const currentPhase = currentQuizPhase;
-    
-    // Check if question ID changed
-    const questionChanged = prevQuestionIdRef.current !== currentQuestionId;
-    
-    // Check if phase changed for sequential matching
-    const phaseChanged = hasSequentialMatching && prevPhaseRef.current !== currentPhase;
-    
-    if (questionChanged || phaseChanged) {
-      console.log('Resetting state due to:', { 
-        questionChanged, 
-        phaseChanged, 
-        oldQuestionId: prevQuestionIdRef.current,
-        newQuestionId: currentQuestionId,
-        oldPhase: prevPhaseRef.current,
-        newPhase: currentPhase
-      });
-      
-      resetState();
-      
-      // Update refs with current values
-      prevQuestionIdRef.current = currentQuestionId;
-      prevPhaseRef.current = currentPhase;
-    }
-  }); // No dependency array - runs after every render but only resets when needed
-
-  // Filter pairs based on current phase
+  // Process pairs only when needed - keep this simple
   const allPairs = question.pairs || [];
   const filteredPairs = hasSequentialMatching && currentQuizPhase 
     ? allPairs.filter(pair => {
         const isImageLeft = isImageItem(pair.left);
         const isImageRight = isImageItem(pair.right);
-
         if (currentQuizPhase === 'picture-title') {
-          // Show pairs where either left or right is an image
           return isImageLeft || isImageRight;
         } else {
-          // Show pairs where both are text (title-description)
           return !isImageLeft && !isImageRight;
         }
       })
@@ -110,39 +77,48 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   const leftItems = filteredPairs.map(pair => pair.left);
   const rightItems = filteredPairs.map(pair => pair.right);
 
-  // Shuffle right items to randomize the options
-  const [shuffledRightItems, setShuffledRightItems] = useState([...rightItems]);
-
+  // Simple initialization effect - runs only once per question or phase change
   useEffect(() => {
-    // Function to shuffle array
-    const shuffleArray = (array: any[]) => {
-      const newArray = [...array];
-      for (let i = newArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-      }
-      return newArray;
-    };
+    const currentQuestionId = question?.id;
+    const currentPhase = currentQuizPhase;
 
-    // Shuffle right items when component mounts or rightItems change
-    setShuffledRightItems(shuffleArray(rightItems));
-  }, [rightItems]);
+    // Only reset if question or phase actually changed
+    const questionChanged = lastQuestionId.current !== currentQuestionId;
+    const phaseChanged = hasSequentialMatching && lastPhase.current !== currentPhase;
 
+    if (!hasInitialized.current || questionChanged || phaseChanged) {
+      console.log('Initializing matching component:', { questionChanged, phaseChanged, currentQuestionId, currentPhase });
 
+      // Reset all state
+      setMatches({});
+      setDraggedItem(null);
+      setIsSubmitting(false);
+      setIsSubmitted(false);
+      setShowResults(false);
+      setCorrectMatches({});
 
-  // Get text styling based on matching type and word count
+      // Shuffle right items
+      setShuffledRightItems(shuffleArray(rightItems));
+
+      // Update refs
+      lastQuestionId.current = currentQuestionId;
+      lastPhase.current = currentPhase;
+      hasInitialized.current = true;
+
+      dragCounter.current = 0;
+    }
+  }, [question?.id, currentQuizPhase, hasSequentialMatching, rightItems.join(',')]); // Include rightItems serialized to detect changes
+
   const getTextStyling = (text: string) => {
     const wordCount = text.split(/\s+/).length;
 
     if (effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description')) {
-      // For title-description: smaller text, left aligned for second row
       return {
         fontSize: wordCount > 30 ? 'text-xs' : wordCount > 20 ? 'text-sm' : 'text-base',
         alignment: 'text-left',
         weight: 'font-medium'
       };
     } else if (effectiveMatchingType === 'picture-title' || effectiveMatchingType?.includes('picture-title')) {
-      // For picture-title: bigger text, center aligned
       return {
         fontSize: wordCount > 15 ? 'text-lg' : wordCount > 10 ? 'text-xl' : 'text-2xl',
         alignment: 'text-center',
@@ -150,7 +126,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       };
     }
 
-    // Default styling
     return {
       fontSize: 'text-base',
       alignment: 'text-left',
@@ -197,52 +172,21 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     setDraggedItem(null);
   };
 
-  const saveStudentAttempt = async (studentMatches: {[key: string]: string}, score: number, isCorrect: boolean) => {
-    try {
-      const endTime = new Date();
-      const durationSeconds = Math.round((endTime.getTime() - startTime.getTime()) / 1000);
-
-      // Create correct matches object for reference
-      const correctMatches: {[key: string]: string} = {};
-      question.pairs?.forEach(pair => {
-        correctMatches[pair.left] = pair.right;
-      });
-
-      const studentId = 'user-123-placeholder'; // Replace with actual auth.uid() when authentication is implemented
-
-      // Note: Student attempt tracking will be implemented when authentication is added
-      console.log('Student attempt completed:', {
-        score,
-        isCorrect,
-        durationSeconds
-      });
-    } catch (error) {
-      console.error('Error in saveStudentAttempt:', error);
-    }
-  };
-
   const handleCheckResults = async () => {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
 
     let correctCount = 0;
-    const relevantPairs = filteredPairs; // Use filtered pairs for current phase
+    const relevantPairs = filteredPairs;
     const newCorrectMatches: {[key: string]: boolean} = {};
-
-    // Debug logging
-    console.log('Checking results for matches:', matches);
-    console.log('Against relevant pairs:', relevantPairs);
 
     relevantPairs.forEach(pair => {
       const userMatch = matches[pair.left];
       const correctMatch = pair.right;
-      // Normalize strings for comparison - trim whitespace and compare case-insensitively
       const normalizedUserMatch = userMatch?.trim().toLowerCase();
       const normalizedCorrectMatch = correctMatch?.trim().toLowerCase();
       const isMatchCorrect = normalizedUserMatch === normalizedCorrectMatch;
-
-      console.log(`Checking: "${pair.left}" -> user: "${userMatch}" vs correct: "${correctMatch}" = ${isMatchCorrect}`);
 
       newCorrectMatches[pair.left] = isMatchCorrect;
       if (isMatchCorrect) {
@@ -254,19 +198,11 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     const score = Math.round((correctCount / totalPairs) * 100);
     const isCorrect = correctCount === totalPairs;
 
-    console.log(`Final score: ${correctCount}/${totalPairs} = ${score}% (${isCorrect ? 'PASS' : 'FAIL'})`);
-
-    // Set correctness state for visual feedback
     setCorrectMatches(newCorrectMatches);
     setShowResults(true);
     setIsSubmitted(true);
 
-    // Save attempt to database
-    await saveStudentAttempt(matches, score, isCorrect);
-
-    // Call the original onAnswer callback
     onAnswer(matches, isCorrect);
-
     setIsSubmitting(false);
   };
 
@@ -291,7 +227,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-2">
         <div className="flex flex-col gap-1 h-full">
-          {/* Top Row - Images */}
+          {/* Top Row - Left Items */}
           <div className="flex-1">
             <div 
               className={`grid gap-2 h-[160px] overflow-y-auto ${
@@ -304,7 +240,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                   : 'grid-cols-7'
               }`}
             >
-              {leftItems.filter(item => isImageItem(item)).map(item => {
+              {leftItems.map(item => {
                 const isUsed = Object.keys(matches).includes(item);
                 const isCorrect = showResults && correctMatches[item];
                 const isIncorrect = showResults && correctMatches[item] === false;
@@ -324,107 +260,42 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                         : 'bg-gradient-to-br from-blue-100 to-purple-100 border-blue-400 cursor-move hover:from-blue-200 hover:to-purple-200 hover:border-purple-500 hover:shadow-xl'
                     }`}
                   >
-                    {showResults && isUsed && (
-                      <div className={`absolute top-1 right-1 text-white rounded-full p-1 z-10 ${
-                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-gray-500'
-                      }`}>
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          {isCorrect ? (
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          ) : isIncorrect ? (
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          ) : (
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          )}
-                        </svg>
-                      </div>
-                    )}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <div className="w-full h-full flex items-center justify-center">
+                    {isImageItem(item) ? (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <div className="w-full h-full flex items-center justify-center">
+                            <img 
+                              src={item} 
+                              alt="Matching item" 
+                              className="max-w-full max-h-36 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
+                            />
+                          </div>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
                           <img 
                             src={item} 
-                            alt="Matching item" 
-                            className="max-w-full max-h-36 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
-                            onError={(e) => {
-                              const img = e.currentTarget as HTMLImageElement;
-                              img.style.display = 'none';
-                              const parent = img.parentElement?.parentElement;
-                              if (parent && !parent.querySelector('.fallback-content')) {
-                                const fallbackDiv = document.createElement('div');
-                                fallbackDiv.className = 'fallback-content text-xs text-center p-2 bg-gray-100 rounded border h-full flex flex-col justify-center';
-                                fallbackDiv.innerHTML = `
-                                  <div class="mb-1 font-medium text-gray-800">Image unavailable</div>
-                                  <div class="text-gray-600 break-all text-[10px] leading-tight">${item.substring(0, 50)}...</div>
-                                `;
-                                parent.appendChild(fallbackDiv);
-                              }
-                            }}
+                            alt="Full size matching item" 
+                            className="max-w-full max-h-full object-contain"
                           />
-                        </div>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
-                        <img 
-                          src={item} 
-                          alt="Full size matching item" 
-                          className="max-w-full max-h-full object-contain"
-                        />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                );
-              })}
-              {/* Text items from left side */}
-              {leftItems.filter(item => !isImageItem(item)).map(item => {
-                const isUsed = Object.keys(matches).includes(item);
-                const isCorrect = showResults && correctMatches[item];
-                const isIncorrect = showResults && correctMatches[item] === false;
-
-                return (
-                  <div
-                    key={item}
-                    draggable={!isUsed && !showResults}
-                    onDragStart={(e) => handleDragStart(e, item)}
-                    className={`relative p-1 rounded-lg text-black transition-all duration-300 border-2 flex items-center justify-center shadow-sm ${
-                      isCorrect 
-                        ? 'bg-green-100 border-green-400 cursor-not-allowed'
-                        : isIncorrect
-                        ? 'bg-red-100 border-red-400 cursor-not-allowed'
-                        : isUsed 
-                        ? 'bg-gray-200 border-gray-300 opacity-50 cursor-not-allowed' 
-                        : 'bg-blue-50 border-blue-300 cursor-move hover:bg-blue-100 hover:border-blue-400'
-                    }`}
-                  >
-                    {showResults && isUsed && (
-                      <div className={`absolute top-1 right-1 text-white rounded-full p-1 z-10 ${
-                        isCorrect ? 'bg-green-500' : isIncorrect ? 'bg-red-500' : 'bg-gray-500'
-                      }`}>
-                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                          {isCorrect ? (
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          ) : isIncorrect ? (
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          ) : (
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          )}
-                        </svg>
-                      </div>
+                        </DialogContent>
+                      </Dialog>
+                    ) : (
+                      (() => {
+                        const styling = getTextStyling(item);
+                        return (
+                          <span className={`${styling.weight} ${styling.fontSize} leading-tight whitespace-pre-line ${styling.alignment}`}>
+                            {item}
+                          </span>
+                        );
+                      })()
                     )}
-                    {(() => {
-                      const styling = getTextStyling(item);
-                      return (
-                        <span className={`${styling.weight} ${styling.fontSize} leading-tight whitespace-pre-line ${styling.alignment}`}>
-                          {item}
-                        </span>
-                      );
-                    })()}
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Bottom Row - Descriptions/Drop Zones */}
+          {/* Bottom Row - Right Items (Drop Zones) */}
           <div className="flex-1">
             <div 
               className={`grid gap-1 h-[140px] overflow-y-auto ${
@@ -467,20 +338,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                               src={item} 
                               alt="Matching target" 
                               className="w-full max-h-28 object-contain rounded cursor-pointer hover:opacity-80 transition-opacity"
-                              onError={(e) => {
-                                const img = e.currentTarget as HTMLImageElement;
-                                img.style.display = 'none';
-                                const parent = img.parentElement?.parentElement;
-                                if (parent && !parent.querySelector('.fallback-content')) {
-                                  const fallbackDiv = document.createElement('div');
-                                  fallbackDiv.className = 'fallback-content text-xs text-center p-2 bg-gray-100 rounded border h-full flex flex-col justify-center';
-                                  fallbackDiv.innerHTML = `
-                                    <div class="mb-1 font-medium text-gray-800">Image unavailable</div>
-                                    <div class="text-gray-600 break-all text-[10px] leading-tight">${item.substring(0, 50)}...</div>
-                                  `;
-                                  parent.appendChild(fallbackDiv);
-                                }
-                              }}
                             />
                           </div>
                         </DialogTrigger>
@@ -511,39 +368,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                           : 'text-blue-700 bg-blue-200 border-blue-300'
                       }`}>
                         <span className="font-medium">Matched with:</span>
-                        {isImageItem(matchedLeft) ? (
-                          <div className="flex items-center gap-1">
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <div className="w-8 h-8 flex items-center justify-center">
-                                  <img 
-                                    src={matchedLeft} 
-                                    alt="Matched item" 
-                                    className="w-8 h-8 object-contain rounded border border-blue-300 cursor-pointer hover:opacity-80 transition-opacity"
-                                    onError={(e) => {
-                                      // Hide broken image and show fallback with link
-                                      e.currentTarget.style.display = 'none';
-                                      const parent = e.currentTarget.parentElement;
-                                      if (parent) {
-                                        parent.innerHTML = `<a href="${matchedLeft}" target="_blank" class="w-8 h-8 text-xs bg-gray-100 rounded border flex items-center justify-center text-blue-600 hover:text-blue-800 underline" title="${matchedLeft}">IMG</a>`;
-                                      }
-                                    }}
-                                  />
-                                </div>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-[98vw] max-h-[98vh] w-[98vw] h-[98vh] flex items-center justify-center p-2">
-                                <img 
-                                  src={matchedLeft} 
-                                  alt="Full size matched item" 
-                                  className="max-w-full max-h-full object-contain"
-                                />
-                              </DialogContent>
-                            </Dialog>
-                            <span className="text-sm text-gray-600 font-medium">Image</span>
-                          </div>
-                        ) : (
-                          <span className="font-semibold text-sm">{matchedLeft}</span>
-                        )}
+                        <span className="font-semibold text-sm">{isImageItem(matchedLeft) ? 'Image' : matchedLeft}</span>
                         {isSubmitted && (
                           <div className={`ml-auto text-sm font-bold ${
                             isCorrect ? 'text-green-600' : 'text-red-600'
@@ -562,7 +387,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       </CardContent>
       <div className="p-6 border-t-2 border-purple-200 bg-white/80 backdrop-blur-sm">
         <div className="space-y-3">
-          {/* Check Results Button - Always shown first when matches are complete but not yet submitted */}
           {!isSubmitted && (
             <Button
               onClick={handleCheckResults}
@@ -585,7 +409,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             </Button>
           )}
 
-          {/* Next Phase/Activity Buttons - Only shown after results are checked */}
           {isSubmitted && (
             <>
               {hasSequentialMatching && currentQuizPhase === 'picture-title' ? (
@@ -594,9 +417,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                   className="w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white border-2 border-blue-400 hover:scale-105 hover:shadow-xl"
                   variant="default"
                 >
-                  <span className="flex items-center gap-2">
-                    Continue to Title-Description Matching →
-                  </span>
+                  Continue to Title-Description Matching →
                 </Button>
               ) : (
                 <Button
@@ -604,16 +425,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                   className="w-full text-lg py-3 font-bold rounded-xl shadow-lg transform transition-all duration-300 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-2 border-green-400 hover:scale-105 hover:shadow-xl"
                   variant="default"
                 >
-                  <span className="flex items-center gap-2">
-                    {hasSequentialMatching && currentQuizPhase === 'title-description' ? 'Next Activity' : 'Next'} →
-                  </span>
+                  Next Activity →
                 </Button>
               )}
             </>
           )}
         </div>
 
-        {/* Phase indicator for sequential matching */}
         {hasSequentialMatching && (
           <div className="mt-3 text-center">
             <div className="text-sm font-medium text-purple-700">
@@ -628,7 +446,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
         {isComplete && !isSubmitted && (
           <p className="text-sm text-purple-700 mt-3 text-center font-medium bg-purple-100 p-2 rounded-lg">
-            All pairs matched! Click Submit to complete.
+            All pairs matched! Click Check Results to complete.
           </p>
         )}
       </div>
