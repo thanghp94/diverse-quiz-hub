@@ -222,11 +222,19 @@ export const TopicMatchingPopup = ({ isOpen, onClose, topicId, topicName }: Topi
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-bold flex items-center gap-2">
             <Shuffle className="h-6 w-6" />
             {topicName} - Matching Activity
           </DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </DialogHeader>
 
         <div className="flex-1 flex flex-col overflow-hidden">
