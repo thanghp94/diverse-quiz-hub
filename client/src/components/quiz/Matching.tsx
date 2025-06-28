@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -44,21 +44,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
   const effectiveMatchingType = currentQuizPhase || inferredPhase || question.type;
 
-  // Use useMemo to create a stable reference for question ID
-  const stableQuestionId = useMemo(() => question?.id, [question?.id]);
+  // Use refs to track previous values and prevent unnecessary resets
+  const prevQuestionIdRef = useRef<string | undefined>();
+  const prevPhaseRef = useRef<string | null | undefined>();
   
-  // Reset state when phase changes for sequential matching or when question changes
-  useEffect(() => {
-    console.log('State reset triggered:', { 
-      hasSequentialMatching, 
-      currentQuizPhase, 
-      questionId: stableQuestionId 
-    });
-
-    // Reset all state when:
-    // 1. Phase changes in sequential matching
-    // 2. Question changes (different question.id)
-    // 3. Component first loads
+  // Stable reset function using useCallback
+  const resetState = useCallback(() => {
+    console.log('State reset triggered');
     setMatches({});
     setShowResults(false);
     setIsSubmitted(false);
@@ -66,9 +58,37 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     setCorrectMatches({});
     setDraggedItem(null);
     dragCounter.current = 0;
+    console.log('State reset completed');
+  }, []);
 
-    console.log('State reset completed for phase:', currentQuizPhase);
-  }, [currentQuizPhase, hasSequentialMatching, stableQuestionId]);
+  // Only reset when question ID or phase actually changes
+  useEffect(() => {
+    const currentQuestionId = question?.id;
+    const currentPhase = currentQuizPhase;
+    
+    // Check if question ID changed
+    const questionChanged = prevQuestionIdRef.current !== currentQuestionId;
+    
+    // Check if phase changed for sequential matching
+    const phaseChanged = hasSequentialMatching && prevPhaseRef.current !== currentPhase;
+    
+    if (questionChanged || phaseChanged) {
+      console.log('Resetting state due to:', { 
+        questionChanged, 
+        phaseChanged, 
+        oldQuestionId: prevQuestionIdRef.current,
+        newQuestionId: currentQuestionId,
+        oldPhase: prevPhaseRef.current,
+        newPhase: currentPhase
+      });
+      
+      resetState();
+      
+      // Update refs with current values
+      prevQuestionIdRef.current = currentQuestionId;
+      prevPhaseRef.current = currentPhase;
+    }
+  }); // No dependency array - runs after every render but only resets when needed
 
   // Filter pairs based on current phase
   const allPairs = question.pairs || [];
