@@ -234,14 +234,9 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     <Card className="bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 border-2 border-purple-200 shadow-2xl h-full flex flex-col">
       <CardHeader className="pb-3 pt-4 bg-white/80 backdrop-blur-sm border-b-2 border-purple-200">
         <div className="flex justify-between items-center mb-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="text-xs bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200 hover:border-purple-400 font-medium"
-            onClick={onGoBack || (() => setLocation('/topics'))}
-          >
-            ← Go Back
-          </Button>
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            {question.question}
+          </CardTitle>
 
           <div className="flex items-center gap-3">
             {!isSubmitted ? (
@@ -295,16 +290,13 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
             )}
           </div>
         </div>
-        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-          {question.question}
-        </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-2">
         <div className="flex flex-col gap-1 h-full">
           {/* Top Row - Left Items */}
           <div className="flex-1">
             <div 
-              className={`grid gap-2 h-[240px] overflow-y-auto ${
+              className={`grid gap-2 h-[320px] overflow-y-auto ${
                 leftItems.length <= 4 
                   ? 'grid-cols-4' 
                   : leftItems.length <= 5 
@@ -396,7 +388,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           {/* Bottom Row - Right Items (Drop Zones) */}
           <div className="flex-1">
             <div 
-              className={`grid gap-1 h-[220px] overflow-y-auto ${
+              className={`grid gap-1 h-[300px] overflow-y-auto ${
                 shuffledRightItems.length <= 4 
                   ? 'grid-cols-4' 
                   : shuffledRightItems.length <= 5 
