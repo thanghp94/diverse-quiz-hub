@@ -30,7 +30,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   // Use refs to store values that shouldn't trigger re-renders
   const dragCounter = useRef(0);
   const hasInitialized = useRef(false);
-  const lastQuestionId = useRef<string | undefined>(undefined);
+  const lastQuestionId = useRef<string | number | undefined>(undefined);
   const lastPhase = useRef<string | null | undefined>(undefined);
 
   const { toast } = useToast();
@@ -101,7 +101,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
       setShuffledRightItems(shuffleArray(rightItems));
 
       // Update refs
-      lastQuestionId.current = currentQuestionId;
+      lastQuestionId.current = String(currentQuestionId);
       lastPhase.current = currentPhase;
       hasInitialized.current = true;
 
@@ -250,11 +250,12 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
         <div className="flex justify-between items-center mb-2">
           <div className="flex-1 text-center">
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              {question.topic || question.question}
-            </CardTitle></div>
+              {question.question}
+            </CardTitle>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
             {!isSubmitted ? (
               <div className="flex items-center gap-2">
                 {isComplete && !isSubmitting && (
@@ -304,7 +305,6 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                 )}
               </div>
             )}
-          </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden p-2">
