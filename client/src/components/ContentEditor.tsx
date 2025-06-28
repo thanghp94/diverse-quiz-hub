@@ -143,6 +143,7 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
       challengesubject: Array.isArray(content.challengesubject) ? content.challengesubject.join(', ') : (content.challengesubject || ''),
       parentid: content.parentid || '',
       contentgroup: content.contentgroup || '',
+      imagelink: content.imagelink || '',
     });
     setIsEditing(false);
   };

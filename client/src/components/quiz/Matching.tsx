@@ -47,7 +47,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
   // Reset state when phase changes for sequential matching or when question changes
   useEffect(() => {
     console.log('State reset triggered:', { 
-      hasSequentialMatching, 
+      questionIdStr, 
       currentQuizPhase, 
       questionId: question.id 
     });
@@ -65,7 +65,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     dragCounter.current = 0;
 
     console.log('State reset completed for phase:', currentQuizPhase);
-  }, [currentQuizPhase, hasSequentialMatching, question.id]);
+  }, [currentQuizPhase, questionIdStr, question.id]);
 
   // Filter pairs based on current phase
   const allPairs = question.pairs || [];
