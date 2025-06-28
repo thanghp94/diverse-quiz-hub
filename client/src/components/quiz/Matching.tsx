@@ -434,7 +434,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                     className={`p-1 rounded-lg text-black border-2 border-dashed transition-all duration-300 flex flex-col ${
                       isCorrect
                         ? 'bg-green-100 border-green-400 shadow-lg'
-                        : isIncorrected
+                        : isIncorrect
                         ? 'bg-red-100 border-red-400 shadow-lg'
                         : matchedLeft 
                         ? 'bg-gray-100 border-gray-400 shadow-lg' 
