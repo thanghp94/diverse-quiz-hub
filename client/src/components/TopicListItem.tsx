@@ -463,7 +463,8 @@ const GroupedContentDisplay = ({
   onContentClick, 
   onStartQuiz,
   onStartGroupMatching,
-  activeContentId 
+  activeContentId,
+  customActions
 }: {
   topicId: string;
   topicContent: Content[];
@@ -471,6 +472,7 @@ const GroupedContentDisplay = ({
   onStartQuiz: (content: Content, contextList: Content[], level: 'Easy' | 'Hard') => void;
   onStartGroupMatching: (matchingId: string, matchingTitle: string) => void;
   activeContentId: string | null;
+  customActions?: (content: Content) => React.ReactNode;
 }) => {
   const [selectedContentGroup, setSelectedContentGroup] = useState<{
     groupName: string;
@@ -821,7 +823,7 @@ const TopicContentWithMatching = ({
                             topicContent={topicContent}
                             onContentClick={onContentClick}
                             onStartQuiz={onStartQuiz}
-                            customActions={customActions}
+                            customActions={undefined}
                           />
                         ))}
                       </div>
@@ -986,6 +988,7 @@ const TopicListItem = ({
                   onStartQuiz={onStartQuiz}
                   onStartGroupMatching={onStartGroupMatching}
                   activeContentId={activeContentId}
+                  customActions={customActions}
                 />
               )}
 
