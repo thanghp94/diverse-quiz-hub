@@ -6,6 +6,7 @@ import { Check, X, ThumbsUp, Minus, ThumbsDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import { useAuth } from "@/hooks/useAuth";
 
 interface QuizQuestion {
     id: string;
