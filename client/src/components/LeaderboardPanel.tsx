@@ -102,29 +102,19 @@ export const LeaderboardPanel = () => {
 
   const getCurrentData = () => {
     if (activeTab === 'tries') {
-      return studentTriesData || [];
+      const triesData = studentTriesData || [];
+      return triesData.filter(item => item.student_id !== 'GV0002');
     } else {
-      return leaderboardData?.totalPoints || [];
+      const pointsData = leaderboardData?.totalPoints || [];
+      return pointsData.filter(item => item.student_id !== 'GV0002');
     }
   };
 
   const getDisplayData = (data: any[]) => {
     if (!data || data.length === 0) return [];
     
-    const currentUserId = 'GV0002';
-    const top10 = data.slice(0, 10);
-    
-    const currentUserInTop10 = top10.some(item => item.student_id === currentUserId);
-    
-    if (!currentUserInTop10) {
-      const currentUser = data.find(item => item.student_id === currentUserId);
-      if (currentUser) {
-        const currentUserRank = data.findIndex(item => item.student_id === currentUserId) + 1;
-        return [...top10, { ...currentUser, rank: currentUserRank, isCurrentUser: true }];
-      }
-    }
-    
-    return top10;
+    // Simply return top 10 since GV0002 is filtered out
+    return data.slice(0, 10);
   };
 
   const getRankIcon = (rank: number) => {
@@ -225,7 +215,7 @@ export const LeaderboardPanel = () => {
               {displayData.map((item, index) => {
                 const rank = item.rank || index + 1;
                 const value = getDisplayValue(item);
-                const isCurrentUser = item.isCurrentUser || item.student_id === 'GV0002';
+                const isCurrentUser = false; // GV0002 is filtered out
                 
                 return (
                   <div 
