@@ -167,7 +167,6 @@ const ContentPopup = ({
             </div>
           ) : (
             <div className="flex-1 overflow-y-auto min-h-0">
-            <>
               {/* Two-column layout: Title/Content + Media */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-3">
                 {/* Left: Title, Description, Short Blurb, Second Short Blurb */}

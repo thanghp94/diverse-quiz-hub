@@ -58,6 +58,7 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
     const [isContentLoaded, setIsContentLoaded] = useState(false);
     const [contentRating, setContentRating] = useState<string | null>(null);
     const { toast } = useToast();
+    const { user } = useAuth();
 
     useEffect(() => {
         if (currentQuestionIndex === 0) {
@@ -164,22 +165,13 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
         if (!contentId && !topicId) return;
 
         try {
-            // Get current user for tracking
-            const getCurrentUser = () => {
-                const storedUser = localStorage.getItem('currentUser');
-                if (storedUser) {
-                    return JSON.parse(storedUser);
-                }
-                // Fallback to a default user if no user is stored
-                return { id: 'GV0002', name: 'Default User' };
-            };
-
-            const currentUser = getCurrentUser();
+            // Use authenticated user instead of hardcoded fallback
+            const currentUserId = user?.id || 'GUEST';
             const response = await fetch('/api/content-ratings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    student_id: currentUser.id,
+                    student_id: currentUserId,
                     content_id: contentId || topicId,
                     rating: rating
                 })
@@ -208,21 +200,13 @@ const QuizView = ({ questionIds, onQuizFinish, assignmentStudentTryId, studentTr
 
         try {
             // Create new student_try record for each question response
-            const getCurrentUser = () => {
-                const storedUser = localStorage.getItem('currentUser');
-                if (storedUser) {
-                    return JSON.parse(storedUser);
-                }
-                // Fallback to a default user if no user is stored
-                return { id: 'GV0002', name: 'Default User' };
-            };
-
-            const currentUser = getCurrentUser();
+            // Use authenticated user instead of hardcoded fallback
+            const currentUserId = user?.id || 'GUEST';
 
             if (assignmentStudentTryId) {
                 const responseData = {
                     assignment_student_try_id: assignmentStudentTryId,
-                    hocsinh_id: currentUser.id,
+                    hocsinh_id: currentUserId,
                     question_id: currentQuestion.id,
                     answer_choice: selectedAnswer,
                     correct_answer: currentQuestion.correct_choice,
