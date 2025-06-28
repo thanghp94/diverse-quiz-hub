@@ -248,9 +248,24 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
     <Card className="bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 border-2 border-purple-200 shadow-2xl h-full flex flex-col">
       <CardHeader className="pb-3 pt-4 bg-white/80 backdrop-blur-sm border-b-2 border-purple-200">
         <div className="flex justify-between items-center mb-2">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-            {question.question}
-          </CardTitle>
+          <div className="flex-1">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              {question.question}
+            </CardTitle>
+            {effectiveMatchingType === 'title-description' || effectiveMatchingType?.includes('title-description') ? (
+              <p className="text-sm text-purple-600 mt-1 font-medium">
+                Match each title with its corresponding description
+              </p>
+            ) : effectiveMatchingType === 'picture-title' || effectiveMatchingType?.includes('picture-title') ? (
+              <p className="text-sm text-purple-600 mt-1 font-medium">
+                Match each image with its corresponding title
+              </p>
+            ) : (
+              <p className="text-sm text-purple-600 mt-1 font-medium">
+                Drag and drop items to create matching pairs
+              </p>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
             {!isSubmitted ? (
