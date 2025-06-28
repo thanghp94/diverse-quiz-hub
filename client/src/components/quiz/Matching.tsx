@@ -389,6 +389,20 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                                   }
                                 }
                               }}
+                              onError={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                const container = img.parentElement;
+                                if (container) {
+                                  container.innerHTML = `
+                                    <div class="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500 text-sm">
+                                      <div class="text-center">
+                                        <div>🖼️</div>
+                                        <div>Image not available</div>
+                                      </div>
+                                    </div>
+                                  `;
+                                }
+                              }}
                             />
                           </div>
                         </DialogTrigger>
@@ -397,6 +411,20 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                             src={item} 
                             alt="Full size matching item" 
                             className="max-w-full max-h-full object-contain"
+                            onError={(e) => {
+                              const img = e.target as HTMLImageElement;
+                              const container = img.parentElement;
+                              if (container) {
+                                container.innerHTML = `
+                                  <div class="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+                                    <div class="text-center">
+                                      <div class="text-4xl mb-2">🖼️</div>
+                                      <div>Image not available</div>
+                                    </div>
+                                  </div>
+                                `;
+                              }
+                            }}
                           />
                         </DialogContent>
                       </Dialog>
@@ -473,6 +501,20 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                                 minHeight: '80px',
                                 minWidth: '80px'
                               }}
+                              onError={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                const container = img.parentElement;
+                                if (container) {
+                                  container.innerHTML = `
+                                    <div class="w-20 h-20 flex items-center justify-center bg-gray-200 rounded border text-gray-500 text-xs">
+                                      <div class="text-center">
+                                        <div>🖼️</div>
+                                        <div>No image</div>
+                                      </div>
+                                    </div>
+                                  `;
+                                }
+                              }}
                             />
                             {isSubmitted && (
                               <div className={`text-sm font-bold ${
@@ -507,6 +549,20 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                                 src={item} 
                                 alt="Matching target" 
                                 className="w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                                onError={(e) => {
+                                  const img = e.target as HTMLImageElement;
+                                  const container = img.parentElement;
+                                  if (container) {
+                                    container.innerHTML = `
+                                      <div class="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500 text-sm">
+                                        <div class="text-center">
+                                          <div>🖼️</div>
+                                          <div>Image not available</div>
+                                        </div>
+                                      </div>
+                                    `;
+                                  }
+                                }}
                               />
                             </div>
                           </DialogTrigger>
@@ -515,6 +571,20 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                               src={item} 
                               alt="Full size matching target" 
                               className="max-w-full max-h-full object-contain"
+                              onError={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                const container = img.parentElement;
+                                if (container) {
+                                  container.innerHTML = `
+                                    <div class="w-full h-full flex items-center justify-center bg-gray-200 rounded text-gray-500">
+                                      <div class="text-center">
+                                        <div class="text-4xl mb-2">🖼️</div>
+                                        <div>Image not available</div>
+                                      </div>
+                                    </div>
+                                  `;
+                                }
+                              }}
                             />
                           </DialogContent>
                         </Dialog>
