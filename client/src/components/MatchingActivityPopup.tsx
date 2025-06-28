@@ -410,16 +410,7 @@ export const MatchingActivityPopup = ({ isOpen, onClose, matchingId }: MatchingA
               </div>
             ) : (
               <div className="flex-1 bg-white text-black rounded-lg p-4 flex flex-col overflow-hidden">
-                {isMultiQuestion && (
-                  <div className="mb-4 text-center">
-                    <div className="text-lg font-semibold text-black">
-                      Question {currentQuestionIndex + 1} of {questions.length}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {activity.type}
-                    </div>
-                  </div>
-                )}
+                
                 <div className="flex-1">
                   <Matching 
                     question={currentQuestion} 

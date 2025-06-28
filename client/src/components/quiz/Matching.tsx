@@ -226,6 +226,10 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
 
   const isComplete = Object.keys(matches).length === leftItems.length;
 
+    const isImage = (item: string) => {
+        return item.startsWith('http') && (item.includes('.jpg') || item.includes('.jpeg') || item.includes('.png') || item.includes('.webp') || item.includes('.gif'));
+    };
+
   return (
     <Card className="bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 border-2 border-purple-200 shadow-2xl h-full flex flex-col">
       <CardHeader className="pb-3 pt-4 bg-white/80 backdrop-blur-sm border-b-2 border-purple-200">
@@ -310,14 +314,38 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                         : 'bg-gradient-to-br from-blue-100 to-purple-100 border-blue-400 cursor-move hover:from-blue-200 hover:to-purple-200 hover:border-purple-500 hover:shadow-xl'
                     }`}
                   >
-                    {isImageItem(item) ? (
+                    {isImage(item) ? (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <div className="w-full h-full flex items-center justify-center">
+                          <div className="cursor-pointer hover:opacity-80 transition-opacity w-full h-full flex items-center justify-center">
                             <img 
                               src={item} 
                               alt="Matching item" 
-                              className="w-full h-full object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                              className="rounded"
+                              style={{ 
+                                maxWidth: '100%',
+                                maxHeight: '100%',
+                                objectFit: 'contain'
+                              }}
+                              onLoad={(e) => {
+                                const img = e.target as HTMLImageElement;
+                                const container = img.parentElement;
+                                if (container) {
+                                  const containerWidth = container.clientWidth;
+                                  const containerHeight = container.clientHeight || 200; // fallback height
+                                  const aspectRatio = img.naturalWidth / img.naturalHeight;
+
+                                  if (aspectRatio > 1) {
+                                    // Landscape image - fit to width
+                                    img.style.width = '100%';
+                                    img.style.height = 'auto';
+                                  } else {
+                                    // Portrait or square image - fit to height
+                                    img.style.height = `${Math.min(containerHeight, 200)}px`;
+                                    img.style.width = 'auto';
+                                  }
+                                }
+                              }}
                             />
                           </div>
                         </DialogTrigger>
@@ -468,9 +496,9 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
           )}
         </div>
 
-        
 
-        
+
+
       </div>
     </Card>
   );
