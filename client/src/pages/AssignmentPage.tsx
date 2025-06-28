@@ -372,7 +372,7 @@ const AssignmentPage: React.FC = () => {
         {selectedLiveClass && (
           <div className="mt-4 p-4 bg-gray-50 rounded">
             <h4 className="font-medium mb-2">Student Progress</h4>
-            {getStudentProgress(selectedLiveClass).map((progress, index) => (
+            {getStudentProgress(selectedLiveClass).map((progress: any, index: number) => (
               <div key={index} className="flex items-center justify-between py-1">
                 <span className="text-sm">{progress.student_name}</span>
                 <div className="flex gap-1">

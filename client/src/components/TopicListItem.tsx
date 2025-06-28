@@ -1247,7 +1247,7 @@ const TopicListItem = ({
                                                           </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                       </DropdownMenu>
-                                                      {customActions && customActions(content)}
+                                                      {/* Custom actions not available in this scope */}
                                                     </div>
                                                   </div>
                                                   <div className="flex items-center gap-2 mb-2">

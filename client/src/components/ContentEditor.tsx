@@ -38,6 +38,15 @@ interface ContentEditorProps {
 }
 
 export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) {
+  // Early return if content is null or undefined
+  if (!content) {
+    return (
+      <div className="p-4 text-center text-gray-500">
+        No content selected for editing
+      </div>
+    );
+  }
+
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     short_description: content.short_description || '',
@@ -52,6 +61,7 @@ export function ContentEditor({ content, onContentUpdate }: ContentEditorProps) 
     challengesubject: Array.isArray(content.challengesubject) ? content.challengesubject.join(', ') : (content.challengesubject || ''),
     parentid: content.parentid || '',
     contentgroup: content.contentgroup || '',
+    imagelink: content.imagelink || '',
   });
 
   const { toast } = useToast();
