@@ -257,9 +257,7 @@ const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, 
                 Match each title with its corresponding description
               </p>
             ) : effectiveMatchingType === 'picture-title' || effectiveMatchingType?.includes('picture-title') ? (
-              <p className="text-sm text-purple-600 mt-1 font-medium">
-                Match each image with its corresponding title
-              </p>
+              null
             ) : (
               <p className="text-sm text-purple-600 mt-1 font-medium">
                 Drag and drop items to create matching pairs
