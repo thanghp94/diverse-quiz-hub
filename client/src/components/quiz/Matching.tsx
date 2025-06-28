@@ -17,9 +17,6 @@ interface MatchingProps {
 }
 
 const Matching = ({ question, onAnswer, studentTryId, onNextActivity, onGoBack, currentQuizPhase, onNextPhase }: MatchingProps) => {
-  // Use question.id as key to force component remount when question changes
-  const componentKey = `${question.id}-${currentQuizPhase || 'default'}`;
-  
   const [matches, setMatches] = useState<{[key: string]: string}>({});
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

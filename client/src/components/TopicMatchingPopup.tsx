@@ -269,7 +269,11 @@ export const TopicMatchingPopup = ({ isOpen, onClose, topicId, topicName }: Topi
                   </div>
                 )}
                 <div className="flex-1">
-                  <Matching question={currentQuestion} onAnswer={handleAnswer} />
+                  <Matching 
+                    key={`${currentQuestion.id}-${currentQuestionIndex}`}
+                    question={currentQuestion} 
+                    onAnswer={handleAnswer} 
+                  />
                 </div>
               </div>
             )}
