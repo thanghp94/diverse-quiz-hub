@@ -17,6 +17,7 @@ import LiveClassPanel from "@/components/LiveClassPanel";
 import { PersonalContentPanel } from "@/components/PersonalContentPanel";
 import { useLocation } from "wouter";
 import { trackContentAccess, getCurrentUserId } from "@/lib/contentTracking";
+import { supabase } from "@/lib/supabaseClient";
 
 interface Topic {
   id: string;
@@ -92,12 +93,16 @@ const Topics = () => {
   } = useQuery({
     queryKey: ['bowl-challenge-topics'],
     queryFn: async () => {
-      console.log('Fetching Bowl & Challenge topics from API...');
-      const response = await fetch('/api/topics/bowl-challenge');
-      if (!response.ok) {
-        throw new Error('Failed to fetch bowl challenge topics');
+      console.log('Fetching Bowl & Challenge topics from Supabase...');
+      const { data, error } = await supabase
+        .from('topics')
+        .select('*')
+        .eq('category', 'bowl-challenge')
+        .order('topic', { ascending: true });
+
+      if (error) {
+        throw new Error('Failed to fetch bowl challenge topics: ' + error.message);
       }
-      const data = await response.json();
       console.log('Bowl & Challenge topics fetched:', data);
       return data as Topic[];
     }
@@ -109,12 +114,15 @@ const Topics = () => {
   } = useQuery({
     queryKey: ['all-topics'],
     queryFn: async () => {
-      console.log('Fetching all topics for subtopics...');
-      const response = await fetch('/api/topics');
-      if (!response.ok) {
-        throw new Error('Failed to fetch all topics');
+      console.log('Fetching all topics for subtopics from Supabase...');
+      const { data, error } = await supabase
+        .from('topics')
+        .select('*')
+        .order('topic', { ascending: true });
+
+      if (error) {
+        throw new Error('Failed to fetch all topics: ' + error.message);
       }
-      const data = await response.json();
       console.log('All topics fetched:', data);
       return data as Topic[];
     }
@@ -131,12 +139,14 @@ const Topics = () => {
   } = useQuery({
     queryKey: ['images'],
     queryFn: async () => {
-      console.log('Fetching all images from API...');
-      const response = await fetch('/api/images');
-      if (!response.ok) {
-        throw new Error('Failed to fetch images');
+      console.log('Fetching all images from Supabase...');
+      const { data, error } = await supabase
+        .from('images')
+        .select('*');
+
+      if (error) {
+        throw new Error('Failed to fetch images: ' + error.message);
       }
-      const data = await response.json();
       console.log('All images fetched:', data);
       return data as Image[];
     }

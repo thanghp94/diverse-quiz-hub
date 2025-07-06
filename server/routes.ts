@@ -559,6 +559,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { contentId, topicId, level } = req.query;
       console.log(`API: Fetching questions with contentId: ${contentId}, topicId: ${topicId}, level: ${level}`);
 
+      // Validate query parameters
+      if (!contentId && !topicId) {
+        return ApiResponse.badRequest(res, "Either contentId or topicId is required");
+      }
+
+      if (level && !['easy', 'hard', 'overview', undefined].includes(level.toString().toLowerCase())) {
+        return ApiResponse.badRequest(res, "Invalid level parameter. Must be 'easy', 'hard', or 'overview'");
+      }
+
       const levelParam = level && level !== 'undefined' ? level as string : undefined;
       const questions = await storage.getQuestions(
         contentId as string, 
@@ -566,9 +575,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         levelParam
       );
 
-      console.log(`API: Returning ${questions.length} questions for level: ${levelParam || 'all'}`);
-      res.json(questions);
+      // Transform questions to match frontend expectations
+      const transformedQuestions = questions.map(q => ({
+        ...q,
+        type: q.question_type as 'multiple-choice' | 'matching' | 'fill-blank' | 'categorize',
+        question: q.noi_dung || '',
+        options: [
+          q.cau_tra_loi_1,
+          q.cau_tra_loi_2,
+          q.cau_tra_loi_3,
+          q.cau_tra_loi_4
+        ].filter(Boolean),
+        correct: q.correct_choice || undefined
+      }));
+
+      console.log(`API: Returning ${transformedQuestions.length} questions for level: ${levelParam || 'all'}`);
+      res.json(transformedQuestions);
     } catch (error) {
+      console.error('Error fetching questions:', error);
       ApiResponse.serverError(res, "Failed to fetch questions", error);
     }
   });

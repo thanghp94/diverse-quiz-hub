@@ -389,3 +389,66 @@ export type PendingAccessRequest = typeof pending_access_requests.$inferSelect;
 export type InsertPendingAccessRequest = z.infer<
   typeof insertPendingAccessRequestSchema
 >;
+
+// API Response Types for frontend-backend consistency
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+// Base question interface for both frontend and backend
+export interface BaseQuestion {
+  id: string;
+  type: 'multiple-choice' | 'matching' | 'fill-blank' | 'categorize';
+  question: string;
+  options?: string[];
+  correct?: string | number;
+}
+
+// Question response from the API
+export interface QuestionResponse extends Question, BaseQuestion {
+  // Additional fields that might be added by the API transformation
+  contentId?: string;
+  level?: string;
+}
+
+export interface LeaderboardData {
+  totalPoints: Array<{ student_id: string; total_points: number; full_name?: string }>;
+  bestStreak: Array<{ student_id: string; longest_streak: number; full_name?: string }>;
+  todayQuizzes: Array<{ student_id: string; today_count: number; full_name?: string }>;
+  weeklyQuizzes: Array<{ student_id: string; weekly_count: number; full_name?: string }>;
+}
+
+export interface ContentGroup {
+  contentgroup: string;
+  url: string;
+  content_count: number;
+}
+
+export interface RatingStats {
+  easy: number;
+  normal: number;
+  hard: number;
+}
+
+export interface LiveAssignment {
+  id: string;
+  assignmentname: string;
+  contentid?: string;
+  topicid?: string;
+  typeofquestion?: string;
+  status: string;
+  created_at: Date;
+}
+
+export interface StudentActivity {
+  student_id: string;
+  student_name: string;
+  content_viewed: number;
+  content_rated: number;
+  quiz_attempts: number;
+  quiz_accuracy: number | null;
+  last_activity: string | null;
+}

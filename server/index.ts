@@ -1,4 +1,4 @@
-import express, { type Request, Response, NextFunction } from "express";
+import express from "express";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { registerRoutes } from "./routes";
@@ -6,6 +6,7 @@ import serveStatic from "serve-static";
 import { setupVite, serveStatic as viteServeStatic, log } from "./vite";
 import { wakeUpDatabase } from "./db";
 import { cronScheduler } from "./cron-scheduler";
+import path from "path";
 
 const app = express();
 const server = createServer(app);
@@ -50,7 +51,7 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
+  const pathReq = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;
@@ -61,8 +62,8 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+    if (pathReq.startsWith("/api")) {
+      let logLine = `${req.method} ${pathReq} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -92,46 +93,22 @@ app.use((req, res, next) => {
   });
 
   const serverRoutes = await registerRoutes(app);
-  // Setup Socket.IO for real-time updates
-  // Store the io instance globally for use in routes
-  //(global as any).io = io;
 
-  //io.on('connection', (socket) => {
-  //  console.log('Client connected to live monitor:', socket.id);
-
-  //  socket.on('join-monitor', (data) => {
-  //    console.log('Client joined monitor room:', data);
-  //    socket.join('live-monitor');
-  //  });
-
-  //  socket.on('disconnect', () => {
-  //    console.log('Client disconnected from live monitor:', socket.id);
-  //  });
-  //});
-
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    if (!res.headersSent) {
-      res.status(status).json({ message });
-    }
-    console.error('Server error:', err);
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Setup Vite or static serving
   if (app.get("env") === "development") {
     await setupVite(app, serverRoutes);
   } else {
-    viteServeStatic(app);
+    // Serve static files from client build output
+    app.use(serveStatic(path.resolve(__dirname, "../client/dist/public")));
+
+    // Fallback to index.html for SPA routing
+    app.use((req, res) => {
+      res.sendFile(path.resolve(__dirname, "../client/dist/public/index.html"));
+    });
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Listen on port 3003
+  const port = 3003;
   server.listen({
     port,
     host: "0.0.0.0",

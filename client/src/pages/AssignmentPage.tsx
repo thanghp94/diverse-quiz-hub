@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
 import QuizView from '@/components/QuizView';
+import { supabase } from '@/lib/supabaseClient';
 
 interface Assignment {
   id: string;
@@ -56,47 +57,68 @@ const AssignmentPage: React.FC = () => {
     // Default fallback user
     return { id: 'GV0002', email: 'thanghuynh@meraki.edu.vn' };
   };
-  
+
   const currentUser = getCurrentUser();
   const isTeacher = currentUser.id === 'GV0002' || currentUser.email === 'thanghuynh@meraki.edu.vn';
 
   // Fetch all assignments
   const { data: assignments = [], isLoading: loadingAssignments } = useQuery({
-    queryKey: ['/api/assignments'],
+    queryKey: ['assignments'],
     queryFn: async () => {
-      const response = await fetch('/api/assignments');
-      if (!response.ok) throw new Error('Failed to fetch assignments');
-      return response.json();
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error('Failed to fetch assignments: ' + error.message);
+      }
+      return data || [];
     }
   });
 
   // Fetch assignment student tries for live classes
   const { data: studentTries = [] } = useQuery({
-    queryKey: ['/api/assignment-student-tries'],
+    queryKey: ['assignment-student-tries'],
     queryFn: async () => {
-      const response = await fetch('/api/assignment-student-tries');
-      if (!response.ok) throw new Error('Failed to fetch student tries');
-      return response.json();
+      const { data, error } = await supabase
+        .from('assignment_student_tries')
+        .select('*');
+
+      if (error) {
+        throw new Error('Failed to fetch student tries: ' + error.message);
+      }
+      return data || [];
     }
   });
 
   // Fetch questions for quiz
   const { data: questions = [] } = useQuery({
-    queryKey: ['/api/questions'],
+    queryKey: ['questions'],
     queryFn: async () => {
-      const response = await fetch('/api/questions');
-      if (!response.ok) throw new Error('Failed to fetch questions');
-      return response.json();
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*');
+
+      if (error) {
+        throw new Error('Failed to fetch questions: ' + error.message);
+      }
+      return data || [];
     }
   });
 
   // Fetch content for assignments
   const { data: content = [] } = useQuery({
-    queryKey: ['/api/content'],
+    queryKey: ['content'],
     queryFn: async () => {
-      const response = await fetch('/api/content');
-      if (!response.ok) throw new Error('Failed to fetch content');
-      return response.json();
+      const { data, error } = await supabase
+        .from('content')
+        .select('*');
+
+      if (error) {
+        throw new Error('Failed to fetch content: ' + error.message);
+      }
+      return data || [];
     }
   });
 
