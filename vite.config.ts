@@ -20,11 +20,14 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      // CRITICAL FIX: Update the @assets alias to point to the new location
+      // It's now inside client/public/
+      "@assets": path.resolve(import.meta.dirname, "client", "public", "attached_assets"),
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
   build: {
+    // Keep outDir as is, as it's consistent with server/frontendServer.ts
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
   },

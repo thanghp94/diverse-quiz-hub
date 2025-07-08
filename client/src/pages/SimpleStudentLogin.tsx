@@ -4,7 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, User, Lock, BookOpen, Trophy, Users, Star, Globe, Zap, Brain } from "lucide-react";
-import merakiLogo from "@assets/MERAKI new logo vo6-03_1750301582337.png";
+// In client/src/pages/SimpleStudentLogin.tsx
+import MerakiLogo from '@assets/MERAKI new logo vo6-03_1750301582337.png';
+// OR if you renamed it:
+// import MerakiLogo from '@assets/meraki-logo.png';
 
 export default function SimpleStudentLogin() {
   const [identifier, setIdentifier] = useState("");
