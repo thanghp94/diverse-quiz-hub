@@ -1012,6 +1012,8 @@ export class DatabaseStorage implements IStorage {
           AND st.quiz_result IN ('✅', '❌')
           AND st.question_id IS NOT NULL
           AND st.question_id != ''
+          AND st.hocsinh_id IS NOT NULL
+          AND st.hocsinh_id != ''
         GROUP BY st.hocsinh_id, u.full_name, u.first_name, u.last_name
         HAVING COUNT(*) > 0
         ORDER BY total_tries DESC, accuracy_percentage DESC

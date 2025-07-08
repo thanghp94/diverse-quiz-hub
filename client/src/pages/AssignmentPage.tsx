@@ -10,7 +10,6 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import Header from '@/components/Header';
 import QuizView from '@/components/QuizView';
-import { supabase } from '@/lib/supabaseClient';
 
 interface Assignment {
   id: string;

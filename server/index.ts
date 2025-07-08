@@ -107,13 +107,9 @@ app.use((req, res, next) => {
     });
   }
 
-  // Listen on port 3003
-  const port = 3003;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  // Listen on port 3004
+  const port = 3004;
+  server.listen(port, () => {
     log(`serving on port ${port}`);
 
     // Start the daily student tracking cron job

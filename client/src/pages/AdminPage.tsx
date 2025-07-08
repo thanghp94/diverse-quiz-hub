@@ -81,26 +81,51 @@ const AdminPage = () => {
   // Fetch data based on active tab
   const { data: students, isLoading: studentsLoading } = useQuery({
     queryKey: ['/api/users'],
+    queryFn: async () => {
+      const response = await fetch('/api/users', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
     enabled: activeTab === 'students'
   });
 
   const { data: topics, isLoading: topicsLoading } = useQuery({
     queryKey: ['/api/topics'],
+    queryFn: async () => {
+      const response = await fetch('/api/topics', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch topics');
+      return response.json();
+    },
     enabled: activeTab === 'topics'
   });
 
   const { data: content, isLoading: contentLoading } = useQuery({
     queryKey: ['/api/content'],
+    queryFn: async () => {
+      const response = await fetch('/api/content', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch content');
+      return response.json();
+    },
     enabled: activeTab === 'content'
   });
 
   const { data: questions, isLoading: questionsLoading } = useQuery({
     queryKey: ['/api/questions'],
+    queryFn: async () => {
+      const response = await fetch('/api/questions', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch questions');
+      return response.json();
+    },
     enabled: activeTab === 'questions'
   });
 
   const { data: matching, isLoading: matchingLoading } = useQuery({
     queryKey: ['/api/matching'],
+    queryFn: async () => {
+      const response = await fetch('/api/matching', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch matching');
+      return response.json();
+    },
     enabled: activeTab === 'matching'
   });
 
