@@ -19,7 +19,8 @@ RUN npm run build
 
 # Expose the port the Node.js backend app runs on
 # Removed EXPOSE 5173 as it's a dev server port and not for production serving.
-EXPOSE 3003 # Assuming your server/frontendServer.ts listens on port 3003
+EXPOSE 3003 
+
 
 # Create a non-root user for security
 RUN addgroup -g 1001 -S nodejs
