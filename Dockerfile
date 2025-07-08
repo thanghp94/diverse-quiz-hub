@@ -18,7 +18,8 @@ COPY . .
 RUN npm run build
 
 # Expose the port the Node.js backend app runs on
-# Removed EXPOSE 5173 as it's a dev server port and not for production serving.
+
+
 EXPOSE 3003 
 
 
