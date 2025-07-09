@@ -1,25 +1,27 @@
-
+import React, { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router as WouterRouter, Route, Switch } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import SimpleStudentLogin from "./pages/SimpleStudentLogin";
-import SetupEmail from "./pages/SetupEmail";
-import Topics from "./pages/Topics";
-import Content from "./pages/Content";
-import Leaderboard from "./pages/Leaderboard";
-import NotFound from "./pages/NotFound";
-import DebatePage from "./pages/DebatePage";
-import WritingPage from "./pages/WritingPage";
-import ChallengeSubject from "./pages/ChallengeSubject";
-import Login from "./pages/Login";
-import { DemoPage } from "./pages/DemoPage";
-import AssignmentPage from "./pages/AssignmentPage";
-import LiveClass from "./pages/LiveClass";
-import LiveClassPage from "./pages/LiveClassPage";
-import AdminPage from "./pages/AdminPage";
+
+// Lazy load all page components
+const SimpleStudentLogin = lazy(() => import("./pages/SimpleStudentLogin"));
+const SetupEmail = lazy(() => import("./pages/SetupEmail"));
+const Topics = lazy(() => import("./pages/Topics"));
+const Content = lazy(() => import("./pages/Content"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const DebatePage = lazy(() => import("./pages/DebatePage"));
+const WritingPage = lazy(() => import("./pages/WritingPage"));
+const ChallengeSubject = lazy(() => import("./pages/ChallengeSubject"));
+const Login = lazy(() => import("./pages/Login"));
+const DemoPage = lazy(() => import("./pages/DemoPage"));
+const AssignmentPage = lazy(() => import("./pages/AssignmentPage"));
+const LiveClass = lazy(() => import("./pages/LiveClass"));
+const LiveClassPage = lazy(() => import("./pages/LiveClassPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -67,28 +69,34 @@ function AppRouter() {
   }
 
   return (
-    <Switch>
-      <Route path="/setup-email" component={SetupEmail} />
-      {!isAuthenticated ? (
-        <Route path="/" component={SimpleStudentLogin} />
-      ) : (
-        <>
-          <Route path="/" component={Topics} />
-          <Route path="/topics" component={Topics} />
-          <Route path="/challenge-subject" component={ChallengeSubject} />
-          <Route path="/content/:id" component={Content} />
-          <Route path="/leaderboard" component={Leaderboard} />
-          <Route path="/debate" component={DebatePage} />
-          <Route path="/writing" component={WritingPage} />
-          <Route path="/assignments" component={AssignmentPage} />
-          <Route path="/live-class" component={LiveClass} />
-          <Route path="/live-monitor" component={LiveClassPage} />
-          <Route path="/admin" component={AdminPage} />
-          <Route path="/demo" component={DemoPage} />
-        </>
-      )}
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <Switch>
+        <Route path="/setup-email" component={SetupEmail} />
+        {!isAuthenticated ? (
+          <Route path="/" component={SimpleStudentLogin} />
+        ) : (
+          <>
+            <Route path="/" component={Topics} />
+            <Route path="/topics" component={Topics} />
+            <Route path="/challenge-subject" component={ChallengeSubject} />
+            <Route path="/content/:id" component={Content} />
+            <Route path="/leaderboard" component={Leaderboard} />
+            <Route path="/debate" component={DebatePage} />
+            <Route path="/writing" component={WritingPage} />
+            <Route path="/assignments" component={AssignmentPage} />
+            <Route path="/live-class" component={LiveClass} />
+            <Route path="/live-monitor" component={LiveClassPage} />
+            <Route path="/admin" component={AdminPage} />
+            <Route path="/demo" component={DemoPage} />
+          </>
+        )}
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 
