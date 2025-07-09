@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     runtimeErrorOverlay(),
+    // Conditional import for cartographer plugin if in production on Replit
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined
       ? [
@@ -18,24 +19,43 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
+      // Alias for '@' to point to client/src
       "@": path.resolve(import.meta.dirname, "client", "src"),
+      // Alias for '@shared' to point to shared
       "@shared": path.resolve(import.meta.dirname, "shared"),
+      // Alias for '@assets' pointing to public assets
       "@assets": path.resolve(import.meta.dirname, "client", "public", "attached_assets"),
     },
   },
-  root: path.resolve(import.meta.dirname, "client"), // <--- Vite's root is set to 'client/'
+  // !!! THIS LINE IS REMOVED/COMMENTED OUT !!!
+  // root: path.resolve(import.meta.dirname, "client"), 
+
+  // Define the directory that contains static assets that should be served as-is
+  // This will be relative to the project root (which is now /app in Docker)
+  publicDir: path.resolve(import.meta.dirname, "client", "public"), 
+
   build: {
-    outDir: 'dist/public', // <--- This is relative to Vite's root
-    emptyOutDir: true,
+    // Output directory for production build, relative to the project root (/app)
+    outDir: path.resolve(import.meta.dirname, "dist", "public"),
+    emptyOutDir: true, // Clear the output directory before building
   },
 
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3004',
+        target: 'http://localhost:3004', // Proxy API requests to your backend
         changeOrigin: true,
-        secure: false,
+        secure: false, // Set to true if your backend uses HTTPS
       },
     },
   },
+  // Other potential configurations you might have for CSS, etc.
+  // css: {
+  //   postcss: {
+  //     plugins: [
+  //       require('tailwindcss'),
+  //       require('autoprefixer'),
+  //     ],
+  //   },
+  // },
 });
