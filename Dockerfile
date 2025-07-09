@@ -29,9 +29,10 @@ COPY --from=build_stage /app/dist/public /usr/share/nginx/html
 # Copy a custom Nginx configuration (optional, but good practice)
 # If you don't have this, you can omit it. Nginx has a default.
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose the port Nginx will serve on
-EXPOSE 5000
+EXPOSE 3003
 
 # Command to start Nginx (default for nginx:alpine image)
 CMD ["nginx", "-g", "daemon off;"]
