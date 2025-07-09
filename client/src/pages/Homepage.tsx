@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import merakiLogo from "@assets/MERAKI new logo vo6-03_1750301582337.png";
+import merakiLogo from "@assets/meraki-new-logo.png";
 
 const Homepage = () => {
   const { user } = useAuth();
