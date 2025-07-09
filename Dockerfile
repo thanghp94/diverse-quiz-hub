@@ -7,13 +7,11 @@ RUN npm install --frozen-lockfile
 COPY . .
 RUN npm run build
 
-# !!! ADD THESE LINES FOR DEBUGGING !!!
-RUN echo "--- Listing contents of /app/dist/public (after npm run build) ---"
-RUN ls -lhR /app/dist/public
-RUN echo "--- Content of /app/dist/public/index-D_KFIesz.css ---"
-RUN cat /app/dist/public/index-D_KFIesz.css
-RUN echo "--------------------------------------------------------"
-# !!! END DEBUGGING LINES !!!
+# !!! ADD THIS LINE FOR DEBUGGING !!!
+RUN echo "--- Content of /app/dist/public/index.html (after npm run build) ---"
+RUN cat /app/dist/public/index.html
+RUN echo "-------------------------------------------------------------------"
+# !!! END DEBUGGING LINE !!!
 
 
 # Stage 2: Serve the static files with Nginx
