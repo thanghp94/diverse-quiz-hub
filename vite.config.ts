@@ -20,17 +20,15 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
-      // CRITICAL FIX: Update the @assets alias to point to the new location
-      // It's now inside client/public/
       "@assets": path.resolve(import.meta.dirname, "client", "public", "attached_assets"),
     },
   },
-  root: path.resolve(import.meta.dirname, "client"),
+  root: path.resolve(import.meta.dirname, "client"), // <--- Vite's root is set to 'client/'
   build: {
-    // Keep outDir as is, as it's consistent with server/frontendServer.ts
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: 'dist/public', // <--- This is relative to Vite's root
     emptyOutDir: true,
   },
+
   server: {
     proxy: {
       '/api': {
