@@ -29,6 +29,7 @@ export default defineConfig({
   },
   // !!! THIS LINE IS REMOVED/COMMENTED OUT !!!
   // root: path.resolve(import.meta.dirname, "client"), 
+  root: path.resolve(import.meta.dirname, "client", "public"), 
 
   // Define the directory that contains static assets that should be served as-is
   // This will be relative to the project root (which is now /app in Docker)
