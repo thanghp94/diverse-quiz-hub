@@ -25,6 +25,7 @@ export default defineConfig({
       "@shared": path.resolve(import.meta.dirname, "shared"),
       // Alias for '@assets' pointing to public assets
       "@assets": path.resolve(import.meta.dirname, "client", "public", "attached_assets"),
+      "@src": path.resolve(import.meta.dirname, "client", "public", "src"),
     },
   },
   // !!! THIS LINE IS REMOVED/COMMENTED OUT !!!
