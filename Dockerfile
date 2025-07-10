@@ -3,17 +3,22 @@ FROM node:18-alpine AS build_stage
 
 WORKDIR /app
 
-# !!! ADD THESE LINES FOR AGGRESSIVE CLEANUP !!!
+# !!! AGGRESSIVE CLEANUP !!!
 RUN rm -rf node_modules dist .npm/ .cache/ 
 # !!! END AGGRESSIVE CLEANUP !!!
 
 COPY package.json package-lock.json ./
 RUN npm install --frozen-lockfile
 COPY . .
-RUN echo "BUILD_CACHE_BUSTER_$(date +%s)" # Keep this line
+RUN echo "BUILD_CACHE_BUSTER_$(date +%s)"
+
 RUN npm run build
 
-# !!! CORRECTED DEBUGGING LINES (Back to /app/dist/public) !!!
+# !!! ADD THIS CRITICAL PERMISSIONS FIX HERE !!!
+RUN chmod -R a+rX /app/dist/public 
+# !!! END CRITICAL PERMISSIONS FIX !!!
+
+# !!! DEBUGGING LINES - ENSURE THEY ARE STILL HERE and correct paths !!!
 RUN echo "--- Content of /app/dist/public/index.html (after npm run build) ---"
 RUN cat /app/dist/public/index.html 
 RUN echo "-------------------------------------------------------------------"
@@ -27,7 +32,6 @@ RUN echo "--------------------------------------------------------"
 
 # Stage 2: Serve the static files with Nginx
 FROM nginx:alpine AS production_stage
-# !!! THIS CRITICAL COPY MUST BE /app/dist/public !!!
 COPY --from=build_stage /app/dist/public /usr/share/nginx/html 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 5000
