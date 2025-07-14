@@ -15,24 +15,24 @@ RUN echo "BUILD_CACHE_BUSTER_$(date +%s)"
 RUN npm run build
 
 # !!! ADD THIS CRITICAL PERMISSIONS FIX HERE !!!
-RUN chmod -R a+rX /app/dist/public 
+RUN chmod -R a+rX /app/dist 
 # !!! END CRITICAL PERMISSIONS FIX !!!
 
 # !!! DEBUGGING LINES - ENSURE THEY ARE STILL HERE and correct paths !!!
-RUN echo "--- Content of /app/dist/public/index.html (after npm run build) ---"
-RUN cat /app/dist/public/index.html 
+RUN echo "--- Content of /app/dist/index.html (after npm run build) ---"
+RUN cat /app/dist/index.html 
 RUN echo "-------------------------------------------------------------------"
-RUN echo "--- Listing contents of /app/dist/public (after npm run build) ---"
-RUN ls -lhR /app/dist/public
-RUN echo "--- Content of /app/dist/public/assets/index-D_KFIesz.css ---"
-RUN cat /app/dist/public/assets/index-D_KFIesz.css
+RUN echo "--- Listing contents of /app/dist (after npm run build) ---"
+RUN ls -lhR /app/dist
+RUN echo "--- Listing CSS files in assets directory ---"
+RUN find /app/dist -name "*.css" -exec echo "Found CSS: {}" \; -exec head -5 {} \;
 RUN echo "--------------------------------------------------------"
 # !!! END DEBUGGING LINES !!!
 
 
 # Stage 2: Serve the static files with Nginx
 FROM nginx:alpine AS production_stage
-COPY --from=build_stage /app/dist/public /usr/share/nginx/html 
+COPY --from=build_stage /app/dist /usr/share/nginx/html 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 5000
 CMD ["nginx", "-g", "daemon off;"]

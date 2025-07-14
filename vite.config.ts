@@ -25,20 +25,17 @@ export default defineConfig({
       "@shared": path.resolve(import.meta.dirname, "shared"),
       // Alias for '@assets' pointing to public assets
       "@assets": path.resolve(import.meta.dirname, "client", "public", "attached_assets"),
-      "@src": path.resolve(import.meta.dirname, "client", "public", "src"),
     },
   },
-  // !!! THIS LINE IS REMOVED/COMMENTED OUT !!!
-  // root: path.resolve(import.meta.dirname, "client"), 
-  root: path.resolve(import.meta.dirname, "client", "public"), 
+  // Set root to client directory for proper Vite setup
+  root: path.resolve(import.meta.dirname, "client"), 
 
   // Define the directory that contains static assets that should be served as-is
-  // This will be relative to the project root (which is now /app in Docker)
   publicDir: path.resolve(import.meta.dirname, "client", "public"), 
 
   build: {
     // Output directory for production build, relative to the project root (/app)
-    outDir: path.resolve(import.meta.dirname, "dist", "public"),
+    outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true, // Clear the output directory before building
   },
 
