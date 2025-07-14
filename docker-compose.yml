@@ -2,14 +2,14 @@ services:
   diverse-quiz-hub:
     build: .
     ports:
-      - "3003:3003"
+      - "3003:5000"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://neondb_owner:npg_ONSLUx5f2pMo@ep-rapid-dew-ad58cvd6.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
 
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3003/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 30s
       timeout: 10s
       retries: 3
